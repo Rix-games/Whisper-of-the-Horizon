@@ -28,10 +28,10 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   drill:     { base: { metal: 400, data: 2e4 }, growth: 1.18, prod: { ore: 12 }, unlock: (s) => !!s.r.deep },
   mirror:    { base: { metal: 3000, data: 1e5 }, growth: 1.17, prod: { energy: 4e5 }, unlock: (s) => !!s.r.mirror },
   replicator:{ base: { metal: 4000, data: 3e5 }, growth: 1.3, makes: { building: 'drone', rate: 0.05 }, cons: { energy: 2.5e5 }, unlock: (s) => !!s.r.repl },
-  forge:     { base: { ore: 2e5, metal: 8e3 }, growth: 1.18, prod: { metal: 100 }, cons: { ore: 200 }, unlock: (s) => !!s.r.forge },
-  catcher:   { base: { ore: 8e5, metal: 5e4 }, growth: 1.18, prod: { ore: 5000 }, unlock: (s) => !!s.r.catcher },
+  forge:     { base: { ore: 2e5, metal: 8e3, data: 1e5 }, growth: 1.18, prod: { metal: 100 }, cons: { ore: 200 }, unlock: (s) => !!s.r.forge },
+  catcher:   { base: { ore: 8e5, metal: 5e4, data: 5e5 }, growth: 1.18, prod: { ore: 5000 }, unlock: (s) => !!s.r.catcher },
   qcomp:     { base: { metal: 1e6, energy: 1e11 }, growth: 1.2, prod: { data: 2e8 }, cons: { energy: 2e8 }, unlock: (s) => !!s.r.quantum },
-  fusion:    { base: { ore: 1e6, metal: 1e5 }, growth: 1.2, prod: { energy: 5e7 }, unlock: (s) => !!s.r.fusion },
+  fusion:    { base: { ore: 1e6, metal: 1e5, data: 1e6 }, growth: 1.2, prod: { energy: 5e7 }, unlock: (s) => !!s.r.fusion },
   dyson:     { base: { metal: 2e6, energy: 2e11 }, growth: 1.12, prod: { energy: 2e12 }, unlock: (s) => !!s.r.dyson },
 };
 export const BUILDING_IDS = Object.keys(BUILDINGS) as BuildingId[];
