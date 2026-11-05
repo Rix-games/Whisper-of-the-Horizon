@@ -1,5 +1,13 @@
 # Novinky
 
+## 0.1.3 – Vyladění dat a kovu
+
+- Levnější Kvantové výpočty
+- Supravodivé rozvody posílí i laboratoře
+- Slévárna, lapač a fúzní reaktor stojí méně dat
+- Smazání postupu s dvojím potvrzením
+- Úpravy mapy a deníku
+
 ## 0.1.2 – Expedice a vyrovnání
 
 - Lety jako jednorázové expedice s trvalým bonusem
