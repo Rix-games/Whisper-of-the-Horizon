@@ -17,7 +17,7 @@ const VOL_DEFAULT: Record<VolKey, number> = { noise: 0.7, melody: 1, game: 1 };
 const volOf = (k: VolKey) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
 const audioVols = (): Partial<Volumes> => ({ noise: volOf('noise'), drone: volOf('noise'), melody: volOf('melody'), pulse: volOf('game'), chime: volOf('game') });
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.1.1';
 const KEY = 'sepot-horizontu';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 // escapuje HTML a mocniny (10¹²) obalí do .exp, aby šly zvětšit

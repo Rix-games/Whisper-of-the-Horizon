@@ -1,26 +1,31 @@
 # Novinky
 
-## Připravuje se
+## 0.1.1 – Vylepšení Kapitoly 1
 
-- Čitelnější texty: světlejší popisky, o kousek větší drobné písmo a větší mocniny (10¹²)
-- Solární fólie přejmenovány na solární panely
-- Pomalejší začátek: tavírna kolem 3. minuty, solární panel kolem 5., laboratoř kolem 12. minuty, drony a první výzkumy jsou dražší
-- Záložka Výzkum se ukáže až s první laboratoří
-- Po najetí na surovinu je vidět rozpis: kdo kolik vyrábí a kdo kolik spotřebovává
-- Komety, erupce a ozvěny chodí řidčeji: první kolem 3. minuty, pak každé 3–6 minut
-- Po zachycení komety, erupce nebo ozvěny je odměna dobře vidět: rozsvícená surovina a oznámení
-- Nastavení se přesunulo z hlavních záložek pod ozubené kolo vpravo nahoře a otevírá se jako okno přes hru
-- Palubní deník zůstává vpravo i na užších obrazovkách
-- Pevná obrazovka: suroviny, asteroid i deník zůstávají na místě, posouvá se jen seznam staveb (a deník) ve vlastním okně
+Vylepšení vzhledu, tempa a ovládání. Uložená hra z verze 0.1 funguje dál.
+
+**Vzhled**
 - Propracovanější asteroid: světlo od Aldry, krátery v perspektivě, platforma s majákem, obíhající drony a úlomky při těžbě
-- Ambient má navíc pomalou, stále jinou melodii s dozvukem
-- V nastavení jsou posuvníky hlasitosti: šum vesmíru, melodie a zvuky hry
-- Projité a uhlazené texty: popisy staveb a výzkumů, nastavení, mapa, deník
-- Užší mezera v tisících (Den 6 139)
-- Srozumitelnější zajímavost o lidském genomu
-- Stavby ukazují výkon jednoho kusu i všech dohromady, s názvy surovin (co bere → co dává), počet je v kusech
-- Pod 1 MW ukazuje Kardaševovo číslo jen „K < 0“, překročení nuly ohlásí zajímavost v deníku
-- Jasnější popisy tavírny, slévárny a laboratoře, vysvětlivka ke Kardaševovu číslu bez vzorce
+- Propracovanější mapa soustavy: Aldra s jemnou září, pruhovaný Tauris s prstencem a dvěma měsíci, trojánské planetky, kometa, pás z jednotlivých kamenů, Vesper se stopou
+- Pevná obrazovka: suroviny, asteroid i deník zůstávají na místě, posouvá se jen seznam staveb a deník
+- Nastavení je pod ozubeným kolem vpravo nahoře a otevírá se jako okno přes hru
+- Čitelnější texty: světlejší popisky, větší drobné písmo a mocniny (10¹²), užší mezera v tisících
+
+**Hratelnost**
+- Pomalejší začátek: tavírna kolem 3. minuty, solární panel kolem 5., laboratoř kolem 12. minuty
+- Komety, erupce a ozvěny chodí řidčeji (zhruba po 3–6 minutách); po zachycení se surovina rozsvítí
+- Záložka Výzkum se ukáže až s první laboratoří
+- Stavby ukazují výkon jednoho kusu i všech dohromady (co berou → co dávají)
+- Po najetí na surovinu je vidět rozpis, kdo kolik vyrábí a spotřebovává
+- Pod 1 MW ukazuje Kardaševovo číslo „K < 0“, překročení nuly ohlásí deník
+
+**Zvuk**
+- Ambient má pomalou, stále jinou melodii s dozvukem
+- Posuvníky hlasitosti: šum vesmíru, melodie a zvuky hry
+
+**Texty**
+- Solární fólie jsou teď solární panely
+- Projité a uhlazené popisy staveb, výzkumů, mapy, nastavení i deníku
 
 ## 0.1 – Kapitola 1: Platforma
 
