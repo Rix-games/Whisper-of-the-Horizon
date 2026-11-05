@@ -113,7 +113,7 @@ function renderTop() {
 function renderRig() {
   $('rigTitle').textContent = t('ui.asteroid');
   $('clickTag').textContent = t('ui.perClick', { v: mass(E.clickPower(S)) });
-  const hint = $('hint'), hk = hintKey(); hint.hidden = !hk; if (hk) hint.textContent = t('ui.hints.' + hk);
+  const hint = $('hint'); hint.hidden = S.b.drone >= 3; hint.textContent = t('ui.hint');
   const conv = E.CONVERTERS.filter((id) => S.b[id] >= 1);
   const rows: [string, string][] = [[t('ui.stats.clicks'), num(S.clicks)], [t('ui.stats.drones'), num(Math.floor(S.b.drone))]];
   for (const id of conv) rows.push([t(`b.${id}.name`), S.off[id] ? t('ui.stopped') : t('ui.running', { n: Math.round((S.eff[id] ?? 1) * 100) })]);
@@ -136,18 +136,6 @@ function renderRig() {
     const rw = EVENTS[id].res;
     ev.querySelector('.reward')!.innerHTML = `${esc(t('ui.events.reward'))} <b style="color:${COLOR[rw]}">+${esc(amount(rw, E.eventReward(S, id)))}</b> ${esc(t('resOf.' + rw))}`;
   } else { ev.hidden = true; ev.dataset.id = ''; }
-}
-
-/** Nápověda „co dál“ na začátku hry. Zmizí, jakmile hráč udělá první výzkum. */
-function hintKey(): string | null {
-  if (S.b.drone < 1) return 'drone';
-  if (!E.isUnlocked(S, 'smelter')) return 'more';
-  if (S.b.smelter < 1) return 'smelter';
-  if (!E.isUnlocked(S, 'solar')) return 'metal';
-  if (S.b.solar < 1) return 'solar';
-  if (S.b.lab < 1) return E.isUnlocked(S, 'lab') ? 'lab' : 'solar3';
-  if (!Object.keys(S.r).length) return 'research';
-  return null;
 }
 
 // ---------- záložky ----------

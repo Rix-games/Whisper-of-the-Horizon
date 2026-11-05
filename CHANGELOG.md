@@ -5,10 +5,11 @@
 - Čitelnější texty: světlejší popisky a o kousek větší drobné písmo
 - Solární fólie přejmenovány na solární panely
 - Pomalejší začátek: tavírna kolem 3. minuty, solární panel kolem 5., laboratoř kolem 15. minuty, drony a první výzkumy jsou dražší, první kometa až ve 3. minutě
-- Nápověda „co dál“ na začátku hry, záložka Výzkum se ukáže až s první laboratoří
+- Záložka Výzkum se ukáže až s první laboratoří
 - Po najetí na surovinu je vidět rozpis: kdo kolik vyrábí a kdo kolik spotřebovává
 - Odměna z komety, erupce a ozvěny je vidět předem, po zachycení se zapíše do deníku a surovina se rozsvítí
-- Nastavení se přesunulo z hlavních záložek do bočního panelu (ozubené kolo vpravo nahoře)
+- Nastavení se přesunulo z hlavních záložek pod ozubené kolo vpravo nahoře a otevírá se jako okno přes hru
+- Palubní deník zůstává vpravo i na užších obrazovkách
 - Srozumitelnější zajímavost o lidském genomu
 - Stavby ukazují výkon jednoho kusu i všech dohromady, s názvy surovin (co bere → co dává), počet je v kusech
 - Jasnější popisy tavírny, slévárny a laboratoře, vysvětlivka ke Kardaševovu číslu bez vzorce
