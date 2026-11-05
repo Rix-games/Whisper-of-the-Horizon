@@ -53,7 +53,7 @@ for (let t = 0; t < LIMIT_H * 3600; t++) {
   for (const k of [0, 0.25, 0.5, 0.75]) if (E.kardashev(s) >= k) mark('K ' + k);
   if (s.chapterDone) { mark('KONEC KAPITOLY 1'); break; }
 }
-const fmt = (sec: number) => `${Math.floor(sec / 3600)}:${String(Math.floor((sec % 3600) / 60)).padStart(2, '0')}`;
+const fmt = (sec: number) => `${Math.floor(sec / 3600)}:${String(Math.floor((sec % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
 for (const [k, t, K] of marks) console.log(fmt(t).padStart(6), ' K', K.padStart(5), ' ', k);
 console.log('budovy', JSON.stringify(Object.fromEntries(Object.entries(s.b).map(([k, v]) => [k, Math.floor(v)]))));
 console.log('nejdelší čekání na nákup:', Math.round(longestWait), 's', ' poslední nákup', fmt(lastBuy));

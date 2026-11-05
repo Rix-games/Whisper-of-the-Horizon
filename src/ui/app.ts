@@ -16,7 +16,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
 let S: State;
-let tab: 'build' | 'research' | 'map' | 'settings' = 'build';
+let tab: 'build' | 'research' | 'map' = 'build';
 let buyMax = false;
 let viewKey = '';
 let lastActive = Date.now();
@@ -48,19 +48,39 @@ function applyOffline(sec: number) {
 
 // ---------- drobnosti ----------
 let toastTimer: number | undefined;
-function toast(msg: string) {
+function toast(msg: string, ms = 2600) {
   const el = $('toast'); el.textContent = msg; el.hidden = false;
-  clearTimeout(toastTimer); toastTimer = window.setTimeout(() => { el.hidden = true; }, 2600);
+  clearTimeout(toastTimer); toastTimer = window.setTimeout(() => { el.hidden = true; }, ms);
+}
+/** Rozsvítí surovinu v horní liště a nad ní vyletí přírůstek. */
+function flashGain(r: Res, v: number) {
+  const chip = document.querySelector<HTMLElement>(`.chip[data-res="${r}"]`);
+  if (!chip) return;
+  chip.classList.remove('gain'); void chip.offsetWidth; chip.classList.add('gain');
+  const f = document.createElement('span'); f.className = 'float gainfloat'; f.textContent = '+' + amount(r, v);
+  f.style.color = COLOR[r]; chip.appendChild(f); setTimeout(() => f.remove(), 1600);
 }
 function showTip(target: HTMLElement) {
   const u = target.dataset.unit!; const tip = $('tip');
-  tip.innerHTML = `<b>${esc(t(`unit.${u}.name`))}</b>${esc(t(`unit.${u}.text`))}`;
+  tip.innerHTML = `<b>${esc(t(`unit.${u}.name`))}</b>${esc(t(`unit.${u}.text`))}` + (target.dataset.res ? breakdownHTML(target.dataset.res as Res) : '');
   tip.hidden = false;
   const r = target.getBoundingClientRect(), w = tip.offsetWidth;
   tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + 'px';
   tip.style.top = (r.bottom + 8) + 'px';
 }
 function hideTip() { $('tip').hidden = true; }
+/** Rozpis výroby a spotřeby zdroje do vysvětlivky (např. drony +10 kg/s, tavírny −6 kg/s). */
+function breakdownHTML(r: Res): string {
+  const { prod, cons } = E.rateParts(S, r);
+  if (!prod.length && !cons.length) return '';
+  const name = (k: string) => (k === 'reactor' || k === 'auto' ? t('ui.breakdown.' + k) : t(`b.${k}.name`));
+  const line = (k: string, v: number, sign: string) => `<span class="bd"><span>${esc(name(k))}</span><span class="mono">${sign}${esc(rate(r, v))}</span></span>`;
+  const p = prod.reduce((a, [, v]) => a + v, 0), c = cons.reduce((a, [, v]) => a + v, 0), net = p - c;
+  let h = `<span class="bdh">${esc(t('ui.breakdown.prod'))}</span>` + prod.map(([k, v]) => line(k, v, '+')).join('');
+  if (cons.length) h += `<span class="bdh">${esc(t('ui.breakdown.cons'))}</span>` + cons.map(([k, v]) => line(k, v, '−')).join('');
+  h += `<span class="bd total"><span>${esc(t('ui.breakdown.net'))}</span><span class="mono">${net >= 0 ? '+' : '−'}${esc(rate(r, Math.abs(net)))}</span></span>`;
+  return `<span class="bdbox">${h}</span>`;
+}
 
 // ---------- horní lišta ----------
 let chipKey = '';
@@ -76,7 +96,7 @@ function renderTop() {
   const bar = $('resbar');
   if (key !== chipKey) {
     chipKey = key;
-    bar.innerHTML = shown.map((r) => `<button class="chip" data-unit="${UNIT[r]}" aria-describedby="tip"><span class="k"><i style="background:${COLOR[r]}"></i>${t('res.' + r)}</span><span class="v" data-v="${r}"></span><span class="r" data-r="${r}"></span></button>`).join('');
+    bar.innerHTML = shown.map((r) => `<button class="chip" data-unit="${UNIT[r]}" data-res="${r}" aria-describedby="tip"><span class="k"><i style="background:${COLOR[r]}"></i>${t('res.' + r)}</span><span class="v" data-v="${r}"></span><span class="r" data-r="${r}"></span></button>`).join('');
   }
   const { p, c } = E.rates(S);
   for (const r of shown) {
@@ -93,7 +113,7 @@ function renderTop() {
 function renderRig() {
   $('rigTitle').textContent = t('ui.asteroid');
   $('clickTag').textContent = t('ui.perClick', { v: mass(E.clickPower(S)) });
-  const hint = $('hint'); hint.hidden = S.b.drone >= 3; hint.textContent = t('ui.hint');
+  const hint = $('hint'), hk = hintKey(); hint.hidden = !hk; if (hk) hint.textContent = t('ui.hints.' + hk);
   const conv = E.CONVERTERS.filter((id) => S.b[id] >= 1);
   const rows: [string, string][] = [[t('ui.stats.clicks'), num(S.clicks)], [t('ui.stats.drones'), num(Math.floor(S.b.drone))]];
   for (const id of conv) rows.push([t(`b.${id}.name`), S.off[id] ? t('ui.stopped') : t('ui.running', { n: Math.round((S.eff[id] ?? 1) * 100) })]);
@@ -109,18 +129,32 @@ function renderRig() {
     const id = S.event.id;
     if (ev.dataset.id !== id) {
       ev.dataset.id = id;
-      ev.innerHTML = `<span class="name">${esc(t(`ui.events.${id}.name`))}</span><div class="bar"><b></b></div><button class="btn" data-claim="1">${esc(t(`ui.events.${id}.claim`))}</button>`;
+      ev.innerHTML = `<span class="name">${esc(t(`ui.events.${id}.name`))}</span><span class="reward mono"></span><div class="bar"><b></b></div><button class="btn" data-claim="1">${esc(t(`ui.events.${id}.claim`))}</button>`;
     }
     ev.hidden = false;
     (ev.querySelector('.bar > b') as HTMLElement).style.width = (S.event.ttl / 20 * 100).toFixed(1) + '%';
+    const rw = EVENTS[id].res;
+    ev.querySelector('.reward')!.innerHTML = `${esc(t('ui.events.reward'))} <b style="color:${COLOR[rw]}">+${esc(amount(rw, E.eventReward(S, id)))}</b> ${esc(t('resOf.' + rw))}`;
   } else { ev.hidden = true; ev.dataset.id = ''; }
+}
+
+/** Nápověda „co dál“ na začátku hry. Zmizí, jakmile hráč udělá první výzkum. */
+function hintKey(): string | null {
+  if (S.b.drone < 1) return 'drone';
+  if (!E.isUnlocked(S, 'smelter')) return 'more';
+  if (S.b.smelter < 1) return 'smelter';
+  if (!E.isUnlocked(S, 'solar')) return 'metal';
+  if (S.b.solar < 1) return 'solar';
+  if (S.b.lab < 1) return E.isUnlocked(S, 'lab') ? 'lab' : 'solar3';
+  if (!Object.keys(S.r).length) return 'research';
+  return null;
 }
 
 // ---------- záložky ----------
 function tabsAvail() {
-  const list: [typeof tab, string][] = [['build', t('ui.tabs.build')], ['research', t('ui.tabs.research')]];
+  const list: [typeof tab, string][] = [['build', t('ui.tabs.build')]];
+  if (S.b.lab > 0 || Object.keys(S.r).length) list.push(['research', t('ui.tabs.research')]);
   if (S.r.scan) list.push(['map', t('ui.tabs.map')]);
-  list.push(['settings', t('ui.tabs.settings')]);
   return list;
 }
 function renderTabs() {
@@ -164,8 +198,13 @@ function buildView() {
       h += `<div class="item" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))} ${S.visited[id] ? `<span class="tag on">${esc(t('ui.map.visited'))}</span>` : ''}</h3><p>${esc(t(`loc.${id}.desc`))}</p><div class="cost" data-f="cost"></div><div class="act"><button class="btn" data-go="${id}"></button></div></div>`;
     }
     h += `<div class="item" data-l="belt"><h3>${esc(t('loc.belt.name'))}</h3><p>${esc(t('ui.map.homeDesc'))}</p><div class="act"><button class="btn ghost" data-go="belt"></button></div></div></div>`;
-  } else {
-    h += `<div class="settings">
+  }
+  $('view').innerHTML = h;
+}
+
+// ---------- nastavení (boční panel) ----------
+function settingsHTML() {
+  return `<div class="settings">
       <section><h3>${esc(t('ui.settings.save'))}</h3><div class="row"><button class="btn ghost" data-act="save">${esc(t('ui.settings.saveNow'))}</button></div>
         <p style="margin-top:8px">${esc(t('ui.settings.offlineRule'))}</p></section>
       <section><h3>${esc(t('ui.settings.export'))}</h3><p>${esc(t('ui.settings.exportHint'))}</p><textarea id="exportText" readonly></textarea><div class="row"><button class="btn ghost" data-act="export">${esc(t('ui.settings.export'))}</button><button class="btn ghost" data-act="copy">${esc(t('ui.settings.copy'))}</button></div></section>
@@ -173,8 +212,22 @@ function buildView() {
       <section><h3>${esc(t('ui.settings.sound'))}</h3><div class="row"><button class="btn ghost" data-act="sound"></button></div></section>
       <section><h3>${esc(t('ui.settings.about'))}</h3><p>${esc(t('ui.settings.aboutText'))}</p><p class="mono">${esc(t('ui.settings.version', { v: VERSION }))}</p><div class="row"><button class="btn ghost" data-act="reset">${esc(t('ui.settings.reset'))}</button></div></section>
     </div>`;
-  }
-  $('view').innerHTML = h;
+}
+function openSettings() {
+  $('drawerTitle').textContent = t('ui.tabs.settings');
+  $('drawerClose').setAttribute('aria-label', t('ui.close'));
+  $('drawerBody').innerHTML = settingsHTML();
+  syncSettings(); fillExport();
+  $('drawer').hidden = false; $('settingsBtn').setAttribute('aria-expanded', 'true');
+  $('drawerClose').focus();
+}
+function closeSettings() {
+  if ($('drawer').hidden) return;
+  $('drawer').hidden = true; $('settingsBtn').setAttribute('aria-expanded', 'false'); $('settingsBtn').focus();
+}
+function syncSettings() {
+  const sb = document.querySelector<HTMLButtonElement>('#drawerBody [data-act=sound]');
+  if (sb) sb.textContent = S.settings.sound ? t('ui.settings.soundOn') : t('ui.settings.soundOff');
 }
 
 function updateView() {
@@ -212,9 +265,6 @@ function updateView() {
       b.disabled = !!S.travel || here || (id !== 'belt' && S.res.energy < L[id].cost);
       b.textContent = S.travel?.to === id ? t('ui.map.onWay') : here ? t('ui.map.here') : id === 'belt' ? t('ui.map.home') : t('ui.map.fly');
     });
-  } else {
-    const sb = view.querySelector<HTMLButtonElement>('[data-act=sound]');
-    if (sb) sb.textContent = S.settings.sound ? t('ui.settings.soundOn') : t('ui.settings.soundOff');
   }
 }
 
@@ -275,7 +325,7 @@ function bind() {
     const b = (e.target as HTMLElement).closest<HTMLElement>('button');
     if (!b) return;
     const d = b.dataset;
-    if (d.tab) { tab = d.tab as typeof tab; renderTabs(); renderView(true); if (tab === 'settings') fillExport(); return; }
+    if (d.tab) { tab = d.tab as typeof tab; renderTabs(); renderView(true); return; }
     if (d.max) { buyMax = d.max === '1'; renderView(true); return; }
     if (d.buy) { E.buy(S, d.buy as BuildingId, buyMax); onJournal(E.checkJournal(S)); renderAll(); return; }
     if (d.toggle) { const id = d.toggle as BuildingId; S.off[id] = !S.off[id]; renderView(); return; }
@@ -286,7 +336,17 @@ function bind() {
       else E.depart(S, id);
       onJournal(E.checkJournal(S)); renderView(true); renderRig(); return;
     }
-    if (d.claim) { const got = E.claimEvent(S); if (got) toast(t('ui.events.got', { v: amount(EVENTS[got.id].res, got.amount) })); renderRig(); return; }
+    if (d.claim) {
+      const got = E.claimEvent(S);
+      if (got) {
+        const r = EVENTS[got.id].res, v = amount(r, got.amount);
+        toast(t(`ui.events.${got.id}.got`, { v }), 4500);
+        S.log.unshift({ key: `ui.events.${got.id}.log`, kind: 'event', day: Math.floor(S.time) + 1, vars: { v } });
+        renderLog(true); renderTop(); flashGain(r, got.amount);
+        if (S.settings.sound) chime();
+      }
+      renderRig(); return;
+    }
     if (d.act) return settingsAction(d.act, b);
   });
   const rock = $('rock');
@@ -300,6 +360,9 @@ function bind() {
     onJournal(E.checkJournal(S)); renderTop();
   });
   $('soundBtn').addEventListener('click', toggleSound);
+  $('settingsBtn').addEventListener('click', () => ($('drawer').hidden ? openSettings() : closeSettings()));
+  $('drawerClose').addEventListener('click', closeSettings);
+  $('drawer').addEventListener('click', (e) => { if (e.target === $('drawer')) closeSettings(); });
   $('modalOk').addEventListener('click', () => { $('modal').hidden = true; save(); });
   // vysvětlivky jednotek: najetí, fokus i klepnutí (dotyk)
   document.addEventListener('pointerover', (e) => { const el = (e.target as HTMLElement).closest<HTMLElement>('[data-unit]'); if (el && e.pointerType === 'mouse') showTip(el); });
@@ -307,12 +370,12 @@ function bind() {
   document.addEventListener('focusin', (e) => { const el = (e.target as HTMLElement).closest<HTMLElement>('[data-unit]'); if (el) showTip(el); });
   document.addEventListener('focusout', hideTip);
   document.addEventListener('pointerdown', (e) => { const el = (e.target as HTMLElement).closest<HTMLElement>('[data-unit]'); if (el && e.pointerType !== 'mouse') { showTip(el); setTimeout(hideTip, 3500); } });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { hideTip(); if (!$('modal').hidden) { $('modal').hidden = true; } } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { hideTip(); closeSettings(); if (!$('modal').hidden) { $('modal').hidden = true; } } });
 }
 function toggleSound() {
   S.settings.sound = !S.settings.sound;
   setSound(S.settings.sound, !!S.r.scan);
-  renderSoundBtn(); updateView(); save();
+  renderSoundBtn(); syncSettings(); save();
 }
 function fillExport() { const ta = document.getElementById('exportText') as HTMLTextAreaElement | null; if (ta) ta.value = encodeSave(S); }
 let resetArmed = 0;

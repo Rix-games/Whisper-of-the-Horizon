@@ -85,6 +85,23 @@ export function rates(s: State): { p: Rates; c: Rates } {
   return { p, c };
 }
 
+/** Rozpis jednoho zdroje: kdo kolik vyrábí a kdo kolik spotřebuje (za sekundu). Klíče jsou id budov, 'reactor' a 'auto'. */
+export function rateParts(s: State, r: Res): { prod: [string, number][]; cons: [string, number][] } {
+  const prod: [string, number][] = [], cons: [string, number][] = [];
+  if (r === 'energy') prod.push(['reactor', reactorW(s)]);
+  for (const id of BUILDING_IDS) {
+    const d = B[id], n = s.b[id];
+    if (!n) continue;
+    const e = d.cons ? (s.off[id] ? 0 : (s.eff[id] ?? 1)) : 1;
+    const m = mult(s, id);
+    const pv = d.prod?.[r], cv = d.cons?.[r];
+    if (pv) prod.push([id, pv * n * m * e]);
+    if (cv) cons.push([id, cv * n * (CONVERTER_SCALES[id] ? m : 1) * e]);
+  }
+  if (r === 'ore' && s.r.auto) prod.push(['auto', clickPower(s) * RULES.autoClicksPerSec]);
+  return { prod, cons };
+}
+
 function add(s: State, r: Res, v: number) { s.res[r] += v; s.total[r] += v; }
 
 export function cost(s: State, id: BuildingId, n = s.bought[id] ?? Math.floor(s.b[id])): Amounts {

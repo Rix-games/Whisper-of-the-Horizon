@@ -4,6 +4,12 @@
 
 - Čitelnější texty: světlejší popisky a o kousek větší drobné písmo
 - Solární fólie přejmenovány na solární panely
+- Pomalejší začátek: tavírna, solární panel a laboratoř přicházejí postupně, první výzkumy jsou dražší, první kometa až ve 3. minutě
+- Nápověda „co dál“ na začátku hry, záložka Výzkum se ukáže až s první laboratoří
+- Po najetí na surovinu je vidět rozpis: kdo kolik vyrábí a kdo kolik spotřebovává
+- Odměna z komety, erupce a ozvěny je vidět předem, po zachycení se zapíše do deníku a surovina se rozsvítí
+- Nastavení se přesunulo z hlavních záložek do bočního panelu (ozubené kolo vpravo nahoře)
+- Srozumitelnější zajímavost o lidském genomu
 
 ## 0.1 – Kapitola 1: Platforma
 

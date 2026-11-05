@@ -2,7 +2,7 @@ import { BUILDING_IDS, RESOURCES, type BuildingId, type EventId, type LocationId
 
 export const SAVE_VERSION = 1;
 
-export interface LogEntry { key: string; kind: 'story' | 'fact' | 'sys'; day: number; vars?: Record<string, string> }
+export interface LogEntry { key: string; kind: 'story' | 'fact' | 'sys' | 'event'; day: number; vars?: Record<string, string> }
 
 export interface State {
   v: number;
@@ -39,7 +39,7 @@ export function newState(now = Date.now()): State {
     bought: zero(BUILDING_IDS),
     r: {}, off: {}, eff: {},
     visited: { belt: true }, loc: 'belt', travel: null,
-    event: null, nextEvent: 60,
+    event: null, nextEvent: 180,
     time: 0, clicks: 0,
     story: {}, facts: {}, log: [],
     chapterDone: 0,
