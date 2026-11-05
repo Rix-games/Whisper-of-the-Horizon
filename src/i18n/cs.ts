@@ -23,7 +23,7 @@ export const cs = {
     tabs: { build: 'Stavby', research: 'Výzkum', map: 'Mapa', settings: 'Nastavení' },
     buy: 'Postavit', buyN: 'Postavit ×{n}', buyMode: 'Nákup', research: 'Zkoumat',
     turnOff: 'Vypnout', turnOn: 'Zapnout', running: 'běží na {n} %', stopped: 'vypnuto',
-    each: 'každý', makes: 'postaví {n} dronů/s', pieces: '{n} ks', price: 'Cena', one: '1 kus', all: 'Všech {n}',
+    each: 'každý', makes: 'postaví {n} dronů/s', pieces: '{n} ks', price: 'Cena', one: '1 kus', all: 'Všechny',
     consumes: 'spotřeba {v}',
     researchDone: 'Hotovo', researchLocked: 'Čeká na objev', researchNone: 'Teď není co zkoumat. Další směry otevře postup a expedice.',
     needs: 'Vyžaduje: {x}',
