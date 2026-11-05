@@ -100,7 +100,7 @@ export function drawMap(c: HTMLCanvasElement, s: State, time: number) {
     const [px, py] = P(bodyPos(id, time)); const [col, rad] = look[id];
     if (rad) { x.beginPath(); x.arc(px, py, rad, 0, 7); x.fillStyle = col; x.fill(); }
     if (id === 'giant') { x.beginPath(); x.ellipse(px, py, rad * 1.8, rad * 0.4, -0.3, 0, 7); x.strokeStyle = 'rgba(226,189,143,0.6)'; x.lineWidth = 1; x.stroke(); }
-    x.fillStyle = s.visited[id] ? '#e1e4f4' : '#8b91b6';
+    x.fillStyle = s.visited[id] ? '#e1e4f4' : '#b0b5d4';
     x.fillText(t(`loc.${id}.short`), px + (rad || sc * 0.1) + 6, py + 4);
   }
   // loď Vesper

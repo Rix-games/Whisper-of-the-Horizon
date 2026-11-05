@@ -101,7 +101,7 @@ function renderRig() {
   const v = $('voyage');
   if (S.travel) {
     v.hidden = false;
-    v.innerHTML = `<div>${esc(t('ui.voyage.flying', { to: t(`loc.${S.travel.to}.name`) }))}</div><div class="bar"><b style="width:${(S.travel.t / S.travel.total * 100).toFixed(1)}%"></b></div><div class="mono dim" style="font-size:12px">${esc(t('ui.voyage.remaining', { t: duration(S.travel.total - S.travel.t) }))}</div>`;
+    v.innerHTML = `<div>${esc(t('ui.voyage.flying', { to: t(`loc.${S.travel.to}.name`) }))}</div><div class="bar"><b style="width:${(S.travel.t / S.travel.total * 100).toFixed(1)}%"></b></div><div class="mono dim" style="font-size:13px">${esc(t('ui.voyage.remaining', { t: duration(S.travel.total - S.travel.t) }))}</div>`;
   } else if (S.r.scan) { v.hidden = false; v.innerHTML = `<div>${esc(t('ui.voyage.docked', { at: t(`loc.${S.loc}.name`) }))}</div>`; }
   else v.hidden = true;
   const ev = $('event');

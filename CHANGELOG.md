@@ -1,5 +1,10 @@
 # Novinky
 
+## Připravuje se
+
+- Čitelnější texty: světlejší popisky a o kousek větší drobné písmo
+- Solární fólie přejmenovány na solární panely
+
 ## 0.1 – Kapitola 1: Platforma
 
 První hratelná verze.

@@ -60,7 +60,7 @@ export const cs = {
   b: {
     drone: { name: 'Těžební dron', desc: 'Malý autonomní stroj. Odštipuje rudu z povrchu asteroidu.' },
     smelter: { name: 'Tavírna', desc: 'Taví rudu na kov s výtěžností 50 %.' },
-    solar: { name: 'Solární fólie', desc: '1 000 m² tenké fólie natažené mezi skalami.' },
+    solar: { name: 'Solární panel', desc: 'Tenké články o ploše 1 000 m² napnuté mezi skalami.' },
     lab: { name: 'Laboratoř', desc: 'Analyzuje vzorky a signály. Potřebuje stálý přísun energie.' },
     drill: { name: 'Hloubkový vrt', desc: 'Sahá do jádra asteroidu, kam drony nedosáhnou.' },
     mirror: { name: 'Orbitální zrcadlo', desc: 'Kilometrové zrcadlo soustředí světlo Aldry na sběrače.' },
@@ -77,7 +77,7 @@ export const cs = {
     deep: { name: 'Hloubkové vrty', desc: 'Odemkne hloubkový vrt.' },
     arc: { name: 'Obloukové tavení', desc: 'Tavírny zpracují dvakrát víc rudy.' },
     scan: { name: 'Dálkový skener', desc: 'Odemkne mapu soustavy a expediční loď Vesper.' },
-    thinfilm: { name: 'Tenkovrstvé články', desc: 'Solární fólie ×2.' },
+    thinfilm: { name: 'Tenkovrstvé články', desc: 'Solární panely ×2.' },
     auto: { name: 'Asistent těžby', desc: 'Automaticky 3 kliky za sekundu.' },
     lab2: { name: 'Kvantové sítě', desc: 'Laboratoře ×2.' },
     mirror: { name: 'Orbitální optika', desc: 'Odemkne orbitální zrcadla.' },
@@ -127,7 +127,7 @@ export const cs = {
   },
   fact: {
     kardashev: 'Kardaševovu škálu navrhl sovětský astronom Nikolaj Kardašev v roce 1964. Měří civilizace podle toho, kolik energie dokážou využít.',
-    solar: 'U Země dopadá na každý metr čtvereční asi 1 361 W slunečního záření. Aldra je mnohem jasnější, takže stejná fólie tu dá víc.',
+    solar: 'U Země dopadá na každý metr čtvereční asi 1 361 W slunečního záření. Aldra je mnohem jasnější, takže stejný panel tu dá víc.',
     bytes: 'Lidský genom má asi 3 miliardy písmen. Zapsaný jako data by zabral zhruba 750 MB.',
     europa: 'Kelvar připomíná Jupiterův měsíc Europu, pod jejímž ledem je nejspíš slaný oceán s víc vody než na Zemi.',
     vonneumann: 'Samoreplikující stroje popsal matematik John von Neumann ve 40. letech. Sondy, které se samy množí, by teoreticky obsadily galaxii za zlomek jejího věku.',
