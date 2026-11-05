@@ -1,0 +1,17 @@
+{
+  "name": "whisper-of-the-horizon",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Šepot Horizontu – klidná inkrementální vesmírná hra postavená na skutečné fyzice.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "serve": "npx --yes serve web",
+    "sim": "tsx sim/balance.ts"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "tsx": "4.23.12"
+  }
+}
