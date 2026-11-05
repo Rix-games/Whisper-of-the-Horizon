@@ -21,10 +21,10 @@ export interface BuildingDef {
 }
 
 export const BUILDINGS: Record<BuildingId, BuildingDef> = {
-  drone:     { base: { ore: 10 }, growth: 1.15, prod: { ore: 0.5 }, unlock: () => true },
-  smelter:   { base: { ore: 400 }, growth: 1.17, prod: { metal: 1 }, cons: { ore: 2 }, unlock: (s) => s.total.ore >= 600 || s.b.smelter > 0 },
-  solar:     { base: { metal: 80 }, growth: 1.16, prod: { energy: 2000 }, unlock: (s) => s.total.metal >= 120 || s.b.solar > 0 },
-  lab:       { base: { metal: 600, energy: 3e6 }, growth: 1.2, prod: { data: 1000 }, cons: { energy: 3000 }, unlock: (s) => s.b.solar >= 3 || s.b.lab > 0 },
+  drone:     { base: { ore: 10 }, growth: 1.25, prod: { ore: 0.5 }, unlock: () => true },
+  smelter:   { base: { ore: 500 }, growth: 1.17, prod: { metal: 1 }, cons: { ore: 2 }, unlock: (s) => s.total.ore >= 800 || s.b.smelter > 0 },
+  solar:     { base: { metal: 120 }, growth: 1.18, prod: { energy: 2000 }, unlock: (s) => s.total.metal >= 200 || s.b.solar > 0 },
+  lab:       { base: { metal: 1000, energy: 5e6 }, growth: 1.2, prod: { data: 1000 }, cons: { energy: 3000 }, unlock: (s) => s.b.solar >= 3 || s.b.lab > 0 },
   drill:     { base: { metal: 400, data: 2e4 }, growth: 1.18, prod: { ore: 12 }, unlock: (s) => !!s.r.deep },
   mirror:    { base: { metal: 3000, data: 1e5 }, growth: 1.17, prod: { energy: 4e5 }, unlock: (s) => !!s.r.mirror },
   replicator:{ base: { metal: 4000, data: 3e5 }, growth: 1.3, makes: { building: 'drone', rate: 0.05 }, unlock: (s) => !!s.r.repl },

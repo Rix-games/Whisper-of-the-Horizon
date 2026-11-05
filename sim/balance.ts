@@ -7,6 +7,7 @@ import * as E from '../src/core/engine.js';
 const CLICKS_PER_SEC = Number(process.env.CPS ?? 4);   // ruční klikání, dokud není automat
 const EVENT_CATCH = Number(process.env.CATCH ?? 0.6);   // kolik událostí hráč zachytí
 const LIMIT_H = Number(process.env.LIMIT ?? 12);
+const SNAP = (process.env.SNAP ?? '').split(',').filter(Boolean).map(Number); // časy v sekundách pro výpis stavu
 
 let seed = 42; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const s = newState(0);
@@ -49,6 +50,7 @@ for (let t = 0; t < LIMIT_H * 3600; t++) {
   }
   if (bought) { longestWait = Math.max(longestWait, s.time - waitStart); waitStart = s.time; lastBuy = s.time; }
   E.tick(s, 1, rng);
+  if (SNAP.includes(Math.round(s.time))) console.log(`STAV ${Math.round(s.time / 60)} min:`, Object.entries(s.b).filter(([, v]) => v >= 1).map(([k, v]) => `${k} ${Math.floor(v)}`).join(', '), '| výzkumy', Object.keys(s.r).length);
   for (const id of BUILDING_IDS) if (s.b[id] >= 1) mark('B ' + id);
   for (const k of [0, 0.25, 0.5, 0.75]) if (E.kardashev(s) >= k) mark('K ' + k);
   if (s.chapterDone) { mark('KONEC KAPITOLY 1'); break; }
