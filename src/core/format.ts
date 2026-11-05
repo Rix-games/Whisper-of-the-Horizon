@@ -19,6 +19,7 @@ export function sci(n: number, digits = 2): string {
 export function num(n: number): string {
   const a = Math.abs(n);
   if (a === 0) return '0';
+  if (a < 1) return fixed(n, 2);
   if (a < 10) return fixed(n, a % 1 ? 1 : 0);
   if (a < 1e4) return Math.floor(n).toLocaleString('cs-CZ').replace(/\s/g, ' ');
   if (a < 1e15) {

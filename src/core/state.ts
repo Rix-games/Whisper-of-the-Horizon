@@ -2,7 +2,7 @@ import { BUILDING_IDS, RESOURCES, type BuildingId, type EventId, type LocationId
 
 export const SAVE_VERSION = 1;
 
-export interface LogEntry { key: string; kind: 'story' | 'fact' | 'sys' | 'event'; day: number; vars?: Record<string, string> }
+export interface LogEntry { key: string; kind: 'story' | 'fact' | 'sys'; day: number; vars?: Record<string, string> }
 
 export interface State {
   v: number;
@@ -24,7 +24,7 @@ export interface State {
   facts: Record<string, true>;
   log: LogEntry[];
   chapterDone: number;
-  settings: { sound: boolean; lang: 'cs' | 'en' };
+  settings: { sound: boolean; lang: 'cs' | 'en'; vol: Record<string, number> }; // vol: hlasitosti 0–1 podle větví zvuku
   last: number;                         // čas posledního uložení (ms)
 }
 
@@ -43,7 +43,7 @@ export function newState(now = Date.now()): State {
     time: 0, clicks: 0,
     story: {}, facts: {}, log: [],
     chapterDone: 0,
-    settings: { sound: false, lang: 'cs' },
+    settings: { sound: false, lang: 'cs', vol: {} },
     last: now,
   };
 }
@@ -61,6 +61,8 @@ export function migrate(raw: unknown): State {
     if (bv && typeof bv === 'object' && !Array.isArray(bv) && ov && typeof ov === 'object') out[k] = { ...(bv as object), ...(ov as object) };
     else out[k] = ov;
   }
+  // zápisy o událostech (kometa, erupce) do deníku nepatří, starší uložené hry je měly
+  if (Array.isArray(out.log)) out.log = (out.log as { kind: string }[]).filter((e) => e.kind !== 'event');
   out.v = SAVE_VERSION;
   return out as unknown as State;
 }

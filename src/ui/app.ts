@@ -8,12 +8,22 @@ import { newState, migrate, encodeSave, decodeSave, type State } from '../core/s
 import { mass, energy, power, bytes, duration, num, kValue } from '../core/format.js';
 import { t } from '../i18n/index.js';
 import { drawMap, drawRock, drawStars, hitRock, sizeStars } from './scene.js';
-import { setSound, chime } from './audio.js';
+import { setSound, setVolumes, chime, type Volumes } from './audio.js';
+
+// Tři posuvníky v nastavení; každý řídí jednu nebo dvě větve zvuku.
+const VOL_KEYS = ['noise', 'melody', 'game'] as const;
+type VolKey = typeof VOL_KEYS[number];
+const VOL_DEFAULT: Record<VolKey, number> = { noise: 0.7, melody: 1, game: 1 };
+const volOf = (k: VolKey) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
+const audioVols = (): Partial<Volumes> => ({ noise: volOf('noise'), drone: volOf('noise'), melody: volOf('melody'), pulse: volOf('game'), chime: volOf('game') });
 
 export const VERSION = '0.1.0';
 const KEY = 'sepot-horizontu';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+// escapuje HTML a mocniny (10¹²) obalí do .exp, aby šly zvětšit
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!))
+  .replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, (m) => `<span class="exp">${m}</span>`)
+  .replace(/(?<=\d)[ \u00A0\u202F](?=\d{3}(?!\d))/g, '<span class="ts"> </span>'); // úzká mezera mezi tisíci (6 139)
 
 let S: State;
 let tab: 'build' | 'research' | 'map' = 'build';
@@ -27,7 +37,7 @@ const UNIT: Record<Res, string> = { ore: 'kg', metal: 'kg', energy: 'J', data: '
 function amount(r: Res, v: number) { return r === 'energy' ? energy(v) : r === 'data' ? bytes(v) : mass(v); }
 function rate(r: Res, v: number) { return r === 'energy' ? power(v) : (r === 'data' ? bytes(v) : mass(v)) + '/s'; }
 function costHTML(c: Amounts) {
-  return `<span class="lbl">${esc(t('ui.price'))}</span>` + (Object.keys(c) as Res[]).map((r) => `<span class="${S.res[r] >= c[r]! ? '' : 'no'}"><span style="color:${COLOR[r]}">${t('res.' + r)}</span> ${amount(r, c[r]!)}</span>`).join('');
+  return `<span class="lbl">${esc(t('ui.price'))}</span>` + (Object.keys(c) as Res[]).map((r) => `<span class="${S.res[r] >= c[r]! ? '' : 'no'}"><span style="color:${COLOR[r]}">${t('res.' + r)}</span> ${esc(amount(r, c[r]!))}</span>`).join('');
 }
 
 // ---------- ukládání ----------
@@ -49,7 +59,7 @@ function applyOffline(sec: number) {
 // ---------- drobnosti ----------
 let toastTimer: number | undefined;
 function toast(msg: string, ms = 2600) {
-  const el = $('toast'); el.textContent = msg; el.hidden = false;
+  const el = $('toast'); el.innerHTML = esc(msg); el.hidden = false;
   clearTimeout(toastTimer); toastTimer = window.setTimeout(() => { el.hidden = true; }, ms);
 }
 /** Rozsvítí surovinu v horní liště a nad ní vyletí přírůstek. */
@@ -57,7 +67,7 @@ function flashGain(r: Res, v: number) {
   const chip = document.querySelector<HTMLElement>(`.chip[data-res="${r}"]`);
   if (!chip) return;
   chip.classList.remove('gain'); void chip.offsetWidth; chip.classList.add('gain');
-  const f = document.createElement('span'); f.className = 'float gainfloat'; f.textContent = '+' + amount(r, v);
+  const f = document.createElement('span'); f.className = 'float gainfloat'; f.innerHTML = esc('+' + amount(r, v));
   f.style.color = COLOR[r]; chip.appendChild(f); setTimeout(() => f.remove(), 1600);
 }
 function showTip(target: HTMLElement) {
@@ -86,8 +96,8 @@ function breakdownHTML(r: Res): string {
 let chipKey = '';
 function renderTop() {
   const k = E.kardashev(S), P = E.powerW(S);
-  $('kval').textContent = 'K ' + kValue(k).replace('-', '−');
-  $('kpow').textContent = power(P);
+  $('kval').textContent = k < 0 ? t('ui.kBelow') : 'K ' + kValue(k); // pod 1 MW vychází záporně, ukazujeme jen „K < 0“
+  $('kpow').innerHTML = esc(power(P));
   const done = k >= 1;
   $('kprogLabel').textContent = done ? t('ui.toTypeIdone') : t('ui.toTypeI', { n: ((1 - k) * 10).toFixed(1).replace('.', ',') });
   $('kbar').style.width = Math.max(0, Math.min(100, ((k + 0.35) / 1.35) * 100)).toFixed(1) + '%';
@@ -100,19 +110,19 @@ function renderTop() {
   }
   const { p, c } = E.rates(S);
   for (const r of shown) {
-    bar.querySelector(`[data-v="${r}"]`)!.textContent = amount(r, S.res[r]);
+    bar.querySelector(`[data-v="${r}"]`)!.innerHTML = esc(amount(r, S.res[r]));
     const net = p[r] - c[r], el = bar.querySelector(`[data-r="${r}"]`)!;
-    el.textContent = (net >= 0 ? '+' : '−') + rate(r, Math.abs(net)).replace(/\/s$/, '') + (r === 'energy' ? '' : t('ui.perSec'));
+    el.innerHTML = esc((net >= 0 ? '+' : '−') + rate(r, Math.abs(net)).replace(/\/s$/, '') + (r === 'energy' ? '' : t('ui.perSec')));
     el.classList.toggle('neg', net < 0);
   }
-  $('clockDay').textContent = t('ui.day', { n: (Math.floor(S.time) + 1).toLocaleString('cs-CZ') });
+  $('clockDay').innerHTML = esc(t('ui.day', { n: (Math.floor(S.time) + 1).toLocaleString('cs-CZ') }));
   $('clockScale').textContent = t('ui.clockScale');
 }
 
 // ---------- těžba ----------
 function renderRig() {
   $('rigTitle').textContent = t('ui.asteroid');
-  $('clickTag').textContent = t('ui.perClick', { v: mass(E.clickPower(S)) });
+  $('clickTag').innerHTML = esc(t('ui.perClick', { v: mass(E.clickPower(S)) }));
   const hint = $('hint'); hint.hidden = S.b.drone >= 3; hint.textContent = t('ui.hint');
   const conv = E.CONVERTERS.filter((id) => S.b[id] >= 1);
   const rows: [string, string][] = [[t('ui.stats.clicks'), num(S.clicks)], [t('ui.stats.drones'), num(Math.floor(S.b.drone))]];
@@ -191,11 +201,12 @@ function buildView() {
 // ---------- nastavení (boční panel) ----------
 function settingsHTML() {
   return `<div class="settings">
+      <section><h3>${esc(t('ui.settings.sound'))}</h3><div class="row"><button class="btn ghost" data-act="sound"></button></div>
+        <div class="vols">${VOL_KEYS.map((k) => `<label class="vol" for="vol-${k}"><span>${esc(t('ui.settings.vol.' + k))}</span><input type="range" id="vol-${k}" data-vol="${k}" min="0" max="100" step="5" value="${Math.round(volOf(k) * 100)}"><output class="mono" for="vol-${k}">${Math.round(volOf(k) * 100)} %</output></label>`).join('')}</div></section>
       <section><h3>${esc(t('ui.settings.save'))}</h3><div class="row"><button class="btn ghost" data-act="save">${esc(t('ui.settings.saveNow'))}</button></div>
         <p style="margin-top:8px">${esc(t('ui.settings.offlineRule'))}</p></section>
       <section><h3>${esc(t('ui.settings.export'))}</h3><p>${esc(t('ui.settings.exportHint'))}</p><textarea id="exportText" readonly></textarea><div class="row"><button class="btn ghost" data-act="export">${esc(t('ui.settings.export'))}</button><button class="btn ghost" data-act="copy">${esc(t('ui.settings.copy'))}</button></div></section>
       <section><h3>${esc(t('ui.settings.import'))}</h3><p>${esc(t('ui.settings.importHint'))}</p><textarea id="importText"></textarea><div class="row"><button class="btn ghost" data-act="import">${esc(t('ui.settings.import'))}</button></div></section>
-      <section><h3>${esc(t('ui.settings.sound'))}</h3><div class="row"><button class="btn ghost" data-act="sound"></button></div></section>
       <section><h3>${esc(t('ui.settings.about'))}</h3><p>${esc(t('ui.settings.aboutText'))}</p><p class="mono">${esc(t('ui.settings.version', { v: VERSION }))}</p><div class="row"><button class="btn ghost" data-act="reset">${esc(t('ui.settings.reset'))}</button></div></section>
     </div>`;
 }
@@ -222,7 +233,7 @@ function updateView() {
     view.querySelectorAll<HTMLElement>('[data-b]').forEach((el) => {
       const id = el.dataset.b as BuildingId, d = B[id], m = E.mult(S, id);
       const count = Math.floor(S.b[id]);
-      el.querySelector('[data-f=n]')!.textContent = t('ui.pieces', { n: num(count) });
+      el.querySelector('[data-f=n]')!.innerHTML = esc(t('ui.pieces', { n: num(count) }));
       // řádek „1 kus“ a „všechny dohromady“: co bere → co dává, se jmény surovin
       const flow = (k: number) => {
         if (d.makes) return esc(t('ui.makes', { n: num(d.makes.rate * m * k) }));
@@ -235,7 +246,9 @@ function updateView() {
       if (count >= 2 || (count >= 1 && d.cons)) {
         const e = d.cons ? (S.off[id] ? 0 : (S.eff[id] ?? 1)) : 1;
         const note = d.cons && e < 0.995 ? ` <span class="dim">(${esc(S.off[id] ? t('ui.stopped') : t('ui.running', { n: Math.round(e * 100) }))})</span>` : '';
-        eff += `<span class="effrow"><span class="lbl">${esc(t('ui.all', { n: num(count) }))}</span>${flow(count * e)}${note}</span>`;
+        // stojí-li převodník (vypnutý nebo bez vstupu), místo nul jen důvod
+        const body = e < 0.005 ? `<span class="dim">${esc(S.off[id] ? t('ui.stopped') : t('ui.starved'))}</span>` : flow(count * e) + note;
+        eff += `<span class="effrow"><span class="lbl">${esc(t('ui.all', { n: num(count) }))}</span>${body}</span>`;
       }
       el.querySelector('[data-f=eff]')!.innerHTML = eff;
       let c = E.cost(S, id), n = 1;
@@ -305,7 +318,7 @@ function checkChapterModal() {
   if (S.chapterDone >= 1 && !S.story.modal1) {
     S.story.modal1 = true;
     $('modalTitle').textContent = t('ui.chapterDone.title');
-    $('modalBody').textContent = t('ui.chapterDone.body');
+    $('modalBody').innerHTML = esc(t('ui.chapterDone.body'));
     $('modalOk').textContent = t('ui.chapterDone.ok');
     $('modal').hidden = false; $('modalOk').focus();
   }
@@ -318,11 +331,19 @@ function onJournal(newKeys: string[]) {
   if (S.settings.sound) chime();
 }
 function bind() {
+  // posuvníky hlasitosti: mění se hned, uloží se po puštění
+  document.addEventListener('input', (e) => {
+    const el = e.target as HTMLInputElement; const k = el.dataset?.vol as VolKey | undefined;
+    if (!k) return;
+    S.settings.vol = { ...S.settings.vol, [k]: Number(el.value) / 100 }; setVolumes(audioVols());
+    const out = el.parentElement?.querySelector('output'); if (out) out.textContent = `${el.value} %`;
+  });
+  document.addEventListener('change', (e) => { if ((e.target as HTMLElement).dataset?.vol) save(); });
   document.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('button');
     if (!b) return;
     const d = b.dataset;
-    if (d.tab) { tab = d.tab as typeof tab; renderTabs(); renderView(true); return; }
+    if (d.tab) { tab = d.tab as typeof tab; renderTabs(); renderView(true); $('view').scrollTop = 0; return; }
     if (d.max) { buyMax = d.max === '1'; renderView(true); return; }
     if (d.buy) { E.buy(S, d.buy as BuildingId, buyMax); onJournal(E.checkJournal(S)); renderAll(); return; }
     if (d.toggle) { const id = d.toggle as BuildingId; S.off[id] = !S.off[id]; renderView(); return; }
@@ -338,8 +359,7 @@ function bind() {
       if (got) {
         const r = EVENTS[got.id].res, v = amount(r, got.amount);
         toast(t(`ui.events.${got.id}.got`, { v }), 4500);
-        S.log.unshift({ key: `ui.events.${got.id}.log`, kind: 'event', day: Math.floor(S.time) + 1, vars: { v } });
-        renderLog(true); renderTop(); flashGain(r, got.amount);
+        renderTop(); flashGain(r, got.amount);
         if (S.settings.sound) chime();
       }
       renderRig(); return;
@@ -348,9 +368,11 @@ function bind() {
   });
   const rock = $('rock');
   rock.addEventListener('click', (e) => {
-    const p = E.mine(S); hitRock();
+    const p = E.mine(S);
+    { const cv = $<HTMLCanvasElement>('rockc'), cr = cv.getBoundingClientRect();
+      if (e.clientX) hitRock((e.clientX - cr.left) * (cv.width / cr.width), (e.clientY - cr.top) * (cv.height / cr.height), cv.width); else hitRock(undefined, undefined, cv.width); }
     const w = $('rockwrap'), r = w.getBoundingClientRect();
-    const f = document.createElement('span'); f.className = 'float'; f.textContent = '+' + mass(p);
+    const f = document.createElement('span'); f.className = 'float'; f.innerHTML = esc('+' + mass(p));
     const x = (e.clientX || r.left + r.width / 2) - r.left, y = (e.clientY || r.top + r.height / 2) - r.top;
     f.style.left = (x - 12) + 'px'; f.style.top = (y - 16) + 'px';
     w.appendChild(f); setTimeout(() => f.remove(), 1000);
@@ -388,13 +410,13 @@ function settingsAction(act: string, b: HTMLElement) {
     const ta = document.getElementById('importText') as HTMLTextAreaElement;
     const st = decodeSave(ta.value);
     if (!st) { toast(t('ui.settings.importBad')); return; }
-    S = st; S.last = Date.now(); save(); toast(t('ui.settings.importOk')); renderAll(true); return;
+    S = st; S.last = Date.now(); setVolumes(audioVols()); save(); toast(t('ui.settings.importOk')); renderAll(true); return;
   }
   if (act === 'sound') { toggleSound(); return; }
   if (act === 'reset') {
     if (Date.now() - resetArmed < 4000) {
-      const keepSound = S.settings.sound;
-      S = newState(); S.settings.sound = keepSound;
+      const keepSound = S.settings.sound, keepVol = S.settings.vol;
+      S = newState(); S.settings.sound = keepSound; S.settings.vol = keepVol;
       E.checkJournal(S); save(); toast(t('ui.settings.resetDone')); renderAll(true); resetArmed = 0; return;
     }
     resetArmed = Date.now(); b.textContent = t('ui.settings.resetConfirm');
@@ -409,6 +431,7 @@ function renderAll(fresh = false) {
 // ---------- smyčka ----------
 export function start() {
   S = load() ?? newState();
+  setVolumes(audioVols());
   applyOffline((Date.now() - S.last) / 1000);
   E.checkJournal(S);
   bind();
@@ -426,7 +449,7 @@ export function start() {
     onJournal(E.tick(S, dt));
     uiAcc += dt; if (uiAcc > 0.2) { uiAcc = 0; renderTop(); renderRig(); renderTabs(); renderView(); renderChapters(); checkChapterModal(); }
     saveAcc += dt; if (saveAcc > 15) { saveAcc = 0; save(); }
-    drawRock($<HTMLCanvasElement>('rockc'), dt);
+    drawRock($<HTMLCanvasElement>('rockc'), dt, S.b.drone);
     starAcc += dt; if (starAcc > 0.05) { starAcc = 0; drawStars(stars, now / 1000); }
     if (tab === 'map') { const m = document.getElementById('map') as HTMLCanvasElement | null; if (m) drawMap(m, S, now / 1000); }
     requestAnimationFrame(frame);

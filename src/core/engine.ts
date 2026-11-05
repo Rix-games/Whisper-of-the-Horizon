@@ -219,7 +219,7 @@ export function tick(s: State, dt: number, rng: () => number = Math.random): str
     if (s.nextEvent <= 0) {
       const ok = EVENT_IDS.filter((id) => EVENTS[id].unlock(s));
       if (ok.length) s.event = { id: ok[Math.floor(rng() * ok.length)], ttl: RULES.eventTtlSec };
-      else s.nextEvent = 30;
+      else s.nextEvent = 90; // první událost přijde chvíli po odemčení
     }
   }
   s.time += dt;
@@ -231,7 +231,8 @@ export function checkJournal(s: State): string[] {
   const out: string[] = [];
   const day = Math.floor(s.time) + 1;
   for (const st of STORY) if (!s.story[st.id] && st.when(s)) { s.story[st.id] = true; s.log.unshift({ key: 'story.' + st.id, kind: 'story', day }); out.push(st.id); }
-  for (const f of FACTS) if (!s.facts[f.id] && f.when(s)) { s.facts[f.id] = true; s.log.unshift({ key: 'fact.' + f.id, kind: 'fact', day }); out.push(f.id); }
+  const ctx = { powerW: powerW(s) };
+  for (const f of FACTS) if (!s.facts[f.id] && f.when(s, ctx)) { s.facts[f.id] = true; s.log.unshift({ key: 'fact.' + f.id, kind: 'fact', day }); out.push(f.id); }
   if (s.log.length > 120) s.log.length = 120;
   return out;
 }

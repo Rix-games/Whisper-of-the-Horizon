@@ -24,7 +24,7 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   drone:     { base: { ore: 10 }, growth: 1.25, prod: { ore: 0.5 }, unlock: () => true },
   smelter:   { base: { ore: 500 }, growth: 1.17, prod: { metal: 1 }, cons: { ore: 2 }, unlock: (s) => s.total.ore >= 800 || s.b.smelter > 0 },
   solar:     { base: { metal: 120 }, growth: 1.18, prod: { energy: 2000 }, unlock: (s) => s.total.metal >= 200 || s.b.solar > 0 },
-  lab:       { base: { metal: 1000, energy: 5e6 }, growth: 1.2, prod: { data: 1000 }, cons: { energy: 3000 }, unlock: (s) => s.b.solar >= 3 || s.b.lab > 0 },
+  lab:       { base: { metal: 600, energy: 3e6 }, growth: 1.2, prod: { data: 1000 }, cons: { energy: 3000 }, unlock: (s) => s.b.solar >= 3 || s.b.lab > 0 },
   drill:     { base: { metal: 400, data: 2e4 }, growth: 1.18, prod: { ore: 12 }, unlock: (s) => !!s.r.deep },
   mirror:    { base: { metal: 3000, data: 1e5 }, growth: 1.17, prod: { energy: 4e5 }, unlock: (s) => !!s.r.mirror },
   replicator:{ base: { metal: 4000, data: 3e5 }, growth: 1.3, makes: { building: 'drone', rate: 0.05 }, unlock: (s) => !!s.r.repl },
@@ -114,8 +114,9 @@ export const STORY: { id: string; when: (s: State) => boolean }[] = [
 ];
 
 // Zajímavosti ze skutečné vědy, jednou za hru.
-export const FACTS: { id: string; when: (s: State) => boolean }[] = [
+export const FACTS: { id: string; when: (s: State, c: { powerW: number }) => boolean }[] = [
   { id: 'kardashev', when: (s) => s.time > 20 },
+  { id: 'megawatt', when: (_s, c) => c.powerW >= 1e6 },
   { id: 'solar', when: (s) => s.b.solar >= 1 },
   { id: 'bytes', when: (s) => s.b.lab >= 1 },
   { id: 'europa', when: (s) => !!s.visited.moon },
@@ -132,7 +133,7 @@ export const RULES = {
   offlineShare: 0.1,          // offline přinese 10 % produkce
   offlineCapSec: 8 * 3600,    // nejvýš za 8 hodin
   autoClicksPerSec: 3,
-  eventEverySec: [90, 210] as [number, number],
+  eventEverySec: [180, 360] as [number, number],
   eventTtlSec: 20,
   chapter1K: 1.0,             // konec Kapitoly 1 = Kardašev Typ I
 };

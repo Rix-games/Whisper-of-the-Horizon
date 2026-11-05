@@ -18,6 +18,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
 .dim { color: var(--dim); }
+.exp { font-size: 1.35em; line-height: 0; }
+.ts { font-size: .35em; }
 [hidden] { display: none !important; }
 #stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 .app { position: relative; z-index: 1; max-width: 1440px; margin: 0 auto; padding: 12px max(16px, env(safe-area-inset-right)) 20px max(16px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
@@ -112,6 +114,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .settings h3 { margin: 0 0 6px; font-family: var(--f-display); font-size: 14px; letter-spacing: .06em; }
 .settings p { margin: 0 0 8px; font-size: 13.5px; color: var(--dim); }
 .settings textarea { width: 100%; min-height: 76px; resize: vertical; background: var(--panel2); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 8px; font-family: var(--f-mono); font-size: 12px; }
+.vols { display: grid; gap: 10px; margin-top: 12px; }
+.vol { display: grid; grid-template-columns: minmax(120px, 160px) minmax(0, 1fr) 52px; align-items: center; gap: 12px; font-size: 13.5px; }
+.vol input { width: 100%; accent-color: var(--accent); }
+.vol output { text-align: right; color: var(--dim); font-size: 13px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
 /* deník */
@@ -123,7 +129,6 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .entry.fact .t { color: var(--fact); }
 .entry.fact { color: color-mix(in srgb, var(--ink) 85%, var(--fact)); }
 .entry.sys .t { color: var(--dim); }
-.entry.event .t { color: var(--energy); }
 .chip { position: relative; }
 .chip.gain { animation: gain 1.6s ease-out; }
 @keyframes gain { from { border-color: var(--energy); box-shadow: 0 0 0 3px color-mix(in srgb, var(--energy) 30%, transparent); } to { border-color: var(--line); box-shadow: none; } }
@@ -162,3 +167,17 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .modal-card .btn { align-self: flex-start; }
 
 @media (prefers-reduced-motion: reduce) { .float, .entry.new, .event .name::before, .chip.gain { animation: none; } .bar > b { transition: none; } }
+
+/* Pevná obrazovka (od tří sloupců): stránka se neposouvá, každý panel má vlastní posuvník.
+   Lišta se surovinami tak zůstává vidět i s dlouhým seznamem staveb. */
+@media (min-width: 901px) {
+  html, body { height: 100%; overflow: hidden; }
+  .app { height: 100%; min-height: 0; }
+  .grid { min-height: 0; align-items: stretch; }
+  .grid > .panel { min-height: 0; display: flex; flex-direction: column; }
+  .ops .view { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .rig .body { flex: 1; min-height: 0; overflow-y: auto; }
+  .log .entries { max-height: none; flex: 1; min-height: 0; overscroll-behavior: contain; }
+}
+.ops .view, .log .entries, .rig .body { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+
