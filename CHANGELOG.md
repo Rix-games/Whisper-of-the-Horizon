@@ -1,6 +1,9 @@
 # Novinky
 
-## Připravuje se
+## 0.1.2 – Expedice a vyrovnání
+
+Úpravy tempa a pravidel Kapitoly 1. Uložená hra z dřívějších verzí funguje dál.
+
 
 - Lety jako expedice: stačí jedna na každé místo, bonus platí natrvalo a Vesper se pak sám vrátí k platformě
 - Replikátor potřebuje energii (250 kW na kus), při nedostatku staví drony pomaleji a dá se vypnout
