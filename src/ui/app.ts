@@ -129,12 +129,10 @@ function renderRig() {
     const id = S.event.id;
     if (ev.dataset.id !== id) {
       ev.dataset.id = id;
-      ev.innerHTML = `<span class="name">${esc(t(`ui.events.${id}.name`))}</span><span class="reward mono"></span><div class="bar"><b></b></div><button class="btn" data-claim="1">${esc(t(`ui.events.${id}.claim`))}</button>`;
+      ev.innerHTML = `<span class="name">${esc(t(`ui.events.${id}.name`))}</span><div class="bar"><b></b></div><button class="btn" data-claim="1">${esc(t(`ui.events.${id}.claim`))}</button>`;
     }
     ev.hidden = false;
     (ev.querySelector('.bar > b') as HTMLElement).style.width = (S.event.ttl / 20 * 100).toFixed(1) + '%';
-    const rw = EVENTS[id].res;
-    ev.querySelector('.reward')!.innerHTML = `${esc(t('ui.events.reward'))} <b style="color:${COLOR[rw]}">+${esc(amount(rw, E.eventReward(S, id)))}</b> ${esc(t('resOf.' + rw))}`;
   } else { ev.hidden = true; ev.dataset.id = ''; }
 }
 

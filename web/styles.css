@@ -124,7 +124,6 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .entry.fact { color: color-mix(in srgb, var(--ink) 85%, var(--fact)); }
 .entry.sys .t { color: var(--dim); }
 .entry.event .t { color: var(--energy); }
-.event .reward { font-size: 13px; color: var(--dim); }
 .chip { position: relative; }
 .chip.gain { animation: gain 1.6s ease-out; }
 @keyframes gain { from { border-color: var(--energy); box-shadow: 0 0 0 3px color-mix(in srgb, var(--energy) 30%, transparent); } to { border-color: var(--line); box-shadow: none; } }

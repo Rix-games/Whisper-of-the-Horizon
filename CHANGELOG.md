@@ -7,7 +7,7 @@
 - Pomalejší začátek: tavírna kolem 3. minuty, solární panel kolem 5., laboratoř kolem 15. minuty, drony a první výzkumy jsou dražší, první kometa až ve 3. minutě
 - Záložka Výzkum se ukáže až s první laboratoří
 - Po najetí na surovinu je vidět rozpis: kdo kolik vyrábí a kdo kolik spotřebovává
-- Odměna z komety, erupce a ozvěny je vidět předem, po zachycení se zapíše do deníku a surovina se rozsvítí
+- Po zachycení komety, erupce nebo ozvěny je odměna dobře vidět: zápis v deníku, rozsvícená surovina a oznámení
 - Nastavení se přesunulo z hlavních záložek pod ozubené kolo vpravo nahoře a otevírá se jako okno přes hru
 - Palubní deník zůstává vpravo i na užších obrazovkách
 - Srozumitelnější zajímavost o lidském genomu

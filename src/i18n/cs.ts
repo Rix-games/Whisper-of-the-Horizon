@@ -39,7 +39,6 @@ export const cs = {
       comet: { name: 'Kometa na dosah', claim: 'Zachytit kometu', got: 'Kometa zachycena: +{v} rudy', log: 'Drony zachytily kometu. Do skladu přibylo {v} rudy.' },
       flare: { name: 'Sluneční erupce', claim: 'Zachytit erupci', got: 'Erupce zachycena: +{v} energie', log: 'Panely zachytily sluneční erupci. Přibylo {v} energie.' },
       echo: { name: 'Ozvěna pulsu', claim: 'Zaznamenat ozvěnu', got: 'Ozvěna zaznamenána: +{v} dat', log: 'Laboratoř zaznamenala ozvěnu pulsu. Přibylo {v} dat.' },
-      reward: 'Odměna:',
     },
     chapters: { label: 'Kapitoly', c1: 'Platforma', c2: 'Hvězda', c3: 'Horizont', c4: 'Most', c5: 'Šepot', locked: '?' },
     chapterDone: {
