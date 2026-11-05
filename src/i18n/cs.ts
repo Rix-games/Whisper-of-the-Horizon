@@ -55,7 +55,7 @@ export const cs = {
       copy: 'Kopírovat', copied: 'Zkopírováno',
       sound: 'Zvuk', soundOn: 'Zvuk zapnutý', soundOff: 'Zvuk vypnutý',
       vol: { noise: 'Šum vesmíru', melody: 'Melodie', game: 'Zvuky hry' },
-      reset: 'Smazat postup', resetConfirm: 'Opravdu? Klikni znovu', resetDone: 'Postup smazán.',
+      reset: 'Smazat postup', resetConfirm: 'Opravdu? Klikni znovu', resetFinal: 'Naposledy: smazat navždy', resetDone: 'Postup smazán.',
       about: 'O hře', version: 'Verze {v}',
       aboutText: 'Klidná inkrementální hra postavená na skutečné fyzice. Autor: Rix · Rix Games.',
       offlineRule: 'Když nehraješ, hra za tebe nepostupuje. Do skladů přibude jen 10 % běžné produkce (nejvýš za 8 hodin) a stavby, výzkum ani lety se mezitím nedokončí.',

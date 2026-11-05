@@ -422,7 +422,7 @@ function toggleSound() {
   renderSoundBtn(); syncSettings(); save();
 }
 function fillExport() { const ta = document.getElementById('exportText') as HTMLTextAreaElement | null; if (ta) ta.value = encodeSave(S); }
-let resetArmed = 0;
+let resetStep = 0, resetAt = 0;
 function settingsAction(act: string, b: HTMLElement) {
   if (act === 'save') { save(false); return; }
   if (act === 'export') { fillExport(); (document.getElementById('exportText') as HTMLTextAreaElement).select(); return; }
@@ -439,13 +439,18 @@ function settingsAction(act: string, b: HTMLElement) {
   }
   if (act === 'sound') { toggleSound(); return; }
   if (act === 'reset') {
-    if (Date.now() - resetArmed < 4000) {
+    // dvojí potvrzení: 1. klik → „Opravdu?“, 2. klik → „Naposledy“, 3. klik smaže; po 5 s bez kliku se vrátí
+    if (Date.now() - resetAt > 5000) resetStep = 0;
+    resetStep++; resetAt = Date.now();
+    if (resetStep >= 3) {
       const keepSound = S.settings.sound, keepVol = S.settings.vol;
       S = newState(); S.settings.sound = keepSound; S.settings.vol = keepVol;
-      E.checkJournal(S); save(); toast(t('ui.settings.resetDone')); renderAll(true); resetArmed = 0; return;
+      E.checkJournal(S); save(); toast(t('ui.settings.resetDone')); renderAll(true); resetStep = 0; return;
     }
-    resetArmed = Date.now(); b.textContent = t('ui.settings.resetConfirm');
-    setTimeout(() => { if (b.isConnected) b.textContent = t('ui.settings.reset'); }, 4000);
+    b.textContent = t(resetStep === 1 ? 'ui.settings.resetConfirm' : 'ui.settings.resetFinal');
+    b.classList.toggle('danger', resetStep === 2);
+    const step = resetStep;
+    setTimeout(() => { if (b.isConnected && resetStep === step) { resetStep = 0; b.textContent = t('ui.settings.reset'); b.classList.remove('danger'); } }, 5000);
   }
 }
 

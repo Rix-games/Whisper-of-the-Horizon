@@ -100,6 +100,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 5px; padding: 8px 14px; font-family: var(--f-display); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 13px; min-width: 100px; min-height: 36px; }
 .btn:disabled { background: transparent; color: var(--dim); border: 1px solid var(--line); cursor: not-allowed; }
 .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn.ghost.danger { color: var(--bad); border-color: var(--bad); }
 .done { opacity: .6; }
 .on { color: var(--good); border-color: var(--good); }
 .section-label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin: 16px 0 8px; }
