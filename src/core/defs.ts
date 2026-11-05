@@ -60,7 +60,7 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   fusion:    { cost: { data: 1e7 }, req: has('giant'), reqKey: 'giant' },
   supercond: { cost: { data: 2e7, metal: 1e6 }, req: has('giant'), reqKey: 'giant' },
   plasma:    { cost: { data: 1.5e8 }, req: has('forge', 'fusion') },
-  quantum:   { cost: { data: 3e8 }, req: has('cryo', 'fusion') },
+  quantum:   { cost: { data: 1.2e8 }, req: has('cryo', 'fusion') },
   vib2:      { cost: { data: 6e8 }, req: has('resonance', 'giant') },
   dyson:     { cost: { data: 1e9 }, req: has('sun'), reqKey: 'sun' },
   nano:      { cost: { data: 4e9 }, req: has('dyson') },

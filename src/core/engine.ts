@@ -22,7 +22,7 @@ export function mult(s: State, id: BuildingId): number {
     case 'catcher': if (r.nano) m *= 4; break;
     case 'smelter': if (r.arc) m *= 2; if (r.induct) m *= 4; break;
     case 'forge': if (r.plasma) m *= 3; if (r.nano) m *= 4; if (r.induct) m *= 4; break;
-    case 'lab': if (r.lab2) m *= 2; if (v.moon) m *= 1.5; if (r.cryo) m *= 3; if (r.quantum) m *= 4; break;
+    case 'lab': if (r.lab2) m *= 2; if (v.moon) m *= 1.5; if (r.cryo) m *= 3; if (r.supercond) m *= 2; if (r.quantum) m *= 4; break;
     case 'replicator': if (r.nano) m *= 3; break;
   }
   if (B[id].prod?.energy) {

@@ -94,7 +94,7 @@ export const cs = {
     catcher: { name: 'Gravitační tažení', desc: 'Odemkne lapač asteroidů.' },
     swarm2: { name: 'Neuronový roj', desc: 'Drony a vrty ×3.' },
     fusion: { name: 'Fúze helia-3', desc: 'Odemkne fúzní reaktor.' },
-    supercond: { name: 'Supravodivé rozvody', desc: 'Výroba veškeré energie ×2.' },
+    supercond: { name: 'Supravodivé rozvody', desc: 'Výroba veškeré energie ×2, laboratoře ×2.' },
     plasma: { name: 'Plazmová tavba', desc: 'Orbitální slévárny ×3.' },
     quantum: { name: 'Kvantové výpočty', desc: 'Laboratoře ×4 a odemkne kvantový počítač.' },
     vib2: { name: 'Gravitační kladiva', desc: 'Ruční těžba ×5.' },
