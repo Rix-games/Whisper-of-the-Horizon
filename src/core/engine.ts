@@ -8,7 +8,7 @@ import type { State } from './state.js';
 type Rates = Record<Res, number>;
 export const DYSON_BOOST = 1.1;
 // převodníky; u taveb výzkum zvyšuje propustnost (vstup i výstup), u laboratoří účinnost
-export const CONVERTERS: BuildingId[] = ['smelter', 'forge', 'lab', 'qcomp'];
+export const CONVERTERS: BuildingId[] = ['smelter', 'forge', 'lab', 'qcomp', 'replicator'];
 const CONVERTER_SCALES: Partial<Record<BuildingId, boolean>> = { smelter: true, forge: true };
 const zeroRates = (): Rates => ({ ore: 0, metal: 0, energy: 0, data: 0 });
 
@@ -151,7 +151,7 @@ export function doResearch(s: State, id: ResearchId): boolean {
 
 export function travelTime(_s: State, id: LocationId) { return L[id].time; }
 export function canTravel(s: State, id: LocationId) {
-  return !!s.r.scan && !s.travel && s.loc !== id && s.res.energy >= L[id].cost;
+  return !!s.r.scan && !s.travel && id !== 'belt' && !s.visited[id] && s.res.energy >= L[id].cost;
 }
 export function depart(s: State, id: LocationId): boolean {
   if (!canTravel(s, id)) return false;
@@ -202,13 +202,15 @@ export function tick(s: State, dt: number, rng: () => number = Math.random): str
     }
     e = Math.max(0, Math.min(1, e));
     for (const r of Object.keys(d.cons!) as Res[]) s.res[r] -= d.cons![r]! * n * throughput * dt * e;
-    for (const r of Object.keys(d.prod!) as Res[]) add(s, r, d.prod![r]! * n * m * dt * e);
+    for (const r of Object.keys(d.prod ?? {}) as Res[]) add(s, r, d.prod![r]! * n * m * dt * e);
+    if (d.makes) s.b[d.makes.building] += d.makes.rate * Math.floor(n) * m * dt * e; // replikátor staví podle dostupné energie
     s.eff[id] = e;
   }
   // let
   if (s.travel) {
     s.travel.t += dt;
-    if (s.travel.t >= s.travel.total) { s.loc = s.travel.to; s.visited[s.loc] = true; s.travel = null; }
+    // expedice: po příletu se bonus zapíše natrvalo a Vesper se vrátí k platformě
+    if (s.travel.t >= s.travel.total) { s.visited[s.travel.to] = true; s.loc = 'belt'; s.travel = null; }
   }
   // události
   if (s.event) {

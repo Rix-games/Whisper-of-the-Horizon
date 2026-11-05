@@ -41,11 +41,16 @@ export function si(n: number, unit: string): string {
   return `${fixed(v, e === 0 && v % 1 === 0 ? 0 : d)} ${PREFIX[e]}${unit}`;
 }
 
-/** Hmotnost: kg, t, kt, Mt, Gt… */
+/** Hmotnost: kg, pak tuny bez předpon (kt, Mt působí cize), nad milion tun mocnina v kg. */
 export function mass(kg: number): string {
   const a = Math.abs(kg);
   if (a < 1000) return `${fixed(kg, a < 10 && a % 1 ? 1 : 0)} kg`;
-  return si(kg / 1000, 't');
+  if (a < 1e9) {
+    const t = kg / 1000, at = Math.abs(t);
+    if (at < 100) return `${fixed(t, at < 10 ? 2 : 1)} t`;
+    return `${Math.floor(t).toLocaleString('cs-CZ').replace(/\s/g, '\u00A0')} t`;
+  }
+  return `${sci(kg)} kg`;
 }
 
 export function bytes(b: number): string { return si(b, 'B'); }

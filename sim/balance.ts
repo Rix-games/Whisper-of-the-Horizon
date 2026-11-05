@@ -50,7 +50,7 @@ for (let t = 0; t < LIMIT_H * 3600; t++) {
   }
   if (bought) { longestWait = Math.max(longestWait, s.time - waitStart); waitStart = s.time; lastBuy = s.time; }
   E.tick(s, 1, rng);
-  if (SNAP.includes(Math.round(s.time))) console.log(`STAV ${Math.round(s.time / 60)} min:`, Object.entries(s.b).filter(([, v]) => v >= 1).map(([k, v]) => `${k} ${Math.floor(v)}`).join(', '), '| výzkumy', Object.keys(s.r).length);
+  if (SNAP.includes(Math.round(s.time))) console.log(`STAV ${Math.round(s.time / 60)} min:`, Object.entries(s.b).filter(([, v]) => v >= 1).map(([k, v]) => `${k} ${Math.floor(v)}`).join(', '), '| výzkumy', Object.keys(s.r).length, '| ruda', s.res.ore.toExponential(1), (E.rates(s).p.ore - E.rates(s).c.ore).toExponential(1) + '/s', '| kov', s.res.metal.toExponential(1), (E.rates(s).p.metal - E.rates(s).c.metal).toExponential(1) + '/s', '| energie výroba', E.rates(s).p.energy.toExponential(1), 'W spotřeba', E.rates(s).c.energy.toExponential(1), 'W');
   for (const id of BUILDING_IDS) if (s.b[id] >= 1) mark('B ' + id);
   for (const k of [0, 0.25, 0.5, 0.75]) if (E.kardashev(s) >= k) mark('K ' + k);
   if (s.chapterDone) { mark('KONEC KAPITOLY 1'); break; }

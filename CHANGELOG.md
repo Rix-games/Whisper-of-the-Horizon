@@ -1,5 +1,13 @@
 # Novinky
 
+## Připravuje se
+
+- Lety jako expedice: stačí jedna na každé místo, bonus platí natrvalo a Vesper se pak sám vrátí k platformě
+- Replikátor potřebuje energii (250 kW na kus), při nedostatku staví drony pomaleji a dá se vypnout
+- Vyrovnanější ruda a kov: orbitální slévárna, lapač asteroidů a fúzní reaktor se staví hlavně z rudy, takže se ruda nehromadí bez užitku
+- Ochrana proti autoklikru: nejvýš 12 kliknutí za sekundu, strojově pravidelné klikání se nepočítá, podržená klávesa se neopakuje
+- Hmotnost se zapisuje v kg a tunách bez předpon (místo kt, Mt), nad milion tun jako mocnina v kg
+
 ## 0.1.1 – Vylepšení Kapitoly 1
 
 Vylepšení vzhledu, tempa a ovládání. Uložená hra z verze 0.1 funguje dál.

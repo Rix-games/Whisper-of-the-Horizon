@@ -28,13 +28,14 @@ export const cs = {
     researchDone: 'Hotovo', researchLocked: 'Čeká na objev', researchNone: 'Teď není co zkoumat. Další směry otevře postup a expedice.',
     needs: 'Odemkne se, až {x}.',
     asteroid: 'Asteroid Ceres-IX', perClick: '+{v} / klik',
+    robotClicks: 'Ruční těžba reaguje jen na ruční klikání. Pro automatickou těžbu je tu výzkum Asistent těžby.',
     hint: 'Klikej na asteroid a těž rudu. Za 10 kg rudy postav prvního drona.',
     close: 'Zavřít',
     breakdown: { prod: 'Výroba', cons: 'Spotřeba', net: 'Celkem', reactor: 'Palubní reaktor', auto: 'Asistent těžby' },
     stats: { clicks: 'Kliknutí', drones: 'Drony', converters: 'Převodníky' },
     journal: 'Palubní deník', fact: 'Věděl jsi?',
-    voyage: { flying: 'Vesper je na cestě · {to}', remaining: 'přílet za {t}', docked: 'Vesper kotví · {at}' },
-    map: { fly: 'Letět', here: 'Tady', onWay: 'Na cestě', home: 'Domů', homeDesc: 'Návrat k platformě nic nestojí.', flight: 'doba letu {t}', visited: 'navštíveno' },
+    voyage: { flying: 'Expedice Vesperu · {to}', remaining: 'přílet za {t}', docked: 'Vesper čeká u platformy' },
+    map: { fly: 'Vyslat', onWay: 'Na cestě', flight: 'doba letu {t}', visited: 'prozkoumáno', active: 'Bonus aktivní' },
     events: {
       comet: { name: 'Kometa na dosah', claim: 'Zachytit kometu', got: 'Kometa zachycena: +{v} rudy' },
       flare: { name: 'Sluneční erupce', claim: 'Zachytit erupci', got: 'Erupce zachycena: +{v} energie' },
@@ -67,11 +68,11 @@ export const cs = {
     lab: { name: 'Laboratoř', desc: 'Rozebírá vzorky a signály. Z dat, která vzniknou, se platí výzkum. Bez energie stojí.' },
     drill: { name: 'Hloubkový vrt', desc: 'Sahá do jádra asteroidu, kam drony nedosáhnou.' },
     mirror: { name: 'Orbitální zrcadlo', desc: 'Zrcadlo široké kilometr soustředí světlo Aldry na sběrače.' },
-    replicator: { name: 'Replikátor', desc: 'Malá továrna, která sama staví nové těžební drony.' },
+    replicator: { name: 'Replikátor', desc: 'Malá továrna, která sama staví nové těžební drony. Bez energie stojí.' },
     forge: { name: 'Orbitální slévárna', desc: 'Tavírna na oběžné dráze. Pracuje stejně jako běžná tavírna, jen stokrát rychleji.' },
     catcher: { name: 'Lapač asteroidů', desc: 'Navádí celé asteroidy k platformě a drtí je.' },
     qcomp: { name: 'Kvantový počítač', desc: 'Chlazený ledem z Kelvaru. Obrovský výkon, obrovská spotřeba.' },
-    fusion: { name: 'Fúzní reaktor', desc: 'Slučuje helium-3 z atmosféry Taurisu.' },
+    fusion: { name: 'Fúzní reaktor', desc: 'Slučuje deuterium s heliem-3 z atmosféry Taurisu.' },
     dyson: { name: 'Dysonův kolektor', desc: 'Kolektor v roji kolem Aldry. Každý další zvýší výrobu veškeré energie o 10 %.' },
   },
   r: {
@@ -106,9 +107,9 @@ export const cs = {
   },
   loc: {
     belt: { name: 'Pás Ceres-IX', short: 'Ceres-IX', desc: 'Domovská platforma VESPER-7.' },
-    moon: { name: 'Ledový měsíc Kelvar', short: 'Kelvar', desc: 'Bonus: laboratoře ×1,5. Otevře nový výzkum.' },
-    giant: { name: 'Plynný obr Tauris', short: 'Tauris', desc: 'Bonus: výroba energie ×2. Otevře výzkum fúze.' },
-    sun: { name: 'Koróna Aldry', short: 'Aldra', desc: 'Blízko hvězdy. Otevře výzkum Dysonova roje.' },
+    moon: { name: 'Ledový měsíc Kelvar', short: 'Kelvar', desc: 'Stačí jedna expedice. Trvalý bonus: laboratoře ×1,5, otevře nový výzkum.', done: 'Trvalý bonus: laboratoře ×1,5 a nový výzkum.' },
+    giant: { name: 'Plynný obr Tauris', short: 'Tauris', desc: 'Stačí jedna expedice. Trvalý bonus: výroba energie ×2, otevře výzkum fúze.', done: 'Trvalý bonus: výroba energie ×2 a výzkum fúze.' },
+    sun: { name: 'Koróna Aldry', short: 'Koróna', desc: 'Stačí jedna expedice až těsně k hvězdě. Otevře výzkum Dysonova roje.', done: 'Otevřen výzkum Dysonova roje.' },
   },
   story: {
     start: 'VESPER-7 hlásí provoz. Spojení s Ústředím chybí už 412 dní. Poslední rozkaz pořád platí: těžit.',
@@ -135,12 +136,12 @@ export const cs = {
     bytes: 'DNA je zapsaná jen čtyřmi chemickými značkami: A, C, G a T. Lidský genom jich má asi 3 miliardy za sebou a jako data by zabral zhruba 750 MB.',
     europa: 'Kelvar připomíná Jupiterův měsíc Europu, pod jejímž ledem je nejspíš slaný oceán s víc vody než na Zemi.',
     vonneumann: 'Samoreplikující stroje popsal matematik John von Neumann ve 40. letech. Sondy, které se samy množí, by teoreticky obsadily galaxii za zlomek jejího věku.',
-    he3: 'Helium-3 je na Zemi vzácné, v atmosférách plynných obrů ho ale je hodně. Fúze helia-3 skoro nevytváří radioaktivní neutrony.',
+    he3: 'Helium-3 je na Zemi vzácné, v atmosférách plynných obrů ho ale je hodně. Při jeho fúzi s deuteriem vzniká jen málo neutronů, a tedy i málo radioaktivity.',
     corona: 'Koróna hvězdy je řídší, ale mnohem teplejší než její povrch: miliony kelvinů. Proč, není dodnes úplně jasné.',
     dyson: 'Myšlenku obklopit hvězdu sběrači energie popsal fyzik Freeman Dyson v roce 1960. Nemyslel pevnou kouli, ale roj samostatných kolektorů.',
     statite: 'Statit je družice, která neobíhá, ale vznáší se na místě díky tlaku slunečního světla. Navrhl ho Robert Forward.',
   },
-  req: { moon: 'Vesper navštíví Kelvar', giant: 'Vesper navštíví Tauris', sun: 'Vesper doletí ke koróně Aldry' },
+  req: { moon: 'Vesper prozkoumá Kelvar', giant: 'Vesper prozkoumá Tauris', sun: 'Vesper prozkoumá korónu Aldry' },
 };
 
 export type Dict = typeof cs;

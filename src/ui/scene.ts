@@ -359,7 +359,7 @@ export function drawMap(c: HTMLCanvasElement, s: State, time: number) {
   { const [px, py] = P(bodyPos('sun', time));
     x.save(); x.translate(px, py); x.rotate(Math.PI / 4); x.fillStyle = s.visited.sun ? '#f2a541' : 'rgba(242,165,65,0.45)'; x.fillRect(-2.5, -2.5, 5, 5); x.restore();
     if (s.loc === 'sun' && !s.travel) { x.strokeStyle = 'rgba(242,165,65,0.8)'; x.setLineDash([2, 3]); x.beginPath(); x.arc(px, py, 9, 0, 7); x.stroke(); x.setLineDash([]); }
-    x.fillStyle = s.visited.sun ? '#e1e4f4' : '#8a90b8'; x.fillText(t('loc.sun.short') + (s.visited.sun ? '' : ' ?'), px + 8, py + 14); }
+    x.fillStyle = s.visited.sun ? '#e1e4f4' : '#8a90b8'; x.fillText(t('loc.sun.short') + (s.visited.sun ? '' : ' ?'), px + (px >= cx ? 10 : -10 - x.measureText(t('loc.sun.short') + ' ?').width), py + (py >= cy ? 16 : -10)); }
 
   // Vesper: zakřivená dráha přeletu, stopa, loď s plamenem motoru
   let sp: [number, number], ang = -Math.PI / 2;

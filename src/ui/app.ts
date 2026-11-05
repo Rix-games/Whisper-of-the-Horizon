@@ -164,7 +164,7 @@ function renderTabs() {
 function computeKey() {
   if (tab === 'build') return 'b' + BUILDING_IDS.filter((id) => E.isUnlocked(S, id)).join() + buyMax;
   if (tab === 'research') return 'r' + RESEARCH_IDS.map((id) => (S.r[id] ? 2 : E.researchAvailable(S, id) ? 1 : 0)).join('');
-  if (tab === 'map') return 'm' + LOCATION_IDS.map((id) => (S.visited[id] ? 1 : 0)).join('');
+  if (tab === 'map') return 'm' + LOCATION_IDS.map((id) => (S.visited[id] ? 1 : 0)).join('') + (S.travel ? S.travel.to : '');
   return 's';
 }
 
@@ -191,9 +191,10 @@ function buildView() {
     h += '<div class="mapbox"><canvas id="map"></canvas></div><div class="list">';
     for (const id of LOCATION_IDS) {
       if (id === 'belt') continue;
-      h += `<div class="item" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))} ${S.visited[id] ? `<span class="tag on">${esc(t('ui.map.visited'))}</span>` : ''}</h3><p>${esc(t(`loc.${id}.desc`))}</p><div class="cost" data-f="cost"></div><div class="act"><button class="btn" data-go="${id}"></button></div></div>`;
+      const done = !!S.visited[id];
+      h += `<div class="item${done ? ' visited' : ''}" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))} ${done ? `<span class="tag on">${esc(t('ui.map.visited'))}</span>` : ''}</h3><p>${esc(t(`loc.${id}.${done ? 'done' : 'desc'}`))}</p>${done ? '' : '<div class="cost" data-f="cost"></div>'}<div class="act">${done ? `<span class="dim">${esc(t('ui.map.active'))}</span>` : `<button class="btn" data-go="${id}"></button>`}</div></div>`;
     }
-    h += `<div class="item" data-l="belt"><h3>${esc(t('loc.belt.name'))}</h3><p>${esc(t('ui.map.homeDesc'))}</p><div class="act"><button class="btn ghost" data-go="belt"></button></div></div></div>`;
+    h += '</div>';
   }
   $('view').innerHTML = h;
 }
@@ -236,10 +237,10 @@ function updateView() {
       el.querySelector('[data-f=n]')!.innerHTML = esc(t('ui.pieces', { n: num(count) }));
       // řádek „1 kus“ a „všechny dohromady“: co bere → co dává, se jmény surovin
       const flow = (k: number) => {
-        if (d.makes) return esc(t('ui.makes', { n: num(d.makes.rate * m * k) }));
         const part = (r: Res, v: number, sign: string) => `<span><span style="color:${COLOR[r]}">${esc(t('res.' + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
         const ins = (Object.keys(d.cons ?? {}) as Res[]).map((r) => part(r, d.cons![r]! * E.consScale(S, id) * k, '−'));
         const outs = (Object.keys(d.prod ?? {}) as Res[]).map((r) => part(r, d.prod![r]! * m * k, '+'));
+        if (d.makes) outs.push(`<span>${esc(t('ui.makes', { n: num(d.makes.rate * m * k) }))}</span>`);
         return ins.length ? `${ins.join(' ')} <span class="arrow">→</span> ${outs.join(' ')}` : outs.join(' ');
       };
       let eff = `<span class="effrow"><span class="lbl">${esc(t('ui.one'))}</span>${flow(1)}</span>`;
@@ -271,9 +272,8 @@ function updateView() {
       const id = b.dataset.go as LocationId, item = b.closest<HTMLElement>('[data-l]')!;
       const cf = item.querySelector('[data-f=cost]');
       if (cf) cf.innerHTML = `${costHTML({ energy: L[id].cost })}<span class="dim">${esc(t('ui.map.flight', { t: duration(E.travelTime(S, id)) }))}</span>`;
-      const here = S.loc === id && !S.travel;
-      b.disabled = !!S.travel || here || (id !== 'belt' && S.res.energy < L[id].cost);
-      b.textContent = S.travel?.to === id ? t('ui.map.onWay') : here ? t('ui.map.here') : id === 'belt' ? t('ui.map.home') : t('ui.map.fly');
+      b.disabled = !E.canTravel(S, id);
+      b.textContent = S.travel?.to === id ? t('ui.map.onWay') : t('ui.map.fly');
     });
   }
 }
@@ -330,6 +330,30 @@ function onJournal(newKeys: string[]) {
   renderLog(true);
   if (S.settings.sound) chime();
 }
+// ---------- ochrana proti autoklikru ----------
+// Strop ~12 kliků/s (víc člověk nezvládne) a detekce strojově pravidelného rytmu.
+const CLICK_CAP = 12, clickTimes: number[] = [];
+let robotUntil = 0, robotWarned = false;
+function humanClick(e: MouseEvent): boolean {
+  if (!e.isTrusted) return false;                       // kliknutí vyvolané skriptem
+  const now = performance.now();
+  while (clickTimes.length && now - clickTimes[0] > 1000) clickTimes.shift();
+  if (clickTimes.length >= CLICK_CAP) return false;     // nad strop se nepočítá
+  clickTimes.push(now);
+  if (now < robotUntil) return false;
+  if (clickTimes.length >= 8) {
+    const iv = clickTimes.slice(1).map((t, i) => t - clickTimes[i]);
+    const mean = iv.reduce((a, b) => a + b, 0) / iv.length;
+    const sd = Math.sqrt(iv.reduce((a, b) => a + (b - mean) ** 2, 0) / iv.length);
+    if (mean < 200 && sd / mean < 0.04) {               // lidské klikání kolísá víc
+      robotUntil = now + 3000;
+      if (!robotWarned) { robotWarned = true; toast(t('ui.robotClicks'), 4500); }
+      return false;
+    }
+  }
+  return true;
+}
+
 function bind() {
   // posuvníky hlasitosti: mění se hned, uloží se po puštění
   document.addEventListener('input', (e) => {
@@ -350,8 +374,7 @@ function bind() {
     if (d.res) { if (E.doResearch(S, d.res as ResearchId)) { onJournal(E.checkJournal(S)); renderTabs(); renderView(true); } return; }
     if (d.go) {
       const id = d.go as LocationId;
-      if (id === 'belt' && !S.travel && S.loc !== 'belt') S.travel = { from: S.loc, to: 'belt', t: 0, total: 8 };
-      else E.depart(S, id);
+      E.depart(S, id);
       onJournal(E.checkJournal(S)); renderView(true); renderRig(); return;
     }
     if (d.claim) {
@@ -367,7 +390,9 @@ function bind() {
     if (d.act) return settingsAction(d.act, b);
   });
   const rock = $('rock');
+  rock.addEventListener('keydown', (e) => { if (e.repeat && (e.key === 'Enter' || e.key === ' ')) e.preventDefault(); });
   rock.addEventListener('click', (e) => {
+    if (!humanClick(e)) return;
     const p = E.mine(S);
     { const cv = $<HTMLCanvasElement>('rockc'), cr = cv.getBoundingClientRect();
       if (e.clientX) hitRock((e.clientX - cr.left) * (cv.width / cr.width), (e.clientY - cr.top) * (cv.height / cr.height), cv.width); else hitRock(undefined, undefined, cv.width); }
