@@ -10,6 +10,8 @@
 - Odměna z komety, erupce a ozvěny je vidět předem, po zachycení se zapíše do deníku a surovina se rozsvítí
 - Nastavení se přesunulo z hlavních záložek do bočního panelu (ozubené kolo vpravo nahoře)
 - Srozumitelnější zajímavost o lidském genomu
+- Stavby ukazují výkon jednoho kusu i všech dohromady, s názvy surovin (co bere → co dává), počet je v kusech
+- Jasnější popisy tavírny, slévárny a laboratoře, vysvětlivka ke Kardaševovu číslu bez vzorce
 
 ## 0.1 – Kapitola 1: Platforma
 

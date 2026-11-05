@@ -27,7 +27,7 @@ const UNIT: Record<Res, string> = { ore: 'kg', metal: 'kg', energy: 'J', data: '
 function amount(r: Res, v: number) { return r === 'energy' ? energy(v) : r === 'data' ? bytes(v) : mass(v); }
 function rate(r: Res, v: number) { return r === 'energy' ? power(v) : (r === 'data' ? bytes(v) : mass(v)) + '/s'; }
 function costHTML(c: Amounts) {
-  return (Object.keys(c) as Res[]).map((r) => `<span class="${S.res[r] >= c[r]! ? '' : 'no'}"><span style="color:${COLOR[r]}">${t('res.' + r)}</span> ${amount(r, c[r]!)}</span>`).join('');
+  return `<span class="lbl">${esc(t('ui.price'))}</span>` + (Object.keys(c) as Res[]).map((r) => `<span class="${S.res[r] >= c[r]! ? '' : 'no'}"><span style="color:${COLOR[r]}">${t('res.' + r)}</span> ${amount(r, c[r]!)}</span>`).join('');
 }
 
 // ---------- ukládání ----------
@@ -235,11 +235,22 @@ function updateView() {
   if (tab === 'build') {
     view.querySelectorAll<HTMLElement>('[data-b]').forEach((el) => {
       const id = el.dataset.b as BuildingId, d = B[id], m = E.mult(S, id);
-      el.querySelector('[data-f=n]')!.textContent = num(Math.floor(S.b[id]));
-      let eff = '';
-      if (d.prod) eff = `${t('ui.each')} ` + (Object.keys(d.prod) as Res[]).map((r) => `<span style="color:${COLOR[r]}">+${rate(r, d.prod![r]! * m)}</span>`).join(' ');
-      if (d.makes) eff = esc(t('ui.makes', { n: num(d.makes.rate * m) }));
-      if (d.cons) eff += ' · ' + (Object.keys(d.cons) as Res[]).map((r) => esc(t('ui.consumes', { v: rate(r, d.cons![r]! * (id === 'lab' || id === 'qcomp' ? 1 : m)) }))).join(' ');
+      const count = Math.floor(S.b[id]);
+      el.querySelector('[data-f=n]')!.textContent = t('ui.pieces', { n: num(count) });
+      // řádek „1 kus“ a „všechny dohromady“: co bere → co dává, se jmény surovin
+      const flow = (k: number) => {
+        if (d.makes) return esc(t('ui.makes', { n: num(d.makes.rate * m * k) }));
+        const part = (r: Res, v: number, sign: string) => `<span><span style="color:${COLOR[r]}">${esc(t('res.' + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
+        const ins = (Object.keys(d.cons ?? {}) as Res[]).map((r) => part(r, d.cons![r]! * E.consScale(S, id) * k, '−'));
+        const outs = (Object.keys(d.prod ?? {}) as Res[]).map((r) => part(r, d.prod![r]! * m * k, '+'));
+        return ins.length ? `${ins.join(' ')} <span class="arrow">→</span> ${outs.join(' ')}` : outs.join(' ');
+      };
+      let eff = `<span class="effrow"><span class="lbl">${esc(t('ui.one'))}</span>${flow(1)}</span>`;
+      if (count >= 2 || (count >= 1 && d.cons)) {
+        const e = d.cons ? (S.off[id] ? 0 : (S.eff[id] ?? 1)) : 1;
+        const note = d.cons && e < 0.995 ? ` <span class="dim">(${esc(S.off[id] ? t('ui.stopped') : t('ui.running', { n: Math.round(e * 100) }))})</span>` : '';
+        eff += `<span class="effrow"><span class="lbl">${esc(t('ui.all', { n: num(count) }))}</span>${flow(count * e)}${note}</span>`;
+      }
       el.querySelector('[data-f=eff]')!.innerHTML = eff;
       let c = E.cost(S, id), n = 1;
       if (buyMax) { const pv = E.previewMax(S, id); if (pv.count > 0) { c = pv.total; n = pv.count; } }

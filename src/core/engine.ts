@@ -85,6 +85,9 @@ export function rates(s: State): { p: Rates; c: Rates } {
   return { p, c };
 }
 
+/** Násobek spotřeby převodníku: tavírny s výzkumem zpracují víc rudy, laboratoře jen zlepšují účinnost. */
+export function consScale(s: State, id: BuildingId): number { return CONVERTER_SCALES[id] ? mult(s, id) : 1; }
+
 /** Rozpis jednoho zdroje: kdo kolik vyrábí a kdo kolik spotřebuje (za sekundu). Klíče jsou id budov, 'reactor' a 'auto'. */
 export function rateParts(s: State, r: Res): { prod: [string, number][]; cons: [string, number][] } {
   const prod: [string, number][] = [], cons: [string, number][] = [];
