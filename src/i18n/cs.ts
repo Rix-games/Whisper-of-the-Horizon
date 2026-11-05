@@ -124,7 +124,7 @@ export const cs = {
     signal: 'Signál není zpráva. Je to souřadnice a časová značka. Značka ukazuje do budoucnosti.',
     giant: 'Prstenec Taurisu rotuje proti směru planety. V atmosféře je helia-3 na tisíc let.',
     fusion: 'Fúzní reaktor zapálen. Na okamžik zhasly všechny ostatní systémy. Ve tmě byl slyšet puls. 7,3 sekundy.',
-    sun: 'Aldra je modrý veleobr, 25× hmotnější než Slunce. Zblízka nevypadá jako hvězda, ale jako počasí.',
+    sun: 'Aldra je modrý veleobr, 25× hmotnější než Slunce. Zblízka to není zářící koule, ale rozbouřený oceán plazmatu, který nemá konec.',
     dyson1: 'První kolektor na oběžné dráze. Hvězda je obrovská a my jsme malí. Ale máme čas.',
     dyson10: 'Deset kolektorů. Puls zesílil. Jako by si nás něco všimlo.',
     typeI: 'Typ I. Výkon celé planety, a přitom teprve začátek. Aldra pod rojem jemně mění barvu.',
