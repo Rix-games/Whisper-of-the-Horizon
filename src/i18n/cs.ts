@@ -35,7 +35,7 @@ export const cs = {
     stats: { clicks: 'Kliknutí', drones: 'Drony', converters: 'Převodníky' },
     journal: 'Palubní deník', fact: 'Věděl jsi?',
     voyage: { flying: 'Expedice Vesperu · {to}', remaining: 'přílet za {t}', docked: 'Vesper čeká u platformy' },
-    map: { fly: 'Vyslat', onWay: 'Na cestě', flight: 'doba letu {t}', visited: 'prozkoumáno', active: 'Bonus aktivní' },
+    map: { fly: 'Vyslat', onWay: 'Na cestě', flight: 'doba letu {t}', visited: 'prozkoumáno', active: 'Prozkoumáno' },
     events: {
       comet: { name: 'Kometa na dosah', claim: 'Zachytit kometu', got: 'Kometa zachycena: +{v} rudy' },
       flare: { name: 'Sluneční erupce', claim: 'Zachytit erupci', got: 'Erupce zachycena: +{v} energie' },

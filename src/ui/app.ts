@@ -192,7 +192,7 @@ function buildView() {
     for (const id of LOCATION_IDS) {
       if (id === 'belt') continue;
       const done = !!S.visited[id];
-      h += `<div class="item${done ? ' visited' : ''}" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))} ${done ? `<span class="tag on">${esc(t('ui.map.visited'))}</span>` : ''}</h3><p>${esc(t(`loc.${id}.${done ? 'done' : 'desc'}`))}</p>${done ? '' : '<div class="cost" data-f="cost"></div>'}<div class="act">${done ? `<span class="dim">${esc(t('ui.map.active'))}</span>` : `<button class="btn" data-go="${id}"></button>`}</div></div>`;
+      h += `<div class="item${done ? ' visited' : ''}" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))}</h3><p>${esc(t(`loc.${id}.${done ? 'done' : 'desc'}`))}</p>${done ? '' : '<div class="cost" data-f="cost"></div>'}<div class="act">${done ? `<span class="dim">${esc(t('ui.map.active'))}</span>` : `<button class="btn" data-go="${id}"></button>`}</div></div>`;
     }
     h += '</div>';
   }
