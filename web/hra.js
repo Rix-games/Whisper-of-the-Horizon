@@ -4382,13 +4382,28 @@
     return "s";
   }
   function buildView(which = tab, el = $("view")) {
+    var _a, _b;
     let h = "";
     if (which === "build") {
       h += `<div class="toolbar">${esc(t("ui.buyMode"))} <span class="seg"><button data-max="1" aria-pressed="${buyMax === 1}">\xD71</button><button data-max="10" aria-pressed="${buyMax === 10}">\xD710</button><button data-max="max" aria-pressed="${buyMax === true}">Max</button></span></div><div class="list">`;
-      if (ventOpen(S)) h += ventCards();
-      const order = BUILDING_IDS.slice().reverse();
-      for (const id of order) {
+      S.unl ?? (S.unl = {});
+      const fresh = !Object.keys(S.unl).length, items = [];
+      const order0 = (k) => UNLOCK_ORDER.indexOf(k) * 1e-3 - 1;
+      for (const id of BUILDING_IDS) {
         if (!isUnlocked(S, id)) continue;
+        (_a = S.unl)[id] ?? (_a[id] = fresh ? order0(id) : S.time);
+        items.push({ key: id, t: S.unl[id] });
+      }
+      if (ventOpen(S)) {
+        (_b = S.unl).vent ?? (_b.vent = fresh ? order0("vent") : S.time);
+        items.push({ key: "vent", t: S.unl.vent });
+      }
+      items.sort((a, b) => b.t - a.t);
+      for (const { key: id } of items) {
+        if (id === "vent") {
+          h += ventCards();
+          continue;
+        }
         const conv = !!B[id].cons || id === "swarmfab" || id === "jet";
         h += `<div class="item" data-b="${id}"><h3>${esc(t(`b.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`b.${id}.desc`))}</p><div class="eff" data-f="eff"></div><div class="cost" data-f="cost"></div>
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
@@ -4836,6 +4851,7 @@
     }
   }
   var bviewKey = "";
+  var UNLOCK_ORDER = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion", "dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab", "scoop", "ring", "vent", "station", "injector", "jet", "hawking"];
   function placeRock() {
     const rw = $("rockwrap"), center = !S.star.done && tab === "build";
     const target = center ? $("scene").querySelector(".scene-wrap") : $("hint").parentElement;

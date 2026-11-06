@@ -36,7 +36,8 @@ export interface State {
   vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[]; disk?: number; share?: number; kg?: number };
   yrs?: number;                         // kolik let uplynulo venku (Vesper mezi směnami spí)
   yrs1?: number;                        // roky venku na začátku Kap. 2
-  seen?: Record<string, string>;        // co hráč na záložce už viděl (tečky u záložek)
+  seen?: Record<string, string>;
+  unl?: Record<string, number>;         // kdy se která stavba odemkla (nejnovější nahoře)        // co hráč na záložce už viděl (tečky u záložek)
   salvaged?: { metal: number; data: number };  // rozebraná platforma Kap. 1 (jednou na začátku Kap. 2)
   fab?: { m: number; e: number; made: number; lim: 'metal' | 'energy' | null; target: BuildingId | null; bank?: Bag; built?: { lifter: number; separator: number } };
   settings: { sound: boolean; lang: 'cs' | 'en'; vol: Record<string, number> };

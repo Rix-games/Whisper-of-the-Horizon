@@ -294,10 +294,22 @@ export function buildView(which = tab, el = $("view")) {
   let h = "";
   if (which === "build") {
     h += `<div class="toolbar">${esc(t("ui.buyMode"))} <span class="seg"><button data-max="1" aria-pressed="${buyMax === 1}">×1</button><button data-max="10" aria-pressed="${buyMax === 10}">×10</button><button data-max="max" aria-pressed="${buyMax === true}">Max</button></span></div><div class="list">`;
-    if (ventOpen(S)) h += ventCards();
-    const order = BUILDING_IDS.slice().reverse();
-    for (const id of order) {
+    // nejnovější nahoře: pořadí podle toho, kdy se stavba odemkla (starší hry podle pořadí v definici)
+    S.unl ??= {};
+    const fresh = !Object.keys(S.unl).length, items: { key: string; t: number }[] = [];
+    const order0 = (k: string) => UNLOCK_ORDER.indexOf(k) * 1e-3 - 1;
+    for (const id of BUILDING_IDS) {
       if (!isUnlocked(S, id)) continue;
+      S.unl[id] ??= fresh ? order0(id) : S.time;
+      items.push({ key: id, t: S.unl[id] });
+    }
+    if (ventOpen(S)) {
+      S.unl.vent ??= fresh ? order0("vent") : S.time;
+      items.push({ key: "vent", t: S.unl.vent });
+    }
+    items.sort((a, b) => b.t - a.t);
+    for (const { key: id } of items) {
+      if (id === "vent") { h += ventCards(); continue; }
       const conv = !!B[id].cons || id === "swarmfab" || id === "jet";
       h += `<div class="item" data-b="${id}"><h3>${esc(t(`b.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`b.${id}.desc`))}</p><div class="eff" data-f="eff"></div><div class="cost" data-f="cost"></div>
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
@@ -724,6 +736,8 @@ export function updateView(which = tab, view = $("view")) {
   }
 }
 export let bviewKey = "";
+/** Pořadí, v jakém se stavby obvykle odemykají (pro starší uložené hry bez záznamu). */
+const UNLOCK_ORDER = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion", "dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab", "scoop", "ring", "vent", "station", "injector", "jet", "hawking"];
 /** Kap. 1 a 2: asteroid / hvězda je uprostřed na záložce Stavby, jinak vlevo jako náhled. */
 function placeRock() {
   const rw = $("rockwrap"), center = !S.star.done && tab === "build";
