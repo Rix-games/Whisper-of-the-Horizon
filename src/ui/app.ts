@@ -1,7 +1,7 @@
 import { cs } from '../i18n/cs.js';
 import { t } from '../i18n/index.js';
 import { type BuildingId, type LocationId, type Res, type ResearchId, HOLE, PHASES, B, BUILDING_IDS, EVENTS, L, LOCATION_IDS, PRESTIGE, R, RESEARCH_IDS, RESOURCES, STAGES, STAR, stage } from '../core/defs.js';
-import { REBUILD_ON, diskGain, injEmitters, VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventBurst, ventTank, ventTankKg, ventFill, ventFlow, ventShare, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
+import { REBUILD_ON, diskGain, yardShare, injEmitters, VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventBurst, ventTank, ventTankKg, ventFill, ventFlow, ventShare, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
 import { decodeSave, encodeSave, migrate, newState } from '../core/state.js';
 import { bytes, duration, energy, kValue, mass, num, power, sci } from '../core/format.js';
 import { drawHole, drawHoleMap, drawProfile, drawScene, holeMapHit, sceneGeom, type HoleView, type SceneView } from './hole.js';
@@ -238,6 +238,7 @@ export function renderRig() {
     if (S.b.station >= 1) rows.push([t("ui.prod.dil"), `×${dec(gamma(S), gamma(S) >= 10 ? 0 : 1)}`]);
     rows.unshift(["§" + t("ui.prod.hole"), ""]);
     for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+    if (S.b.yard >= 1) rows.push([t("b.yard.name"), S.off.yard ? t("ui.stopped") : t("ui.yard.panel", { r: num(S.yard?.built.ring ?? 0), j: num(S.yard?.built.jet ?? 0) })]);
   } else if (!S.star.done) {
     rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
     for (const id of STAR_BUILDINGS2.filter((id2) => S.b[id2] >= 1)) {
@@ -317,7 +318,7 @@ export function buildView(which = tab, el = $("view")) {
     items.sort((a, b) => b.t - a.t);
     for (const { key: id } of items) {
       if (id === "vent") { h += ventCards(); continue; }
-      const conv = !!B[id].cons || id === "swarmfab" || id === "jet";
+      const conv = !!B[id].cons || id === "swarmfab" || id === "jet" || id === "yard";
       h += `<div class="item" data-b="${id}"><h3>${esc(t(`b.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`b.${id}.desc`))}</p><div class="eff" data-f="eff"></div><div class="cost" data-f="cost"></div>
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
     }
@@ -702,6 +703,16 @@ export function updateView(which = tab, view = $("view")) {
       if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
       }
+      if (id === "yard") {
+        const y = S.yard, on = !S.off.yard && S.b.yard >= 1;
+        eff = `<span class="effrow"><span class="lbl">${esc(t("ui.yard.share"))}</span>${esc(t("ui.yard.shareTxt", { p: Math.round(yardShare(S) * 100) || 10 }))}</span>`;
+        if (on && y) {
+          const tg = y.target ? t(`b.${y.target}.name`) : "";
+          eff += `<span class="effrow"><span class="lbl">${esc(t("ui.yard.takes"))}</span><span><span style="color:${COLOR.plasma}">${esc(t("res.plasma"))}</span> −${esc(rate("plasma", y.rate))}</span>${tg ? ` <span class="arrow">→</span> <span>${esc(tg)}</span>` : ""}</span>`;
+          eff += `<span class="effrow"><span class="lbl">${esc(t("ui.yard.next"))}</span>${esc(y.rate > 0 && isFinite(y.eta) ? t("ui.yard.eta", { t: duration(y.eta) }) : t("ui.yard.wait"))}</span>`;
+          eff += `<span class="effrow"><span class="lbl">${esc(t("ui.yard.built"))}</span>${esc(t("ui.yard.builtList", { r: num(y.built.ring), j: num(y.built.jet) }))}</span>`;
+        }
+      }
       if (id === "injector") {
         el.classList.toggle("starvedcard", injShortOn);
         if (injShortOn) eff += `<span class="effnote">${esc(t(ventLv(S, "inlet") >= VENT_UPS.inlet.max ? "ui.inj.shortScoop" : "ui.inj.short"))}</span>`;
@@ -752,7 +763,7 @@ export function updateView(which = tab, view = $("view")) {
 }
 export let bviewKey = "";
 /** Pořadí, v jakém se stavby obvykle odemykají (pro starší uložené hry bez záznamu). */
-const UNLOCK_ORDER = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion", "dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab", "scoop", "ring", "vent", "station", "injector", "jet", "hawking"];
+const UNLOCK_ORDER = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion", "dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab", "scoop", "ring", "vent", "station", "injector", "jet", "hawking", "yard"];
 /** Kap. 1 a 2: asteroid / hvězda je uprostřed na záložce Stavby, jinak vlevo jako náhled. */
 function placeRock() {
   const rw = $("rockwrap"), center = !S.star.done && tab === "build";

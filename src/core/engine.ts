@@ -549,6 +549,48 @@ export function fabTick(s: State, dt: number) {
   s.fab = { m: m / dt, e: en / dt, made: made / dt, lim, target: null, bank: prev.bank ?? { metal: 0, energy: 0, plasma: 0 }, built: prev.built ?? { lifter: 0, separator: 0 } };
   chainTick(s, dt, lim);
 }
+/** Orbitální montovna (Kap. 3, od fáze 4): každý kus vezme 10 % čistého přírůstku plazmatu (nejvýš 50 %) do vlastní banky
+ *  a z ní staví levnější z diskového kolektoru a tryskového lapače za skutečnou (rostoucí) cenu. Zásob se nedotkne. */
+export const YARD = { per: 0.1, max: 0.5, perTick: 3 };
+export const yardShare = (s: State) => Math.min(YARD.max, YARD.per * Math.floor(s.b.yard ?? 0));
+export function yardTarget(s: State): 'ring' | 'jet' | null {
+  let best: 'ring' | 'jet' | null = null, bc = Infinity;
+  for (const id of ["ring", "jet"] as const) {
+    if (!isUnlocked(s, id)) continue;
+    const c = cost(s, id).plasma ?? Infinity;
+    if (c < bc) { bc = c; best = id; }
+  }
+  return best;
+}
+function yardTick(s: State, dt: number) {
+  const y = s.yard ?? (s.yard = { bank: 0, rate: 0, built: { ring: 0, jet: 0 }, target: null, eta: 0 });
+  const n = Math.floor(s.b.yard ?? 0), target = yardTarget(s);
+  if (!n || s.off.yard || !target || s.chapterDone >= 3 || s.hole.dive >= 0) {
+    // vypnutá montovna vrátí, co měla našetřeno
+    if (y.bank > 0) { s.res.plasma += y.bank; y.bank = 0; }
+    y.rate = 0; y.target = null; y.eta = 0;
+    s.eff.yard = n && !s.off.yard ? 0 : 1;
+    return;
+  }
+  const { p, c } = rates(s);
+  const net = Math.max(0, p.plasma - c.plasma);
+  const take = Math.min(net * yardShare(s) * dt, Math.max(0, s.res.plasma));
+  s.res.plasma -= take;
+  y.bank += take;
+  for (let k = 0; k < YARD.perTick; k++) {
+    const id = yardTarget(s), price = id ? cost(s, id).plasma ?? Infinity : Infinity;
+    if (!id || y.bank < price) break;
+    y.bank -= price;
+    s.b[id] += 1;
+    s.bought[id] = (s.bought[id] ?? 0) + 1;
+    y.built[id] += 1;
+  }
+  const next = yardTarget(s), price = next ? cost(s, next).plasma ?? 0 : 0;
+  y.rate = y.rate * (1 - Math.min(1, dt / 3)) + take / 3;
+  y.target = next;
+  y.eta = y.rate > 0 ? Math.max(0, price - y.bank) / y.rate : Infinity;
+  s.eff.yard = net > 0 ? 1 : 0;
+}
 // Loděnice dostavuje i těžební řetězec, když ji brzdí kov: chybí-li plazma, trychtýř, jinak separátor.
 // Bere jen podíl čistého přírůstku, který zbyde po kolektorech, takže zásoby nevyčerpá.
 export const CHAIN_SHARE = 0.3;
@@ -768,6 +810,7 @@ export function tick(s: State, dt, rng = Math.random) {
     s.eff[id] = e;
   }
   fabTick(s, dt);
+  if (s.star.done) yardTick(s, dt);
   if (s.travel) {
     s.travel.t += dt;
     if (s.travel.t >= s.travel.total) {

@@ -39,6 +39,7 @@ export interface State {
   seen?: Record<string, string>;
   unl?: Record<string, number>;         // kdy se která stavba odemkla (nejnovější nahoře)        // co hráč na záložce už viděl (tečky u záložek)
   salvaged?: { metal: number; data: number };  // rozebraná platforma Kap. 1 (jednou na začátku Kap. 2)
+  yard?: { bank: number; rate: number; built: { ring: number; jet: number }; target: 'ring' | 'jet' | null; eta: number };
   fab?: { m: number; e: number; made: number; lim: 'metal' | 'energy' | null; target: BuildingId | null; bank?: Bag; built?: { lifter: number; separator: number } };
   settings: { sound: boolean; lang: 'cs' | 'en'; vol: Record<string, number> };
   last: number;                         // čas posledního uložení (ms)

@@ -6,10 +6,10 @@ export type Res = 'ore' | 'metal' | 'energy' | 'data' | 'plasma';
 export type Amounts = Partial<Record<Res, number>>;
 
 export type BuildingId = 'drone' | 'smelter' | 'solar' | 'lab' | 'drill' | 'mirror' | 'replicator' | 'forge' | 'catcher' | 'qcomp' | 'fusion' | 'dyson' | 'windnet' | 'sieve' | 'corono' | 'lifter' | 'separator' | 'seismo' | 'swarmfab'
-  | 'scoop' | 'injector' | 'ring' | 'station' | 'jet' | 'hawking';
+  | 'scoop' | 'injector' | 'ring' | 'station' | 'jet' | 'hawking' | 'yard';
 export type ResearchId = 'vib' | 'swarm' | 'deep' | 'arc' | 'scan' | 'thinfilm' | 'auto' | 'lab2' | 'mirror' | 'repl' | 'resonance' | 'forge' | 'cryo' | 'signal' | 'optics' | 'catcher' | 'swarm2' | 'fusion' | 'supercond' | 'plasma' | 'quantum' | 'vib2' | 'dyson' | 'nano' | 'statite' | 'induct' | 'beam' | 'lagrange' | 'lift' | 'sep' | 'seismo' | 'coil' | 'fab' | 'sail' | 'redesign' | 'highorbit' | 'census' | 'rotlift' | 'carbon' | 'seis2' | 'mg' | 'neon' | 'pulse2' | 'silicon' | 'magsail' | 'iron' | 'neutrino'
   | 'accrete' | 'dilate' | 'prograde' | 'magscoop' | 'wide' | 'mri' | 'lower' | 'pulse3' | 'thick' | 'slim' | 'mad' | 'edge'
-  | 'bz' | 'fermi' | 'kugel' | 'penrose' | 'evap' | 'dive';
+  | 'bz' | 'fermi' | 'kugel' | 'penrose' | 'evap' | 'dive' | 'yard';
 
 export interface BuildingDef {
   base: Amounts;          // cena prvního kusu
@@ -58,7 +58,9 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   ring: { base: { plasma: 6e7 }, growth: 1.15, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
   station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 1.5e27 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
   jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
-  hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
+  hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) },
+  // Orbitální montovna: sama staví diskové kolektory a tryskové lapače z podílu čistého přírůstku plazmatu (engine yardTick)
+  yard: { base: { plasma: 3e16 }, growth: 1.6, unlock: (s) => !!s.r.yard && hole3(s) }
 };
 export const BUILDING_IDS = Object.keys(BUILDINGS) as BuildingId[];
 function ch2(s: State) { return s.chapterDone >= 1 && !s.star.done; }
@@ -135,6 +137,7 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   kugel: { cost: { data: 1e39 }, req: phase(3), reqKey: "phase3" },
   penrose: { cost: { data: 1e40 }, req: phase(4), reqKey: "phase4" },
   evap: { cost: { data: 2e40 }, req: phase(4), reqKey: "phase4" },
+  yard: { cost: { data: 4e39 }, req: phase(4), reqKey: "phase4" },
   dive: { cost: { data: 6e40 }, req: phase(4), reqKey: "phase4" }
 };
 export const RESEARCH_IDS = Object.keys(RESEARCH) as ResearchId[];

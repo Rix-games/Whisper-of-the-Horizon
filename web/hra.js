@@ -98,6 +98,7 @@
       turnOff: "Vypnout",
       turnOn: "Zapnout",
       running: "b\u011B\u017E\xED na {n} %",
+      yard: { share: "Odkl\xE1d\xE1", shareTxt: "{p} % \u010Dist\xE9ho p\u0159\xEDr\u016Fstku plazmatu", takes: "Bere", next: "Dal\u0161\xED", eta: "za {t}", wait: "\u010Dek\xE1, a\u017E plazma za\u010Dne p\u0159ib\xFDvat", built: "Samo postaveno", builtList: "{r} kolektor\u016F, {j} lapa\u010D\u016F", panel: "postavila {r} + {j}" },
       inj: { pct: "+{p} % disku", short: "Past nest\xEDh\xE1, dal\u0161\xED injektor nic nep\u0159id\xE1. V\xEDc plynu daj\xED nab\u011Bra\u010De nebo Sac\xED kan\xE1ly.", shortScoop: "Past nest\xEDh\xE1, dal\u0161\xED injektor nic nep\u0159id\xE1. V\xEDc plynu daj\xED nab\u011Bra\u010De.", capped: "disk je na Eddingtonov\u011B mezi" },
       stopped: "vypnuto",
       starved: "stoj\xED, chyb\xED vstup",
@@ -329,6 +330,7 @@
       injector: { name: "Akre\u010Dn\xED injektor", desc: "Automatick\xFD ventil. S\xE1m bere nahromad\u011Bn\xFD plyn z magnetick\xE9 pasti a pos\xEDl\xE1 ho po spir\xE1le do disku, i kdy\u017E neklik\xE1\u0161. Kdy\u017E past nesta\u010D\xED, b\u011B\u017E\xED pomaleji. Ka\u017Ed\xFD diskov\xFD kolektor a tryskov\xFD lapa\u010D injektor zrychl\xED o 10 %." },
       ring: { name: "Diskov\xFD kolektor", desc: "Prstenec kolem disku, kter\xFD chyt\xE1 jeho z\xE1\u0159en\xED. Ka\u017Ed\xFD dal\u0161\xED zakryje v\xEDc disku a o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
       station: { name: "Dilata\u010Dn\xED stanice", desc: "Ob\xEDh\xE1 t\u011Bsn\u011B nad horizontem, kde \u010Das plyne pomaleji. M\u011B\u0159\xED disk i vzd\xE1len\xFD vesm\xEDr, kter\xFD odtud vypad\xE1 zrychlen\u011B. V\xEDc dat, \u010D\xEDm v\xEDc civilizace z\xE1\u0159\xED." },
+      yard: { name: "Orbit\xE1ln\xED montovna", desc: "T\u0159et\xED stupe\u0148 automatizace. Sama stav\xED diskov\xE9 kolektory a tryskov\xE9 lapa\u010De, v\u017Edy ten, kter\xFD je zrovna levn\u011Bj\u0161\xED. Ka\u017Ed\xE1 montovna si odkl\xE1d\xE1 10 % \u010Dist\xE9ho p\u0159\xEDr\u016Fstku plazmatu, v\u0161echny dohromady nejv\xFD\u0161 50 %. Na z\xE1soby nes\xE1hne a jde vypnout; na\u0161et\u0159en\xE9 plazma pak vr\xE1t\xED." },
       jet: { name: "Tryskov\xFD lapa\u010D", desc: "Zachyt\xE1v\xE1 energii trysek nad p\xF3ly d\xEDry. Trysky berou energii z rotace, tak\u017Ee d\xEDru brzd\xED. Magnetick\xE9 pole trysek pom\xE1h\xE1 i se sb\u011Brem: ka\u017Ed\xFD lapa\u010D o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
       hawking: { name: "Hawking\u016Fv reaktor", desc: "Mikroskopick\xE1 \u010Dern\xE1 d\xEDra stvo\u0159en\xE1 z energie. Plyn, kter\xFD do n\xED pad\xE1, se cel\xFD vyz\xE1\u0159\xED zp\xE1tky jako Hawkingovo z\xE1\u0159en\xED. V z\xE1\u0159en\xED jsou i data. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem a tryskov\xFDm lapa\u010Dem." },
       swarmfab: { name: "Rojov\xE1 lod\u011Bnice", desc: "Druh\xFD stupe\u0148 automatizace. Sama stav\xED Dysonovy kolektory a podle toho, co v \u0159et\u011Bzci chyb\xED, i trycht\xFD\u0159e a separ\xE1tory. Stavby na data nestav\xED. Bere nejv\xFD\u0161 polovinu p\u0159\xEDr\u016Fstku kovu a energie, tak\u017Ee z\xE1soby nevy\u010Derp\xE1. Rozebr\xE1n\xEDm vr\xE1t\xED\u0161 polovinu ceny." }
@@ -398,6 +400,7 @@
       kugel: { name: "Kugelblitz", desc: "Soust\u0159ed\u011Bn\xE9 sv\u011Btlo stvo\u0159\xED malou \u010Dernou d\xEDru. Odemkne Hawkingovy reaktory." },
       penrose: { name: "Penrose\u016Fv proces", desc: "Hmota rozd\u011Blen\xE1 v ergosf\xE9\u0159e odnese v\xEDc energie, ne\u017E p\u0159inesla. Trysky \xD72, d\xEDru brzd\xED o polovinu m\xE9n\u011B." },
       evap: { name: "\u0158\xEDzen\xE9 vypa\u0159ov\xE1n\xED", desc: "Hawkingovy reaktory \xD74." },
+      yard: { name: "Orbit\xE1ln\xED montovna", desc: "Odemkne montovnu, kter\xE1 sama stav\xED diskov\xE9 kolektory a tryskov\xE9 lapa\u010De z \u010D\xE1sti p\u0159\xEDr\u016Fstku plazmatu." },
       dive: { name: "Ponor k horizontu", desc: "Sonda, kter\xE1 vydr\u017E\xED slapov\xE9 s\xEDly a\u017E u fotonov\xE9 sf\xE9ry. Umo\u017En\xED ponor." }
     },
     loc: {
@@ -554,7 +557,9 @@
     ring: { base: { plasma: 6e7 }, growth: 1.15, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 15e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
     jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
-    hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
+    hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) },
+    // Orbitální montovna: sama staví diskové kolektory a tryskové lapače z podílu čistého přírůstku plazmatu (engine yardTick)
+    yard: { base: { plasma: 3e16 }, growth: 1.6, unlock: (s) => !!s.r.yard && hole3(s) }
   };
   var BUILDING_IDS = Object.keys(BUILDINGS);
   function ch2(s) {
@@ -632,6 +637,7 @@
     kugel: { cost: { data: 1e39 }, req: phase(3), reqKey: "phase3" },
     penrose: { cost: { data: 1e40 }, req: phase(4), reqKey: "phase4" },
     evap: { cost: { data: 2e40 }, req: phase(4), reqKey: "phase4" },
+    yard: { cost: { data: 4e39 }, req: phase(4), reqKey: "phase4" },
     dive: { cost: { data: 6e40 }, req: phase(4), reqKey: "phase4" }
   };
   var RESEARCH_IDS = Object.keys(RESEARCH);
@@ -1350,6 +1356,53 @@
     s.fab = { m: m / dt, e: en / dt, made: made / dt, lim, target: null, bank: prev.bank ?? { metal: 0, energy: 0, plasma: 0 }, built: prev.built ?? { lifter: 0, separator: 0 } };
     chainTick(s, dt, lim);
   }
+  var YARD = { per: 0.1, max: 0.5, perTick: 3 };
+  var yardShare = (s) => Math.min(YARD.max, YARD.per * Math.floor(s.b.yard ?? 0));
+  function yardTarget(s) {
+    let best = null, bc = Infinity;
+    for (const id of ["ring", "jet"]) {
+      if (!isUnlocked(s, id)) continue;
+      const c = cost(s, id).plasma ?? Infinity;
+      if (c < bc) {
+        bc = c;
+        best = id;
+      }
+    }
+    return best;
+  }
+  function yardTick(s, dt) {
+    const y = s.yard ?? (s.yard = { bank: 0, rate: 0, built: { ring: 0, jet: 0 }, target: null, eta: 0 });
+    const n = Math.floor(s.b.yard ?? 0), target = yardTarget(s);
+    if (!n || s.off.yard || !target || s.chapterDone >= 3 || s.hole.dive >= 0) {
+      if (y.bank > 0) {
+        s.res.plasma += y.bank;
+        y.bank = 0;
+      }
+      y.rate = 0;
+      y.target = null;
+      y.eta = 0;
+      s.eff.yard = n && !s.off.yard ? 0 : 1;
+      return;
+    }
+    const { p, c } = rates(s);
+    const net = Math.max(0, p.plasma - c.plasma);
+    const take = Math.min(net * yardShare(s) * dt, Math.max(0, s.res.plasma));
+    s.res.plasma -= take;
+    y.bank += take;
+    for (let k = 0; k < YARD.perTick; k++) {
+      const id = yardTarget(s), price2 = id ? cost(s, id).plasma ?? Infinity : Infinity;
+      if (!id || y.bank < price2) break;
+      y.bank -= price2;
+      s.b[id] += 1;
+      s.bought[id] = (s.bought[id] ?? 0) + 1;
+      y.built[id] += 1;
+    }
+    const next = yardTarget(s), price = next ? cost(s, next).plasma ?? 0 : 0;
+    y.rate = y.rate * (1 - Math.min(1, dt / 3)) + take / 3;
+    y.target = next;
+    y.eta = y.rate > 0 ? Math.max(0, price - y.bank) / y.rate : Infinity;
+    s.eff.yard = net > 0 ? 1 : 0;
+  }
   var CHAIN_SHARE = 0.3;
   function chainTarget(s) {
     if (!s.b.lifter || !s.b.separator || !isUnlocked(s, "lifter") || !isUnlocked(s, "separator")) return null;
@@ -1564,6 +1617,7 @@
       s.eff[id] = e;
     }
     fabTick(s, dt);
+    if (s.star.done) yardTick(s, dt);
     if (s.travel) {
       s.travel.t += dt;
       if (s.travel.t >= s.travel.total) {
@@ -4372,6 +4426,7 @@
       if (S.b.station >= 1) rows.push([t("ui.prod.dil"), `\xD7${dec(gamma(S), gamma(S) >= 10 ? 0 : 1)}`]);
       rows.unshift(["\xA7" + t("ui.prod.hole"), ""]);
       for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+      if (S.b.yard >= 1) rows.push([t("b.yard.name"), S.off.yard ? t("ui.stopped") : t("ui.yard.panel", { r: num(S.yard?.built.ring ?? 0), j: num(S.yard?.built.jet ?? 0) })]);
     } else if (!S.star.done) {
       rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
       for (const id of STAR_BUILDINGS2.filter((id2) => S.b[id2] >= 1)) {
@@ -4456,7 +4511,7 @@
           h += ventCards();
           continue;
         }
-        const conv = !!B[id].cons || id === "swarmfab" || id === "jet";
+        const conv = !!B[id].cons || id === "swarmfab" || id === "jet" || id === "yard";
         h += `<div class="item" data-b="${id}"><h3>${esc(t(`b.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`b.${id}.desc`))}</p><div class="eff" data-f="eff"></div><div class="cost" data-f="cost"></div>
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
       }
@@ -4861,6 +4916,16 @@
         if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
         }
+        if (id === "yard") {
+          const y = S.yard, on = !S.off.yard && S.b.yard >= 1;
+          eff = `<span class="effrow"><span class="lbl">${esc(t("ui.yard.share"))}</span>${esc(t("ui.yard.shareTxt", { p: Math.round(yardShare(S) * 100) || 10 }))}</span>`;
+          if (on && y) {
+            const tg2 = y.target ? t(`b.${y.target}.name`) : "";
+            eff += `<span class="effrow"><span class="lbl">${esc(t("ui.yard.takes"))}</span><span><span style="color:${COLOR.plasma}">${esc(t("res.plasma"))}</span> \u2212${esc(rate("plasma", y.rate))}</span>${tg2 ? ` <span class="arrow">\u2192</span> <span>${esc(tg2)}</span>` : ""}</span>`;
+            eff += `<span class="effrow"><span class="lbl">${esc(t("ui.yard.next"))}</span>${esc(y.rate > 0 && isFinite(y.eta) ? t("ui.yard.eta", { t: duration(y.eta) }) : t("ui.yard.wait"))}</span>`;
+            eff += `<span class="effrow"><span class="lbl">${esc(t("ui.yard.built"))}</span>${esc(t("ui.yard.builtList", { r: num(y.built.ring), j: num(y.built.jet) }))}</span>`;
+          }
+        }
         if (id === "injector") {
           el.classList.toggle("starvedcard", injShortOn);
           if (injShortOn) eff += `<span class="effnote">${esc(t(ventLv(S, "inlet") >= VENT_UPS.inlet.max ? "ui.inj.shortScoop" : "ui.inj.short"))}</span>`;
@@ -4910,7 +4975,7 @@
     }
   }
   var bviewKey = "";
-  var UNLOCK_ORDER = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion", "dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab", "scoop", "ring", "vent", "station", "injector", "jet", "hawking"];
+  var UNLOCK_ORDER = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion", "dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab", "scoop", "ring", "vent", "station", "injector", "jet", "hawking", "yard"];
   function placeRock() {
     const rw = $("rockwrap"), center = !S.star.done && tab === "build";
     const target = center ? $("scene").querySelector(".scene-wrap") : $("hint").parentElement;

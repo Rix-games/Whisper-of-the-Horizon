@@ -98,6 +98,7 @@ export const cs = {
     turnOff: "Vypnout",
     turnOn: "Zapnout",
     running: "běží na {n} %",
+    yard: { share: "Odkládá", shareTxt: "{p} % čistého přírůstku plazmatu", takes: "Bere", next: "Další", eta: "za {t}", wait: "čeká, až plazma začne přibývat", built: "Samo postaveno", builtList: "{r} kolektorů, {j} lapačů", panel: "postavila {r} + {j}" },
     inj: { pct: "+{p} % disku", short: "Past nestíhá, další injektor nic nepřidá. Víc plynu dají naběrače nebo Sací kanály.", shortScoop: "Past nestíhá, další injektor nic nepřidá. Víc plynu dají naběrače.", capped: "disk je na Eddingtonově mezi" },
     stopped: "vypnuto",
     starved: "stojí, chybí vstup",
@@ -329,6 +330,7 @@ export const cs = {
     injector: { name: "Akreční injektor", desc: "Automatický ventil. Sám bere nahromaděný plyn z magnetické pasti a posílá ho po spirále do disku, i když neklikáš. Když past nestačí, běží pomaleji. Každý diskový kolektor a tryskový lapač injektor zrychlí o 10 %." },
     ring: { name: "Diskový kolektor", desc: "Prstenec kolem disku, který chytá jeho záření. Každý další zakryje víc disku a o 10 % posílí naběrače, injektory a Hawkingovy reaktory." },
     station: { name: "Dilatační stanice", desc: "Obíhá těsně nad horizontem, kde čas plyne pomaleji. Měří disk i vzdálený vesmír, který odtud vypadá zrychleně. Víc dat, čím víc civilizace září." },
+    yard: { name: "Orbitální montovna", desc: "Třetí stupeň automatizace. Sama staví diskové kolektory a tryskové lapače, vždy ten, který je zrovna levnější. Každá montovna si odkládá 10 % čistého přírůstku plazmatu, všechny dohromady nejvýš 50 %. Na zásoby nesáhne a jde vypnout; našetřené plazma pak vrátí." },
     jet: { name: "Tryskový lapač", desc: "Zachytává energii trysek nad póly díry. Trysky berou energii z rotace, takže díru brzdí. Magnetické pole trysek pomáhá i se sběrem: každý lapač o 10 % posílí naběrače, injektory a Hawkingovy reaktory." },
     hawking: { name: "Hawkingův reaktor", desc: "Mikroskopická černá díra stvořená z energie. Plyn, který do ní padá, se celý vyzáří zpátky jako Hawkingovo záření. V záření jsou i data. Sílí s každým diskovým kolektorem a tryskovým lapačem." },
     swarmfab: { name: "Rojová loděnice", desc: "Druhý stupeň automatizace. Sama staví Dysonovy kolektory a podle toho, co v řetězci chybí, i trychtýře a separátory. Stavby na data nestaví. Bere nejvýš polovinu přírůstku kovu a energie, takže zásoby nevyčerpá. Rozebráním vrátíš polovinu ceny." }
@@ -398,6 +400,7 @@ export const cs = {
     kugel: { name: "Kugelblitz", desc: "Soustředěné světlo stvoří malou černou díru. Odemkne Hawkingovy reaktory." },
     penrose: { name: "Penroseův proces", desc: "Hmota rozdělená v ergosféře odnese víc energie, než přinesla. Trysky ×2, díru brzdí o polovinu méně." },
     evap: { name: "Řízené vypařování", desc: "Hawkingovy reaktory ×4." },
+    yard: { name: "Orbitální montovna", desc: "Odemkne montovnu, která sama staví diskové kolektory a tryskové lapače z části přírůstku plazmatu." },
     dive: { name: "Ponor k horizontu", desc: "Sonda, která vydrží slapové síly až u fotonové sféry. Umožní ponor." }
   },
   loc: {
