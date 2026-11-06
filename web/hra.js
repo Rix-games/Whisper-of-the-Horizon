@@ -34,13 +34,14 @@
       capturedTxt: "Kolektory chyt\xED {p} z\xE1\u0159en\xED: Energie +{w}",
       clockDil: "U stanic plyne \u010Das {g}\xD7 pomaleji",
       outside: "Venku uplynulo {t}",
-      prod: { title: "Produkce", hole: "D\xEDra", power: "V\xFDkon civilizace", dil: "Dilatace u stanic", fromVent: "plyn z ventilu", fromInj: "plyn z injektor\u016F", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingov\xFDch reaktor\u016F" } },
+      prod: { title: "Produkce", hole: "D\xEDra", power: "V\xFDkon civilizace", dil: "Dilatace u stanic", fromVent: "pos\xEDl\xE1\u0161 ru\u010Dn\u011B", fromInj: "pos\xEDlaj\xED injektory", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingov\xFDch reaktor\u016F" } },
       outsideTip: "Den je den Vesperova bd\u011Bn\xED. Mezi sm\u011Bnami Vesper sp\xED a roj pracuje s\xE1m, tak\u017Ee venku plyne \u010Das mnohem rychleji.",
       vent: {
-        flow: "Z ventilu do d\xEDry",
+        flow: "Z disku do d\xEDry",
         share: "Pln\u011Bn\xED pasti",
         disk: "Plyn v disku",
         toTrap: "Do pasti",
+        fromTrap: "Z pasti",
         toTrapTxt: "{p} % plynu, +{f}/s",
         flowHelp: "Nab\u011Bra\u010De sb\xEDraj\xED plazma, \u010D\xE1st pln\xED past|Kliknut\xEDm do disku vypust\xED\u0161 chuchvalec|Chuchvalec se sto\u010D\xED k d\xED\u0159e a vzplane: data|Plyn v disku pak 1,5 min z\xE1\u0159\xED, kolektory z toho d\u011Blaj\xED v\xFDkon. Kdy\u017E nic nepo\u0161le\u0161, disk vyhasne",
         shareBtn: "Do pasti {p} % plazmatu",
@@ -324,7 +325,7 @@
       separator: { name: "Separ\xE1tor prvk\u016F", desc: "T\u0159\xEDd\xED plazma podle hmotnosti. Vod\xEDk a helium vrac\xED do hv\u011Bzdy, t\u011B\u017E\u0161\xED prvky jdou do skladu jako kov. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
       seismo: { name: "Seismick\xE1 stanice", desc: "Naslouch\xE1 chv\u011Bn\xED hv\u011Bzdy a z tis\xEDc\u016F t\xF3n\u016F skl\xE1d\xE1 obraz jej\xEDho nitra. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
       scoop: { name: "Nab\u011Bra\u010D mlhoviny", desc: "Magnetick\xE1 s\xED\u0165 dlouh\xE1 tis\xEDce kilometr\u016F. Sb\xEDr\xE1 ionizovan\xFD plyn z mlhoviny, kterou po sob\u011B Aldra zanechala. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem." },
-      injector: { name: "Akre\u010Dn\xED injektor", desc: "Pos\xEDl\xE1 plyn po spir\xE1le do akre\u010Dn\xEDho disku. Plyn p\u0159ed p\xE1dem do d\xEDry vyz\xE1\u0159\xED 6 a\u017E 32 % sv\xE9 hmotnosti jako sv\u011Btlo, t\xEDm v\xEDc, \u010D\xEDm rychleji d\xEDra rotuje. To sv\u011Btlo m\u011Bn\xED na energii diskov\xE9 kolektory. Ka\u017Ed\xFD diskov\xFD kolektor injektor zrychl\xED o 10 %." },
+      injector: { name: "Akre\u010Dn\xED injektor", desc: "Automatick\xFD ventil. S\xE1m bere nahromad\u011Bn\xFD plyn z magnetick\xE9 pasti a pos\xEDl\xE1 ho po spir\xE1le do disku, i kdy\u017E neklik\xE1\u0161. Kdy\u017E past nesta\u010D\xED, b\u011B\u017E\xED pomaleji. Ka\u017Ed\xFD diskov\xFD kolektor injektor zrychl\xED o 10 %." },
       ring: { name: "Diskov\xFD kolektor", desc: "Prstenec kolem disku, kter\xFD chyt\xE1 jeho z\xE1\u0159en\xED. Ka\u017Ed\xFD dal\u0161\xED zakryje v\xEDc disku a o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
       station: { name: "Dilata\u010Dn\xED stanice", desc: "Ob\xEDh\xE1 t\u011Bsn\u011B nad horizontem, kde \u010Das plyne pomaleji. M\u011B\u0159\xED disk i vzd\xE1len\xFD vesm\xEDr, kter\xFD odtud vypad\xE1 zrychlen\u011B. V\xEDc dat, \u010D\xEDm v\xEDc civilizace z\xE1\u0159\xED." },
       jet: { name: "Tryskov\xFD lapa\u010D", desc: "Zachyt\xE1v\xE1 energii trysek nad p\xF3ly d\xEDry. Trysky berou energii z rotace, tak\u017Ee d\xEDru brzd\xED." },
@@ -384,7 +385,7 @@
       prograde: { name: "Soub\u011B\u017En\xE9 dr\xE1hy", desc: "Plyn p\u0159it\xE9k\xE1 ve sm\u011Bru rotace d\xEDry a rozt\xE1\u010D\xED ji dvakr\xE1t rychleji." },
       magscoop: { name: "Supravodiv\xE9 s\xEDt\u011B", desc: "Nab\u011Bra\u010De \xD73." },
       wide: { name: "\u0160irok\xE9 prstence", desc: "Ka\u017Ed\xFD diskov\xFD kolektor zakryje dvakr\xE1t v\xEDc disku." },
-      mri: { name: "Magnetorota\u010Dn\xED nestabilita", desc: "Turbulence v disku odv\xE1d\xED plynu moment hybnosti, tak\u017Ee do d\xEDry te\u010De s\xE1m. Odemkne akre\u010Dn\xED injektory, kter\xE9 krm\xED disk bez tv\xE9ho klik\xE1n\xED." },
+      mri: { name: "Magnetorota\u010Dn\xED nestabilita", desc: "Turbulence v disku odv\xE1d\xED plynu moment hybnosti, tak\u017Ee do d\xEDry te\u010De s\xE1m. Odemkne akre\u010Dn\xED injektory, kter\xE9 vypou\u0161t\u011Bj\xED plyn z pasti bez tv\xE9ho klik\xE1n\xED." },
       lower: { name: "Ni\u017E\u0161\xED dr\xE1hy", desc: "Stanice sestoup\xED na 1,2 Schwarzschildova polom\u011Bru." },
       pulse3: { name: "Anal\xFDza pulsu", desc: "Z \u010Deho se ten puls skl\xE1d\xE1? Stanice \xD73." },
       thick: { name: "Hust\xE9 prstence", desc: "Ka\u017Ed\xFD diskov\xFD kolektor zakryje dvakr\xE1t v\xEDc disku." },
@@ -549,7 +550,7 @@
     // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
     scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
-    ring: { base: { plasma: 6e7 }, growth: 1.135, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+    ring: { base: { plasma: 6e7 }, growth: 1.14, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 15e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
     jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
     hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
@@ -886,11 +887,17 @@
     return 1 - Math.sqrt(1 - 2 / (3 * iscoR(a)));
   }
   function feedRate(s) {
-    const n = s.b.injector;
-    return n ? consOf(s, "injector", "plasma") * n * effOf(s, "injector") : 0;
+    return s.b.injector && !s.off.injector ? s.vent?.inj ?? 0 : 0;
+  }
+  function injEmitters(s) {
+    const n = s.b.injector, k = n >= 1 ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, n)) * 3)) : 0;
+    return Array.from({ length: k }, (_, i) => i * (Math.PI * 2 / k) + 0.4);
+  }
+  function injDemand(s) {
+    return s.b.injector ? consOf(s, "injector", "plasma") * s.b.injector : 0;
   }
   function holeLRaw(s) {
-    return diskEta(s.hole.a) * (feedRate(s) + ventFlow(s)) * HOLE.c2;
+    return diskEta(s.hole.a) * ventFlow(s) * HOLE.c2;
   }
   function holeL(s) {
     const raw = holeLRaw(s) * ventHeatMult(s), edd = HOLE.eddW * ventOverMult(s) * ventHeatMult(s);
@@ -907,7 +914,7 @@
     return 1.4 * a * a * (s.r.bz ? 2 : 1) * (s.r.penrose ? 2 : 1);
   }
   function jetP(s) {
-    return jetEta(s) * (feedRate(s) + ventFlow(s)) * HOLE.c2;
+    return jetEta(s) * ventFlow(s) * HOLE.c2;
   }
   function jetCov(s) {
     return s.off.jet ? 0 : 1 - Math.exp(-s.b.jet * HOLE.jetF);
@@ -922,7 +929,7 @@
     return Math.pow(Math.max(1, powerW(s) / HOLE.fbBase), k);
   }
   function spinRates(s) {
-    const up = feedRate(s) + ventFlow(s) > 0 ? s.r.prograde ? 2 : 1 : 0;
+    const up = ventFlow(s) > 0 ? s.r.prograde ? 2 : 1 : 0;
     const down = s.b.jet && s.r.mad ? jetCov(s) * (s.r.penrose ? 0.5 : 1) : 0;
     return { up, down };
   }
@@ -1034,6 +1041,7 @@
     if (ventTankKg(s) < kg * 0.999) return null;
     s.vent.kg = Math.max(0, ventTankKg(s) - kg);
     if (!auto) {
+      s.vent.man = (s.vent.man ?? 0) + kg / 3;
       s.vent.chain = s.vent.fly.some((b2) => !b2.auto) ? s.vent.chain + 1 : 1;
       s.vent.best = Math.max(s.vent.best, s.vent.chain);
     }
@@ -1073,6 +1081,22 @@
       s.res.plasma -= take;
       v.kg += take;
     }
+    if (s.b.injector && !s.off.injector) {
+      const dem = injDemand(s), per = Math.max(Math.min(ventKg(s), dem * 1.5), dem / 4), em = injEmitters(s);
+      v.injC = Math.min((v.injC ?? 0) + dem * dt, per * 2);
+      let sent = 0;
+      while (v.injC >= per && v.kg >= per * 0.2) {
+        const kg = Math.min(per, v.kg);
+        v.injC -= per;
+        v.kg -= kg;
+        sent += kg;
+        v.injK = ((v.injK ?? 0) + 1) % em.length;
+        s.vent.fly.push({ t0: s.time, r0: ventR(ventLv(s, "radius")), th0: em[v.injK], kg, mult: 1, gold: false, auto: true, inj: true });
+      }
+      v.inj = (v.inj ?? 0) * (1 - Math.min(1, dt / 3)) + sent / 3;
+      s.eff.injector = dem > 0 ? Math.min(1, v.inj / dem) : 1;
+    } else v.inj = 0;
+    v.man = (v.man ?? 0) * (1 - Math.min(1, dt / 3));
     if (v.over > 0) v.over = Math.max(0, v.over - dt);
     v.disk = Math.max(0, (v.disk ?? 0) - ventFlow(s) * dt);
     for (let i = v.fly.length - 1; i >= 0; i--) {
@@ -1355,7 +1379,7 @@
       if (!n) continue;
       const e = effOf(s, id);
       for (const r of keys(B[id].prod ?? {})) p[r] += prodOf(s, id, r) * n * e;
-      for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
+      if (id !== "injector") for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
     }
     if (s.r.auto && !s.chapterDone) p.ore += clickPower(s) * RULES.autoClicksPerSec;
     if (ventOpen(s) && ventTank(s) < 0.999) c.plasma += ventFill(s);
@@ -1492,6 +1516,7 @@
     }
     if (s.r.auto && !s.chapterDone) add(s, "ore", clickPower(s) * RULES.autoClicksPerSec * dt);
     for (const id of CONVERTERS) {
+      if (id === "injector") continue;
       const d = B[id], n = s.b[id];
       if (!n || s.off[id]) {
         s.eff[id] = n ? 0 : 1;
@@ -3843,7 +3868,7 @@
       x.font = `600 12px ${MONO}`;
       x.textAlign = "center";
       x.fillStyle = f.gold ? `rgba(245,205,85,${Math.min(1, f.life * 1.5)})` : `rgba(127,211,234,${Math.min(1, f.life * 1.5)})`;
-      x.fillText(f.text, f.x, f.y - 16 - (1 - f.life) * 26);
+      if (f.text) x.fillText(f.text, f.x, f.y - 16 - (1 - f.life) * 26);
     }
     x.font = `12px ${MONO}`;
     x.textAlign = "left";
@@ -4310,7 +4335,7 @@
       rows.push(["\xA7" + t("ui.prod.title"), ""]);
       rows.push([t("ui.prod.power"), power(P)]);
       for (const id of ["ring", "jet", "hawking"]) if (part(id) > 1e-3) rows.push([t(`ui.prod.from.${id}`), pct(part(id))]);
-      const fv = ventFlow(S), fi = feedRate(S);
+      const fv = S.vent.man ?? 0, fi = feedRate(S);
       if (fv + fi > 0) {
         rows.push([t("ui.prod.fromVent"), pct(fv / (fv + fi))]);
         if (fi > 0) rows.push([t("ui.prod.fromInj"), pct(fi / (fv + fi))]);
@@ -4569,29 +4594,12 @@
         trail3.push([q.r, q.th]);
       }
       trail3.push([p0.r, p0.th]);
-      return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail: trail3 };
+      return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail: trail3, auto: !!b.inj };
     });
-    const ni = S.b.injector >= 1 && !S.off.injector ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, S.b.injector)) * 3)) : 0;
-    const inj = [];
-    for (let k = 0; k < ni; k++) {
-      const th0 = k * (Math.PI * 2 / ni) + 0.4;
-      inj.push(th0);
-      const T = ventFlight(0.95);
-      for (let q = 0; q < 3; q++) {
-        const ph = ((S.time / T + q / 3 + k * 0.17) % 1 + 1) % 1;
-        const b = { t0: S.time - ph * T, r0: 0.95, th0, kg: 0, mult: 1, gold: false, auto: true };
-        const p0 = blobPos(b, ph * T), trail3 = [];
-        for (let j = 8; j >= 1; j--) {
-          const qq = blobPos(b, Math.max(0, ph * T - j * 0.06));
-          trail3.push([qq.r, qq.th]);
-        }
-        trail3.push([p0.r, p0.th]);
-        blobs.push({ r: p0.r, th: p0.th, gold: false, mult: 1, trail: trail3, auto: true });
-      }
-    }
+    const inj = injEmitters(S);
     const fl = flares.splice(0).map((f) => {
       const q = blobPos(f.b, ventFlight(f.b.r0));
-      return { r: q.r, th: q.th, gold: f.b.gold, mult: f.b.mult, text: `+${bytes(f.data)}${f.b.mult > 1.01 ? ` \xD7${dec(f.b.mult, 2)}` : ""}` };
+      return { r: q.r, th: q.th, gold: f.b.gold, mult: f.b.mult, text: f.b.inj ? "" : `+${bytes(f.data)}${f.b.mult > 1.01 ? ` \xD7${dec(f.b.mult, 2)}` : ""}` };
     });
     return {
       blobs,
@@ -4784,7 +4792,7 @@
         el.querySelector("[data-f=n]").innerHTML = esc(t("ui.pieces", { n: num(count) }));
         const flow = (k) => {
           const part = (r, v, sign) => `<span><span style="color:${COLOR[r]}">${esc(t("res." + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
-          const ins = Object.keys(d.cons ?? {}).map((r) => part(r, consOf(S, id, r) * k, "\u2212"));
+          const ins = id === "injector" ? [`<span><span style="color:${COLOR.plasma}">${esc(t("ui.vent.fromTrap"))}</span> \u2212${esc(rate("plasma", consOf(S, id, "plasma") * k))}</span>`] : Object.keys(d.cons ?? {}).map((r) => part(r, consOf(S, id, r) * k, "\u2212"));
           const outs = Object.keys(d.prod ?? {}).map((r) => part(r, prodOf(S, id, r) * k, "+"));
           if (id === "injector") {
             const perKg = feedRate(S) > 0 ? holeL(S) / feedRate(S) : diskEta(S.hole.a) * HOLE.c2;

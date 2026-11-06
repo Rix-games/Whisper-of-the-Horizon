@@ -4,7 +4,7 @@ export interface LogEntry { key: string; kind: 'story' | 'fact' | 'sys'; day: nu
 type Bag = { metal: number; energy: number; plasma: number };
 
 /** Chuchvalec plynu na cestě k díře: start (čas, poloměr, úhel), hmotnost, násobič řetězu. */
-export interface Blob { t0: number; r0: number; th0: number; kg: number; mult: number; gold: boolean; auto: boolean }
+export interface Blob { t0: number; r0: number; th0: number; kg: number; mult: number; gold: boolean; auto: boolean; inj?: boolean }
 export interface State {
   v: number;
   res: Record<Res, number>;
@@ -33,7 +33,7 @@ export interface State {
   // Kapitola 3: černá díra. a = rotace (0–0,998), phase = fáze, dive = odpočet ponoru (−1 = neběží)
   hole: { a: number; phase: number; dive: number; done: boolean; started: boolean };
   // Kapitola 3: magnetická past a vypouštění plynu do disku (engine: vent*)
-  vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[]; disk?: number; share?: number; kg?: number };
+  vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[]; disk?: number; share?: number; kg?: number; inj?: number; injC?: number; injK?: number; man?: number };
   yrs?: number;                         // kolik let uplynulo venku (Vesper mezi směnami spí)
   yrs1?: number;                        // roky venku na začátku Kap. 2
   seen?: Record<string, string>;

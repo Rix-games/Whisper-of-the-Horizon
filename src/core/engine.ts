@@ -65,14 +65,22 @@ export function iscoR(a: number) {
 export function diskEta(a: number) {
   return 1 - Math.sqrt(1 - 2 / (3 * iscoR(a)));
 }
-/** Kolik kg plynu za sekundu injektory skutečně posílají do disku. */
+/** Kolik kg plynu za sekundu injektory skutečně posílají z pasti do disku. */
 export function feedRate(s: State) {
-  const n = s.b.injector;
-  return n ? consOf(s, "injector", "plasma") * n * effOf(s, "injector") : 0;
+  return s.b.injector && !s.off.injector ? s.vent?.inj ?? 0 : 0;
+}
+/** Místa injektorů na okraji disku (úhly). */
+export function injEmitters(s: State) {
+  const n = s.b.injector, k = n >= 1 ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, n)) * 3)) : 0;
+  return Array.from({ length: k }, (_, i) => i * (Math.PI * 2 / k) + 0.4);
+}
+/** Kolik by injektory chtěly poslat, kdyby měla past dost plynu. */
+export function injDemand(s: State) {
+  return s.b.injector ? consOf(s, "injector", "plasma") * s.b.injector : 0;
 }
 /** Svítivost disku ve W. Nad Eddingtonovou mezí jen se štíhlým diskem a jen logaritmicky. */
 export function holeLRaw(s: State) {
-  return diskEta(s.hole.a) * (feedRate(s) + ventFlow(s)) * HOLE.c2;
+  return diskEta(s.hole.a) * ventFlow(s) * HOLE.c2;
 }
 export function holeL(s: State) {
   const raw = holeLRaw(s) * ventHeatMult(s), edd = HOLE.eddW * ventOverMult(s) * ventHeatMult(s);
@@ -90,7 +98,7 @@ export function jetEta(s: State) {
   return 1.4 * a * a * (s.r.bz ? 2 : 1) * (s.r.penrose ? 2 : 1);
 }
 export function jetP(s: State) {
-  return jetEta(s) * (feedRate(s) + ventFlow(s)) * HOLE.c2;
+  return jetEta(s) * ventFlow(s) * HOLE.c2;
 }
 export function jetCov(s: State) {
   return s.off.jet ? 0 : 1 - Math.exp(-s.b.jet * HOLE.jetF);
@@ -108,7 +116,7 @@ export function holeFb(s: State, k: number) {
 }
 /** Krmení roztáčí díru, trysky ji brzdí. Rovnovážná rotace. */
 function spinRates(s: State) {
-  const up = feedRate(s) + ventFlow(s) > 0 ? (s.r.prograde ? 2 : 1) : 0;
+  const up = ventFlow(s) > 0 ? (s.r.prograde ? 2 : 1) : 0;
   const down = s.b.jet && s.r.mad ? jetCov(s) * (s.r.penrose ? 0.5 : 1) : 0;
   return { up, down };
 }
@@ -213,6 +221,7 @@ export function ventRelease(s: State, th: number, auto = false): Blob | null {
   if (ventTankKg(s) < kg * 0.999) return null;
   s.vent.kg = Math.max(0, ventTankKg(s) - kg);
   if (!auto) {
+    s.vent.man = (s.vent.man ?? 0) + kg / 3;
     s.vent.chain = s.vent.fly.some((b) => !b.auto) ? s.vent.chain + 1 : 1;
     s.vent.best = Math.max(s.vent.best, s.vent.chain);
   }
@@ -262,6 +271,23 @@ function ventTick(s: State, dt: number) {
     s.res.plasma -= take;
     v.kg += take;
   }
+  // injektory = automatický ventil: z pasti vypouštějí skutečné chuchvalce (velikost dle Ventilu, let dle Poloměru)
+  if (s.b.injector && !s.off.injector) {
+    // chuchvalec injektoru: nejvýš velikost ventilu, aspoň jeden za 1,5 s, nejvýš 4 za sekundu
+    const dem = injDemand(s), per = Math.max(Math.min(ventKg(s), dem * 1.5), dem / 4), em = injEmitters(s);
+    v.injC = Math.min((v.injC ?? 0) + dem * dt, per * 2);
+    let sent = 0;
+    // vypustí celý chuchvalec, nebo co v pasti je (aspoň pětinu chuchvalce)
+    while (v.injC >= per && v.kg >= per * 0.2) {
+      const kg = Math.min(per, v.kg);
+      v.injC -= per; v.kg -= kg; sent += kg;
+      v.injK = ((v.injK ?? 0) + 1) % em.length;
+      s.vent.fly.push({ t0: s.time, r0: ventR(ventLv(s, "radius")), th0: em[v.injK], kg, mult: 1, gold: false, auto: true, inj: true });
+    }
+    v.inj = (v.inj ?? 0) * (1 - Math.min(1, dt / 3)) + sent / 3;   // průměr za posledních pár sekund
+    s.eff.injector = dem > 0 ? Math.min(1, v.inj / dem) : 1;
+  } else v.inj = 0;
+  v.man = (v.man ?? 0) * (1 - Math.min(1, dt / 3));
   if (v.over > 0) v.over = Math.max(0, v.over - dt);
   v.disk = Math.max(0, (v.disk ?? 0) - ventFlow(s) * dt);
   for (let i = v.fly.length - 1; i >= 0; i--) {
@@ -554,7 +580,7 @@ export function rates(s: State) {
     if (!n) continue;
     const e = effOf(s, id);
     for (const r of keys(B[id].prod ?? {})) p[r] += prodOf(s, id, r) * n * e;
-    for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
+    if (id !== "injector") for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
   }
   if (s.r.auto && !s.chapterDone) p.ore += clickPower(s) * RULES.autoClicksPerSec;
   if (ventOpen(s) && ventTank(s) < 0.999) c.plasma += ventFill(s);
@@ -691,6 +717,7 @@ export function tick(s: State, dt, rng = Math.random) {
   }
   if (s.r.auto && !s.chapterDone) add(s, "ore", clickPower(s) * RULES.autoClicksPerSec * dt);
   for (const id of CONVERTERS) {
+    if (id === "injector") continue; // injektory berou plyn z magnetické pasti (ventTick)
     const d = B[id], n = s.b[id];
     if (!n || s.off[id]) {
       s.eff[id] = n ? 0 : 1;

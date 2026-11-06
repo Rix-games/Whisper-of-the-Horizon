@@ -40,7 +40,8 @@ const FEED_SHARE = Number(process.env.FEED ?? 0.6); // kolik výroby plynu bot p
 function botWants(st: typeof s, id: BuildingId) {
   if (st.chapterDone < 2) return true;
   const { p, c } = E.rates(st);
-  if (id === 'injector' || id === 'hawking') return (c.plasma - (E.ventOpen(st) && E.ventTank(st) < 0.999 ? E.ventFill(st) : 0)) + E.consOf(st, id, 'plasma') <= FEED_SHARE * p.plasma;
+  if (id === 'injector') return E.injDemand(st) + E.consOf(st, id, 'plasma') <= 0.85 * E.ventFill(st);
+  if (id === 'hawking') return c.plasma + E.consOf(st, id, 'plasma') <= FEED_SHARE * p.plasma;
   if (id === 'jet') return E.jetCov(st) < 0.97;
   return true;
 }

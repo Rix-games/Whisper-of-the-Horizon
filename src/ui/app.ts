@@ -1,7 +1,7 @@
 import { cs } from '../i18n/cs.js';
 import { t } from '../i18n/index.js';
 import { type BuildingId, type LocationId, type Res, type ResearchId, HOLE, PHASES, B, BUILDING_IDS, EVENTS, L, LOCATION_IDS, PRESTIGE, R, RESEARCH_IDS, RESOURCES, STAGES, STAR, stage } from '../core/defs.js';
-import { VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventBurst, ventTank, ventTankKg, ventFill, ventFlow, ventShare, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
+import { injEmitters, VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventBurst, ventTank, ventTankKg, ventFill, ventFlow, ventShare, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
 import { decodeSave, encodeSave, migrate, newState } from '../core/state.js';
 import { bytes, duration, energy, kValue, mass, num, power, sci } from '../core/format.js';
 import { drawHole, drawHoleMap, drawProfile, drawScene, holeMapHit, sceneGeom, type HoleView, type SceneView } from './hole.js';
@@ -221,7 +221,7 @@ export function renderRig() {
     rows.push(["§" + t("ui.prod.title"), ""]);
     rows.push([t("ui.prod.power"), power(P)]);
     for (const id of ["ring", "jet", "hawking"] as BuildingId[]) if (part(id) > 0.001) rows.push([t(`ui.prod.from.${id}`), pct(part(id))]);
-    const fv = ventFlow(S), fi = feedRate(S);
+    const fv = S.vent.man ?? 0, fi = feedRate(S);
     if (fv + fi > 0) {
       rows.push([t("ui.prod.fromVent"), pct(fv / (fv + fi))]);
       if (fi > 0) rows.push([t("ui.prod.fromInj"), pct(fi / (fv + fi))]);
@@ -474,27 +474,12 @@ function sceneView(): SceneView {
       trail.push([q.r, q.th]);
     }
     trail.push([p0.r, p0.th]);
-    return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail };
+    return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail, auto: !!b.inj };
   });
-  // injektory: každý proud má své místo na okraji disku a plyn z něj teče sám
-  const ni = S.b.injector >= 1 && !S.off.injector ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, S.b.injector)) * 3)) : 0;
-  const inj: number[] = [];
-  for (let k = 0; k < ni; k++) {
-    const th0 = k * (Math.PI * 2 / ni) + 0.4;
-    inj.push(th0);
-    const T = ventFlight(0.95);
-    for (let q = 0; q < 3; q++) {
-      const ph = ((S.time / T + q / 3 + k * 0.17) % 1 + 1) % 1;
-      const b = { t0: S.time - ph * T, r0: 0.95, th0, kg: 0, mult: 1, gold: false, auto: true };
-      const p0 = blobPos(b, ph * T), trail: [number, number][] = [];
-      for (let j = 8; j >= 1; j--) { const qq = blobPos(b, Math.max(0, ph * T - j * 0.06)); trail.push([qq.r, qq.th]); }
-      trail.push([p0.r, p0.th]);
-      blobs.push({ r: p0.r, th: p0.th, gold: false, mult: 1, trail, auto: true } as any);
-    }
-  }
+  const inj = injEmitters(S);
   const fl = flares.splice(0).map((f) => {
     const q = blobPos(f.b, ventFlight(f.b.r0));
-    return { r: q.r, th: q.th, gold: f.b.gold, mult: f.b.mult, text: `+${bytes(f.data)}${f.b.mult > 1.01 ? ` ×${dec(f.b.mult, 2)}` : ""}` };
+    return { r: q.r, th: q.th, gold: f.b.gold, mult: f.b.mult, text: f.b.inj ? "" : `+${bytes(f.data)}${f.b.mult > 1.01 ? ` ×${dec(f.b.mult, 2)}` : ""}` };
   });
   return {
     blobs, flares: fl, inj, relR: ventR(ventLv(S, "radius")), hover: sceneHover,
@@ -669,7 +654,9 @@ export function updateView(which = tab, view = $("view")) {
       el.querySelector<El>("[data-f=n]").innerHTML = esc(t("ui.pieces", { n: num(count) }));
       const flow = (k) => {
         const part = (r, v, sign) => `<span><span style="color:${COLOR[r]}">${esc(t("res." + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
-        const ins = (Object.keys(d.cons ?? {}) as Res[]).map((r) => part(r, consOf(S, id, r) * k, "−"));
+        const ins = id === "injector"
+          ? [`<span><span style="color:${COLOR.plasma}">${esc(t("ui.vent.fromTrap"))}</span> −${esc(rate("plasma", consOf(S, id, "plasma") * k))}</span>`]
+          : (Object.keys(d.cons ?? {}) as Res[]).map((r) => part(r, consOf(S, id, r) * k, "−"));
         const outs = (Object.keys(d.prod ?? {}) as Res[]).map((r) => part(r, prodOf(S, id, r) * k, "+"));
         if (id === "injector") {
           const perKg = feedRate(S) > 0 ? holeL(S) / feedRate(S) : diskEta(S.hole.a) * HOLE.c2;

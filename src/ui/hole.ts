@@ -664,7 +664,7 @@ export function drawScene(c: HTMLCanvasElement, v: HoleView, sv: SceneView, time
     x.fillStyle = fg; x.beginPath(); x.arc(f.x, f.y, r * 0.8, 0, 7); x.fill();
     x.font = `600 12px ${MONO}`; x.textAlign = 'center';
     x.fillStyle = f.gold ? `rgba(245,205,85,${Math.min(1, f.life * 1.5)})` : `rgba(127,211,234,${Math.min(1, f.life * 1.5)})`;
-    x.fillText(f.text, f.x, f.y - 16 - (1 - f.life) * 26);
+    if (f.text) x.fillText(f.text, f.x, f.y - 16 - (1 - f.life) * 26);
   }
   // ukazatel pasti vlevo dole
   x.font = `12px ${MONO}`; x.textAlign = 'left'; x.fillStyle = 'rgba(176,181,212,0.9)';
