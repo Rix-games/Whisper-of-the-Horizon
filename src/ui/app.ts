@@ -215,44 +215,35 @@ export function renderRig() {
   const hint = $("hint");
   hint.hidden = S.b.drone >= 3;
   hint.textContent = t("ui.hint");
+  // levý panel: jen to, co hráč potřebuje k postupu; stavby jen když neběží naplno
   const rows = ch2 ? [] : [[t("ui.stats.clicks"), num(S.clicks)]];
+  const slow = (ids: BuildingId[]) => { for (const id of ids.filter((id2) => S.b[id2] >= 1)) { const e = S.off[id] ? 0 : S.eff[id] ?? 1; if (S.off[id] || e < 0.98) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round(e * 100) })]); } };
   if (!ch2) {
     rows.push([t("ui.stats.drones"), num(Math.floor(S.b.drone))]);
-    for (const id of CONVERTERS.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+    slow(CONVERTERS);
   } else if (ch4) {
     rows.push(...rig4Rows());
   } else if (ch3) {
-    rows.push([t("ui.stats.phase"), `${S.hole.phase + 1} / ${PHASES.length}`], [t("ui.stats.spin"), spinTxt(S.hole.a)]);
-    if (S.b.injector >= 1) rows.push([t("ui.stats.feed"), mass(feedRate(S)) + "/s"], [t("ui.stats.diskCov"), pct(ringCov(S))]);
+    rows.push(["§" + t("ui.prod.hole"), ""]);
+    rows.push([t("ui.stats.phase"), `${S.hole.phase + 1}/${PHASES.length} · ${phaseName(S.hole.phase)}`]);
+    rows.push([t("ui.hole.L"), power(holeL(S))]);
     if (ventOpen(S)) {
       const v = S.vent;
-      rows.push([t("ui.vent.flow"), v.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v.over) }) : mass(ventFlow(S)) + "/s"]);
-      rows.push([t("ui.vent.share"), `${mass(ventFill(S))}/s · ${Math.round(ventShare(S) * 100)} %`]);
-      rows.push([t("ui.vent.disk"), `${mass(v.disk ?? 0)} · ${power(holeL(S))}`]);
-      rows.push([t("ui.vent.tank"), `${mass(ventTankKg(S))} · ${Math.round(ventTank(S) * 100)} %`]);
-      rows.push([t("ui.vent.chain"), v.chain ? `${v.chain} · ×${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v.best })]);
+      rows.push([t("ui.vent.tank"), v.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v.over) }) : `${Math.round(ventTank(S) * 100)} %`]);
+      rows.push([t("ui.vent.chain"), v.chain > 1 ? `${v.chain} · ×${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v.best })]);
     }
-    const { p, c } = rates(S), P = powerW(S), part = (id: BuildingId) => S.b[id] ? prodOf(S, id, "energy") * S.b[id] / Math.max(1, P) : 0;
+    const { p, c } = rates(S), P = powerW(S);
     rows.push(["§" + t("ui.prod.title"), ""]);
     rows.push([t("ui.prod.power"), power(P)]);
-    for (const id of ["ring", "jet", "hawking"] as BuildingId[]) if (part(id) > 0.001) rows.push([t(`ui.prod.from.${id}`), pct(part(id))]);
-    const fv = S.vent.man ?? 0, fi = feedRate(S);
-    if (fv + fi > 0) {
-      rows.push([t("ui.prod.fromVent"), pct(fv / (fv + fi))]);
-      if (fi > 0) rows.push([t("ui.prod.fromInj"), pct(fi / (fv + fi))]);
-    }
     rows.push([t("res.plasma"), `${p.plasma - c.plasma >= 0 ? "+" : "−"}${mass(Math.abs(p.plasma - c.plasma))}/s`]);
     rows.push([t("res.data"), `+${bytes(p.data - c.data)}/s`]);
-    if (S.b.station >= 1) rows.push([t("ui.prod.dil"), `×${dec(gamma(S), gamma(S) >= 10 ? 0 : 1)}`]);
-    rows.unshift(["§" + t("ui.prod.hole"), ""]);
-    for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+    if (S.b.injector >= 1 && injShortOn) rows.push([t("b.injector.name"), t("ui.inj.panelShort")]);
+    slow(HOLE_CONV.filter((id) => id !== "injector"));
     if (S.b.yard >= 1) rows.push([t("b.yard.name"), S.off.yard ? t("ui.stopped") : t("ui.yard.panel", { r: num(S.yard?.built.ring ?? 0), j: num(S.yard?.built.jet ?? 0) })]);
   } else if (!S.star.done) {
-    rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
-    for (const id of STAR_BUILDINGS2.filter((id2) => S.b[id2] >= 1)) {
-      if (id === "swarmfab" && !S.off[id]) { rows.push([t(`b.${id}.name`), t("ui.fabRate", { n: num(S.fab?.made ?? 0) })]); continue; }
-      rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
-    }
+    rows.push([t("ui.stats.stage"), `${S.star.stage + 1}/${STAGES.length} · ${stageName(S.star.stage)}`], [t("ui.stats.cov"), pct(coverage(S))]);
+    if (S.b.swarmfab >= 1 && !S.off.swarmfab) rows.push([t("b.swarmfab.name"), t("ui.fabRate", { n: num(S.fab?.made ?? 0) })]);
+    slow(STAR_BUILDINGS2.filter((id) => id !== "swarmfab") as BuildingId[]);
   }
   $("stats").innerHTML = rows.map(([a, b]) => a.startsWith("§") ? `<dt class="sec">${esc(a.slice(1))}</dt>` : `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
   const v = $("voyage");
@@ -710,7 +701,7 @@ export function updateView(which = tab, view = $("view")) {
         if (d.makes) outs.push(`<span>${esc(t(d.makes.building === "dyson" ? "ui.makesDyson" : "ui.makes", { n: num(makesOf(S, id) * k) }))}</span>`);
         return ins.length ? `${ins.join(" ")} <span class="arrow">→</span> ${outs.join(" ")}` : outs.join(" ");
       };
-      let eff = `<span class="effrow"><span class="lbl">${esc(t("ui.one"))}</span>${flow(1)}</span>`;
+      let eff = (id === "ring" || id === "jet") && count < 1 ? "" : `<span class="effrow"><span class="lbl">${esc(t("ui.one"))}</span>${flow(1)}</span>`;
       if (count >= 2 || count >= 1 && d.cons) {
         const e = d.cons ? S.off[id] ? 0 : S.eff[id] ?? 1 : 1;
         const shown = id === "injector" ? injAvg : e;   // injektory: vyhlazené, ať číslo neskáče
@@ -720,7 +711,6 @@ export function updateView(which = tab, view = $("view")) {
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
       }
       if (id === "scoop" && ventOpen(S)) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.vent.toTrap"))}</span>${esc(t("ui.vent.toTrapTxt", { p: Math.round(ventShare(S) * 100), f: mass(ventFill(S)) }))}</span>`;
-      if (id === "injector" && count >= 1) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.captured"))}</span>${esc(t("ui.capturedTxt", { p: pct(ringCov(S)), w: power(holeL(S) * ringCov(S)) }))}</span>`;
       if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
       }

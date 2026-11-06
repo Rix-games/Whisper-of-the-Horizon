@@ -59,7 +59,7 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
   ring: { base: { plasma: 6e7 }, growth: 1.15, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
   station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 1.5e27 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
-  jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
+  jet: { base: { plasma: 3.5e14 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
   hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) },
   // Orbitální montovna: sama staví diskové kolektory a tryskové lapače z podílu čistého přírůstku plazmatu (engine yardTick)
   yard: { base: { plasma: 3e16 }, growth: 1.6, unlock: (s) => !!s.r.yard && hole3(s) },
@@ -94,8 +94,8 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   swarm: { cost: { data: 5e4 } },
   deep: { cost: { data: 8e4 } },
   arc: { cost: { data: 12e4 } },
-  scan: { cost: { data: 18e4 } },
-  thinfilm: { cost: { data: 25e4 } },
+  scan: { cost: { data: 11e4 } },
+  thinfilm: { cost: { data: 16e4 } },
   auto: { cost: { data: 3e5 }, req: has("scan") },
   lab2: { cost: { data: 35e4 }, req: has("arc") },
   mirror: { cost: { data: 4e5 }, req: has("thinfilm") },
@@ -109,7 +109,7 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   swarm2: { cost: { data: 6e6 }, req: has("repl") },
   fusion: { cost: { data: 1e7 }, req: has("giant"), reqKey: "giant" },
   supercond: { cost: { data: 2e7, metal: 1e6 }, req: has("giant"), reqKey: "giant" },
-  plasma: { cost: { data: 15e7 }, req: has("forge", "fusion") },
+  plasma: { cost: { data: 9e7 }, req: has("forge", "fusion") },
   quantum: { cost: { data: 2e8 }, req: has("cryo", "fusion") },
   vib2: { cost: { data: 6e8 }, req: has("resonance", "giant") },
   dyson: { cost: { data: 1e9 }, req: has("sun"), reqKey: "sun" },
@@ -120,8 +120,8 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   lagrange: { cost: { data: 1e12 }, req: has("beam") },
   // Kapitola 2: Hvězda
   lift: { cost: { data: 2e14 }, req: (s) => s.chapterDone >= 1, reqKey: "typeI" },
-  sep: { cost: { data: 6e14 }, req: has("lift") },
-  seismo: { cost: { data: 5e14 }, req: has("lift") },
+  sep: { cost: { data: 2.5e14 }, req: has("lift") },
+  seismo: { cost: { data: 3e14 }, req: has("lift") },
   coil: { cost: { data: 2e15 }, req: has("lift") },
   fab: { cost: { data: 8e15 }, req: has("sep") },
   sail: { cost: { data: 1e14 }, req: has("sep") },
@@ -241,7 +241,7 @@ export const STAR = {
 export const PHASES: PhaseDef[] = [
   { id: "fallback", needW: 1e23, disk: 0 },
   { id: "thin", needW: 1e27, disk: 1 },
-  { id: "edd", needW: 1.5e32, disk: 2 },
+  { id: "edd", needW: 8e31, disk: 2 },
   { id: "jets", needW: 4e33, disk: 3 },
   { id: "ergo", needW: 2e34, disk: 4 }
 ];

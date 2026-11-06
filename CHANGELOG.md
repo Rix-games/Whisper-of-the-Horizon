@@ -2,14 +2,16 @@
 
 ## 0.4 – Kapitola 4: Most
 
-- Nová kapitola: síť červích děr mezi soustavami v rameni galaxie
+- Nová kapitola: síť červích děr mezi hvězdami v rameni Persea
 - Tah myší otevírá mosty, hrdla se plní a rozšiřují
-- Synchronizace s pulsem: zámek mostu na vlně
-- Exotická hmota jako nová surovina
+- Zámek mostu na vlně pulsu
+- Kvantová pěna jako nová surovina
 - Automatický stupeň: směrovače, raziče, fázové zámky, provázané páry
 - Pět stadií až za Kardašev Typ III, finále Průchod
-- Nové mise na mapě galaxie, výzkumy, deník a zajímavosti
-- Záložka Most: profil hrdla a ústí červí díry
+- Mapa Mléčné dráhy s misemi, nové výzkumy, deník a zajímavosti
+- Záložka Most: profil hrdla, co brzdí, všechny mosty
+- Jednodušší karty staveb a levý panel ve všech kapitolách
+- Svižnější místa v Kapitolách 1–3, víc příběhu v Kapitole 3
 
 ## 0.3.4 – Orbitální montovna
 

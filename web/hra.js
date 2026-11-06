@@ -81,11 +81,11 @@
           autoOff: "vypnuto"
         },
         u: {
-          inlet: { name: "Sac\xED kan\xE1ly", desc: "Vedou plyn z nab\u011Bra\u010D\u016F rovnou do pasti. \u010C\xEDm v\xEDc kan\xE1l\u016F, t\xEDm rychleji se past pln\xED. Zbytek plazmatu jde do skladu na stavby." },
-          valve: { name: "Ventil pasti", desc: "\u0160ir\u0161\xED hrdlo magnetick\xE9 pasti, ze kter\xE9 vypou\u0161t\xED\u0161 plyn klik\xE1n\xEDm do disku. V jednom chuchvalci vypust\xED v\xEDc plynu, tak\u017Ee z\xE1blesk d\xE1 v\xEDc dat a disk v\xEDc z\xE1\u0159\xED." },
-          trap: { name: "Magnetick\xE1 past", desc: "Siln\u011Bj\u0161\xED pole udr\u017E\xED v\xEDc plynu. V\xEDc chuchvalc\u016F za sebou a v\u011Bt\u0161\xED v\xFDbuch disku." },
-          radius: { name: "Polom\u011Br vypou\u0161t\u011Bn\xED", desc: "Vypou\u0161t\xED d\xE1l od d\xEDry. Chuchvalec let\xED d\xE9le, tak\u017Ee stihne\u0161 poslat dal\u0161\xED a \u0159et\u011Bz se nep\u0159etrhne." },
-          coil: { name: "Rezonan\u010Dn\xED c\xEDvky", desc: "Disk se rozkmit\xE1 do rytmu chuchvalc\u016F. \u0158et\u011Bz m\u016F\u017Ee r\u016Fst v\xFD\u0161 a ka\u017Ed\xFD \u010Dl\xE1nek p\u0159id\xE1 v\xEDc." },
+          inlet: { name: "Sac\xED kan\xE1ly", desc: "V\xEDc plynu z nab\u011Bra\u010D\u016F jde rovnou do pasti." },
+          valve: { name: "Ventil pasti", desc: "V\u011Bt\u0161\xED chuchvalec na jeden klik: v\xEDc dat a jasn\u011Bj\u0161\xED disk." },
+          trap: { name: "Magnetick\xE1 past", desc: "Do pasti se vejde v\xEDc plynu: del\u0161\xED \u0159et\u011Bz a v\u011Bt\u0161\xED v\xFDbuch disku." },
+          radius: { name: "Polom\u011Br vypou\u0161t\u011Bn\xED", desc: "Chuchvalec let\xED d\xE9le, tak\u017Ee stihne\u0161 poslat dal\u0161\xED a \u0159et\u011Bz se nep\u0159etrhne." },
+          coil: { name: "Rezonan\u010Dn\xED c\xEDvky", desc: "\u0158et\u011Bz m\u016F\u017Ee b\xFDt del\u0161\xED a ka\u017Ed\xFD \u010Dl\xE1nek p\u0159id\xE1 v\xEDc." },
           auto: { name: "Automatick\xFD ventil", desc: "Vypou\u0161t\xED s\xE1m v pravideln\xE9m rytmu, i kdy\u017E nejsi u toho. \u0158et\u011Bz nestav\xED a souzvuk s pulsem netref\xED." }
         }
       },
@@ -105,17 +105,17 @@
       turnOn: "Zapnout",
       running: "b\u011B\u017E\xED na {n} %",
       yard: { share: "Odkl\xE1d\xE1", shareTxt: "{p} % \u010Dist\xE9ho p\u0159\xEDr\u016Fstku plazmatu", takes: "Bere", next: "Dal\u0161\xED", eta: "za {t}", wait: "\u010Dek\xE1, a\u017E plazma za\u010Dne p\u0159ib\xFDvat", built: "Samo postaveno", builtList: "{r} kolektor\u016F, {j} lapa\u010D\u016F", panel: "postavila {r} + {j}" },
-      inj: { pct: "+{p} % disku", short: "Past nest\xEDh\xE1, dal\u0161\xED injektor nic nep\u0159id\xE1. V\xEDc plynu daj\xED nab\u011Bra\u010De nebo Sac\xED kan\xE1ly.", shortScoop: "Past nest\xEDh\xE1, dal\u0161\xED injektor nic nep\u0159id\xE1. V\xEDc plynu daj\xED nab\u011Bra\u010De.", capped: "disk je na Eddingtonov\u011B mezi" },
+      inj: { panelShort: "past nest\xEDh\xE1", pct: "+{p} % disku", short: "Past nest\xEDh\xE1, dal\u0161\xED injektor nic nep\u0159id\xE1. V\xEDc plynu daj\xED nab\u011Bra\u010De nebo Sac\xED kan\xE1ly.", shortScoop: "Past nest\xEDh\xE1, dal\u0161\xED injektor nic nep\u0159id\xE1. V\xEDc plynu daj\xED nab\u011Bra\u010De.", capped: "disk je na Eddingtonov\u011B mezi" },
       stopped: "vypnuto",
       starved: "stoj\xED, chyb\xED vstup",
       each: "ka\u017Ed\xFD",
       makes: "postav\xED {n} dron\u016F/s",
       pieces: "{n} ks",
       price: "Cena",
-      one: "1 kus",
+      one: "Ka\u017Ed\xFD",
       gives: "D\xE1v\xE1",
       total: "Celkem",
-      all: "V\u0161echny",
+      all: "Celkem",
       consumes: "spot\u0159eba {v}",
       researchDone: "Hotovo",
       researchLocked: "\u010Cek\xE1 na objev",
@@ -462,20 +462,20 @@
       catcher: { name: "Lapa\u010D asteroid\u016F", desc: "Nav\xE1d\xED cel\xE9 asteroidy k platform\u011B a drt\xED je." },
       qcomp: { name: "Kvantov\xFD po\u010D\xEDta\u010D", desc: "Chlazen\xFD ledem z Kelvaru. Obrovsk\xFD v\xFDkon, obrovsk\xE1 spot\u0159eba." },
       fusion: { name: "F\xFAzn\xED reaktor", desc: "Slu\u010Duje deuterium s heliem-3 z atmosf\xE9ry Taurisu." },
-      dyson: { name: "Dyson\u016Fv kolektor", desc: "Kolektor v roji kolem Aldry. Ka\u017Ed\xFD dal\u0161\xED zv\xFD\u0161\xED v\xFDrobu ve\u0161ker\xE9 energie o 10 %. V\xEDc sv\u011Btla, ne\u017E hv\u011Bzda vyz\xE1\u0159\xED, ale roj nikdy nezachyt\xED." },
-      windnet: { name: "Lapa\u010D hv\u011Bzdn\xE9ho v\u011Btru", desc: "Magnetick\xE1 s\xED\u0165, kter\xE1 chyt\xE1 plyn, jej\u017E Aldra sama ztr\xE1c\xED ve hv\u011Bzdn\xE9m v\u011Btru. Nepot\u0159ebuje energii, ale je slab\xE1. Prvn\xED krok, ne\u017E se nau\u010D\xEDme plyn z hv\u011Bzdy tahat." },
-      sieve: { name: "Magnetick\xE9 s\xEDto", desc: "Proud plazmatu proch\xE1z\xED siln\xFDm polem a t\u011B\u017E\u0161\xED ionty se st\xE1\u010Dej\xED jinam ne\u017E vod\xEDk. Pomal\xE9 a hrub\xE9, ale kov z n\u011Bj je." },
-      corono: { name: "Koronograf", desc: "Zakryje kotou\u010D Aldry a sleduje jej\xED kor\xF3nu a skvrny. Z nich se d\xE1 vy\u010D\xEDst, co se d\u011Bje pod povrchem." },
-      lifter: { name: "Hv\u011Bzdn\xFD trycht\xFD\u0159", desc: "Magnetick\xE9 pole otev\u0159e v kor\xF3n\u011B trycht\xFD\u0159 a vede j\xEDm proud plazmatu ven z hv\u011Bzdy. V\u011Bt\u0161inu pr\xE1ce odvede hv\u011Bzdn\xFD v\xEDtr. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
-      separator: { name: "Separ\xE1tor prvk\u016F", desc: "T\u0159\xEDd\xED plazma podle hmotnosti. Vod\xEDk a helium vrac\xED do hv\u011Bzdy, t\u011B\u017E\u0161\xED prvky jdou do skladu jako kov. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
-      seismo: { name: "Seismick\xE1 stanice", desc: "Naslouch\xE1 chv\u011Bn\xED hv\u011Bzdy a z tis\xEDc\u016F t\xF3n\u016F skl\xE1d\xE1 obraz jej\xEDho nitra. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
-      scoop: { name: "Nab\u011Bra\u010D mlhoviny", desc: "Magnetick\xE1 s\xED\u0165 dlouh\xE1 tis\xEDce kilometr\u016F. Sb\xEDr\xE1 ionizovan\xFD plyn z mlhoviny, kterou po sob\u011B Aldra zanechala. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem a tryskov\xFDm lapa\u010Dem." },
-      injector: { name: "Akre\u010Dn\xED injektor", desc: "Automatick\xFD ventil. S\xE1m bere nahromad\u011Bn\xFD plyn z magnetick\xE9 pasti a pos\xEDl\xE1 ho po spir\xE1le do disku, i kdy\u017E neklik\xE1\u0161. Kdy\u017E past nesta\u010D\xED, b\u011B\u017E\xED pomaleji. Ka\u017Ed\xFD diskov\xFD kolektor a tryskov\xFD lapa\u010D injektor zrychl\xED o 10 %." },
-      ring: { name: "Diskov\xFD kolektor", desc: "Prstenec kolem disku, kter\xFD chyt\xE1 jeho z\xE1\u0159en\xED. Ka\u017Ed\xFD dal\u0161\xED zakryje v\xEDc disku a o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
-      station: { name: "Dilata\u010Dn\xED stanice", desc: "Ob\xEDh\xE1 t\u011Bsn\u011B nad horizontem, kde \u010Das plyne pomaleji. M\u011B\u0159\xED disk i vzd\xE1len\xFD vesm\xEDr, kter\xFD odtud vypad\xE1 zrychlen\u011B. V\xEDc dat, \u010D\xEDm v\xEDc civilizace z\xE1\u0159\xED." },
-      yard: { name: "Orbit\xE1ln\xED montovna", desc: "T\u0159et\xED stupe\u0148 automatizace. Sama stav\xED diskov\xE9 kolektory a tryskov\xE9 lapa\u010De, v\u017Edy ten, kter\xFD je zrovna levn\u011Bj\u0161\xED. Ka\u017Ed\xE1 montovna si odkl\xE1d\xE1 10 % \u010Dist\xE9ho p\u0159\xEDr\u016Fstku plazmatu, v\u0161echny dohromady nejv\xFD\u0161 50 %. Na z\xE1soby nes\xE1hne a jde vypnout; na\u0161et\u0159en\xE9 plazma pak vr\xE1t\xED." },
-      jet: { name: "Tryskov\xFD lapa\u010D", desc: "Zachyt\xE1v\xE1 energii trysek nad p\xF3ly d\xEDry. Trysky berou energii z rotace, tak\u017Ee d\xEDru brzd\xED. Magnetick\xE9 pole trysek pom\xE1h\xE1 i se sb\u011Brem: ka\u017Ed\xFD lapa\u010D o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
-      hawking: { name: "Hawking\u016Fv reaktor", desc: "Mikroskopick\xE1 \u010Dern\xE1 d\xEDra stvo\u0159en\xE1 z energie. Plyn, kter\xFD do n\xED pad\xE1, se cel\xFD vyz\xE1\u0159\xED zp\xE1tky jako Hawkingovo z\xE1\u0159en\xED. V z\xE1\u0159en\xED jsou i data. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem a tryskov\xFDm lapa\u010Dem." },
+      dyson: { name: "Dyson\u016Fv kolektor", desc: "Kolektor v roji kolem Aldry. Ka\u017Ed\xFD dal\u0161\xED zv\xFD\u0161\xED v\xFDrobu ve\u0161ker\xE9 energie o 10 %." },
+      windnet: { name: "Lapa\u010D hv\u011Bzdn\xE9ho v\u011Btru", desc: "Chyt\xE1 plyn, kter\xFD Aldra sama ztr\xE1c\xED. Slab\xFD, ale nepot\u0159ebuje energii." },
+      sieve: { name: "Magnetick\xE9 s\xEDto", desc: "Pomalu a hrub\u011B odd\u011Bluje kov z plazmatu." },
+      corono: { name: "Koronograf", desc: "Sleduje kor\xF3nu Aldry a d\xE1v\xE1 data." },
+      lifter: { name: "Hv\u011Bzdn\xFD trycht\xFD\u0159", desc: "Vytahuje plazma z hv\u011Bzdy. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
+      separator: { name: "Separ\xE1tor prvk\u016F", desc: "Z plazmatu t\u0159\xEDd\xED t\u011B\u017Ek\xE9 prvky jako kov. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
+      seismo: { name: "Seismick\xE1 stanice", desc: "Poslouch\xE1 chv\u011Bn\xED hv\u011Bzdy a skl\xE1d\xE1 z n\u011Bj data. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
+      scoop: { name: "Nab\u011Bra\u010D mlhoviny", desc: "Magnetick\xE1 s\xED\u0165, kter\xE1 sb\xEDr\xE1 plyn z mlhoviny po Ald\u0159e. S\xEDl\xED s ka\u017Ed\xFDm kolektorem a lapa\u010Dem." },
+      injector: { name: "Akre\u010Dn\xED injektor", desc: "Automatick\xFD ventil: s\xE1m pos\xEDl\xE1 plyn z pasti do disku, i kdy\u017E neklik\xE1\u0161. S\xEDl\xED s ka\u017Ed\xFDm kolektorem a lapa\u010Dem." },
+      ring: { name: "Diskov\xFD kolektor", desc: "Prstenec, kter\xFD chyt\xE1 z\xE1\u0159en\xED disku. Ka\u017Ed\xFD pos\xEDl\xED nab\u011Bra\u010De, injektory a reaktory o 10 %." },
+      station: { name: "Dilata\u010Dn\xED stanice", desc: "Ob\xEDh\xE1 t\u011Bsn\u011B nad horizontem, kde \u010Das plyne pomaleji, a sb\xEDr\xE1 data. V\xEDc dat, \u010D\xEDm v\xEDc civilizace z\xE1\u0159\xED." },
+      yard: { name: "Orbit\xE1ln\xED montovna", desc: "Sama stav\xED diskov\xE9 kolektory a tryskov\xE9 lapa\u010De, v\u017Edy ten levn\u011Bj\u0161\xED. Bere jen \u010D\xE1st p\u0159\xEDr\u016Fstku plazmatu, z\xE1soby nech\xE1." },
+      jet: { name: "Tryskov\xFD lapa\u010D", desc: "Chyt\xE1 energii trysek nad p\xF3ly d\xEDry. Ka\u017Ed\xFD lapa\u010D pos\xEDl\xED nab\u011Bra\u010De, injektory a reaktory o 10 %." },
+      hawking: { name: "Hawking\u016Fv reaktor", desc: "Malink\xE1 \u010Dern\xE1 d\xEDra, kter\xE1 plyn cel\xFD vyz\xE1\u0159\xED zp\xE1tky. D\xE1v\xE1 energii i data. S\xEDl\xED s ka\u017Ed\xFDm kolektorem a lapa\u010Dem." },
       plate: { name: "Casimirova deska", desc: "Dv\u011B desky t\u011Bsn\u011B u sebe. Vakuum mezi nimi se zp\u011Bn\xED a z p\u011Bny jsou hrdla most\u016F." },
       bswarm: { name: "Roj za hrdlem", desc: "Prolet\xED mosty a obklop\xED napojen\xE9 hv\u011Bzdy. V\xEDc roj\u016F = v\u011Bt\u0161\xED d\xEDl jejich sv\u011Btla jde dom\u016F." },
       beacon: { name: "Pr\u016Fzkumn\xFD maj\xE1k", desc: "R\xE1diov\xE9 oko. Odkryje dal\u0161\xED hv\u011Bzdy na map\u011B a pos\xEDl\xE1 data." },
@@ -488,7 +488,7 @@
       kcol: { name: "Sb\u011Bra\u010D kilonovy", desc: "Sb\xEDr\xE1 z trosek kilonovy p\u011Bnu a data. S\xEDl\xED s ka\u017Ed\xFDmi napojen\xFDmi troskami." },
       gwdet: { name: "Detektor vln", desc: "Zachyt\xED gravita\u010Dn\xED vlny z cel\xE9 galaxie. Pozdn\xED zdroj dat." },
       trap: { name: "Lapa\u010D proudu", desc: "Hv\u011Bzdy v proudu jsou \u0159\xEDdce rozh\xE1zen\xE9 na tis\xEDce let sv\u011Btla. Lapa\u010D je sb\xEDr\xE1 po cel\xE9 d\xE9lce. Jen tak daj\xED proudy v\xFDkon." },
-      swarmfab: { name: "Rojov\xE1 lod\u011Bnice", desc: "Druh\xFD stupe\u0148 automatizace. Sama stav\xED Dysonovy kolektory a podle toho, co v \u0159et\u011Bzci chyb\xED, i trycht\xFD\u0159e a separ\xE1tory. Stavby na data nestav\xED. Bere nejv\xFD\u0161 polovinu p\u0159\xEDr\u016Fstku kovu a energie, tak\u017Ee z\xE1soby nevy\u010Derp\xE1. Rozebr\xE1n\xEDm vr\xE1t\xED\u0161 polovinu ceny." }
+      swarmfab: { name: "Rojov\xE1 lod\u011Bnice", desc: "Sama stav\xED Dysonovy kolektory a podle pot\u0159eby i trycht\xFD\u0159e a separ\xE1tory. Bere jen \u010D\xE1st p\u0159\xEDr\u016Fstku kovu a energie, z\xE1soby nech\xE1." }
     },
     r: {
       vib: { name: "Vibra\u010Dn\xED hroty", desc: "Ru\u010Dn\xED t\u011B\u017Eba \xD73." },
@@ -769,7 +769,7 @@
     injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
     ring: { base: { plasma: 6e7 }, growth: 1.15, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 15e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
-    jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
+    jet: { base: { plasma: 35e13 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
     hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) },
     // Orbitální montovna: sama staví diskové kolektory a tryskové lapače z podílu čistého přírůstku plazmatu (engine yardTick)
     yard: { base: { plasma: 3e16 }, growth: 1.6, unlock: (s) => !!s.r.yard && hole3(s) },
@@ -808,8 +808,8 @@
     swarm: { cost: { data: 5e4 } },
     deep: { cost: { data: 8e4 } },
     arc: { cost: { data: 12e4 } },
-    scan: { cost: { data: 18e4 } },
-    thinfilm: { cost: { data: 25e4 } },
+    scan: { cost: { data: 11e4 } },
+    thinfilm: { cost: { data: 16e4 } },
     auto: { cost: { data: 3e5 }, req: has("scan") },
     lab2: { cost: { data: 35e4 }, req: has("arc") },
     mirror: { cost: { data: 4e5 }, req: has("thinfilm") },
@@ -823,7 +823,7 @@
     swarm2: { cost: { data: 6e6 }, req: has("repl") },
     fusion: { cost: { data: 1e7 }, req: has("giant"), reqKey: "giant" },
     supercond: { cost: { data: 2e7, metal: 1e6 }, req: has("giant"), reqKey: "giant" },
-    plasma: { cost: { data: 15e7 }, req: has("forge", "fusion") },
+    plasma: { cost: { data: 9e7 }, req: has("forge", "fusion") },
     quantum: { cost: { data: 2e8 }, req: has("cryo", "fusion") },
     vib2: { cost: { data: 6e8 }, req: has("resonance", "giant") },
     dyson: { cost: { data: 1e9 }, req: has("sun"), reqKey: "sun" },
@@ -834,8 +834,8 @@
     lagrange: { cost: { data: 1e12 }, req: has("beam") },
     // Kapitola 2: Hvězda
     lift: { cost: { data: 2e14 }, req: (s) => s.chapterDone >= 1, reqKey: "typeI" },
-    sep: { cost: { data: 6e14 }, req: has("lift") },
-    seismo: { cost: { data: 5e14 }, req: has("lift") },
+    sep: { cost: { data: 25e13 }, req: has("lift") },
+    seismo: { cost: { data: 3e14 }, req: has("lift") },
     coil: { cost: { data: 2e15 }, req: has("lift") },
     fab: { cost: { data: 8e15 }, req: has("sep") },
     sail: { cost: { data: 1e14 }, req: has("sep") },
@@ -952,7 +952,7 @@
   var PHASES = [
     { id: "fallback", needW: 1e23, disk: 0 },
     { id: "thin", needW: 1e27, disk: 1 },
-    { id: "edd", needW: 15e31, disk: 2 },
+    { id: "edd", needW: 8e31, disk: 2 },
     { id: "jets", needW: 4e33, disk: 3 },
     { id: "ergo", needW: 2e34, disk: 4 }
   ];
@@ -1184,7 +1184,7 @@
     { id: "chain", needW: 3e35 },
     { id: "type3", needW: 12e35 },
     { id: "kilo", needW: 35e35 },
-    { id: "halo", needW: 1e37 }
+    { id: "halo", needW: 65e35 }
   ];
   var TYPE_L = {
     home: 0,
@@ -1542,7 +1542,10 @@
       }
     }
   }
-  var bstageDef = (s) => BSTAGES[Math.min(s.bridge.stage, BSTAGES.length - 1)];
+  function bstageDef(s) {
+    const d = BSTAGES[Math.min(s.bridge.stage, BSTAGES.length - 1)];
+    return s.bridge.stage === 0 ? { ...d, needW: Math.max(d.needW, (s.bridge.holeW || 0) * 1.8) } : d;
+  }
   function bstageReady(s, power2) {
     const d = bstageDef(s), last = s.bridge.stage >= BSTAGES.length - 1;
     const pw = power2 >= d.needW;
@@ -6045,46 +6048,38 @@
     hint.hidden = S.b.drone >= 3;
     hint.textContent = t("ui.hint");
     const rows = ch22 ? [] : [[t("ui.stats.clicks"), num(S.clicks)]];
+    const slow = (ids) => {
+      for (const id of ids.filter((id2) => S.b[id2] >= 1)) {
+        const e = S.off[id] ? 0 : S.eff[id] ?? 1;
+        if (S.off[id] || e < 0.98) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round(e * 100) })]);
+      }
+    };
     if (!ch22) {
       rows.push([t("ui.stats.drones"), num(Math.floor(S.b.drone))]);
-      for (const id of CONVERTERS.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+      slow(CONVERTERS);
     } else if (ch42) {
       rows.push(...rig4Rows());
     } else if (ch3) {
-      rows.push([t("ui.stats.phase"), `${S.hole.phase + 1} / ${PHASES.length}`], [t("ui.stats.spin"), spinTxt(S.hole.a)]);
-      if (S.b.injector >= 1) rows.push([t("ui.stats.feed"), mass(feedRate(S)) + "/s"], [t("ui.stats.diskCov"), pct(ringCov(S))]);
+      rows.push(["\xA7" + t("ui.prod.hole"), ""]);
+      rows.push([t("ui.stats.phase"), `${S.hole.phase + 1}/${PHASES.length} \xB7 ${phaseName(S.hole.phase)}`]);
+      rows.push([t("ui.hole.L"), power(holeL(S))]);
       if (ventOpen(S)) {
         const v2 = S.vent;
-        rows.push([t("ui.vent.flow"), v2.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v2.over) }) : mass(ventFlow(S)) + "/s"]);
-        rows.push([t("ui.vent.share"), `${mass(ventFill(S))}/s \xB7 ${Math.round(ventShare(S) * 100)} %`]);
-        rows.push([t("ui.vent.disk"), `${mass(v2.disk ?? 0)} \xB7 ${power(holeL(S))}`]);
-        rows.push([t("ui.vent.tank"), `${mass(ventTankKg(S))} \xB7 ${Math.round(ventTank(S) * 100)} %`]);
-        rows.push([t("ui.vent.chain"), v2.chain ? `${v2.chain} \xB7 \xD7${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v2.best })]);
+        rows.push([t("ui.vent.tank"), v2.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v2.over) }) : `${Math.round(ventTank(S) * 100)} %`]);
+        rows.push([t("ui.vent.chain"), v2.chain > 1 ? `${v2.chain} \xB7 \xD7${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v2.best })]);
       }
-      const { p, c } = rates(S), P = powerW(S), part2 = (id) => S.b[id] ? prodOf(S, id, "energy") * S.b[id] / Math.max(1, P) : 0;
+      const { p, c } = rates(S), P = powerW(S);
       rows.push(["\xA7" + t("ui.prod.title"), ""]);
       rows.push([t("ui.prod.power"), power(P)]);
-      for (const id of ["ring", "jet", "hawking"]) if (part2(id) > 1e-3) rows.push([t(`ui.prod.from.${id}`), pct(part2(id))]);
-      const fv = S.vent.man ?? 0, fi = feedRate(S);
-      if (fv + fi > 0) {
-        rows.push([t("ui.prod.fromVent"), pct(fv / (fv + fi))]);
-        if (fi > 0) rows.push([t("ui.prod.fromInj"), pct(fi / (fv + fi))]);
-      }
       rows.push([t("res.plasma"), `${p.plasma - c.plasma >= 0 ? "+" : "\u2212"}${mass(Math.abs(p.plasma - c.plasma))}/s`]);
       rows.push([t("res.data"), `+${bytes(p.data - c.data)}/s`]);
-      if (S.b.station >= 1) rows.push([t("ui.prod.dil"), `\xD7${dec(gamma(S), gamma(S) >= 10 ? 0 : 1)}`]);
-      rows.unshift(["\xA7" + t("ui.prod.hole"), ""]);
-      for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+      if (S.b.injector >= 1 && injShortOn) rows.push([t("b.injector.name"), t("ui.inj.panelShort")]);
+      slow(HOLE_CONV.filter((id) => id !== "injector"));
       if (S.b.yard >= 1) rows.push([t("b.yard.name"), S.off.yard ? t("ui.stopped") : t("ui.yard.panel", { r: num(S.yard?.built.ring ?? 0), j: num(S.yard?.built.jet ?? 0) })]);
     } else if (!S.star.done) {
-      rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
-      for (const id of STAR_BUILDINGS2.filter((id2) => S.b[id2] >= 1)) {
-        if (id === "swarmfab" && !S.off[id]) {
-          rows.push([t(`b.${id}.name`), t("ui.fabRate", { n: num(S.fab?.made ?? 0) })]);
-          continue;
-        }
-        rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
-      }
+      rows.push([t("ui.stats.stage"), `${S.star.stage + 1}/${STAGES.length} \xB7 ${stageName(S.star.stage)}`], [t("ui.stats.cov"), pct(coverage(S))]);
+      if (S.b.swarmfab >= 1 && !S.off.swarmfab) rows.push([t("b.swarmfab.name"), t("ui.fabRate", { n: num(S.fab?.made ?? 0) })]);
+      slow(STAR_BUILDINGS2.filter((id) => id !== "swarmfab"));
     }
     $("stats").innerHTML = rows.map(([a, b]) => a.startsWith("\xA7") ? `<dt class="sec">${esc(a.slice(1))}</dt>` : `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
     const v = $("voyage");
@@ -6574,7 +6569,7 @@
           if (d.makes) outs.push(`<span>${esc(t(d.makes.building === "dyson" ? "ui.makesDyson" : "ui.makes", { n: num(makesOf(S, id) * k) }))}</span>`);
           return ins.length ? `${ins.join(" ")} <span class="arrow">\u2192</span> ${outs.join(" ")}` : outs.join(" ");
         };
-        let eff = `<span class="effrow"><span class="lbl">${esc(t("ui.one"))}</span>${flow(1)}</span>`;
+        let eff = (id === "ring" || id === "jet") && count < 1 ? "" : `<span class="effrow"><span class="lbl">${esc(t("ui.one"))}</span>${flow(1)}</span>`;
         if (count >= 2 || count >= 1 && d.cons) {
           const e = d.cons ? S.off[id] ? 0 : S.eff[id] ?? 1 : 1;
           const shown = id === "injector" ? injAvg : e;
@@ -6584,7 +6579,6 @@
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
         }
         if (id === "scoop" && ventOpen(S)) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.vent.toTrap"))}</span>${esc(t("ui.vent.toTrapTxt", { p: Math.round(ventShare(S) * 100), f: mass(ventFill(S)) }))}</span>`;
-        if (id === "injector" && count >= 1) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.captured"))}</span>${esc(t("ui.capturedTxt", { p: pct(ringCov(S)), w: power(holeL(S) * ringCov(S)) }))}</span>`;
         if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
         }

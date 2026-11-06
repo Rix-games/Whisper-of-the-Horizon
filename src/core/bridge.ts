@@ -42,7 +42,7 @@ export const BSTAGES = [
   { id: 'chain', needW: 3e35 },
   { id: 'type3', needW: 1.2e36 },
   { id: 'kilo', needW: 3.5e36 },
-  { id: 'halo', needW: 1e37 }
+  { id: 'halo', needW: 6.5e36 }
 ];
 /** Zářivý výkon typů soustav (W) – řádově podle skutečných objektů. */
 const TYPE_L: Record<NodeType, number> = {
@@ -397,7 +397,11 @@ export function bridgeTick(s: State, dt: number, prod: number) {
     if (br.pass <= 0) { br.pass = -1; br.done = true; if (s.chapterDone < 4) s.chapterDone = 4; }
   }
 }
-export const bstageDef = (s: State) => BSTAGES[Math.min(s.bridge.stage, BSTAGES.length - 1)];
+/** Stadium sítě. První cíl je vždy aspoň 1,8× výkon díry, ať kapitola nezačne hotovým stadiem. */
+export function bstageDef(s: State) {
+  const d = BSTAGES[Math.min(s.bridge.stage, BSTAGES.length - 1)];
+  return s.bridge.stage === 0 ? { ...d, needW: Math.max(d.needW, (s.bridge.holeW || 0) * 1.8) } : d;
+}
 export function bstageReady(s: State, power: number) {
   const d = bstageDef(s), last = s.bridge.stage >= BSTAGES.length - 1;
   const pw = power >= d.needW;
