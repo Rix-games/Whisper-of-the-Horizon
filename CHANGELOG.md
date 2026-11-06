@@ -1,5 +1,12 @@
 # Novinky
 
+## 0.3.1 – Automatický ventil
+
+- Akreční injektory vypouštějí chuchvalce z magnetické pasti
+- Chuchvalce z injektorů se řetězí a berou souzvuk s pulsem
+- Vylepšení ventilu platí i pro injektory
+- Přehled ručního a automatického posílání vlevo
+
 ## 0.3 – Kapitola 3: Horizont
 
 - Nová kapitola: černá díra po Aldře a pět fází jejího disku
