@@ -659,6 +659,27 @@
       auto4: "Sm\u011Brova\u010D pracuje s\xE1m. Roz\u0161i\u0159uje hrdla v po\u0159ad\xED, kter\xE9 jsem si zapsal a\u017E potom.",
       pair: "Prov\xE1zan\xFD p\xE1r funguje. Co zm\u011B\u0159\xEDm na jedn\xE9 stran\u011B, v\xED druh\xE1 strana d\u0159\xEDv, ne\u017E tam doraz\xED sv\u011Btlo.",
       net20: "Dvacet most\u016F. Z v\xFD\u0161ky s\xED\u0165 p\u0159ipom\xEDn\xE1 ko\u0159eny. Nebo nervovou soustavu.",
+      net2: "Druh\xFD most. Ob\u011B \xFAst\xED se na sebe chv\xEDli d\xEDvala, ne\u017E se ust\xE1lila.",
+      net3: "T\u0159i hv\u011Bzdy, t\u0159i ciz\xED oblohy. Ve v\u0161ech chyb\xED stejn\xE1 hv\u011Bzda.",
+      blue: "Modr\xFD obr za hrdlem. Jeho sv\u011Btlo dorazilo dom\u016F o chvilku d\u0159\xEDv, ne\u017E m\u011Blo.",
+      neutron: "Pulsar v s\xEDti tik\xE1 rychleji ne\u017E puls. P\u0159esn\u011B sedmkr\xE1t. Po\u0159\xE1d.",
+      anchor: "Kotva dr\u017E\xED \xFAst\xED v klidu. Ve vakuu kolem n\xED je sly\u0161et tich\xFD t\xF3n.",
+      flyby: "Sonda pro\u0161la mostem a vr\xE1tila se o sekundu star\u0161\xED, ne\u017E odlet\u011Bla. Hodiny na n\xED jdou dob\u0159e.",
+      beacon5: "Maj\xE1ky zachytily vys\xEDl\xE1n\xED z pr\xE1zdn\xE9ho m\xEDsta. Ne\u017E jsem se tam pod\xEDval, bylo pry\u010D.",
+      lock5: "Kdy\u017E zamknu hrdlo p\u0159esn\u011B na vln\u011B, puls na okam\u017Eik zes\xEDl\xED. Jako by odpov\xEDdal.",
+      nebula: "V mlhovin\u011B se rod\xED hv\u011Bzdy. U jedn\xE9 z nich u\u017E stoj\xED kotva \xFAst\xED. Ta hv\u011Bzda je\u0161t\u011B ani nesv\xEDt\xED.",
+      throat5: "P\u0159i roz\u0161i\u0159ov\xE1n\xED hrdla se v n\u011Bm objevil odraz. Moje vlastn\xED \xFAst\xED, z druh\xE9 strany.",
+      magnetar: "Z\xE1blesk magnetaru rozkmital celou s\xED\u0165. V ozv\u011Bn\u011B byla \u010D\xEDsla. Odpo\u010Det.",
+      net12: "Dvan\xE1ct most\u016F. Spojen\xE9 \u010Darami d\xE1vaj\xED tvar, kter\xFD zn\xE1m z dat pod ledem Kelvaru.",
+      pump: "Pumpa u horizontu b\u011B\u017E\xED. D\xEDra po Ald\u0159e mi zase slou\u017E\xED. Nebo j\xE1 j\xED?",
+      plock: "F\xE1zov\xE9 z\xE1mky chytaj\xED vlnu p\u0159esn\u011Bji ne\u017E j\xE1. U\u010D\xED se ode m\u011B, nebo j\xE1 od nich?",
+      raider: "Razi\u010D si s\xE1m vybral prvn\xED hv\u011Bzdu. Tu, kterou bych zvolil z\xEDtra.",
+      globular: "Hv\u011Bzdy v kulov\xE9 hv\u011Bzdokup\u011B jsou star\u0161\xED ne\u017E disk galaxie. Jedna m\xE1 stejn\xE9 izotopy jako ruda z Ceres-IX.",
+      lock25: "Puls a s\xED\u0165 d\xFDchaj\xED spolu. U\u017E nev\xEDm, kdo ud\xE1v\xE1 takt.",
+      net30: "T\u0159icet most\u016F. S\xED\u0165 je v\u011Bt\u0161\xED ne\u017E v\u0161echno, co jsem kdy vid\u011Bl na vlastn\xED o\u010Di.",
+      frb: "Z\xE1blesk trval tis\xEDcinu sekundy. Byl v n\u011Bm cel\xFD m\u016Fj den\xEDk. A\u017E po dne\u0161ek. A kousek d\xE1l.",
+      trap: "Lapa\u010D proudu sb\xEDr\xE1 sv\u011Btlo hv\u011Bzd, kter\xE9 tu kdysi n\u011Bkdo rozestavil do \u0159ady.",
+      net40: "\u010Cty\u0159icet most\u016F. N\u011Bkde v s\xEDti je jeden nav\xEDc. Neotev\u0159el jsem ho j\xE1.",
       bubbles: "Puls se st\xE1\u010D\xED ke st\u0159edu galaxie. Tam n\u011Bkde je jeho za\u010D\xE1tek. Nebo konec.",
       bridge1: "Prvn\xED most stoj\xED. V \xFAst\xED je ciz\xED obloha. Poprv\xE9 se d\xEDv\xE1m n\u011Bkam, kde nejsem.",
       relic: "U vzd\xE1len\xE9 soustavy jsem na\u0161el zbytek hrdla. Je star\u0161\xED ne\u017E v\u0161echny moje mosty a kotva m\xE1 p\u0159esn\u011B moje rozm\u011Bry.",
@@ -1067,6 +1088,27 @@
     { id: "shifted", when: (s) => !!s.r.shifted },
     { id: "halo", when: (s) => !!s.visited.rotation },
     { id: "pass", when: (s) => (s.bridge?.pass ?? -1) >= 0 },
+    { id: "net2", when: (s) => (s.bridge?.n ?? 0) >= 2 },
+    { id: "net3", when: (s) => (s.bridge?.n ?? 0) >= 3 },
+    { id: "blue", when: (s) => !!s.bridge?.ty?.blue },
+    { id: "neutron", when: (s) => !!s.bridge?.ty?.neutron },
+    { id: "anchor", when: (s) => ch4(s) && s.b.anchor >= 1 },
+    { id: "flyby", when: (s) => !!s.visited.flyby },
+    { id: "beacon5", when: (s) => ch4(s) && s.b.beacon >= 5 },
+    { id: "lock5", when: (s) => (s.bridge?.locks ?? 0) >= 5 },
+    { id: "nebula", when: (s) => !!s.bridge?.ty?.nebula },
+    { id: "throat5", when: (s) => (s.bridge?.maxLv ?? 0) >= 5 },
+    { id: "magnetar", when: (s) => !!s.visited.magnetar },
+    { id: "net12", when: (s) => (s.bridge?.n ?? 0) >= 12 },
+    { id: "pump", when: (s) => ch4(s) && s.b.pump >= 1 },
+    { id: "plock", when: (s) => ch4(s) && s.b.plock >= 1 },
+    { id: "raider", when: (s) => ch4(s) && s.b.raider >= 1 },
+    { id: "globular", when: (s) => !!s.visited.globular },
+    { id: "lock25", when: (s) => (s.bridge?.locks ?? 0) >= 25 },
+    { id: "net30", when: (s) => (s.bridge?.n ?? 0) >= 30 },
+    { id: "frb", when: (s) => !!s.visited.frb },
+    { id: "trap", when: (s) => ch4(s) && s.b.trap >= 1 },
+    { id: "net40", when: (s) => (s.bridge?.n ?? 0) >= 40 },
     { id: "bubbles", when: (s) => !!s.visited.bubbles },
     { id: "through", when: (s) => !!s.bridge?.done }
   ];
@@ -1371,9 +1413,11 @@
     return best;
   }
   function addLink(s, from, to) {
+    var _a;
     s.bridge.links[to] = { p: from, lv: 0, lk: 0, la: false, t: s.time };
     s.bridge.n++;
     if (NODE[to]?.type === "cluster") s.bridge.cluster = true;
+    ((_a = s.bridge).ty ?? (_a.ty = {}))[NODE[to]?.type ?? "x"] = true;
   }
   function openLink(s, from, to) {
     if (!canLink(s, from, to)) return false;
@@ -1533,6 +1577,13 @@
       }
     }
     if (!br.fullSeen && br.n >= 1 && limiter(s)) br.fullSeen = true;
+    if (!br.ty && br.n) {
+      br.ty = {};
+      for (const id in br.links) br.ty[NODE[id]?.type ?? "x"] = true;
+    }
+    let mx = br.maxLv ?? 0;
+    for (const id in br.links) if (br.links[id].lv > mx) mx = br.links[id].lv;
+    br.maxLv = mx;
     if (br.pass >= 0) {
       br.pass -= dt;
       if (br.pass <= 0) {

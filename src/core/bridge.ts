@@ -223,6 +223,7 @@ function addLink(s: State, from: string, to: string) {
   s.bridge.links[to] = { p: from, lv: 0, lk: 0, la: false, t: s.time };
   s.bridge.n++;
   if (NODE[to]?.type === 'cluster') s.bridge.cluster = true;
+  (s.bridge.ty ??= {})[NODE[to]?.type ?? 'x'] = true;
 }
 export function openLink(s: State, from: string, to: string) {
   if (!canLink(s, from, to)) return false;
@@ -392,6 +393,11 @@ export function bridgeTick(s: State, dt: number, prod: number) {
     }
   }
   if (!br.fullSeen && br.n >= 1 && limiter(s)) br.fullSeen = true;
+  // příznaky pro deník: typy napojených hvězd a nejvyšší úroveň hrdla (doplní se i starým hrám)
+  if (!br.ty && br.n) { br.ty = {}; for (const id in br.links) br.ty[NODE[id]?.type ?? 'x'] = true; }
+  let mx = br.maxLv ?? 0;
+  for (const id in br.links) if (br.links[id].lv > mx) mx = br.links[id].lv;
+  br.maxLv = mx;
   if (br.pass >= 0) {
     br.pass -= dt;
     if (br.pass <= 0) { br.pass = -1; br.done = true; if (s.chapterDone < 4) s.chapterDone = 4; }

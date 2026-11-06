@@ -9,7 +9,7 @@ export interface Link { p: string; lv: number; lk: number; la: boolean; t: numbe
 export interface Bridge {
   started: boolean; holeW: number; links: Record<string, Link>; n: number; stage: number; pass: number; done: boolean;
   locks: number; lv: Record<string, number>; bank: { raider: number; router: number }; made: { raider: number; router: number };
-  fullSeen?: boolean; cluster?: boolean; archive?: number; rate?: { raider: number; router: number }; target?: { raider: string; router: string }; wave?: number; sel?: string;
+  fullSeen?: boolean; cluster?: boolean; ty?: Record<string, true>; maxLv?: number; archive?: number; rate?: { raider: number; router: number }; target?: { raider: string; router: string }; wave?: number; sel?: string;
 }
 export interface State {
   v: number;

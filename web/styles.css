@@ -342,3 +342,8 @@ body.cv #view #throatc { height: clamp(260px, 38vh, 440px); }
 .nethelp { position: absolute; top: 10px; right: 10px; z-index: 4; width: 30px; height: 30px; font-weight: 700; font-family: var(--f-mono); }
 body.ch4 .scene-hint { right: 48px; max-width: 360px; }
 .scene-hint .tipsh { display: block; margin-top: 8px; color: var(--exotic); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+/* seznam mostů: jeden sloupec, číslo vpravo se nikdy nezalomí */
+.linklist { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.linklist .lnk { align-items: center; min-height: 34px; }
+.linklist .lnk span:first-child { flex: 1 1 auto; min-width: 0; }
+.linklist .lnk span:last-child { flex: 0 0 auto; white-space: nowrap; }
