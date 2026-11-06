@@ -1,5 +1,15 @@
 # Novinky
 
+## 0.2 – Kapitola 2: Hvězda
+
+- Nová kapitola: hvězda Aldra a pět stadií jejího života
+- Star lifting: trychtýř, plazma, separátor, kov
+- Seismické stanice, rojové loděnice, přestavba roje
+- Hvězda vlevo místo asteroidu, záložka Hvězda s řezem
+- Nové mise na mapě
+- Kolaps a supernova na konci kapitoly
+- Hra se zveřejňuje jako hotový balíček (hra.js)
+
 ## 0.1.3 – Vyladění dat a kovu
 
 - Levnější Kvantové výpočty
