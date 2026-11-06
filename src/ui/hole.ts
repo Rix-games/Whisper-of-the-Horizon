@@ -81,15 +81,15 @@ function nebula(px: number) {
 }
 
 /** Černá díra vlevo (Kapitola 3). full = větší pohled s pozadím. */
-export function drawHole(c: HTMLCanvasElement, v: HoleView, time: number, sub: string, full = false) {
+export function drawHole(c: HTMLCanvasElement, v: HoleView, time: number, sub: string, full = false, tilt?: number) {
   const p = prep(c); if (!p) return;
-  const { x, W, H, dpr } = p, tt = reduce ? 0 : time, m = Math.min(W, H);
+  const { x, W, H, dpr } = p, tt = reduce ? 0 : time, m = tilt ? Math.min(W, H * 1.15) : Math.min(W, H);
   if (full) {
     const key = `${W}x${H}@${dpr}`;
     if (!bg || bgKey !== key) { bg = bakeMapBg(W, H, dpr); bgKey = key; }
     x.drawImage(bg, 0, 0, W, H);
   } else x.clearRect(0, 0, W, H);
-  const cx = W / 2, cy = H * 0.5, Rsh = m * 0.095, Rout = m * 0.43, incl = 0.2 + v.phase * 0.012;
+  const cx = W / 2, cy = H * 0.5, Rsh = m * 0.095, Rout = m * 0.43, incl = tilt ?? 0.2 + v.phase * 0.012;
   const pal = DISK[v.phase];
   // pozůstatek supernovy daleko v pozadí
   const nr = m * 0.62, npx = Math.min(640, Math.round(nr * 2 * dpr));
@@ -582,4 +582,97 @@ export function drawHoleMap(c: HTMLCanvasElement, s: State, v: HoleView, time: n
   const vg = x.createRadialGradient(cx, cy, Math.min(W, H) * 0.35, cx, cy, Math.max(W, H) * 0.75);
   vg.addColorStop(0, 'rgba(5,6,15,0)'); vg.addColorStop(1, 'rgba(5,6,15,0.5)');
   x.fillStyle = vg; x.fillRect(0, 0, W, H);
+}
+
+// ---------- scéna uprostřed (Kapitola 3): vypouštění plynu do disku ----------
+export interface SceneBlob { r: number; th: number; gold: boolean; mult: number; trail: [number, number][] }
+export interface SceneFlare { r: number; th: number; gold: boolean; mult: number; text: string }
+export interface SceneView {
+  blobs: SceneBlob[]; flares: SceneFlare[]; relR: number; hover: number | null; hoverText: string;
+  tank: number; tankText: string; chainText: string; pulse: number; pulseSec: number; overText: string; locked: string;
+}
+export const SCENE_TILT = 0.36;
+export function sceneGeom(W: number, H: number) {
+  const m = Math.min(W, H * 1.15);
+  return { cx: W / 2, cy: H * 0.5, R: m * 0.43, Rsh: m * 0.095, tilt: SCENE_TILT };
+}
+const fx: { x: number; y: number; life: number; gold: boolean; s: number; text: string }[] = [];
+export function drawScene(c: HTMLCanvasElement, v: HoleView, sv: SceneView, time: number) {
+  const p = prep(c); if (!p) return;
+  const { x, W, H } = p, g = sceneGeom(W, H);
+  // díra se kreslí do stejného plátna; drawHole si ho připraví znovu, proto stejné rozměry
+  drawHoleAt(c, v, time, g);
+  const { cx, cy, R, Rsh, tilt } = g;
+  const P = (r: number, th: number): [number, number] => [cx + Math.cos(th) * r * R, cy + Math.sin(th) * r * R * tilt];
+  const hidden = (r: number, th: number) => { const [px] = P(r, th); return Math.sin(th) < 0 && Math.abs(px - cx) < Rsh * 1.05; };
+  x.save();
+  // puls: vlna od díry
+  if (sv.pulse < 2.6) {
+    const f = sv.pulse / 2.6;
+    x.strokeStyle = `rgba(184,146,255,${0.55 * (1 - f)})`; x.lineWidth = 1.6;
+    x.beginPath(); x.ellipse(cx, cy, Rsh + f * R * 1.1, (Rsh + f * R * 1.1) * tilt, 0, 0, 7); x.stroke();
+  }
+  // kružnice vypouštění
+  if (!sv.locked) {
+    x.setLineDash([5, 6]); x.strokeStyle = 'rgba(242,165,65,0.5)'; x.lineWidth = 1.2;
+    x.beginPath(); x.ellipse(cx, cy, sv.relR * R, sv.relR * R * tilt, 0, 0, 7); x.stroke(); x.setLineDash([]);
+  }
+  // chuchvalce se stopou
+  for (const b of sv.blobs) {
+    for (let i = 1; i < b.trail.length; i++) {
+      const [ar, at] = b.trail[i - 1], [br, bt] = b.trail[i];
+      if (hidden(br, bt)) continue;
+      const [ax, ay] = P(ar, at), [bx, by] = P(br, bt), k = i / b.trail.length;
+      x.strokeStyle = b.gold ? `rgba(245,205,85,${k * 0.8})` : `rgba(255,176,146,${k * 0.7})`; x.lineWidth = 1 + k * 2;
+      x.beginPath(); x.moveTo(ax, ay); x.lineTo(bx, by); x.stroke();
+    }
+    if (hidden(b.r, b.th)) continue;
+    const [px, py] = P(b.r, b.th), rr = 6 + Math.min(6, b.mult * 2);
+    const gg = x.createRadialGradient(px, py, 0, px, py, rr);
+    gg.addColorStop(0, b.gold ? 'rgba(255,244,196,1)' : 'rgba(255,226,210,1)'); gg.addColorStop(1, b.gold ? 'rgba(245,205,85,0)' : 'rgba(255,143,122,0)');
+    x.fillStyle = gg; x.beginPath(); x.arc(px, py, rr, 0, 7); x.fill();
+  }
+  // nové záblesky
+  for (const f of sv.flares) {
+    const [px, py] = P(f.r, f.th);
+    fx.push({ x: px, y: py, life: 1, gold: f.gold, s: Math.min(2.4, 0.8 + f.mult * 0.3), text: f.text });
+  }
+  for (let i = fx.length - 1; i >= 0; i--) {
+    const f = fx[i];
+    f.life -= 1 / 60;
+    if (f.life <= 0) { fx.splice(i, 1); continue; }
+    const r = (1 - f.life) * 55 * f.s + 5;
+    x.strokeStyle = f.gold ? `rgba(245,205,85,${f.life})` : `rgba(255,240,226,${f.life})`; x.lineWidth = 2;
+    x.beginPath(); x.arc(f.x, f.y, r, 0, 7); x.stroke();
+    const fg = x.createRadialGradient(f.x, f.y, 0, f.x, f.y, r * 0.8);
+    fg.addColorStop(0, `rgba(255,255,255,${f.life * 0.8})`); fg.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = fg; x.beginPath(); x.arc(f.x, f.y, r * 0.8, 0, 7); x.fill();
+    x.font = `600 12px ${MONO}`; x.textAlign = 'center';
+    x.fillStyle = f.gold ? `rgba(245,205,85,${Math.min(1, f.life * 1.5)})` : `rgba(127,211,234,${Math.min(1, f.life * 1.5)})`;
+    x.fillText(f.text, f.x, f.y - 16 - (1 - f.life) * 26);
+  }
+  // ukazatel pasti vlevo dole
+  x.font = `12px ${MONO}`; x.textAlign = 'left'; x.fillStyle = 'rgba(176,181,212,0.9)';
+  x.fillText(sv.tankText, 14, H - 26);
+  if (sv.tankText) {
+    x.fillStyle = 'rgba(42,48,88,0.9)'; x.fillRect(14, H - 18, 160, 5);
+    x.fillStyle = sv.tank >= 0.999 ? '#f2a541' : '#ff8f7a'; x.fillRect(14, H - 18, 160 * Math.min(1, sv.tank), 5);
+  }
+  // řetěz a výbuch
+  x.textAlign = 'center';
+  if (sv.chainText) { x.font = `700 22px "Chakra Petch", ${MONO}`; x.fillStyle = '#f2a541'; x.fillText(sv.chainText, cx, 40); }
+  if (sv.overText) { x.font = `600 13px ${MONO}`; x.fillStyle = '#f5cd55'; x.fillText(sv.overText, cx, sv.chainText ? 62 : 40); }
+  if (sv.locked) { x.font = `13px ${MONO}`; x.fillStyle = 'rgba(176,181,212,0.9)'; x.fillText(sv.locked, cx, H - 40); }
+  // kurzor: kam chuchvalec vypustíš
+  if (sv.hover !== null && !sv.locked) {
+    const [hx, hy] = P(sv.relR, sv.hover);
+    x.strokeStyle = 'rgba(242,165,65,0.95)'; x.lineWidth = 1.5; x.beginPath(); x.arc(hx, hy, 7, 0, 7); x.stroke();
+    x.font = `12px ${MONO}`; x.textAlign = hx > cx ? 'left' : 'right'; x.fillStyle = 'rgba(242,165,65,0.95)';
+    x.fillText(sv.hoverText, hx + (hx > cx ? 12 : -12), hy - 10);
+  }
+  x.textAlign = 'left';
+  x.restore();
+}
+function drawHoleAt(c: HTMLCanvasElement, v: HoleView, time: number, _g: ReturnType<typeof sceneGeom>) {
+  drawHole(c, v, time, '', true, SCENE_TILT);
 }

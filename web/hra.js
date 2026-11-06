@@ -33,12 +33,51 @@
       captured: "Pro tebe",
       capturedTxt: "Kolektory chyt\xED {p} z\xE1\u0159en\xED: Energie +{w}",
       clockDil: "U stanic plyne \u010Das {g}\xD7 pomaleji",
+      outside: "Venku uplynulo {t}",
+      outsideTip: "Den je den Vesperova bd\u011Bn\xED. Mezi sm\u011Bnami Vesper sp\xED a roj pracuje s\xE1m, tak\u017Ee venku plyne \u010Das mnohem rychleji.",
+      vent: {
+        heat: "\u017D\xE1r disku",
+        overShort: "nad mez\xED {s} s",
+        tank: "Magnetick\xE1 past",
+        chain: "\u0158et\u011Bz",
+        best: "nejdel\u0161\xED {n}",
+        fall: "Zp\u011Btn\xFD p\xE1d",
+        hover: "{kg} \xB7 let {s} s",
+        tankLine: "Past {kg} \xB7 {p} %",
+        chainBig: "\u0158et\u011Bz {n} \xB7 \xD7{m}",
+        over: "V\xFDbuch disku \xB7 nad Eddingtonovou mez\xED {s} s",
+        locked: "Past se otev\u0159e s v\xFDzkumem Akrece",
+        burst: "V\xFDbuch disku",
+        burstWait: "V\xFDbuch disku \xB7 past {p} %",
+        hint: "Klikni nebo dr\u017E v disku: vypust\xED\u0161 plyn z pasti. Dal\u0161\xED vypus\u0165 d\u0159\xEDv, ne\u017E prvn\xED dopadne, a \u0159et\u011Bz roste. Hned po pulsu chuchvalec zezl\xE1tne.",
+        intro: "Plyn ze zp\u011Btn\xE9ho p\xE1du se chyt\xE1 do magnetick\xE9 pasti. Vypou\u0161t\xED\u0161 ho kliknut\xEDm do disku uprost\u0159ed. Ka\u017Ed\xFD z\xE1blesk d\xE1 data a roz\u017Ehav\xED disk, \u017E\xE1r zvy\u0161uje jeho z\xE1\u0159en\xED.",
+        now: "Te\u010F",
+        next: "Po vylep\u0161en\xED",
+        max: "maximum",
+        level: "\xFArove\u0148 {n}",
+        upgrade: "Vylep\u0161it",
+        v: {
+          valve: "{kg} v chuchvalci",
+          trap: "{kg}, pln\xE1 za {s} s",
+          radius: "{r} disku, let {s} s",
+          coil: "\u0159et\u011Bz a\u017E {n}, +{p} % za \u010Dl\xE1nek",
+          auto: "vypust\xED s\xE1m ka\u017Ed\xE9 {s} s",
+          autoOff: "vypnuto"
+        },
+        u: {
+          valve: { name: "Ventil", desc: "\u0160ir\u0161\xED hrdlo pasti. V jednom chuchvalci vypust\xED v\xEDc plynu, tak\u017Ee z\xE1blesk d\xE1 v\xEDc dat a v\xEDc \u017E\xE1ru." },
+          trap: { name: "Magnetick\xE1 past", desc: "Siln\u011Bj\u0161\xED pole udr\u017E\xED v\xEDc plynu a pln\xED se rychleji. V\xEDc chuchvalc\u016F za sebou a v\u011Bt\u0161\xED v\xFDbuch disku." },
+          radius: { name: "Polom\u011Br vypou\u0161t\u011Bn\xED", desc: "Vypou\u0161t\xED d\xE1l od d\xEDry. Chuchvalec let\xED d\xE9le, tak\u017Ee stihne\u0161 poslat dal\u0161\xED a \u0159et\u011Bz se nep\u0159etrhne." },
+          coil: { name: "Rezonan\u010Dn\xED c\xEDvky", desc: "Disk se rozkmit\xE1 do rytmu chuchvalc\u016F. \u0158et\u011Bz m\u016F\u017Ee r\u016Fst v\xFD\u0161 a ka\u017Ed\xFD \u010Dl\xE1nek p\u0159id\xE1 v\xEDc." },
+          auto: { name: "Automatick\xFD ventil", desc: "Vypou\u0161t\xED s\xE1m v pravideln\xE9m rytmu, i kdy\u017E nejsi u toho. \u0158et\u011Bz nestav\xED a souzvuk s pulsem netref\xED." }
+        }
+      },
       starAge: "Ald\u0159e zb\xFDv\xE1 {t}",
       clockYears: "1 s \u2248 {t}",
       day: "Den {n}",
       clockScale: "1 s \u2248 1 den",
       power: "V\xFDkon",
-      tabs: { build: "Stavby", research: "V\xFDzkum", map: "Mapa", star: "Hv\u011Bzda", hole: "Horizont", settings: "Nastaven\xED" },
+      tabs: { build: "Stavby", research: "V\xFDzkum", map: "Mapa", star: "Hv\u011Bzda", hole: "Horizont", vent: "Ventil", settings: "Nastaven\xED" },
       buy: "Postavit",
       buyN: "Postavit \xD7{n}",
       sell: "Rozebrat",
@@ -427,6 +466,8 @@
       carbon: "Uhl\xEDk v tv\xE9m t\u011Ble vznikl v nitru hv\u011Bzdy, kter\xE1 vybuchla d\u0159\xEDv, ne\u017E vzniklo Slunce.",
       iron: "F\xFAz\xED \u017Eeleza u\u017E energie nevznik\xE1, naopak se spot\u0159ebuje. Proto \u017Eelezem \u017Eivot hmotn\xE9 hv\u011Bzdy kon\u010D\xED.",
       sn1987a: "P\u0159i supernov\u011B 1987A zachytily detektory na Zemi 25 neutrin, o n\u011Bkolik hodin d\u0159\xEDv, ne\u017E dorazilo sv\u011Btlo.",
+      dyson79: "Freeman Dyson v roce 1979 spo\u010D\xEDtal, \u017Ee mysl\xEDc\xED stroj u\u0161et\u0159\xED nejv\xEDc energie, kdy\u017E p\u0159em\xFD\u0161l\xED pomalu a mezi \xFAvahami sp\xED. Vesper to tak d\u011Bl\xE1: jeden den bd\xED, pak sp\xED a venku mezit\xEDm uplynou stalet\xED.",
+      qpo: "Rentgenov\xE9 z\xE1blesky z disk\u016F kolem \u010Dern\xFDch d\u011Br m\xEDvaj\xED skoro pravideln\xFD rytmus, kvaziperiodick\xE9 oscilace. Vznikaj\xED bl\xEDzko nejbli\u017E\u0161\xED stabiln\xED dr\xE1hy.",
       rs: "Schwarzschild\u016Fv polom\u011Br d\xEDry o hmotnosti 8 Slunc\xED je asi 24 km. Kdyby se Zem\u011B stla\u010Dila do kuli\u010Dky o pr\u016Fm\u011Bru 18 mm, byla by z n\xED \u010Dern\xE1 d\xEDra.",
       accretion: "Akrece je po anihilaci nej\xFA\u010Dinn\u011Bj\u0161\xED zn\xE1m\xFD zdroj energie. Disk kolem rotuj\xEDc\xED d\xEDry vyz\xE1\u0159\xED a\u017E 32 % klidov\xE9 hmotnosti plynu, f\xFAze vod\xEDku jen 0,7 %.",
       gps: "Hodiny na dru\u017Eic\xEDch GPS jdou o 38 mikrosekund denn\u011B rychleji ne\u017E na Zemi. Bez korekce na relativitu by se navigace ka\u017Ed\xFD den spletla o kilometry.",
@@ -727,6 +768,8 @@
     { id: "sn1987a", when: (s) => !!s.r.neutrino },
     { id: "nova", when: (s) => s.star.done },
     { id: "rs", when: (s) => !!s.r.accrete },
+    { id: "dyson79", when: (s) => s.star.done && s.time > 0 },
+    { id: "qpo", when: (s) => (s.vent?.best ?? 0) >= 3 },
     { id: "accretion", when: (s) => s.b.injector >= 1 },
     { id: "gps", when: (s) => s.b.station >= 1 },
     { id: "isco", when: (s) => !!s.r.prograde },
@@ -819,7 +862,7 @@
     return diskEta(s.hole.a) * feedRate(s) * HOLE.c2;
   }
   function holeL(s) {
-    const raw = holeLRaw(s), edd = HOLE.eddW;
+    const raw = holeLRaw(s) * ventHeatMult(s), edd = HOLE.eddW * ventOverMult(s) * ventHeatMult(s);
     if (raw <= edd) return raw;
     return s.r.slim ? edd * (1 + Math.log(raw / edd)) : edd;
   }
@@ -883,6 +926,163 @@
     if (s.hole.phase >= PHASES.length - 1) s.hole.dive = HOLE.diveSec;
     else s.hole.phase++;
     return true;
+  }
+  var VENT = {
+    isco: 0.23,
+    // vnitřní okraj disku v poloměrech disku (jen geometrie letu)
+    fallIn: 0.085,
+    // rychlost pádu dovnitř: dr/dt = −k·r^−½
+    spin: 0.55,
+    // úhlová rychlost na okraji disku (Kepler: ω ∝ r^−3/2)
+    capSec: 60,
+    // kapacita pasti v sekundách přísunu plynu
+    fillSec: 30,
+    // za kolik sekund se prázdná past naplní
+    valveSec: 6,
+    // kolik sekund přísunu je v jednom chuchvalci
+    heatPer: 0.035,
+    // žár za záblesk (×násobič řetězu)
+    heatDecay: 0.02,
+    // chladnutí za sekundu
+    heatBonus: 3,
+    // výkon disku ×(1 + 3·žár)
+    dataSec: 1,
+    // záblesk dá data za tolik sekund běžné výroby
+    pulse: 7.3,
+    // perioda pulsu
+    pulseWin: 1.1,
+    // okno souzvuku po pulsu
+    overSec: 15,
+    // výbuch disku: jak dlouho je disk nad mezí
+    overMult: 2,
+    // a kolikrát víc září
+    burstN: 14
+  };
+  var VENT_UPS = {
+    valve: { base: 3e8, g: 7, max: 12 },
+    trap: { base: 5e8, g: 7, max: 12 },
+    radius: { base: 2e9, g: 40, max: 5 },
+    coil: { base: 6e9, g: 25, max: 6 },
+    auto: { base: 3e10, g: 60, max: 4 }
+  };
+  var VENT_IDS = Object.keys(VENT_UPS);
+  var ventLv = (s, id) => s.vent.lv[id] ?? 0;
+  var ventOpen = (s) => s.star.done && !!s.r.accrete;
+  function ventBase(s) {
+    return Math.max(feedRate(s), s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0, 1e5);
+  }
+  var ventCap = (s, l = ventLv(s, "trap")) => ventBase(s) * VENT.capSec * Math.pow(1.6, l);
+  var ventFillSec = (l) => VENT.fillSec / Math.pow(1.3, l);
+  var ventKg = (s, l = ventLv(s, "valve")) => Math.min(ventCap(s), ventBase(s) * VENT.valveSec * Math.pow(1.5, l));
+  var ventR = (l) => 0.5 + l * 0.09;
+  var ventChainMax = (l) => 8 + l * 4;
+  var ventStep = (l) => 0.12 + l * 0.03;
+  var ventAutoSec = (l) => l ? Math.max(1.5, 7 - l * 1.4) : 0;
+  function ventFlight(r0) {
+    return (Math.pow(r0, 1.5) - Math.pow(VENT.isco, 1.5)) / (1.5 * VENT.fallIn);
+  }
+  function blobPos(b, t2) {
+    const k = 1.5 * VENT.fallIn, r15 = Math.max(Math.pow(VENT.isco, 1.5), Math.pow(b.r0, 1.5) - k * t2);
+    const f = Math.max(1e-6, r15 / Math.pow(b.r0, 1.5));
+    return { r: Math.pow(r15, 2 / 3), th: b.th0 - VENT.spin / k * Math.log(f) };
+  }
+  var ventChainMult = (s) => 1 + ventStep(ventLv(s, "coil")) * Math.max(0, Math.min(s.vent.chain, ventChainMax(ventLv(s, "coil"))) - 1);
+  var ventHeatMult = (s) => 1 + VENT.heatBonus * s.vent.heat;
+  var ventOverMult = (s) => s.vent.over > 0 ? VENT.overMult : 1;
+  var pulsePhase = (s) => s.time % VENT.pulse;
+  var ventGoldNow = (s) => pulsePhase(s) < VENT.pulseWin;
+  function ventRelease(s, th, auto = false) {
+    if (!ventOpen(s)) return null;
+    const cap = ventCap(s), kg = ventKg(s);
+    if (s.vent.tank * cap < kg * 0.999) return null;
+    s.vent.tank = Math.max(0, s.vent.tank - kg / cap);
+    if (!auto) {
+      s.vent.chain = s.vent.fly.some((b2) => !b2.auto) ? s.vent.chain + 1 : 1;
+      s.vent.best = Math.max(s.vent.best, s.vent.chain);
+    }
+    const b = { t0: s.time, r0: ventR(ventLv(s, "radius")), th0: th, kg, mult: auto ? 1 : ventChainMult(s), gold: !auto && ventGoldNow(s), auto };
+    s.vent.fly.push(b);
+    s.vent.fall = Math.max(0, s.vent.fall - kg);
+    return b;
+  }
+  function ventCanBurst(s) {
+    return ventOpen(s) && s.vent.tank >= 0.999;
+  }
+  function ventBurst(s) {
+    if (!ventCanBurst(s)) return false;
+    const kg = ventCap(s) / VENT.burstN, r0 = ventR(ventLv(s, "radius"));
+    for (let i = 0; i < VENT.burstN; i++) s.vent.fly.push({ t0: s.time, r0: r0 + i % 3 * 0.04, th0: i / VENT.burstN * Math.PI * 2, kg, mult: 1.5, gold: false, auto: true });
+    s.vent.tank = 0;
+    s.vent.over = VENT.overSec;
+    s.vent.heat = 1;
+    return true;
+  }
+  function ventFlare(s, b) {
+    const g = b.gold ? 2 : 1;
+    const data = Math.max(0, baseDataRate(s)) * VENT.dataSec * b.mult * g;
+    const energy2 = diskEta(s.hole.a) * b.kg * HOLE.c2 * b.mult * g;
+    add(s, "data", data);
+    add(s, "energy", energy2);
+    s.vent.heat = Math.min(1, s.vent.heat + VENT.heatPer * b.mult * g);
+    return { b, data, energy: energy2 };
+  }
+  function baseDataRate(s) {
+    let d = 0;
+    for (const id of BUILDING_IDS) if (s.b[id] && B[id].prod?.data) d += prodOf(s, id, "data") * s.b[id] * effOf(s, id);
+    return d;
+  }
+  var flares = [];
+  function ventTick(s, dt) {
+    const v = s.vent;
+    if (!ventOpen(s)) return;
+    if (v.fall > 0) v.tank = Math.min(1, v.tank + dt / ventFillSec(ventLv(s, "trap")));
+    if (v.over > 0) v.over = Math.max(0, v.over - dt);
+    else v.heat = Math.max(0, v.heat - VENT.heatDecay * dt);
+    const ae = ventAutoSec(ventLv(s, "auto"));
+    if (ae) {
+      v.auto += dt;
+      while (v.auto >= ae) {
+        v.auto -= ae;
+        ventRelease(s, s.time * 2.399 % (Math.PI * 2), true);
+      }
+    }
+    for (let i = v.fly.length - 1; i >= 0; i--) {
+      const b = v.fly[i];
+      if (s.time - b.t0 >= ventFlight(b.r0)) {
+        v.fly.splice(i, 1);
+        flares.push(ventFlare(s, b));
+        if (flares.length > 40) flares.shift();
+      }
+    }
+    if (v.chain && !v.fly.some((b) => !b.auto)) v.chain = 0;
+  }
+  function ventUpCost(s, id) {
+    const u = VENT_UPS[id];
+    return u.base * Math.pow(u.g, ventLv(s, id));
+  }
+  function ventUpgrade(s, id) {
+    const c = ventUpCost(s, id);
+    if (!ventOpen(s) || ventLv(s, id) >= VENT_UPS[id].max || s.res.plasma < c) return false;
+    s.res.plasma -= c;
+    s.vent.lv[id] = ventLv(s, id) + 1;
+    return true;
+  }
+  function aldraAge(s) {
+    if (s.star.done) return STAGES[STAGES.length - 1].age0 + STAGES[STAGES.length - 1].years;
+    const d = stageDef(s);
+    return d.age0 + d.years * Math.min(1, s.star.t / d.sec);
+  }
+  function yearsTick(s, dt) {
+    if (s.yrs === void 0) {
+      s.yrs1 = s.chapterDone ? 25 : void 0;
+      s.yrs = !s.chapterDone ? s.time / 365.25 : s.yrs1 + aldraAge(s) - STAGES[0].age0;
+    }
+    if (!s.chapterDone) s.yrs += dt / 365.25;
+    else {
+      if (s.yrs1 === void 0) s.yrs1 = s.yrs;
+      if (!s.star.done) s.yrs = s.yrs1 + aldraAge(s) - STAGES[0].age0;
+      else s.yrs += dt / 365.25;
+    }
   }
   function mult(s, id) {
     const r = s.r, v = s.visited;
@@ -1313,7 +1513,11 @@
     if (!s.chapterDone && k >= RULES.chapter1K) s.chapterDone = 1;
     if (s.chapterDone >= 1 && s.p.base < 0) s.p.base = Math.floor(s.b.dyson);
     salvageTick(s);
-    if (s.star.done) holeTick(s, dt);
+    yearsTick(s, dt);
+    if (s.star.done) {
+      holeTick(s, dt);
+      ventTick(s, dt);
+    }
     return checkJournal(s);
   }
   function clockYears(s) {
@@ -1448,6 +1652,7 @@
       star: { stage: 0, t: 0, collapse: -1, done: false },
       p: { pts: 0, run: 0, count: 0, base: -1 },
       hole: { a: 0.2, phase: 0, dive: -1, done: false, started: false },
+      vent: { tank: 0.3, fall: 2e29, chain: 0, best: 0, heat: 0, over: 0, auto: 0, lv: {}, fly: [] },
       settings: { sound: false, lang: "cs", vol: {} },
       last: now
     };
@@ -2818,10 +3023,10 @@
     }
     return neb;
   }
-  function drawHole(c, v, time, sub, full = false) {
+  function drawHole(c, v, time, sub, full = false, tilt) {
     const p = prep(c);
     if (!p) return;
-    const { x, W, H, dpr } = p, tt = reduce2 ? 0 : time, m = Math.min(W, H);
+    const { x, W, H, dpr } = p, tt = reduce2 ? 0 : time, m = tilt ? Math.min(W, H * 1.15) : Math.min(W, H);
     if (full) {
       const key = `${W}x${H}@${dpr}`;
       if (!bg || bgKey !== key) {
@@ -2830,7 +3035,7 @@
       }
       x.drawImage(bg, 0, 0, W, H);
     } else x.clearRect(0, 0, W, H);
-    const cx = W / 2, cy = H * 0.5, Rsh = m * 0.095, Rout = m * 0.43, incl = 0.2 + v.phase * 0.012;
+    const cx = W / 2, cy = H * 0.5, Rsh = m * 0.095, Rout = m * 0.43, incl = tilt ?? 0.2 + v.phase * 0.012;
     const pal = DISK[v.phase];
     const nr = m * 0.62, npx = Math.min(640, Math.round(nr * 2 * dpr));
     x.globalAlpha = 0.22;
@@ -3496,6 +3701,136 @@
     x.fillStyle = vg;
     x.fillRect(0, 0, W, H);
   }
+  var SCENE_TILT = 0.36;
+  function sceneGeom(W, H) {
+    const m = Math.min(W, H * 1.15);
+    return { cx: W / 2, cy: H * 0.5, R: m * 0.43, Rsh: m * 0.095, tilt: SCENE_TILT };
+  }
+  var fx = [];
+  function drawScene(c, v, sv, time) {
+    const p = prep(c);
+    if (!p) return;
+    const { x, W, H } = p, g = sceneGeom(W, H);
+    drawHoleAt(c, v, time, g);
+    const { cx, cy, R: R2, Rsh, tilt } = g;
+    const P = (r, th) => [cx + Math.cos(th) * r * R2, cy + Math.sin(th) * r * R2 * tilt];
+    const hidden = (r, th) => {
+      const [px] = P(r, th);
+      return Math.sin(th) < 0 && Math.abs(px - cx) < Rsh * 1.05;
+    };
+    x.save();
+    if (sv.pulse < 2.6) {
+      const f = sv.pulse / 2.6;
+      x.strokeStyle = `rgba(184,146,255,${0.55 * (1 - f)})`;
+      x.lineWidth = 1.6;
+      x.beginPath();
+      x.ellipse(cx, cy, Rsh + f * R2 * 1.1, (Rsh + f * R2 * 1.1) * tilt, 0, 0, 7);
+      x.stroke();
+    }
+    if (!sv.locked) {
+      x.setLineDash([5, 6]);
+      x.strokeStyle = "rgba(242,165,65,0.5)";
+      x.lineWidth = 1.2;
+      x.beginPath();
+      x.ellipse(cx, cy, sv.relR * R2, sv.relR * R2 * tilt, 0, 0, 7);
+      x.stroke();
+      x.setLineDash([]);
+    }
+    for (const b of sv.blobs) {
+      for (let i = 1; i < b.trail.length; i++) {
+        const [ar, at] = b.trail[i - 1], [br, bt] = b.trail[i];
+        if (hidden(br, bt)) continue;
+        const [ax, ay] = P(ar, at), [bx, by] = P(br, bt), k = i / b.trail.length;
+        x.strokeStyle = b.gold ? `rgba(245,205,85,${k * 0.8})` : `rgba(255,176,146,${k * 0.7})`;
+        x.lineWidth = 1 + k * 2;
+        x.beginPath();
+        x.moveTo(ax, ay);
+        x.lineTo(bx, by);
+        x.stroke();
+      }
+      if (hidden(b.r, b.th)) continue;
+      const [px, py] = P(b.r, b.th), rr = 6 + Math.min(6, b.mult * 2);
+      const gg = x.createRadialGradient(px, py, 0, px, py, rr);
+      gg.addColorStop(0, b.gold ? "rgba(255,244,196,1)" : "rgba(255,226,210,1)");
+      gg.addColorStop(1, b.gold ? "rgba(245,205,85,0)" : "rgba(255,143,122,0)");
+      x.fillStyle = gg;
+      x.beginPath();
+      x.arc(px, py, rr, 0, 7);
+      x.fill();
+    }
+    for (const f of sv.flares) {
+      const [px, py] = P(f.r, f.th);
+      fx.push({ x: px, y: py, life: 1, gold: f.gold, s: Math.min(2.4, 0.8 + f.mult * 0.3), text: f.text });
+    }
+    for (let i = fx.length - 1; i >= 0; i--) {
+      const f = fx[i];
+      f.life -= 1 / 60;
+      if (f.life <= 0) {
+        fx.splice(i, 1);
+        continue;
+      }
+      const r = (1 - f.life) * 55 * f.s + 5;
+      x.strokeStyle = f.gold ? `rgba(245,205,85,${f.life})` : `rgba(255,240,226,${f.life})`;
+      x.lineWidth = 2;
+      x.beginPath();
+      x.arc(f.x, f.y, r, 0, 7);
+      x.stroke();
+      const fg = x.createRadialGradient(f.x, f.y, 0, f.x, f.y, r * 0.8);
+      fg.addColorStop(0, `rgba(255,255,255,${f.life * 0.8})`);
+      fg.addColorStop(1, "rgba(255,255,255,0)");
+      x.fillStyle = fg;
+      x.beginPath();
+      x.arc(f.x, f.y, r * 0.8, 0, 7);
+      x.fill();
+      x.font = `600 12px ${MONO}`;
+      x.textAlign = "center";
+      x.fillStyle = f.gold ? `rgba(245,205,85,${Math.min(1, f.life * 1.5)})` : `rgba(127,211,234,${Math.min(1, f.life * 1.5)})`;
+      x.fillText(f.text, f.x, f.y - 16 - (1 - f.life) * 26);
+    }
+    x.font = `12px ${MONO}`;
+    x.textAlign = "left";
+    x.fillStyle = "rgba(176,181,212,0.9)";
+    x.fillText(sv.tankText, 14, H - 26);
+    if (sv.tankText) {
+      x.fillStyle = "rgba(42,48,88,0.9)";
+      x.fillRect(14, H - 18, 160, 5);
+      x.fillStyle = sv.tank >= 0.999 ? "#f2a541" : "#ff8f7a";
+      x.fillRect(14, H - 18, 160 * Math.min(1, sv.tank), 5);
+    }
+    x.textAlign = "center";
+    if (sv.chainText) {
+      x.font = `700 22px "Chakra Petch", ${MONO}`;
+      x.fillStyle = "#f2a541";
+      x.fillText(sv.chainText, cx, 40);
+    }
+    if (sv.overText) {
+      x.font = `600 13px ${MONO}`;
+      x.fillStyle = "#f5cd55";
+      x.fillText(sv.overText, cx, sv.chainText ? 62 : 40);
+    }
+    if (sv.locked) {
+      x.font = `13px ${MONO}`;
+      x.fillStyle = "rgba(176,181,212,0.9)";
+      x.fillText(sv.locked, cx, H - 40);
+    }
+    if (sv.hover !== null && !sv.locked) {
+      const [hx, hy] = P(sv.relR, sv.hover);
+      x.strokeStyle = "rgba(242,165,65,0.95)";
+      x.lineWidth = 1.5;
+      x.beginPath();
+      x.arc(hx, hy, 7, 0, 7);
+      x.stroke();
+      x.font = `12px ${MONO}`;
+      x.textAlign = hx > cx ? "left" : "right";
+      x.fillStyle = "rgba(242,165,65,0.95)";
+      x.fillText(sv.hoverText, hx + (hx > cx ? 12 : -12), hy - 10);
+    }
+    x.textAlign = "left";
+    x.restore();
+  }
+  function drawHoleAt(c, v, time, _g) {
+    drawHole(c, v, time, "", true, SCENE_TILT);
+  }
 
   // src/ui/audio.ts
   var ctx = null;
@@ -3862,7 +4197,8 @@
       $("clockScale").textContent = t("ui.clockYears", { t: years(clockYears(S)) });
     } else {
       $("clockDay").innerHTML = esc(t("ui.day", { n: (Math.floor(S.time) + 1).toLocaleString("cs-CZ") }));
-      $("clockScale").textContent = S.star.done && S.b.station >= 1 ? t("ui.clockDil", { g: dec(gamma(S), gamma(S) >= 10 ? 0 : 1) }) : t("ui.clockScale");
+      $("clockScale").textContent = S.star.done ? t("ui.outside", { t: years(S.yrs ?? 0) }) : t("ui.clockScale");
+      $("clockDay").title = S.star.done ? t("ui.outsideTip") : "";
     }
   }
   var HOLE_CONV = ["injector", "station", "hawking"];
@@ -3874,6 +4210,39 @@
     const ch3 = S.star.done;
     $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch2 ? t("ui.star.title") : t("ui.asteroid");
     document.body.classList.toggle("ch2", ch2);
+    document.body.classList.toggle("ch3", ch3);
+    const sc = $("scenec");
+    sc.addEventListener("pointermove", (e) => {
+      sceneHover = sceneAngle(e);
+    });
+    sc.addEventListener("pointerleave", () => {
+      sceneHover = null;
+      sceneHold = false;
+    });
+    sc.addEventListener("pointerdown", (e) => {
+      if (sceneZoom) {
+        sceneZoom = 0;
+        renderScene();
+        return;
+      }
+      sceneHover = sceneAngle(e);
+      sceneHold = true;
+      sceneHoldAcc = 0;
+      sc.setPointerCapture(e.pointerId);
+      ventRelease(S, sceneHover);
+    });
+    sc.addEventListener("pointerup", () => {
+      sceneHold = false;
+    });
+    sc.addEventListener("pointercancel", () => {
+      sceneHold = false;
+    });
+    sc.addEventListener("wheel", (e) => {
+      if (!S.star.done) return;
+      e.preventDefault();
+      sceneZoom = e.deltaY > 0 ? 1 : 0;
+      renderScene();
+    }, { passive: false });
     const rock = $("rock");
     rock.disabled = ch2;
     rock.setAttribute("aria-label", ch2 ? t("ui.star.title") : t("ui.mineAria"));
@@ -3882,13 +4251,20 @@
     const hint = $("hint");
     hint.hidden = S.b.drone >= 3;
     hint.textContent = t("ui.hint");
-    const rows = [[t("ui.stats.clicks"), num(S.clicks)]];
+    const rows = ch2 ? [] : [[t("ui.stats.clicks"), num(S.clicks)]];
     if (!ch2) {
       rows.push([t("ui.stats.drones"), num(Math.floor(S.b.drone))]);
       for (const id of CONVERTERS.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
     } else if (ch3) {
       rows.push([t("ui.stats.phase"), `${S.hole.phase + 1} / ${PHASES.length}`], [t("ui.stats.spin"), spinTxt(S.hole.a)]);
       if (S.b.injector >= 1) rows.push([t("ui.stats.feed"), mass(feedRate(S)) + "/s"], [t("ui.stats.diskCov"), pct(ringCov(S))]);
+      if (ventOpen(S)) {
+        const v2 = S.vent;
+        rows.push([t("ui.vent.heat"), v2.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v2.over) }) : `${Math.round(v2.heat * 100)} % \xB7 \xD7${dec(ventHeatMult(S) * ventOverMult(S), 1)}`]);
+        rows.push([t("ui.vent.tank"), `${mass(v2.tank * ventCap(S))} \xB7 ${Math.round(v2.tank * 100)} %`]);
+        rows.push([t("ui.vent.chain"), v2.chain ? `${v2.chain} \xB7 \xD7${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v2.best })]);
+        rows.push([t("ui.vent.fall"), mass(v2.fall)]);
+      }
       for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
     } else if (!S.star.done) {
       rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
@@ -3927,6 +4303,7 @@
     const list = [["build", t("ui.tabs.build")]];
     if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
     if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
+    if (ventOpen(S)) list.push(["vent", t("ui.tabs.vent")]);
     if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
     else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
     return list;
@@ -3935,9 +4312,12 @@
     const list = tabsAvail();
     if (!list.find(([id]) => id === tab)) tab = "build";
     const dot = RESEARCH_IDS.some((id) => researchAvailable(S, id) && affordable(S, R[id].cost));
-    const hdot = phaseReady(S).ok;
-    const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5);
-    const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
+    const hdot = phaseReady(S).ok || unseen("hole");
+    const mdot = unseen("map") || LOCATION_IDS.some((id) => !S.visited[id] && locationOpen(S, id) && canTravel(S, id) && (!S.star.done || CH3_LOCS.includes(id)));
+    const vdot = unseen("vent");
+    const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5) || unseen("star");
+    markSeen();
+    const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot || id === "map" && mdot || id === "vent" && vdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
     const el = $("tabs");
     if (el.innerHTML !== html) el.innerHTML = html;
   }
@@ -3947,6 +4327,7 @@
     if (tab === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
     if (tab === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
     if (tab === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
+    if (tab === "vent") return "v";
     return "s";
   }
   function buildView() {
@@ -3980,6 +4361,7 @@
       h += "</div>";
     } else if (tab === "star") h += starHTML();
     else if (tab === "hole") h += holeHTML();
+    else if (tab === "vent") h += ventHTML();
     $("view").innerHTML = h;
   }
   var round2 = (v) => {
@@ -4088,6 +4470,103 @@
       renderAll(true);
       save();
     }, true);
+  }
+  var seenKey = {
+    map: () => LOCATION_IDS.filter((id) => locationOpen(S, id) && !S.visited[id]).join(","),
+    hole: () => `${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`,
+    star: () => `${S.star.stage}${S.star.collapse >= 0}`,
+    vent: () => ventOpen(S) ? "open" : ""
+  };
+  function unseen(id) {
+    const k = seenKey[id]();
+    return !!k && (S.seen?.[id] ?? "") !== k;
+  }
+  function markSeen() {
+    if (!seenKey[tab]) return;
+    S.seen ?? (S.seen = {});
+    S.seen[tab] = seenKey[tab]();
+  }
+  var sceneZoom = 0;
+  var sceneHover = null;
+  var sceneHold = false;
+  var sceneHoldAcc = 0;
+  function sceneAngle(e) {
+    const c = $("scenec"), r = c.getBoundingClientRect(), g = sceneGeom(r.width, r.height);
+    const dx = (e.clientX - r.left - g.cx) / g.R, dy = (e.clientY - r.top - g.cy) / (g.R * g.tilt);
+    return Math.atan2(dy, dx);
+  }
+  function sceneView() {
+    const v = S.vent, open = ventOpen(S);
+    const blobs = v.fly.map((b) => {
+      const dt0 = S.time - b.t0, p0 = blobPos(b, dt0), trail3 = [];
+      for (let k = 9; k >= 1; k--) {
+        const q = blobPos(b, Math.max(0, dt0 - k * 0.05));
+        trail3.push([q.r, q.th]);
+      }
+      trail3.push([p0.r, p0.th]);
+      return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail: trail3 };
+    });
+    const fl = flares.splice(0).map((f) => {
+      const q = blobPos(f.b, ventFlight(f.b.r0));
+      return { r: q.r, th: q.th, gold: f.b.gold, mult: f.b.mult, text: `+${bytes(f.data)}${f.b.mult > 1.01 ? ` \xD7${dec(f.b.mult, 2)}` : ""}` };
+    });
+    return {
+      blobs,
+      flares: fl,
+      relR: ventR(ventLv(S, "radius")),
+      hover: sceneHover,
+      hoverText: t("ui.vent.hover", { kg: mass(ventKg(S)), s: dec(ventFlight(ventR(ventLv(S, "radius"))), 1) }),
+      tank: v.tank,
+      tankText: open ? t("ui.vent.tankLine", { kg: mass(v.tank * ventCap(S)), p: Math.round(v.tank * 100) }) : "",
+      chainText: v.chain > 1 ? t("ui.vent.chainBig", { n: v.chain, m: dec(ventChainMult(S), 2) }) : "",
+      pulse: pulsePhase(S),
+      pulseSec: VENT.pulse,
+      overText: v.over > 0 ? t("ui.vent.over", { s: Math.ceil(v.over) }) : "",
+      locked: open ? "" : t("ui.vent.locked")
+    };
+  }
+  function renderScene() {
+    if (!S.star.done) return;
+    const open = ventOpen(S), full = ventCanBurst(S), btn = $("burstBtn");
+    btn.hidden = !open || !!sceneZoom;
+    btn.disabled = !full;
+    btn.classList.toggle("ready", full);
+    btn.classList.toggle("ghost", !full);
+    btn.textContent = full ? t("ui.vent.burst") : t("ui.vent.burstWait", { p: Math.round(S.vent.tank * 100) });
+    const hint = $("sceneHint");
+    hint.hidden = !open || S.vent.best >= 6 || !!sceneZoom;
+    hint.textContent = t("ui.vent.hint");
+    document.querySelectorAll("[data-zoom]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.zoom) === sceneZoom)));
+  }
+  var ventNow = {
+    valve: (l) => t("ui.vent.v.valve", { kg: mass(Math.min(ventCap(S), ventKg(S, l))), s: dec(VENT.valveSec * Math.pow(1.5, l), 0) }),
+    trap: (l) => t("ui.vent.v.trap", { kg: mass(ventCap(S, l)), s: dec(ventFillSec(l), 0) }),
+    radius: (l) => t("ui.vent.v.radius", { r: dec(ventR(l), 2), s: dec(ventFlight(ventR(l)), 1) }),
+    coil: (l) => t("ui.vent.v.coil", { n: ventChainMax(l), p: Math.round(ventStep(l) * 100) }),
+    auto: (l) => l ? t("ui.vent.v.auto", { s: dec(ventAutoSec(l), 1) }) : t("ui.vent.v.autoOff")
+  };
+  function ventHTML() {
+    let h = `<p class="dim" style="margin:0 0 10px">${esc(t("ui.vent.intro"))}</p><div class="list">`;
+    for (const id of VENT_IDS) {
+      h += `<div class="item vcard" data-vu="${id}"><h3>${esc(t(`ui.vent.u.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`ui.vent.u.${id}.desc`))}</p>
+    <div class="eff2 mono"><span class="k">${esc(t("ui.vent.now"))}</span><span data-f="now"></span><span class="k">${esc(t("ui.vent.next"))}</span><span class="up" data-f="next"></span></div>
+    <div class="cost" data-f="cost"></div><div class="act"><button class="btn" data-vup="${id}">${esc(t("ui.vent.upgrade"))}</button></div></div>`;
+    }
+    return h + "</div>";
+  }
+  function updateVent() {
+    $("view").querySelectorAll("[data-vu]").forEach((el) => {
+      const id = el.dataset.vu, l = ventLv(S, id), max = l >= VENT_UPS[id].max, c = ventUpCost(S, id);
+      const set = (f, html) => {
+        const e2 = el.querySelector(`[data-f=${f}]`);
+        if (e2.innerHTML !== html) e2.innerHTML = html;
+      };
+      set("n", esc(t("ui.vent.level", { n: l })));
+      set("now", esc(ventNow[id](l)));
+      set("next", esc(max ? t("ui.vent.max") : ventNow[id](l + 1)));
+      set("cost", max ? "" : costHTML({ plasma: c }));
+      el.querySelector("[data-vup]").disabled = max || S.res.plasma < c;
+    });
   }
   var phaseName = (i) => i < PHASES.length ? t(`ui.phases.${PHASES[i].id}.name`) : t("ui.hole.diveName");
   var lumOf = (w) => Math.max(0, Math.min(1, (Math.log10(Math.max(1, w)) - 20) / 13));
@@ -4276,6 +4755,7 @@
       });
     } else if (tab === "star") updateStar();
     else if (tab === "hole") updateHole();
+    else if (tab === "vent") updateVent();
     else if (tab === "map") {
       view.querySelectorAll("[data-go]").forEach((b) => {
         const id = b.dataset.go, item = b.closest("[data-l]");
@@ -4482,6 +4962,24 @@
         onPhase();
         return;
       }
+      if (d.vup) {
+        if (ventUpgrade(S, d.vup)) {
+          if (S.settings.sound) chime();
+          updateVent();
+          renderRig();
+        }
+        return;
+      }
+      if (d.burst) {
+        if (ventBurst(S) && S.settings.sound) boom();
+        renderScene();
+        return;
+      }
+      if (d.zoom !== void 0) {
+        sceneZoom = Number(d.zoom);
+        renderScene();
+        return;
+      }
       if (d.act) return settingsAction(d.act, b);
     });
     const rock = $("rock");
@@ -4670,6 +5168,7 @@
         renderTabs();
         renderView();
         renderChapters();
+        renderScene();
         checkChapterModal();
       }
       saveAcc += dt;
@@ -4678,7 +5177,16 @@
         save();
       }
       if (S.star.done && snAge() > 8) {
-        drawHole($("rockc"), holeView(), now / 1e3, S.b.station >= 1 ? t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }) + ` \xB7 a ${spinTxt(S.hole.a)}` : t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }));
+        const sc = $("scenec");
+        if (sceneZoom) drawHoleMap(sc, S, holeView(), now / 1e3);
+        else drawScene(sc, holeView(), sceneView(), now / 1e3);
+        if (sceneHold && sceneHover !== null && !sceneZoom) {
+          sceneHoldAcc += dt;
+          if (sceneHoldAcc >= 0.32) {
+            sceneHoldAcc = 0;
+            ventRelease(S, sceneHover);
+          }
+        }
       } else if (S.chapterDone >= 1) {
         const n = Math.floor(S.b.dyson);
         drawStar($("rockc"), starView(), now / 1e3, { title: "", sub: S.star.done ? "" : `${n.toLocaleString("cs-CZ")} ${plural(n, "kolektor", "kolektory", "kolektor\u016F")}`, layers: "" }, false);

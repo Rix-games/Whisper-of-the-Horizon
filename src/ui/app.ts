@@ -1,10 +1,10 @@
 import { cs } from '../i18n/cs.js';
 import { t } from '../i18n/index.js';
 import { type BuildingId, type LocationId, type Res, type ResearchId, HOLE, PHASES, B, BUILDING_IDS, EVENTS, L, LOCATION_IDS, PRESTIGE, R, RESEARCH_IDS, RESOURCES, STAGES, STAR, stage } from '../core/defs.js';
-import { diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
+import { VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventAutoSec, ventBurst, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFillSec, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
 import { decodeSave, encodeSave, migrate, newState } from '../core/state.js';
 import { bytes, duration, energy, kValue, mass, num, power, sci } from '../core/format.js';
-import { drawHole, drawHoleMap, drawProfile, type HoleView } from './hole.js';
+import { drawHole, drawHoleMap, drawProfile, drawScene, sceneGeom, type HoleView, type SceneView } from './hole.js';
 import { drawMap, drawRock, drawSection, drawStar, drawStars, hitRock, label, sizeStars } from './scene.js';
 import { boom, chime, setSound, setVolumes, vols } from './audio.js';
 
@@ -179,7 +179,8 @@ export function renderTop() {
     $("clockScale").textContent = t("ui.clockYears", { t: years(clockYears(S)) });
   } else {
     $("clockDay").innerHTML = esc(t("ui.day", { n: (Math.floor(S.time) + 1).toLocaleString("cs-CZ") }));
-    $("clockScale").textContent = S.star.done && S.b.station >= 1 ? t("ui.clockDil", { g: dec(gamma(S), gamma(S) >= 10 ? 0 : 1) }) : t("ui.clockScale");
+    $("clockScale").textContent = S.star.done ? t("ui.outside", { t: years(S.yrs ?? 0) }) : t("ui.clockScale");
+    $("clockDay").title = S.star.done ? t("ui.outsideTip") : "";
   }
 }
 const HOLE_CONV: BuildingId[] = ["injector", "station", "hawking"];
@@ -191,6 +192,21 @@ export function renderRig() {
   const ch3 = S.star.done;
   $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch2 ? t("ui.star.title") : t("ui.asteroid");
   document.body.classList.toggle("ch2", ch2);
+  document.body.classList.toggle("ch3", ch3);
+  const sc = $("scenec");
+  sc.addEventListener("pointermove", (e) => { sceneHover = sceneAngle(e); });
+  sc.addEventListener("pointerleave", () => { sceneHover = null; sceneHold = false; });
+  sc.addEventListener("pointerdown", (e) => {
+    if (sceneZoom) { sceneZoom = 0; renderScene(); return; }
+    sceneHover = sceneAngle(e);
+    sceneHold = true;
+    sceneHoldAcc = 0;
+    sc.setPointerCapture(e.pointerId);
+    ventRelease(S, sceneHover);
+  });
+  sc.addEventListener("pointerup", () => { sceneHold = false; });
+  sc.addEventListener("pointercancel", () => { sceneHold = false; });
+  sc.addEventListener("wheel", (e) => { if (!S.star.done) return; e.preventDefault(); sceneZoom = e.deltaY > 0 ? 1 : 0; renderScene(); }, { passive: false });
   const rock = $("rock");
   rock.disabled = ch2;
   rock.setAttribute("aria-label", ch2 ? t("ui.star.title") : t("ui.mineAria"));
@@ -199,13 +215,20 @@ export function renderRig() {
   const hint = $("hint");
   hint.hidden = S.b.drone >= 3;
   hint.textContent = t("ui.hint");
-  const rows = [[t("ui.stats.clicks"), num(S.clicks)]];
+  const rows = ch2 ? [] : [[t("ui.stats.clicks"), num(S.clicks)]];
   if (!ch2) {
     rows.push([t("ui.stats.drones"), num(Math.floor(S.b.drone))]);
     for (const id of CONVERTERS.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
   } else if (ch3) {
     rows.push([t("ui.stats.phase"), `${S.hole.phase + 1} / ${PHASES.length}`], [t("ui.stats.spin"), spinTxt(S.hole.a)]);
     if (S.b.injector >= 1) rows.push([t("ui.stats.feed"), mass(feedRate(S)) + "/s"], [t("ui.stats.diskCov"), pct(ringCov(S))]);
+    if (ventOpen(S)) {
+      const v = S.vent;
+      rows.push([t("ui.vent.heat"), v.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v.over) }) : `${Math.round(v.heat * 100)} % · ×${dec(ventHeatMult(S) * ventOverMult(S), 1)}`]);
+      rows.push([t("ui.vent.tank"), `${mass(v.tank * ventCap(S))} · ${Math.round(v.tank * 100)} %`]);
+      rows.push([t("ui.vent.chain"), v.chain ? `${v.chain} · ×${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v.best })]);
+      rows.push([t("ui.vent.fall"), mass(v.fall)]);
+    }
     for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
   } else if (!S.star.done) {
     rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
@@ -241,6 +264,7 @@ export function tabsAvail() {
   const list = [["build", t("ui.tabs.build")]];
   if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
   if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
+  if (ventOpen(S)) list.push(["vent", t("ui.tabs.vent")]);
   if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
   else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
   return list;
@@ -249,9 +273,12 @@ export function renderTabs() {
   const list = tabsAvail();
   if (!list.find(([id]) => id === tab)) tab = "build";
   const dot = RESEARCH_IDS.some((id) => researchAvailable(S, id) && affordable(S, R[id].cost));
-  const hdot = phaseReady(S).ok;
-  const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5);
-  const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
+  const hdot = phaseReady(S).ok || unseen("hole");
+  const mdot = unseen("map") || LOCATION_IDS.some((id) => !S.visited[id] && locationOpen(S, id) && canTravel(S, id) && (!S.star.done || CH3_LOCS.includes(id)));
+  const vdot = unseen("vent");
+  const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5) || unseen("star");
+  markSeen();
+  const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot || id === "map" && mdot || id === "vent" && vdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
   const el = $("tabs");
   if (el.innerHTML !== html) el.innerHTML = html;
 }
@@ -261,6 +288,7 @@ export function computeKey() {
   if (tab === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
   if (tab === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
   if (tab === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
+  if (tab === "vent") return "v";
   return "s";
 }
 export function buildView() {
@@ -294,6 +322,7 @@ export function buildView() {
     h += "</div>";
   } else if (tab === "star") h += starHTML();
   else if (tab === "hole") h += holeHTML();
+  else if (tab === "vent") h += ventHTML();
   $("view").innerHTML = h;
 }
 export const round2 = (v) => {
@@ -402,6 +431,93 @@ export function onRebuild() {
     renderAll(true);
     save();
   }, true);
+}
+// ---------- tečky u záložek: co nového se na záložce objevilo ----------
+const seenKey: Record<string, () => string> = {
+  map: () => LOCATION_IDS.filter((id) => locationOpen(S, id) && !S.visited[id]).join(","),
+  hole: () => `${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`,
+  star: () => `${S.star.stage}${S.star.collapse >= 0}`,
+  vent: () => ventOpen(S) ? "open" : ""
+};
+function unseen(id: string) {
+  const k = seenKey[id]();
+  return !!k && (S.seen?.[id] ?? "") !== k;
+}
+function markSeen() {
+  if (!seenKey[tab]) return;
+  S.seen ??= {};
+  S.seen[tab] = seenKey[tab]();
+}
+// ---------- Kapitola 3: scéna uprostřed a záložka Ventil ----------
+let sceneZoom = 0, sceneHover: number | null = null, sceneHold = false, sceneHoldAcc = 0;
+function sceneAngle(e: PointerEvent) {
+  const c = $("scenec"), r = c.getBoundingClientRect(), g = sceneGeom(r.width, r.height);
+  const dx = (e.clientX - r.left - g.cx) / g.R, dy = (e.clientY - r.top - g.cy) / (g.R * g.tilt);
+  return Math.atan2(dy, dx);
+}
+function sceneView(): SceneView {
+  const v = S.vent, open = ventOpen(S);
+  const blobs = v.fly.map((b) => {
+    const dt0 = S.time - b.t0, p0 = blobPos(b, dt0), trail: [number, number][] = [];
+    for (let k = 9; k >= 1; k--) {
+      const q = blobPos(b, Math.max(0, dt0 - k * 0.05));
+      trail.push([q.r, q.th]);
+    }
+    trail.push([p0.r, p0.th]);
+    return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail };
+  });
+  const fl = flares.splice(0).map((f) => {
+    const q = blobPos(f.b, ventFlight(f.b.r0));
+    return { r: q.r, th: q.th, gold: f.b.gold, mult: f.b.mult, text: `+${bytes(f.data)}${f.b.mult > 1.01 ? ` ×${dec(f.b.mult, 2)}` : ""}` };
+  });
+  return {
+    blobs, flares: fl, relR: ventR(ventLv(S, "radius")), hover: sceneHover,
+    hoverText: t("ui.vent.hover", { kg: mass(ventKg(S)), s: dec(ventFlight(ventR(ventLv(S, "radius"))), 1) }),
+    tank: v.tank, tankText: open ? t("ui.vent.tankLine", { kg: mass(v.tank * ventCap(S)), p: Math.round(v.tank * 100) }) : "",
+    chainText: v.chain > 1 ? t("ui.vent.chainBig", { n: v.chain, m: dec(ventChainMult(S), 2) }) : "",
+    pulse: pulsePhase(S), pulseSec: VENT.pulse, overText: v.over > 0 ? t("ui.vent.over", { s: Math.ceil(v.over) }) : "",
+    locked: open ? "" : t("ui.vent.locked")
+  };
+}
+function renderScene() {
+  if (!S.star.done) return;
+  const open = ventOpen(S), full = ventCanBurst(S), btn = $("burstBtn");
+  btn.hidden = !open || !!sceneZoom;
+  btn.disabled = !full;
+  btn.classList.toggle("ready", full);
+  btn.classList.toggle("ghost", !full);
+  btn.textContent = full ? t("ui.vent.burst") : t("ui.vent.burstWait", { p: Math.round(S.vent.tank * 100) });
+  const hint = $("sceneHint");
+  hint.hidden = !open || S.vent.best >= 6 || !!sceneZoom;
+  hint.textContent = t("ui.vent.hint");
+  document.querySelectorAll<El>("[data-zoom]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.zoom) === sceneZoom)));
+}
+const ventNow: Record<VentUp, (l: number) => string> = {
+  valve: (l) => t("ui.vent.v.valve", { kg: mass(Math.min(ventCap(S), ventKg(S, l))), s: dec(VENT.valveSec * Math.pow(1.5, l), 0) }),
+  trap: (l) => t("ui.vent.v.trap", { kg: mass(ventCap(S, l)), s: dec(ventFillSec(l), 0) }),
+  radius: (l) => t("ui.vent.v.radius", { r: dec(ventR(l), 2), s: dec(ventFlight(ventR(l)), 1) }),
+  coil: (l) => t("ui.vent.v.coil", { n: ventChainMax(l), p: Math.round(ventStep(l) * 100) }),
+  auto: (l) => l ? t("ui.vent.v.auto", { s: dec(ventAutoSec(l), 1) }) : t("ui.vent.v.autoOff")
+};
+function ventHTML() {
+  let h = `<p class="dim" style="margin:0 0 10px">${esc(t("ui.vent.intro"))}</p><div class="list">`;
+  for (const id of VENT_IDS) {
+    h += `<div class="item vcard" data-vu="${id}"><h3>${esc(t(`ui.vent.u.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`ui.vent.u.${id}.desc`))}</p>
+    <div class="eff2 mono"><span class="k">${esc(t("ui.vent.now"))}</span><span data-f="now"></span><span class="k">${esc(t("ui.vent.next"))}</span><span class="up" data-f="next"></span></div>
+    <div class="cost" data-f="cost"></div><div class="act"><button class="btn" data-vup="${id}">${esc(t("ui.vent.upgrade"))}</button></div></div>`;
+  }
+  return h + "</div>";
+}
+function updateVent() {
+  $("view").querySelectorAll<El>("[data-vu]").forEach((el) => {
+    const id = el.dataset.vu as VentUp, l = ventLv(S, id), max = l >= VENT_UPS[id].max, c = ventUpCost(S, id);
+    const set = (f: string, html: string) => { const e2 = el.querySelector<El>(`[data-f=${f}]`); if (e2.innerHTML !== html) e2.innerHTML = html; };
+    set("n", esc(t("ui.vent.level", { n: l })));
+    set("now", esc(ventNow[id](l)));
+    set("next", esc(max ? t("ui.vent.max") : ventNow[id](l + 1)));
+    set("cost", max ? "" : costHTML({ plasma: c }));
+    el.querySelector<El>("[data-vup]").disabled = max || S.res.plasma < c;
+  });
 }
 // ---------- Kapitola 3: záložka Horizont ----------
 const phaseName = (i: number) => i < PHASES.length ? t(`ui.phases.${PHASES[i].id}.name`) : t("ui.hole.diveName");
@@ -582,6 +698,7 @@ export function updateView() {
     });
   } else if (tab === "star") updateStar();
   else if (tab === "hole") updateHole();
+  else if (tab === "vent") updateVent();
   else if (tab === "map") {
     view.querySelectorAll<El>("[data-go]").forEach((b) => {
       const id = b.dataset.go as LocationId, item = b.closest("[data-l]");
@@ -788,6 +905,20 @@ export function bind() {
       onPhase();
       return;
     }
+    if (d.vup) {
+      if (ventUpgrade(S, d.vup)) { if (S.settings.sound) chime(); updateVent(); renderRig(); }
+      return;
+    }
+    if (d.burst) {
+      if (ventBurst(S) && S.settings.sound) boom();
+      renderScene();
+      return;
+    }
+    if (d.zoom !== undefined) {
+      sceneZoom = Number(d.zoom);
+      renderScene();
+      return;
+    }
     if (d.act) return settingsAction(d.act, b);
   });
   const rock = $("rock");
@@ -976,6 +1107,7 @@ export function start() {
       renderTabs();
       renderView();
       renderChapters();
+      renderScene();
       checkChapterModal();
     }
     saveAcc += dt;
@@ -984,7 +1116,13 @@ export function start() {
       save();
     }
     if (S.star.done && snAge() > 8) {
-      drawHole($("rockc") as unknown as HTMLCanvasElement, holeView(), now / 1e3, S.b.station >= 1 ? t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }) + ` · a ${spinTxt(S.hole.a)}` : t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }));
+      const sc = $("scenec") as unknown as HTMLCanvasElement;
+      if (sceneZoom) drawHoleMap(sc, S, holeView(), now / 1e3);
+      else drawScene(sc, holeView(), sceneView(), now / 1e3);
+      if (sceneHold && sceneHover !== null && !sceneZoom) {
+        sceneHoldAcc += dt;
+        if (sceneHoldAcc >= 0.32) { sceneHoldAcc = 0; ventRelease(S, sceneHover); }
+      }
     } else if (S.chapterDone >= 1) {
       const n = Math.floor(S.b.dyson);
       drawStar($("rockc"), starView(), now / 1e3, { title: "", sub: S.star.done ? "" : `${n.toLocaleString("cs-CZ")} ${plural(n, "kolektor", "kolektory", "kolektorů")}`, layers: "" }, false);

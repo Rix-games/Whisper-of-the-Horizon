@@ -33,6 +33,7 @@ const chapterSet = (): BuildingId[] => s.chapterDone === 0 ? CH1 : s.chapterDone
 const e = (v: number) => v.toExponential(1);
 
 // ---- chování bota podle kapitoly ----
+const VENTBOT = Number(process.env.VENT ?? 0); // kolik chuchvalců za sekundu bot vypustí
 const FEED_SHARE = Number(process.env.FEED ?? 0.6); // kolik výroby plynu bot pošle do díry
 function botWants(st: typeof s, id: BuildingId) {
   if (st.chapterDone < 2) return true;
@@ -43,6 +44,7 @@ function botWants(st: typeof s, id: BuildingId) {
 }
 function botWeight(_s: typeof s, _id: BuildingId) { return 1; }
 function botAct(st: typeof s) {
+  if (VENTBOT && st.star.done) { for (let k = 0; k < VENTBOT; k++) E.ventRelease(st, rng() * 6.28); if (E.ventCanBurst(st)) E.ventBurst(st); for (const id of E.VENT_IDS) E.ventUpgrade(st, id); }
   if (st.star.done && E.phaseReady(st).ok) { E.advancePhase(st); marks.push([st.hole.dive >= 0 ? 'PONOR' : 'FÁZE ' + st.hole.phase, st.time, E.kardashev(st).toFixed(2)]); }
 }
 function botStatus(st: typeof s) {

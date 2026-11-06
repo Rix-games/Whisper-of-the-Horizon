@@ -1,5 +1,5 @@
 // Čistá herní logika bez prohlížeče. Dá se spustit v Node (simulace) i na mobilu.
-import type { State } from './state.js';
+import type { Blob, State } from './state.js';
 import { HOLE, PHASES, type Amounts, type BuildingId, type EventId, type LocationId, type Res, type ResearchId, B, BUILDING_IDS, EVENTS, EVENT_IDS, FACTS, L, PRESTIGE, R, RESOURCES, RULES, STAGES, STAR, STORY } from './defs.js';
 
 const keys = <T extends object>(o: T) => Object.keys(o) as (keyof T)[];
@@ -73,7 +73,7 @@ export function holeLRaw(s: State) {
   return diskEta(s.hole.a) * feedRate(s) * HOLE.c2;
 }
 export function holeL(s: State) {
-  const raw = holeLRaw(s), edd = HOLE.eddW;
+  const raw = holeLRaw(s) * ventHeatMult(s), edd = HOLE.eddW * ventOverMult(s) * ventHeatMult(s);
   if (raw <= edd) return raw;
   return s.r.slim ? edd * (1 + Math.log(raw / edd)) : edd;
 }
@@ -141,6 +141,160 @@ export function advancePhase(s: State) {
   if (s.hole.phase >= PHASES.length - 1) s.hole.dive = HOLE.diveSec;
   else s.hole.phase++;
   return true;
+}
+// ---------- Kapitola 3: vypouštění plynu z magnetické pasti ----------
+// Plyn ze zpětného pádu se chytá do pasti. Hráč ho vypouští do disku; chuchvalec se stáčí po spirále
+// k nejbližší stabilní dráze (ISCO) a tam vzplane: dá data a zvýší žár disku (násobí záření disku).
+// Další chuchvalec vypuštěný dřív, než předchozí dopadne, prodlužuje řetěz (kvaziperiodické oscilace).
+export const VENT = {
+  isco: 0.23,          // vnitřní okraj disku v poloměrech disku (jen geometrie letu)
+  fallIn: 0.085,       // rychlost pádu dovnitř: dr/dt = −k·r^−½
+  spin: 0.55,          // úhlová rychlost na okraji disku (Kepler: ω ∝ r^−3/2)
+  capSec: 60,          // kapacita pasti v sekundách přísunu plynu
+  fillSec: 30,         // za kolik sekund se prázdná past naplní
+  valveSec: 6,         // kolik sekund přísunu je v jednom chuchvalci
+  heatPer: 0.035,      // žár za záblesk (×násobič řetězu)
+  heatDecay: 0.02,     // chladnutí za sekundu
+  heatBonus: 3,        // výkon disku ×(1 + 3·žár)
+  dataSec: 1,          // záblesk dá data za tolik sekund běžné výroby
+  pulse: 7.3,          // perioda pulsu
+  pulseWin: 1.1,       // okno souzvuku po pulsu
+  overSec: 15,         // výbuch disku: jak dlouho je disk nad mezí
+  overMult: 2,         // a kolikrát víc září
+  burstN: 14
+};
+export type VentUp = "valve" | "trap" | "radius" | "coil" | "auto";
+export const VENT_UPS: Record<VentUp, { base: number; g: number; max: number }> = {
+  valve: { base: 3e8, g: 7, max: 12 },
+  trap: { base: 5e8, g: 7, max: 12 },
+  radius: { base: 2e9, g: 40, max: 5 },
+  coil: { base: 6e9, g: 25, max: 6 },
+  auto: { base: 3e10, g: 60, max: 4 }
+};
+export const VENT_IDS = Object.keys(VENT_UPS) as VentUp[];
+export const ventLv = (s: State, id: VentUp) => s.vent.lv[id] ?? 0;
+export const ventOpen = (s: State) => s.star.done && !!s.r.accrete;
+/** Základ pasti: přísun plynu (injektory, nebo naběrače, dokud injektory nejsou). */
+export function ventBase(s: State) {
+  return Math.max(feedRate(s), s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0, 1e5);
+}
+export const ventCap = (s: State, l = ventLv(s, "trap")) => ventBase(s) * VENT.capSec * Math.pow(1.6, l);
+export const ventFillSec = (l: number) => VENT.fillSec / Math.pow(1.3, l);
+export const ventKg = (s: State, l = ventLv(s, "valve")) => Math.min(ventCap(s), ventBase(s) * VENT.valveSec * Math.pow(1.5, l));
+export const ventR = (l: number) => 0.5 + l * 0.09;
+export const ventChainMax = (l: number) => 8 + l * 4;
+export const ventStep = (l: number) => 0.12 + l * 0.03;
+export const ventAutoSec = (l: number) => l ? Math.max(1.5, 7 - l * 1.4) : 0;
+export function ventFlight(r0: number) {
+  return (Math.pow(r0, 1.5) - Math.pow(VENT.isco, 1.5)) / (1.5 * VENT.fallIn);
+}
+/** Poloha chuchvalce v čase t od vypuštění (analyticky z rovnic pádu a Keplerovy rotace). */
+export function blobPos(b: Blob, t: number) {
+  const k = 1.5 * VENT.fallIn, r15 = Math.max(Math.pow(VENT.isco, 1.5), Math.pow(b.r0, 1.5) - k * t);
+  const f = Math.max(1e-6, r15 / Math.pow(b.r0, 1.5));
+  return { r: Math.pow(r15, 2 / 3), th: b.th0 - (VENT.spin / k) * Math.log(f) };
+}
+export const ventChainMult = (s: State) => 1 + ventStep(ventLv(s, "coil")) * Math.max(0, Math.min(s.vent.chain, ventChainMax(ventLv(s, "coil"))) - 1);
+export const ventHeatMult = (s: State) => 1 + VENT.heatBonus * s.vent.heat;
+export const ventOverMult = (s: State) => s.vent.over > 0 ? VENT.overMult : 1;
+export const pulsePhase = (s: State) => s.time % VENT.pulse;
+export const ventGoldNow = (s: State) => pulsePhase(s) < VENT.pulseWin;
+/** Vypustí jeden chuchvalec. Vrátí ho, nebo null, když je past prázdná. */
+export function ventRelease(s: State, th: number, auto = false): Blob | null {
+  if (!ventOpen(s)) return null;
+  const cap = ventCap(s), kg = ventKg(s);
+  if (s.vent.tank * cap < kg * 0.999) return null;
+  s.vent.tank = Math.max(0, s.vent.tank - kg / cap);
+  if (!auto) {
+    s.vent.chain = s.vent.fly.some((b) => !b.auto) ? s.vent.chain + 1 : 1;
+    s.vent.best = Math.max(s.vent.best, s.vent.chain);
+  }
+  const b: Blob = { t0: s.time, r0: ventR(ventLv(s, "radius")), th0: th, kg, mult: auto ? 1 : ventChainMult(s), gold: !auto && ventGoldNow(s), auto };
+  s.vent.fly.push(b);
+  s.vent.fall = Math.max(0, s.vent.fall - kg);
+  return b;
+}
+export function ventCanBurst(s: State) {
+  return ventOpen(s) && s.vent.tank >= 0.999;
+}
+/** Výbuch disku: celá past najednou, disk se na chvíli dostane nad Eddingtonovu mez. */
+export function ventBurst(s: State) {
+  if (!ventCanBurst(s)) return false;
+  const kg = ventCap(s) / VENT.burstN, r0 = ventR(ventLv(s, "radius"));
+  for (let i = 0; i < VENT.burstN; i++) s.vent.fly.push({ t0: s.time, r0: r0 + (i % 3) * 0.04, th0: i / VENT.burstN * Math.PI * 2, kg, mult: 1.5, gold: false, auto: true });
+  s.vent.tank = 0;
+  s.vent.over = VENT.overSec;
+  s.vent.heat = 1;
+  return true;
+}
+export interface Flare { b: Blob; data: number; energy: number }
+/** Záblesk na ISCO: data za pár sekund výroby a žár disku. */
+function ventFlare(s: State, b: Blob): Flare {
+  const g = b.gold ? 2 : 1;
+  const data = Math.max(0, baseDataRate(s)) * VENT.dataSec * b.mult * g;
+  const energy = diskEta(s.hole.a) * b.kg * HOLE.c2 * b.mult * g;
+  add(s, "data", data);
+  add(s, "energy", energy);
+  s.vent.heat = Math.min(1, s.vent.heat + VENT.heatPer * b.mult * g);
+  return { b, data, energy };
+}
+function baseDataRate(s: State) {
+  let d = 0;
+  for (const id of BUILDING_IDS) if (s.b[id] && B[id].prod?.data) d += prodOf(s, id, "data") * s.b[id] * effOf(s, id);
+  return d;
+}
+/** Krok pasti: plnění, chladnutí, automatický ventil a dopady chuchvalců. Vrací záblesky pro grafiku. */
+export const flares: Flare[] = [];
+function ventTick(s: State, dt: number) {
+  const v = s.vent;
+  if (!ventOpen(s)) return;
+  if (v.fall > 0) v.tank = Math.min(1, v.tank + dt / ventFillSec(ventLv(s, "trap")));
+  if (v.over > 0) v.over = Math.max(0, v.over - dt);
+  else v.heat = Math.max(0, v.heat - VENT.heatDecay * dt);
+  const ae = ventAutoSec(ventLv(s, "auto"));
+  if (ae) {
+    v.auto += dt;
+    while (v.auto >= ae) { v.auto -= ae; ventRelease(s, (s.time * 2.399) % (Math.PI * 2), true); }
+  }
+  for (let i = v.fly.length - 1; i >= 0; i--) {
+    const b = v.fly[i];
+    if (s.time - b.t0 >= ventFlight(b.r0)) {
+      v.fly.splice(i, 1);
+      flares.push(ventFlare(s, b));
+      if (flares.length > 40) flares.shift();
+    }
+  }
+  if (v.chain && !v.fly.some((b) => !b.auto)) v.chain = 0;
+}
+export function ventUpCost(s: State, id: VentUp) {
+  const u = VENT_UPS[id];
+  return u.base * Math.pow(u.g, ventLv(s, id));
+}
+export function ventUpgrade(s: State, id: VentUp) {
+  const c = ventUpCost(s, id);
+  if (!ventOpen(s) || ventLv(s, id) >= VENT_UPS[id].max || s.res.plasma < c) return false;
+  s.res.plasma -= c;
+  s.vent.lv[id] = ventLv(s, id) + 1;
+  return true;
+}
+// ---------- čas venku: Vesper mezi směnami spí ----------
+export function aldraAge(s: State) {
+  if (s.star.done) return STAGES[STAGES.length - 1].age0 + STAGES[STAGES.length - 1].years;
+  const d = stageDef(s);
+  return d.age0 + d.years * Math.min(1, s.star.t / d.sec);
+}
+function yearsTick(s: State, dt: number) {
+  if (s.yrs === undefined) {
+    // starší uložené hry: odhad podle kapitoly
+    s.yrs1 = s.chapterDone ? 25 : undefined;
+    s.yrs = !s.chapterDone ? s.time / 365.25 : s.yrs1 + aldraAge(s) - STAGES[0].age0;
+  }
+  if (!s.chapterDone) s.yrs += dt / 365.25;
+  else {
+    if (s.yrs1 === undefined) s.yrs1 = s.yrs;
+    if (!s.star.done) s.yrs = s.yrs1 + aldraAge(s) - STAGES[0].age0;
+    else s.yrs += dt / 365.25;
+  }
 }
 export function mult(s: State, id: BuildingId) {
   const r = s.r, v = s.visited;
@@ -578,7 +732,8 @@ export function tick(s: State, dt, rng = Math.random) {
   if (!s.chapterDone && k >= RULES.chapter1K) s.chapterDone = 1;
   if (s.chapterDone >= 1 && s.p.base < 0) s.p.base = Math.floor(s.b.dyson);
   salvageTick(s);
-  if (s.star.done) holeTick(s, dt);
+  yearsTick(s, dt);
+  if (s.star.done) { holeTick(s, dt); ventTick(s, dt); }
   return checkJournal(s);
 }
 export function clockYears(s: State) {

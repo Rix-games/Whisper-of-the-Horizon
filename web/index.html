@@ -52,6 +52,15 @@
         </div>
       </section>
 
+      <section class="panel scene" id="scene" aria-label="Černá díra a soustava">
+        <div class="scene-wrap">
+          <canvas id="scenec" aria-label="Černá díra s diskem. Klikni nebo drž v disku a vypustíš plyn z pasti."></canvas>
+          <div class="seg-row" role="group" aria-label="Pohled"><button class="seg" data-zoom="0" aria-pressed="true">Disk</button><button class="seg" data-zoom="1" aria-pressed="false">Soustava</button></div>
+          <p class="scene-hint" id="sceneHint"></p>
+          <button class="btn burst" id="burstBtn" data-burst="1"></button>
+        </div>
+      </section>
+
       <section class="panel ops" aria-label="Provoz">
         <div class="tabs" role="tablist" id="tabs"></div>
         <div class="view" id="view" role="tabpanel"></div>

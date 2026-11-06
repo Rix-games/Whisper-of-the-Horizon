@@ -287,6 +287,8 @@ export const FACTS: Trigger[] = [
   { id: "sn1987a", when: (s) => !!s.r.neutrino },
   { id: "nova", when: (s) => s.star.done },
   { id: "rs", when: (s) => !!s.r.accrete },
+  { id: "dyson79", when: (s) => s.star.done && s.time > 0 },
+  { id: "qpo", when: (s) => (s.vent?.best ?? 0) >= 3 },
   { id: "accretion", when: (s) => s.b.injector >= 1 },
   { id: "gps", when: (s) => s.b.station >= 1 },
   { id: "isco", when: (s) => !!s.r.prograde },

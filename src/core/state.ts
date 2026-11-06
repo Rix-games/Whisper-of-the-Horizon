@@ -3,6 +3,8 @@ import { BUILDING_IDS, RESOURCES, type BuildingId, type EventId, type LocationId
 export interface LogEntry { key: string; kind: 'story' | 'fact' | 'sys'; day: number; vars?: Record<string, string> }
 type Bag = { metal: number; energy: number; plasma: number };
 
+/** Chuchvalec plynu na cestě k díře: start (čas, poloměr, úhel), hmotnost, násobič řetězu. */
+export interface Blob { t0: number; r0: number; th0: number; kg: number; mult: number; gold: boolean; auto: boolean }
 export interface State {
   v: number;
   res: Record<Res, number>;
@@ -30,6 +32,11 @@ export interface State {
   p: { pts: number; run: number; count: number; base: number; total?: number };
   // Kapitola 3: černá díra. a = rotace (0–0,998), phase = fáze, dive = odpočet ponoru (−1 = neběží)
   hole: { a: number; phase: number; dive: number; done: boolean; started: boolean };
+  // Kapitola 3: magnetická past a vypouštění plynu do disku (engine: vent*)
+  vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[] };
+  yrs?: number;                         // kolik let uplynulo venku (Vesper mezi směnami spí)
+  yrs1?: number;                        // roky venku na začátku Kap. 2
+  seen?: Record<string, string>;        // co hráč na záložce už viděl (tečky u záložek)
   salvaged?: { metal: number; data: number };  // rozebraná platforma Kap. 1 (jednou na začátku Kap. 2)
   fab?: { m: number; e: number; made: number; lim: 'metal' | 'energy' | null; target: BuildingId | null; bank?: Bag; built?: { lifter: number; separator: number } };
   settings: { sound: boolean; lang: 'cs' | 'en'; vol: Record<string, number> };
@@ -63,6 +70,7 @@ export function newState(now = Date.now()): State {
     star: { stage: 0, t: 0, collapse: -1, done: false },
     p: { pts: 0, run: 0, count: 0, base: -1 },
     hole: { a: 0.2, phase: 0, dive: -1, done: false, started: false },
+    vent: { tank: 0.3, fall: 2e29, chain: 0, best: 0, heat: 0, over: 0, auto: 0, lv: {}, fly: [] },
     settings: { sound: false, lang: "cs", vol: {} },
     last: now
   };
