@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
-  <link rel="stylesheet" href="styles.css?v=0.3.12">
+  <link rel="stylesheet" href="styles.css?v=0.3.13">
 </head>
 <body>
   <canvas id="stars" aria-hidden="true"></canvas>
@@ -55,7 +55,6 @@
       <section class="panel scene" id="scene" aria-label="Černá díra a soustava">
         <div class="scene-wrap">
           <canvas id="scenec" aria-label="Černá díra s diskem. Klikni nebo drž v disku a vypustíš plyn z pasti."></canvas>
-          <div class="seg-row" role="group" aria-label="Pohled"><button class="zseg" data-zoom="0" aria-pressed="true">Disk</button><button class="zseg" data-zoom="1" aria-pressed="false">Soustava</button></div>
           <p class="scene-hint" id="sceneHint"></p>
           <button class="btn burst" id="burstBtn" data-burst="1"></button>
         </div>
@@ -93,6 +92,6 @@
   </div>
 
   <noscript><p style="padding:24px;color:#e1e4f4">Hra potřebuje zapnutý JavaScript.</p></noscript>
-  <script src="hra.js?v=0.3.12"></script>
+  <script src="hra.js?v=0.3.13"></script>
 </body>
 </html>

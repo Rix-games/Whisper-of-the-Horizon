@@ -961,7 +961,6 @@ export function bind() {
   });
   sc.addEventListener("pointerup", () => { sceneHold = false; });
   sc.addEventListener("pointercancel", () => { sceneHold = false; });
-  sc.addEventListener("wheel", (e) => { if (!S.star.done) return; e.preventDefault(); sceneZoom = e.deltaY > 0 ? 1 : 0; renderScene(); }, { passive: false });
   const rock = $("rock");
   rock.addEventListener("keydown", (e) => {
     if (e.repeat && (e.key === "Enter" || e.key === " ")) e.preventDefault();
