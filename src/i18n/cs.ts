@@ -37,6 +37,9 @@ export const cs = {
     prod: { title: "Produkce", hole: "Díra", power: "Výkon civilizace", dil: "Dilatace u stanic", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingových reaktorů" } },
     outsideTip: "Den je den Vesperova bdění. Mezi směnami Vesper spí a roj pracuje sám, takže venku plyne čas mnohem rychleji.",
     vent: {
+      flow: "Z ventilu do díry",
+      share: "Do pasti",
+      shareBtn: "Do pasti {p} % plazmatu",
       heat: "Žár disku",
       overShort: "nad mezí {s} s",
       tank: "Magnetická past",
@@ -50,7 +53,7 @@ export const cs = {
       locked: "Past se otevře s výzkumem Akrece",
       burst: "Výbuch disku",
       burstWait: "Výbuch disku · past {p} %",
-      hint: "Klikni nebo drž v disku: vypustíš plyn z pasti. Další vypusť dřív, než první dopadne, a řetěz roste. Hned po pulsu chuchvalec zezlátne.",
+      hint: "Past se plní z přírůstku plazmatu. Klikni nebo drž v disku a vypustíš ho. Pošli další dřív, než první dopadne, a řetěz roste. Hned po pulsu chuchvalec zezlátne.",
       intro: "Plyn ze zpětného pádu se chytá do magnetické pasti. Vypouštíš ho kliknutím do disku uprostřed. Každý záblesk dá data a rozžhaví disk, žár zvyšuje jeho záření.",
       now: "Teď",
       next: "Po vylepšení",
@@ -59,15 +62,15 @@ export const cs = {
       upgrade: "Vylepšit",
       v: {
         valve: "{kg} v chuchvalci",
-        trap: "{kg}, plná za {s} s",
+        trap: "pojme {kg}",
         radius: "{r} disku, let {s} s",
         coil: "řetěz až {n}, +{p} % za článek",
         auto: "vypustí sám každé {s} s",
         autoOff: "vypnuto"
       },
       u: {
-        valve: { name: "Ventil pasti", desc: "Širší hrdlo magnetické pasti, ze které vypouštíš plyn klikáním do disku. V jednom chuchvalci vypustí víc plynu, takže záblesk dá víc dat a víc žáru." },
-        trap: { name: "Magnetická past", desc: "Silnější pole udrží víc plynu a plní se rychleji. Víc chuchvalců za sebou a větší výbuch disku." },
+        valve: { name: "Ventil pasti", desc: "Širší hrdlo magnetické pasti, ze které vypouštíš plyn klikáním do disku. V jednom chuchvalci vypustí víc plynu, takže záblesk dá víc dat a disk víc září." },
+        trap: { name: "Magnetická past", desc: "Silnější pole udrží víc plynu. Víc chuchvalců za sebou a větší výbuch disku." },
         radius: { name: "Poloměr vypouštění", desc: "Vypouští dál od díry. Chuchvalec letí déle, takže stihneš poslat další a řetěz se nepřetrhne." },
         coil: { name: "Rezonanční cívky", desc: "Disk se rozkmitá do rytmu chuchvalců. Řetěz může růst výš a každý článek přidá víc." },
         auto: { name: "Automatický ventil", desc: "Vypouští sám v pravidelném rytmu, i když nejsi u toho. Řetěz nestaví a souzvuk s pulsem netrefí." }
@@ -308,6 +311,9 @@ export const cs = {
     qcomp: { name: "Kvantový počítač", desc: "Chlazený ledem z Kelvaru. Obrovský výkon, obrovská spotřeba." },
     fusion: { name: "Fúzní reaktor", desc: "Slučuje deuterium s heliem-3 z atmosféry Taurisu." },
     dyson: { name: "Dysonův kolektor", desc: "Kolektor v roji kolem Aldry. Každý další zvýší výrobu veškeré energie o 10 %. Víc světla, než hvězda vyzáří, ale roj nikdy nezachytí." },
+    windnet: { name: "Lapač hvězdného větru", desc: "Magnetická síť, která chytá plyn, jejž Aldra sama ztrácí ve hvězdném větru. Nepotřebuje energii, ale je slabá. První krok, než se naučíme plyn z hvězdy tahat." },
+    sieve: { name: "Magnetické síto", desc: "Proud plazmatu prochází silným polem a těžší ionty se stáčejí jinam než vodík. Pomalé a hrubé, ale kov z něj je." },
+    corono: { name: "Koronograf", desc: "Zakryje kotouč Aldry a sleduje její korónu a skvrny. Z nich se dá vyčíst, co se děje pod povrchem." },
     lifter: { name: "Hvězdný trychtýř", desc: "Magnetické pole otevře v koróně trychtýř a vede jím proud plazmatu ven z hvězdy. Většinu práce odvede hvězdný vítr. Sílí s každým Dysonovým kolektorem." },
     separator: { name: "Separátor prvků", desc: "Třídí plazma podle hmotnosti. Vodík a helium vrací do hvězdy, těžší prvky jdou do skladu jako kov. Sílí s každým Dysonovým kolektorem." },
     seismo: { name: "Seismická stanice", desc: "Naslouchá chvění hvězdy a z tisíců tónů skládá obraz jejího nitra. Sílí s každým Dysonovým kolektorem." },
@@ -317,7 +323,7 @@ export const cs = {
     station: { name: "Dilatační stanice", desc: "Obíhá těsně nad horizontem, kde čas plyne pomaleji. Měří disk i vzdálený vesmír, který odtud vypadá zrychleně. Víc dat, čím víc civilizace září." },
     jet: { name: "Tryskový lapač", desc: "Zachytává energii trysek nad póly díry. Trysky berou energii z rotace, takže díru brzdí." },
     hawking: { name: "Hawkingův reaktor", desc: "Mikroskopická černá díra stvořená z energie. Plyn, který do ní padá, se celý vyzáří zpátky jako Hawkingovo záření. V záření jsou i data. Sílí s každým diskovým kolektorem." },
-    swarmfab: { name: "Rojová loděnice", desc: "Sama staví kolektory za polovinu ceny. Bere nejvýš polovinu přírůstku kovu a energie. Když ji brzdí kov, dostavuje z části zbylého přírůstku i trychtýře a separátory, podle toho, co v řetězci chybí. Rozebráním vrátíš polovinu ceny." }
+    swarmfab: { name: "Rojová loděnice", desc: "Druhý stupeň automatizace. Sama staví Dysonovy kolektory a podle toho, co v řetězci chybí, i trychtýře a separátory. Stavby na data nestaví. Bere nejvýš polovinu přírůstku kovu a energie, takže zásoby nevyčerpá. Rozebráním vrátíš polovinu ceny." }
   },
   r: {
     vib: { name: "Vibrační hroty", desc: "Ruční těžba ×3." },
@@ -367,12 +373,12 @@ export const cs = {
     magsail: { name: "Magnetické plachty", desc: "Plazma pomáhá vynášet i magnetické pole hvězdy. Trychtýře ×2 za stejnou energii." },
     iron: { name: "Těžba železa", desc: "Separátory umí z plazmatu vytáhnout i železo a nikl. Separátory ×5." },
     neutrino: { name: "Neutrinová observatoř", desc: "Zachytí neutrina z nitra hvězdy a ohlásí blížící se kolaps." },
-    accrete: { name: "Akrece", desc: "Odemkne naběrače mlhoviny, akreční injektory a diskové kolektory." },
-    dilate: { name: "Dilatace času", desc: "Odemkne dilatační stanice." },
+    accrete: { name: "Akrece", desc: "Odemkne naběrače mlhoviny, diskové kolektory a magnetickou past, ze které vypouštíš plyn do disku." },
+    dilate: { name: "Dilatace času", desc: "Odemkne dilatační stanice, které z disku a vzdáleného vesmíru dělají data." },
     prograde: { name: "Souběžné dráhy", desc: "Plyn přitéká ve směru rotace díry a roztáčí ji dvakrát rychleji." },
     magscoop: { name: "Supravodivé sítě", desc: "Naběrače ×3." },
     wide: { name: "Široké prstence", desc: "Každý diskový kolektor zakryje dvakrát víc disku." },
-    mri: { name: "Magnetorotační nestabilita", desc: "Turbulence v disku odvádí plynu moment hybnosti, takže padá rychleji. Injektory ×3." },
+    mri: { name: "Magnetorotační nestabilita", desc: "Turbulence v disku odvádí plynu moment hybnosti, takže do díry teče sám. Odemkne akreční injektory, které krmí disk bez tvého klikání." },
     lower: { name: "Nižší dráhy", desc: "Stanice sestoupí na 1,2 Schwarzschildova poloměru." },
     pulse3: { name: "Analýza pulsu", desc: "Z čeho se ten puls skládá? Stanice ×3." },
     thick: { name: "Husté prstence", desc: "Každý diskový kolektor zakryje dvakrát víc disku." },

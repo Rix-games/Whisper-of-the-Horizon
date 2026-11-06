@@ -20,6 +20,8 @@ const SNAP = (process.env.SNAP ?? '').split(',').filter(Boolean).map(Number);
 const SAVEAT = (process.env.SAVEAT ?? '').split(',').filter(Boolean);
 const DUMPAT = (process.env.DUMPAT ?? '').split(',').filter(Boolean).map((x) => x.split(':')); // sekundy:soubor
 
+if (process.env.G2) E.TUNE.g2 = Number(process.env.G2);
+if (process.env.BOOST) E.TUNE.boost = Number(process.env.BOOST);
 let seed = Number(process.env.SEED ?? 42); const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const s = process.env.START ? migrate(JSON.parse(readFileSync(process.env.START, 'utf8'))) : newState(0);
 const t0 = s.time;
@@ -27,24 +29,27 @@ const marks: [string, number, string][] = [];
 const mark = (k: string) => { if (!marks.find((m) => m[0] === k)) marks.push([k, s.time, E.kardashev(s).toFixed(2)]); };
 let lastBuy = 0, longestWait = 0, waitStart = s.time;
 const CH1: BuildingId[] = ['drone', 'smelter', 'solar', 'lab', 'drill', 'mirror', 'replicator', 'forge', 'catcher', 'qcomp', 'fusion', 'dyson'];
-const CH2: BuildingId[] = ['dyson', 'lifter', 'separator', 'seismo', 'swarmfab'];
+const CH2: BuildingId[] = ['dyson', 'windnet', 'sieve', 'corono', 'lifter', 'separator', 'seismo', 'swarmfab'];
 const CH2_SET = new Set(CH2);
 const chapterSet = (): BuildingId[] => s.chapterDone === 0 ? CH1 : s.chapterDone === 1 ? CH2 : BUILDING_IDS.filter((id) => !CH1.includes(id) && !CH2_SET.has(id));
 const e = (v: number) => v.toExponential(1);
 
 // ---- chování bota podle kapitoly ----
-const VENTBOT = Number(process.env.VENT ?? 0); // kolik chuchvalců za sekundu bot vypustí
+const VENTBOT = Number(process.env.VENT ?? 2); // kolik chuchvalců za sekundu bot vypustí
 const FEED_SHARE = Number(process.env.FEED ?? 0.6); // kolik výroby plynu bot pošle do díry
 function botWants(st: typeof s, id: BuildingId) {
   if (st.chapterDone < 2) return true;
   const { p, c } = E.rates(st);
-  if (id === 'injector' || id === 'hawking') return c.plasma + E.consOf(st, id, 'plasma') <= FEED_SHARE * p.plasma;
+  if (id === 'injector' || id === 'hawking') return (c.plasma - (E.ventOpen(st) && E.ventTank(st) < 0.999 ? E.ventFill(st) : 0)) + E.consOf(st, id, 'plasma') <= FEED_SHARE * p.plasma;
   if (id === 'jet') return E.jetCov(st) < 0.97;
   return true;
 }
 function botWeight(_s: typeof s, _id: BuildingId) { return 1; }
 function botAct(st: typeof s) {
-  if (VENTBOT && st.star.done) { for (let k = 0; k < VENTBOT; k++) E.ventRelease(st, rng() * 6.28); if (E.ventCanBurst(st)) E.ventBurst(st); for (const id of E.VENT_IDS) E.ventUpgrade(st, id); }
+  if (VENTBOT && st.star.done) {
+    // hráč drží spotřebu plazmatu (past + injektory) pod 60 % přírůstku, aby zbylo na stavby
+    const { p } = E.rates(st), scoopP = st.b.scoop ? E.prodOf(st, 'scoop', 'plasma') * st.b.scoop : 0, inj = E.feedRate(st);
+    st.vent.share = Math.max(0.1, Math.min(0.8, Math.round(((0.6 * p.plasma - inj) / Math.max(1, scoopP)) * 10) / 10)); for (let k = 0; k < VENTBOT; k++) E.ventRelease(st, rng() * 6.28); if (E.ventCanBurst(st)) E.ventBurst(st); for (const id of E.VENT_IDS) if (E.ventUpCost(st, id) < 0.1 * st.res.plasma) E.ventUpgrade(st, id); }
   if (st.star.done && E.phaseReady(st).ok) { E.advancePhase(st); marks.push([st.hole.dive >= 0 ? 'PONOR' : 'FÁZE ' + st.hole.phase, st.time, E.kardashev(st).toFixed(2)]); }
 }
 function botStatus(st: typeof s) {
@@ -145,6 +150,7 @@ for (let t = 0; t < LIMIT_H * 3600; t++) {
     longestWait = 0; waitStart = s.time;
     if (SAVEAT.includes('ch' + (s.chapterDone + 1))) console.log(`SAVE ch${s.chapterDone + 1}:`, encodeSave(s));
     if (s.chapterDone === 2 && process.env.DUMP) writeFileSync(process.env.DUMP, JSON.stringify(s));
+    if (s.chapterDone === 1 && process.env.DUMP1) writeFileSync(process.env.DUMP1, JSON.stringify(s));
   }
   if (s.chapterDone >= STOP_CH) break;
 }

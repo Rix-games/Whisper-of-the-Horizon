@@ -232,8 +232,8 @@ sup { font-size: .68em; line-height: 0; vertical-align: .55em; margin-left: .05e
 body.ch2 #rock { cursor: default; }
 
 /* Kapitola 3: díra a soustava uprostřed, čísla vlevo, záložky vpravo, deník pod čísly */
-.scene { display: none; }
-body.ch3 .scene { display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #05060f; }
+#scene { display: none; }
+body.ch3 #scene { display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #05060f; }
 body.ch3 #rockwrap { display: none; }
 .scene-wrap { position: relative; flex: 1; min-height: 0; display: flex; }
 #scenec { width: 100%; height: clamp(420px, 62vh, 760px); display: block; touch-action: none; cursor: crosshair; }
@@ -252,7 +252,7 @@ body.ch3 .ops { display: contents; }
 body.ch3 #tabs { grid-area: tabs; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
 body.ch3 #view { grid-area: scene; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
 body.ch3.tabbuild #view { display: none; }
-body.ch3:not(.tabbuild) .scene { display: none; }
+body.ch3:not(.tabbuild) #scene { display: none; }
 body.ch3 #bview { display: block; grid-area: view; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
 body.ch3 #bview .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px; align-items: stretch; }
 body.ch3 #bview .item { grid-template-columns: minmax(0, 1fr); align-content: start; }
@@ -273,3 +273,5 @@ body.ch3 .rig { grid-area: rig; } body.ch3 .scene { grid-area: scene; } body.ch3
 body.ch3 .tabs .tab { padding-inline: 9px; letter-spacing: .04em; }
 
 body.ch3:not(.tabbuild) #rockwrap { display: block; }
+.zgap { width: 10px; }
+.ztxt { cursor: default; color: var(--ink); }

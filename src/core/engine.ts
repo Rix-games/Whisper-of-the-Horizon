@@ -5,11 +5,13 @@ import { HOLE, PHASES, type Amounts, type BuildingId, type EventId, type Locatio
 const keys = <T extends object>(o: T) => Object.keys(o) as (keyof T)[];
 
 export const DYSON_BOOST = 1.1;
+/** Ladění Kap. 2: zdražování kolektorů nad stav z Kap. 1 (g2) a jak každý kolektor posílí stavby hvězdy (boost). */
+export const TUNE = { g2: 1.125, boost: 1.085 };
 export const DYSON_CROWD = 1.03;
 export const DYSON_CH1_CHEAP = 20;
 export const DYSON_CH1_DISCOUNT = 0.4;
-export const CONVERTERS: BuildingId[] = ["smelter", "forge", "lab", "qcomp", "replicator", "lifter", "separator", "seismo", "injector", "station", "hawking"];
-export const CONVERTER_SCALES = { smelter: true, forge: true, lifter: true, separator: true, seismo: true, injector: true, hawking: true };
+export const CONVERTERS: BuildingId[] = ["smelter", "forge", "lab", "qcomp", "replicator", "sieve", "corono", "lifter", "separator", "seismo", "injector", "station", "hawking"];
+export const CONVERTER_SCALES = { smelter: true, forge: true, sieve: true, lifter: true, separator: true, seismo: true, injector: true, hawking: true };
 const zeroRates = (): Record<Res, number> => ({ ore: 0, metal: 0, energy: 0, data: 0, plasma: 0 });
 export function stageDef(s: State) {
   return STAGES[Math.min(s.star.stage, STAGES.length - 1)];
@@ -70,7 +72,7 @@ export function feedRate(s: State) {
 }
 /** Svítivost disku ve W. Nad Eddingtonovou mezí jen se štíhlým diskem a jen logaritmicky. */
 export function holeLRaw(s: State) {
-  return diskEta(s.hole.a) * feedRate(s) * HOLE.c2;
+  return diskEta(s.hole.a) * (feedRate(s) + ventFlow(s)) * HOLE.c2;
 }
 export function holeL(s: State) {
   const raw = holeLRaw(s) * ventHeatMult(s), edd = HOLE.eddW * ventOverMult(s) * ventHeatMult(s);
@@ -88,7 +90,7 @@ export function jetEta(s: State) {
   return 1.4 * a * a * (s.r.bz ? 2 : 1) * (s.r.penrose ? 2 : 1);
 }
 export function jetP(s: State) {
-  return jetEta(s) * feedRate(s) * HOLE.c2;
+  return jetEta(s) * (feedRate(s) + ventFlow(s)) * HOLE.c2;
 }
 export function jetCov(s: State) {
   return s.off.jet ? 0 : 1 - Math.exp(-s.b.jet * HOLE.jetF);
@@ -106,7 +108,7 @@ export function holeFb(s: State, k: number) {
 }
 /** Krmení roztáčí díru, trysky ji brzdí. Rovnovážná rotace. */
 function spinRates(s: State) {
-  const up = feedRate(s) > 0 ? (s.r.prograde ? 2 : 1) : 0;
+  const up = feedRate(s) + ventFlow(s) > 0 ? (s.r.prograde ? 2 : 1) : 0;
   const down = s.b.jet && s.r.mad ? jetCov(s) * (s.r.penrose ? 0.5 : 1) : 0;
   return { up, down };
 }
@@ -150,9 +152,11 @@ export const VENT = {
   isco: 0.23,          // vnitřní okraj disku v poloměrech disku (jen geometrie letu)
   fallIn: 0.085,       // rychlost pádu dovnitř: dr/dt = −k·r^−½
   spin: 0.55,          // úhlová rychlost na okraji disku (Kepler: ω ∝ r^−3/2)
-  capSec: 60,          // kapacita pasti v sekundách přísunu plynu
-  fillSec: 30,         // za kolik sekund se prázdná past naplní
-  valveSec: 6,         // kolik sekund přísunu je v jednom chuchvalci
+  capSec: 60,          // kapacita pasti v sekundách plnění
+  valveSec: 6,         // kolik sekund plnění je v jednom chuchvalci
+  share: 0.5,          // jaký díl přírůstku plazmatu jde do pasti (hráč mění)
+  tau: 45,             // jak dlouho plyn v disku vydrží, než spadne do díry (viskózní čas)
+  dataPerJ: 1e19,      // data ze záblesku: dataPerJ·√E
   heatPer: 0.035,      // žár za záblesk (×násobič řetězu)
   heatDecay: 0.02,     // chladnutí za sekundu
   heatBonus: 3,        // výkon disku ×(1 + 3·žár)
@@ -163,28 +167,31 @@ export const VENT = {
   overMult: 2,         // a kolikrát víc září
   burstN: 14
 };
-export type VentUp = "valve" | "trap" | "radius" | "coil" | "auto";
+export type VentUp = "valve" | "trap" | "radius" | "coil";
 export const VENT_UPS: Record<VentUp, { base: number; g: number; max: number }> = {
   valve: { base: 3e8, g: 7, max: 12 },
   trap: { base: 5e8, g: 7, max: 12 },
   radius: { base: 2e9, g: 40, max: 5 },
-  coil: { base: 6e9, g: 25, max: 6 },
-  auto: { base: 3e10, g: 60, max: 4 }
+  coil: { base: 6e9, g: 25, max: 6 }
 };
 export const VENT_IDS = Object.keys(VENT_UPS) as VentUp[];
 export const ventLv = (s: State, id: VentUp) => s.vent.lv[id] ?? 0;
 export const ventOpen = (s: State) => s.star.done && !!s.r.accrete;
-/** Základ pasti: přísun plynu (injektory, nebo naběrače, dokud injektory nejsou). */
-export function ventBase(s: State) {
-  return Math.max(feedRate(s), s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0, 1e5);
+/** Past se plní z přírůstku plazmatu z naběračů: hráč volí, jaký díl do ní jde. */
+export const ventShare = (s: State) => s.vent.share ?? VENT.share;
+export function ventFill(s: State, l = ventLv(s, "trap")) {
+  const scoops = s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0;
+  void l;
+  return Math.max(2e4, scoops) * ventShare(s);
 }
-export const ventCap = (s: State, l = ventLv(s, "trap")) => ventBase(s) * VENT.capSec * Math.pow(1.6, l);
-export const ventFillSec = (l: number) => VENT.fillSec / Math.pow(1.3, l);
-export const ventKg = (s: State, l = ventLv(s, "valve")) => Math.min(ventCap(s), ventBase(s) * VENT.valveSec * Math.pow(1.5, l));
+const ventUnit = (s: State) => Math.max(2e4, s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0) * Math.max(0.1, ventShare(s));
+export const ventCap = (s: State, l = ventLv(s, "trap")) => ventUnit(s) * VENT.capSec * Math.pow(1.6, l);
+export const ventKg = (s: State, l = ventLv(s, "valve")) => Math.min(ventCap(s), ventUnit(s) * VENT.valveSec * Math.pow(1.5, l));
+/** Plyn z ventilu, který právě padá z disku do díry (kg/s). */
+export const ventFlow = (s: State) => (s.vent.disk ?? 0) / VENT.tau;
 export const ventR = (l: number) => 0.5 + l * 0.09;
 export const ventChainMax = (l: number) => 8 + l * 4;
 export const ventStep = (l: number) => 0.12 + l * 0.03;
-export const ventAutoSec = (l: number) => l ? Math.max(1.5, 7 - l * 1.4) : 0;
 export function ventFlight(r0: number) {
   return (Math.pow(r0, 1.5) - Math.pow(VENT.isco, 1.5)) / (1.5 * VENT.fallIn);
 }
@@ -195,47 +202,47 @@ export function blobPos(b: Blob, t: number) {
   return { r: Math.pow(r15, 2 / 3), th: b.th0 - (VENT.spin / k) * Math.log(f) };
 }
 export const ventChainMult = (s: State) => 1 + ventStep(ventLv(s, "coil")) * Math.max(0, Math.min(s.vent.chain, ventChainMax(ventLv(s, "coil"))) - 1);
-export const ventHeatMult = (s: State) => 1 + VENT.heatBonus * s.vent.heat;
+export const ventHeatMult = (_s: State) => 1;
 export const ventOverMult = (s: State) => s.vent.over > 0 ? VENT.overMult : 1;
 export const pulsePhase = (s: State) => s.time % VENT.pulse;
 export const ventGoldNow = (s: State) => pulsePhase(s) < VENT.pulseWin;
 /** Vypustí jeden chuchvalec. Vrátí ho, nebo null, když je past prázdná. */
 export function ventRelease(s: State, th: number, auto = false): Blob | null {
   if (!ventOpen(s)) return null;
-  const cap = ventCap(s), kg = ventKg(s);
-  if (s.vent.tank * cap < kg * 0.999) return null;
-  s.vent.tank = Math.max(0, s.vent.tank - kg / cap);
+  const kg = ventKg(s);
+  if (ventTankKg(s) < kg * 0.999) return null;
+  s.vent.kg = Math.max(0, ventTankKg(s) - kg);
   if (!auto) {
     s.vent.chain = s.vent.fly.some((b) => !b.auto) ? s.vent.chain + 1 : 1;
     s.vent.best = Math.max(s.vent.best, s.vent.chain);
   }
   const b: Blob = { t0: s.time, r0: ventR(ventLv(s, "radius")), th0: th, kg, mult: auto ? 1 : ventChainMult(s), gold: !auto && ventGoldNow(s), auto };
   s.vent.fly.push(b);
-  s.vent.fall = Math.max(0, s.vent.fall - kg);
   return b;
 }
+/** Plyn v pasti (kg) a jak je plná (0–1). */
+export const ventTankKg = (s: State) => Math.min(s.vent.kg ?? 0, ventCap(s));
+export const ventTank = (s: State) => ventTankKg(s) / ventCap(s);
 export function ventCanBurst(s: State) {
-  return ventOpen(s) && s.vent.tank >= 0.999;
+  return ventOpen(s) && ventTank(s) >= 0.999;
 }
 /** Výbuch disku: celá past najednou, disk se na chvíli dostane nad Eddingtonovu mez. */
 export function ventBurst(s: State) {
   if (!ventCanBurst(s)) return false;
-  const kg = ventCap(s) / VENT.burstN, r0 = ventR(ventLv(s, "radius"));
+  const kg = ventTankKg(s) / VENT.burstN, r0 = ventR(ventLv(s, "radius"));
   for (let i = 0; i < VENT.burstN; i++) s.vent.fly.push({ t0: s.time, r0: r0 + (i % 3) * 0.04, th0: i / VENT.burstN * Math.PI * 2, kg, mult: 1.5, gold: false, auto: true });
-  s.vent.tank = 0;
+  s.vent.kg = 0;
   s.vent.over = VENT.overSec;
-  s.vent.heat = 1;
   return true;
 }
 export interface Flare { b: Blob; data: number; energy: number }
 /** Záblesk na ISCO: data za pár sekund výroby a žár disku. */
 function ventFlare(s: State, b: Blob): Flare {
-  const g = b.gold ? 2 : 1;
-  const data = Math.max(0, baseDataRate(s)) * VENT.dataSec * b.mult * g;
-  const energy = diskEta(s.hole.a) * b.kg * HOLE.c2 * b.mult * g;
+  const g = b.gold ? 2 : 1, w = b.kg * b.mult * g;
+  const energy = diskEta(s.hole.a) * w * HOLE.c2;
+  const data = Math.sqrt(energy) * VENT.dataPerJ;   // data rostou pomaleji než energie záblesku
   add(s, "data", data);
-  add(s, "energy", energy);
-  s.vent.heat = Math.min(1, s.vent.heat + VENT.heatPer * b.mult * g);
+  s.vent.disk = (s.vent.disk ?? 0) + w;   // plyn se rozprostře v disku a padá do díry s časem tau
   return { b, data, energy };
 }
 function baseDataRate(s: State) {
@@ -248,14 +255,15 @@ export const flares: Flare[] = [];
 function ventTick(s: State, dt: number) {
   const v = s.vent;
   if (!ventOpen(s)) return;
-  if (v.fall > 0) v.tank = Math.min(1, v.tank + dt / ventFillSec(ventLv(s, "trap")));
-  if (v.over > 0) v.over = Math.max(0, v.over - dt);
-  else v.heat = Math.max(0, v.heat - VENT.heatDecay * dt);
-  const ae = ventAutoSec(ventLv(s, "auto"));
-  if (ae) {
-    v.auto += dt;
-    while (v.auto >= ae) { v.auto -= ae; ventRelease(s, (s.time * 2.399) % (Math.PI * 2), true); }
+  const cap = ventCap(s);
+  v.kg = Math.min(v.kg ?? 0, cap);
+  if (v.kg < cap) {
+    const take = Math.min(ventFill(s) * dt, cap - v.kg, Math.max(0, s.res.plasma));
+    s.res.plasma -= take;
+    v.kg += take;
   }
+  if (v.over > 0) v.over = Math.max(0, v.over - dt);
+  v.disk = Math.max(0, (v.disk ?? 0) - ventFlow(s) * dt);
   for (let i = v.fly.length - 1; i >= 0; i--) {
     const b = v.fly[i];
     if (s.time - b.t0 >= ventFlight(b.r0)) {
@@ -373,7 +381,7 @@ export function mult(s: State, id: BuildingId) {
   // Kapitola 3: každý diskový kolektor posílí naběrače, injektory a Hawkingovy reaktory
   if (id === "scoop" || id === "injector" || id === "hawking") m *= Math.pow(RING_BOOST, s.b.ring);
   if (id === "lifter" || id === "separator" || id === "seismo") {
-    m *= Math.pow(DYSON_BOOST, s.b.dyson) * prestigeMult(s);
+    m *= Math.pow(TUNE.boost, s.b.dyson) * prestigeMult(s);
     if (id === "lifter" && s.star.collapse >= 0) m *= STAR.collapseLift;
   }
   if (B[id].prod?.energy && !HOLE_BUILDINGS.includes(id)) {
@@ -409,10 +417,11 @@ export function reactorW(s: State) {
 }
 /** Stavby z minulých kapitol: Kap. 1 kromě kolektorů končí v Kap. 2, kolektory zanikly v supernově. */
 export const CH1_OLD: BuildingId[] = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion"];
+export const CH2_OLD: BuildingId[] = ["dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab"];
 export function retired(s: State, id: BuildingId) {
-  return s.chapterDone >= 1 && CH1_OLD.includes(id) || s.star.done && id === "dyson";
+  return s.chapterDone >= 1 && CH1_OLD.includes(id) || s.star.done && CH2_OLD.includes(id);
 }
-export const SALVAGE = { metal: 0.5, dataSec: 900 };
+export const SALVAGE = { metal: 0.5, dataSec: 120 };
 /** Na začátku Kap. 2 Vesper rozebere starou platformu: vrátí půlku kovu z jejích staveb a archiv dat. */
 export function salvageGain(s: State) {
   let metal = 0, data = 0;
@@ -457,6 +466,12 @@ export function makesOf(s: State, id: BuildingId) {
 }
 export const FAB_MAX = 0.5;
 export const fabPriceFrac = (s: State) => s.r.mg ? 0.25 : 0.5;
+/** Kolik plazmatu má smysl držet ve skladu: 2 minuty spotřeby separátorů a sít, nejméně trojnásobek ceny další stavby. */
+export function plasmaCap(s: State) {
+  const use = (["separator", "sieve"] as BuildingId[]).reduce((a, id) => a + consOf(s, id, "plasma") * s.b[id], 0);
+  const next = Math.max(cost(s, "separator").plasma ?? 0, s.r.fab ? cost(s, "swarmfab").plasma ?? 0 : 0);
+  return Math.max(1e10, 120 * use, 3 * next);
+}
 export function fabTick(s: State, dt: number) {
   const n = Math.floor(s.b.swarmfab);
   if (!n || s.off.swarmfab) {
@@ -538,6 +553,7 @@ export function rates(s: State) {
     for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
   }
   if (s.r.auto && !s.chapterDone) p.ore += clickPower(s) * RULES.autoClicksPerSec;
+  if (ventOpen(s) && ventTank(s) < 0.999) c.plasma += ventFill(s);
   return { p, c };
 }
 export function rateParts(s: State, r) {
@@ -560,7 +576,7 @@ export function add(s: State, r: Res, v: number) {
 }
 export function cost(s: State, id: BuildingId, n = s.bought[id] ?? Math.floor(s.b[id])) {
   const d = B[id], o: Amounts = {};
-  const extra = id === "dyson" && s.p.base >= 0 ? Math.pow(DYSON_CROWD, Math.max(0, n - s.p.base)) : 1;
+  const extra = id === "dyson" && s.p.base >= 0 ? Math.pow(TUNE.g2 / d.growth, Math.max(0, n - s.p.base)) : 1;
   const ch1 = id === "dyson" && !s.chapterDone && n < DYSON_CH1_CHEAP ? DYSON_CH1_DISCOUNT : 1;
   for (const r of keys(d.base)) o[r] = d.base[r] * Math.pow(d.growth, n) * extra * (r === "metal" ? ch1 : 1);
   return o;
@@ -679,6 +695,11 @@ export function tick(s: State, dt, rng = Math.random) {
     const need = (keys(d.cons) as Res[]).map((r): [Res, number] => [r, consOf(s, id, r) * n * dt]);
     let e = 1;
     for (const [r, v] of need) if (v > 0) e = Math.min(e, s.res[r] / v);
+    // trychtýře se přivřou, když je ve skladu víc plazmatu, než separátory zpracují za 2 minuty
+    if (id === "lifter") {
+      const room = plasmaCap(s) - s.res.plasma, made1 = prodOf(s, id, "plasma") * n * dt;
+      if (made1 > 0) e = Math.min(e, Math.max(0, room / made1));
+    }
     e = Math.max(0, Math.min(1, e));
     const out = (keys(d.prod ?? {}) as Res[]).map((r): [Res, number] => [r, prodOf(s, id, r) * n * dt * e]);
     const made = d.makes ? makesOf(s, id) * Math.floor(n) * dt * e : 0;

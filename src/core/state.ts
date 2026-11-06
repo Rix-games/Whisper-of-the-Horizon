@@ -33,7 +33,7 @@ export interface State {
   // Kapitola 3: černá díra. a = rotace (0–0,998), phase = fáze, dive = odpočet ponoru (−1 = neběží)
   hole: { a: number; phase: number; dive: number; done: boolean; started: boolean };
   // Kapitola 3: magnetická past a vypouštění plynu do disku (engine: vent*)
-  vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[] };
+  vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[]; disk?: number; share?: number; kg?: number };
   yrs?: number;                         // kolik let uplynulo venku (Vesper mezi směnami spí)
   yrs1?: number;                        // roky venku na začátku Kap. 2
   seen?: Record<string, string>;        // co hráč na záložce už viděl (tečky u záložek)
@@ -70,7 +70,7 @@ export function newState(now = Date.now()): State {
     star: { stage: 0, t: 0, collapse: -1, done: false },
     p: { pts: 0, run: 0, count: 0, base: -1 },
     hole: { a: 0.2, phase: 0, dive: -1, done: false, started: false },
-    vent: { tank: 0.3, fall: 2e29, chain: 0, best: 0, heat: 0, over: 0, auto: 0, lv: {}, fly: [] },
+    vent: { tank: 0, kg: 0, fall: 0, chain: 0, best: 0, heat: 0, over: 0, auto: 0, lv: {}, fly: [] },
     settings: { sound: false, lang: "cs", vol: {} },
     last: now
   };

@@ -586,7 +586,7 @@ export function drawHoleMap(c: HTMLCanvasElement, s: State, v: HoleView, time: n
 }
 
 // ---------- scéna uprostřed (Kapitola 3): vypouštění plynu do disku ----------
-export interface SceneBlob { r: number; th: number; gold: boolean; mult: number; trail: [number, number][] }
+export interface SceneBlob { r: number; th: number; gold: boolean; mult: number; trail: [number, number][]; auto?: boolean }
 export interface SceneFlare { r: number; th: number; gold: boolean; mult: number; text: string }
 export interface SceneView {
   blobs: SceneBlob[]; flares: SceneFlare[]; relR: number; hover: number | null; hoverText: string;
@@ -624,13 +624,13 @@ export function drawScene(c: HTMLCanvasElement, v: HoleView, sv: SceneView, time
       const [ar, at] = b.trail[i - 1], [br, bt] = b.trail[i];
       if (hidden(br, bt)) continue;
       const [ax, ay] = P(ar, at), [bx, by] = P(br, bt), k = i / b.trail.length;
-      x.strokeStyle = b.gold ? `rgba(245,205,85,${k * 0.8})` : `rgba(255,176,146,${k * 0.7})`; x.lineWidth = 1 + k * 2;
+      x.strokeStyle = b.auto ? `rgba(196,214,255,${k * 0.45})` : b.gold ? `rgba(245,205,85,${k * 0.8})` : `rgba(255,176,146,${k * 0.7})`; x.lineWidth = b.auto ? 1 + k : 1 + k * 2;
       x.beginPath(); x.moveTo(ax, ay); x.lineTo(bx, by); x.stroke();
     }
     if (hidden(b.r, b.th)) continue;
     const [px, py] = P(b.r, b.th), rr = 6 + Math.min(6, b.mult * 2);
     const gg = x.createRadialGradient(px, py, 0, px, py, rr);
-    gg.addColorStop(0, b.gold ? 'rgba(255,244,196,1)' : 'rgba(255,226,210,1)'); gg.addColorStop(1, b.gold ? 'rgba(245,205,85,0)' : 'rgba(255,143,122,0)');
+    gg.addColorStop(0, b.auto ? 'rgba(220,230,255,0.8)' : b.gold ? 'rgba(255,244,196,1)' : 'rgba(255,226,210,1)'); gg.addColorStop(1, b.auto ? 'rgba(160,180,255,0)' : b.gold ? 'rgba(245,205,85,0)' : 'rgba(255,143,122,0)');
     x.fillStyle = gg; x.beginPath(); x.arc(px, py, rr, 0, 7); x.fill();
   }
   // nové záblesky

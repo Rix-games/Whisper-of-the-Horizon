@@ -5,7 +5,7 @@ import type { State } from './state.js';
 export type Res = 'ore' | 'metal' | 'energy' | 'data' | 'plasma';
 export type Amounts = Partial<Record<Res, number>>;
 
-export type BuildingId = 'drone' | 'smelter' | 'solar' | 'lab' | 'drill' | 'mirror' | 'replicator' | 'forge' | 'catcher' | 'qcomp' | 'fusion' | 'dyson' | 'lifter' | 'separator' | 'seismo' | 'swarmfab'
+export type BuildingId = 'drone' | 'smelter' | 'solar' | 'lab' | 'drill' | 'mirror' | 'replicator' | 'forge' | 'catcher' | 'qcomp' | 'fusion' | 'dyson' | 'windnet' | 'sieve' | 'corono' | 'lifter' | 'separator' | 'seismo' | 'swarmfab'
   | 'scoop' | 'injector' | 'ring' | 'station' | 'jet' | 'hawking';
 export type ResearchId = 'vib' | 'swarm' | 'deep' | 'arc' | 'scan' | 'thinfilm' | 'auto' | 'lab2' | 'mirror' | 'repl' | 'resonance' | 'forge' | 'cryo' | 'signal' | 'optics' | 'catcher' | 'swarm2' | 'fusion' | 'supercond' | 'plasma' | 'quantum' | 'vib2' | 'dyson' | 'nano' | 'statite' | 'induct' | 'beam' | 'lagrange' | 'lift' | 'sep' | 'seismo' | 'coil' | 'fab' | 'sail' | 'redesign' | 'highorbit' | 'census' | 'rotlift' | 'carbon' | 'seis2' | 'mg' | 'neon' | 'pulse2' | 'silicon' | 'magsail' | 'iron' | 'neutrino'
   | 'accrete' | 'dilate' | 'prograde' | 'magscoop' | 'wide' | 'mri' | 'lower' | 'pulse3' | 'thick' | 'slim' | 'mad' | 'edge'
@@ -42,6 +42,10 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   fusion: { base: { ore: 1e6, metal: 1e5, data: 1e6 }, growth: 1.2, prod: { energy: 5e7 }, unlock: (s) => !!s.r.fusion },
   dyson: { base: { metal: 2e6, energy: 2e11 }, growth: 1.12, prod: { energy: 2e12 }, unlock: (s) => !!s.r.dyson && !s.star.done },
   // Kapitola 2. Trychtýř: prod = kg plazmatu za sekundu, spotřeba energie = stejné kg × G·M/R hvězdy (engine).
+  // Kapitola 2, první stupeň: slabší stavby bez posílení od kolektorů. Vedou rychle k trychtýřům a separátorům.
+  windnet: { base: { metal: 2e6 }, growth: 1.15, prod: { plasma: 2e7 }, unlock: ch2 },
+  sieve: { base: { metal: 4e6, plasma: 1e8 }, growth: 1.15, prod: { metal: 1e7 }, cons: { plasma: 2e7 }, unlock: ch2 },
+  corono: { base: { metal: 5e6, energy: 3e16 }, growth: 1.16, prod: { data: 5e9 }, cons: { energy: 2e12 }, unlock: ch2 },
   lifter: { base: { metal: 5e6, energy: 2e17 }, growth: 1.16, prod: { plasma: 1e6 }, cons: { energy: 1e6 }, unlock: (s) => !!s.r.lift && !s.star.done },
   separator: { base: { metal: 5e6, plasma: 2e7 }, growth: 1.16, prod: { metal: 5e6 }, cons: { plasma: 5e6 }, unlock: (s) => !!s.r.sep && !s.star.done },
   seismo: { base: { metal: 1e8, energy: 5e17 }, growth: 1.2, prod: { data: 5e10 }, cons: { energy: 2e13 }, unlock: (s) => !!s.r.seismo && !s.star.done },
@@ -50,13 +54,14 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   // Kapitola 3: černá díra. Plyn (plazma) z mlhoviny krmí akreční disk, kolektory chytají jeho záření.
   // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
   scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
-  injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 5e4 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+  injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
   ring: { base: { plasma: 6e7 }, growth: 1.13, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
-  station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 1e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
+  station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 1.5e27 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
   jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
   hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
 };
 export const BUILDING_IDS = Object.keys(BUILDINGS) as BuildingId[];
+function ch2(s: State) { return s.chapterDone >= 1 && !s.star.done; }
 export const B: Record<BuildingId, BuildingDef> = BUILDINGS;
 /** Kapitola 3 běží: po supernově, před koncem kapitoly se díra pořád krmí. */
 export const hole3 = (s: State) => s.star.done;
@@ -93,11 +98,11 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   beam: { cost: { data: 2e11 }, req: has("statite") },
   lagrange: { cost: { data: 1e12 }, req: has("beam") },
   // Kapitola 2: Hvězda
-  lift: { cost: { data: 5e10 }, req: (s) => s.chapterDone >= 1, reqKey: "typeI" },
-  sep: { cost: { data: 1e11 }, req: has("lift") },
-  seismo: { cost: { data: 15e10 }, req: has("lift") },
-  coil: { cost: { data: 2e13 }, req: has("lift") },
-  fab: { cost: { data: 5e14 }, req: has("sep") },
+  lift: { cost: { data: 2e14 }, req: (s) => s.chapterDone >= 1, reqKey: "typeI" },
+  sep: { cost: { data: 6e14 }, req: has("lift") },
+  seismo: { cost: { data: 5e14 }, req: has("lift") },
+  coil: { cost: { data: 2e15 }, req: has("lift") },
+  fab: { cost: { data: 8e15 }, req: has("sep") },
   sail: { cost: { data: 1e14 }, req: has("sep") },
   redesign: { cost: { data: 2e15 }, req: has("sep") },
   highorbit: { cost: { data: 1e16 }, req: has("sail") },
@@ -114,11 +119,11 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   neutrino: { cost: { data: 3e31 }, req: stage(4), reqKey: "stage4" },
   // Kapitola 3: Horizont
   accrete: { cost: { data: 1e30 }, req: (s) => s.star.done, reqKey: "nova" },
-  dilate: { cost: { data: 2e30 }, req: has("accrete") },
+  dilate: { cost: { data: 1e33 }, req: phase(1), reqKey: "phase1" },
   prograde: { cost: { data: 1e31 }, req: has("accrete") },
   magscoop: { cost: { data: 4e31 }, req: has("accrete") },
   wide: { cost: { data: 1.5e32 }, req: has("accrete") },
-  mri: { cost: { data: 2e33 }, req: phase(1), reqKey: "phase1" },
+  mri: { cost: { data: 1.2e34 }, req: phase(1), reqKey: "phase1" },
   lower: { cost: { data: 8e33 }, req: phase(1), reqKey: "phase1" },
   pulse3: { cost: { data: 4e34 }, req: phase(1), reqKey: "phase1" },
   thick: { cost: { data: 2e35 }, req: phase(1), reqKey: "phase1" },
@@ -201,7 +206,7 @@ export const HOLE = {
   dataFb: 0.4,            // stanice sílí s výkonem civilizace (P/1e20)^0.4
   hawkData: 1e5,          // bajtů za každý joule Hawkingova záření (informace z vypařování)
   fbBase: 1e20,
-  startPlasma: 2e8,       // plyn ze zpětného pádu na začátku kapitoly
+  startPlasma: 6e7,       // plyn ze zpětného pádu na začátku kapitoly
   diveSec: 30
 };
 export const PRESTIGE = { per: 0.25, metalUnit: 1e12, perOrder: 2 };
@@ -251,7 +256,7 @@ export const STORY: Trigger[] = [
   { id: "nova", when: (s) => s.star.done },
   // Kapitola 3
   { id: "hole", when: (s) => !!s.r.accrete },
-  { id: "disk", when: (s) => s.b.injector >= 1 && s.b.ring >= 1 },
+  { id: "disk", when: (s) => s.b.ring >= 1 && (s.vent?.best ?? 0) >= 1 },
   { id: "station", when: (s) => s.b.station >= 1 },
   { id: "thin", when: (s) => (s.hole?.phase ?? 0) >= 1 },
   { id: "pulse3", when: (s) => !!s.r.pulse3 },
@@ -289,7 +294,7 @@ export const FACTS: Trigger[] = [
   { id: "rs", when: (s) => !!s.r.accrete },
   { id: "dyson79", when: (s) => s.star.done && s.time > 0 },
   { id: "qpo", when: (s) => (s.vent?.best ?? 0) >= 3 },
-  { id: "accretion", when: (s) => s.b.injector >= 1 },
+  { id: "accretion", when: (s) => (s.vent?.best ?? 0) >= 1 },
   { id: "gps", when: (s) => s.b.station >= 1 },
   { id: "isco", when: (s) => !!s.r.prograde },
   { id: "cas", when: (s) => !!s.visited.cas },

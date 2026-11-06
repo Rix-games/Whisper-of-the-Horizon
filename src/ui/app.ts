@@ -1,7 +1,7 @@
 import { cs } from '../i18n/cs.js';
 import { t } from '../i18n/index.js';
 import { type BuildingId, type LocationId, type Res, type ResearchId, HOLE, PHASES, B, BUILDING_IDS, EVENTS, L, LOCATION_IDS, PRESTIGE, R, RESEARCH_IDS, RESOURCES, STAGES, STAR, stage } from '../core/defs.js';
-import { VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventAutoSec, ventBurst, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFillSec, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
+import { VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventBurst, ventTank, ventTankKg, ventFill, ventFlow, ventShare, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
 import { decodeSave, encodeSave, migrate, newState } from '../core/state.js';
 import { bytes, duration, energy, kValue, mass, num, power, sci } from '../core/format.js';
 import { drawHole, drawHoleMap, drawProfile, drawScene, sceneGeom, type HoleView, type SceneView } from './hole.js';
@@ -185,7 +185,7 @@ export function renderTop() {
 }
 const HOLE_CONV: BuildingId[] = ["injector", "station", "hawking"];
 const CH3_LOCS: LocationId[] = ["cas", "lens", "tde", "pole", "ergo"];
-export const STAR_BUILDINGS2 = ["lifter", "separator", "seismo", "swarmfab"];
+export const STAR_BUILDINGS2 = ["sieve", "corono", "lifter", "separator", "seismo", "swarmfab"];
 export const starView = () => ({ stage: stageDef(S).id, dyson: S.b.dyson, lifters: S.b.lifter, coverage: coverage(S), collapse: S.star.collapse, done: S.star.done, snAge: snAge() });
 export function renderRig() {
   const ch2 = S.chapterDone >= 1;
@@ -224,10 +224,10 @@ export function renderRig() {
     if (S.b.injector >= 1) rows.push([t("ui.stats.feed"), mass(feedRate(S)) + "/s"], [t("ui.stats.diskCov"), pct(ringCov(S))]);
     if (ventOpen(S)) {
       const v = S.vent;
-      rows.push([t("ui.vent.heat"), v.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v.over) }) : `${Math.round(v.heat * 100)} % · ×${dec(ventHeatMult(S) * ventOverMult(S), 1)}`]);
-      rows.push([t("ui.vent.tank"), `${mass(v.tank * ventCap(S))} · ${Math.round(v.tank * 100)} %`]);
+      rows.push([t("ui.vent.flow"), v.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v.over) }) : mass(ventFlow(S)) + "/s"]);
+      rows.push([t("ui.vent.share"), `${Math.round(ventShare(S) * 100)} % · ${mass(ventFill(S))}/s`]);
+      rows.push([t("ui.vent.tank"), `${mass(ventTankKg(S))} · ${Math.round(ventTank(S) * 100)} %`]);
       rows.push([t("ui.vent.chain"), v.chain ? `${v.chain} · ×${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v.best })]);
-      rows.push([t("ui.vent.fall"), mass(v.fall)]);
     }
     const { p, c } = rates(S), P = powerW(S), part = (id: BuildingId) => S.b[id] ? prodOf(S, id, "energy") * S.b[id] / Math.max(1, P) : 0;
     rows.push(["§" + t("ui.prod.title"), ""]);
@@ -471,6 +471,16 @@ function sceneView(): SceneView {
     trail.push([p0.r, p0.th]);
     return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail };
   });
+  // injektory: plyn teče sám, vidět jako drobné chuchvalce v pravidelném rytmu
+  const ni = S.b.injector >= 1 ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, S.b.injector)) * 3)) : 0;
+  for (let k = 0; k < ni; k++) {
+    const T = ventFlight(0.8), ph = ((S.time / T + k / ni) % 1 + 1) % 1, cyc = Math.floor(S.time / T + k / ni);
+    const b = { t0: S.time - ph * T, r0: 0.8, th0: k * 2.399 + cyc * 1.3, kg: 0, mult: 1, gold: false, auto: true };
+    const p0 = blobPos(b, ph * T), trail: [number, number][] = [];
+    for (let j = 6; j >= 1; j--) { const q = blobPos(b, Math.max(0, ph * T - j * 0.05)); trail.push([q.r, q.th]); }
+    trail.push([p0.r, p0.th]);
+    blobs.push({ r: p0.r, th: p0.th, gold: false, mult: 0.6, trail, auto: true } as any);
+  }
   const fl = flares.splice(0).map((f) => {
     const q = blobPos(f.b, ventFlight(f.b.r0));
     return { r: q.r, th: q.th, gold: f.b.gold, mult: f.b.mult, text: `+${bytes(f.data)}${f.b.mult > 1.01 ? ` ×${dec(f.b.mult, 2)}` : ""}` };
@@ -478,7 +488,7 @@ function sceneView(): SceneView {
   return {
     blobs, flares: fl, relR: ventR(ventLv(S, "radius")), hover: sceneHover,
     hoverText: t("ui.vent.hover", { kg: mass(ventKg(S)), s: dec(ventFlight(ventR(ventLv(S, "radius"))), 1) }),
-    tank: v.tank, tankText: open ? t("ui.vent.tankLine", { kg: mass(v.tank * ventCap(S)), p: Math.round(v.tank * 100) }) : "",
+    tank: ventTank(S), tankText: open ? t("ui.vent.tankLine", { kg: mass(ventTankKg(S)), p: Math.round(ventTank(S) * 100) }) : "",
     chainText: v.chain > 1 ? t("ui.vent.chainBig", { n: v.chain, m: dec(ventChainMult(S), 2) }) : "",
     pulse: pulsePhase(S), pulseSec: VENT.pulse, overText: v.over > 0 ? t("ui.vent.over", { s: Math.ceil(v.over) }) : "",
     locked: open ? "" : t("ui.vent.locked")
@@ -491,18 +501,20 @@ function renderScene() {
   btn.disabled = !full;
   btn.classList.toggle("ready", full);
   btn.classList.toggle("ghost", !full);
-  btn.textContent = full ? t("ui.vent.burst") : t("ui.vent.burstWait", { p: Math.round(S.vent.tank * 100) });
+  btn.textContent = full ? t("ui.vent.burst") : t("ui.vent.burstWait", { p: Math.round(ventTank(S) * 100) });
   const hint = $("sceneHint");
   hint.hidden = !open || S.vent.best >= 6 || !!sceneZoom;
   hint.textContent = t("ui.vent.hint");
+  $("shareTxt").textContent = t("ui.vent.shareBtn", { p: Math.round(ventShare(S) * 100) });
+  document.querySelectorAll<El>("[data-share]").forEach((b) => { b.hidden = !open || !!sceneZoom; });
+  $("shareTxt").hidden = !open || !!sceneZoom;
   document.querySelectorAll<El>("[data-zoom]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.zoom) === sceneZoom)));
 }
 const ventNow: Record<VentUp, (l: number) => string> = {
   valve: (l) => t("ui.vent.v.valve", { kg: mass(Math.min(ventCap(S), ventKg(S, l))), s: dec(VENT.valveSec * Math.pow(1.5, l), 0) }),
-  trap: (l) => t("ui.vent.v.trap", { kg: mass(ventCap(S, l)), s: dec(ventFillSec(l), 0) }),
+  trap: (l) => t("ui.vent.v.trap", { kg: mass(ventCap(S, l)), f: mass(ventFill(S, l)) }),
   radius: (l) => t("ui.vent.v.radius", { r: dec(ventR(l), 2), s: dec(ventFlight(ventR(l)), 1) }),
-  coil: (l) => t("ui.vent.v.coil", { n: ventChainMax(l), p: Math.round(ventStep(l) * 100) }),
-  auto: (l) => l ? t("ui.vent.v.auto", { s: dec(ventAutoSec(l), 1) }) : t("ui.vent.v.autoOff")
+  coil: (l) => t("ui.vent.v.coil", { n: ventChainMax(l), p: Math.round(ventStep(l) * 100) })
 };
 function ventCards() {
   let h = "";
@@ -926,6 +938,12 @@ export function bind() {
     if (d.burst) {
       if (ventBurst(S) && S.settings.sound) boom();
       renderScene();
+      return;
+    }
+    if (d.share) {
+      S.vent.share = Math.max(0.1, Math.min(1, Math.round((ventShare(S) + Number(d.share) * 0.1) * 10) / 10));
+      renderScene();
+      renderRig();
       return;
     }
     if (d.zoom !== undefined) {
