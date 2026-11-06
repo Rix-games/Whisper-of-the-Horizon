@@ -66,7 +66,7 @@
           autoOff: "vypnuto"
         },
         u: {
-          valve: { name: "Ventil", desc: "\u0160ir\u0161\xED hrdlo pasti. V jednom chuchvalci vypust\xED v\xEDc plynu, tak\u017Ee z\xE1blesk d\xE1 v\xEDc dat a v\xEDc \u017E\xE1ru." },
+          valve: { name: "Ventil pasti", desc: "\u0160ir\u0161\xED hrdlo magnetick\xE9 pasti, ze kter\xE9 vypou\u0161t\xED\u0161 plyn klik\xE1n\xEDm do disku. V jednom chuchvalci vypust\xED v\xEDc plynu, tak\u017Ee z\xE1blesk d\xE1 v\xEDc dat a v\xEDc \u017E\xE1ru." },
           trap: { name: "Magnetick\xE1 past", desc: "Siln\u011Bj\u0161\xED pole udr\u017E\xED v\xEDc plynu a pln\xED se rychleji. V\xEDc chuchvalc\u016F za sebou a v\u011Bt\u0161\xED v\xFDbuch disku." },
           radius: { name: "Polom\u011Br vypou\u0161t\u011Bn\xED", desc: "Vypou\u0161t\xED d\xE1l od d\xEDry. Chuchvalec let\xED d\xE9le, tak\u017Ee stihne\u0161 poslat dal\u0161\xED a \u0159et\u011Bz se nep\u0159etrhne." },
           coil: { name: "Rezonan\u010Dn\xED c\xEDvky", desc: "Disk se rozkmit\xE1 do rytmu chuchvalc\u016F. \u0158et\u011Bz m\u016F\u017Ee r\u016Fst v\xFD\u0161 a ka\u017Ed\xFD \u010Dl\xE1nek p\u0159id\xE1 v\xEDc." },
@@ -3001,8 +3001,17 @@
     x.putImageData(img, 0, 0);
     return cv;
   }
-  var bg = null;
-  var bgKey = "";
+  var bgCache = /* @__PURE__ */ new Map();
+  function bgFor(W, H, dpr) {
+    const key = `${W}x${H}@${dpr}`;
+    let b = bgCache.get(key);
+    if (!b) {
+      if (bgCache.size > 6) bgCache.clear();
+      b = bakeMapBg(W, H, dpr);
+      bgCache.set(key, b);
+    }
+    return b;
+  }
   var layer = null;
   var neb = null;
   var nebKey2 = "";
@@ -3029,12 +3038,7 @@
     if (!p) return;
     const { x, W, H, dpr } = p, tt = reduce2 ? 0 : time, m = tilt ? Math.min(W, H * 1.15) : Math.min(W, H);
     if (full) {
-      const key = `${W}x${H}@${dpr}`;
-      if (!bg || bgKey !== key) {
-        bg = bakeMapBg(W, H, dpr);
-        bgKey = key;
-      }
-      x.drawImage(bg, 0, 0, W, H);
+      x.drawImage(bgFor(W, H, dpr), 0, 0, W, H);
     } else x.clearRect(0, 0, W, H);
     const cx = W / 2, cy = H * 0.5, Rsh = m * 0.095, Rout = m * 0.43, incl = tilt ?? 0.2 + v.phase * 0.012;
     const pal = DISK[v.phase];
@@ -3289,12 +3293,7 @@
     const p = prep(c);
     if (!p) return;
     const { x, W, H, dpr } = p, tt = reduce2 ? 0 : time;
-    const key = `${W}x${H}@${dpr}`;
-    if (!bg || bgKey !== key) {
-      bg = bakeMapBg(W, H, dpr);
-      bgKey = key;
-    }
-    x.drawImage(bg, 0, 0, W, H);
+    x.drawImage(bgFor(W, H, dpr), 0, 0, W, H);
     const narrow = W < 560, legW = narrow ? 0 : 214;
     const a = v.a, rp = 0.5 * (1 + Math.sqrt(1 - a * a));
     const rph = 1 + Math.cos(2 / 3 * Math.acos(-a));
@@ -3572,12 +3571,7 @@
     const p = prep(c);
     if (!p) return;
     const { x, W, H, dpr } = p, tt = reduce2 ? 0 : time;
-    const key = `${W}x${H}@${dpr}`;
-    if (!bg || bgKey !== key) {
-      bg = bakeMapBg(W, H, dpr);
-      bgKey = key;
-    }
-    x.drawImage(bg, 0, 0, W, H);
+    x.drawImage(bgFor(W, H, dpr), 0, 0, W, H);
     const cx = W / 2, cy = H / 2, sc = Math.min(W / 2 * 0.9, H / 2 / TILT2 * 0.82);
     const P = (q) => [cx + q[0] * sc, cy + q[1] * sc];
     const nr = sc * 0.95, npx = Math.min(640, Math.round(nr * 2 * dpr));
@@ -4312,7 +4306,6 @@
     const list = [["build", t("ui.tabs.build")]];
     if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
     if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
-    if (ventOpen(S)) list.push(["vent", t("ui.tabs.vent")]);
     if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
     else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
     return list;
@@ -4323,26 +4316,25 @@
     const dot = RESEARCH_IDS.some((id) => researchAvailable(S, id) && affordable(S, R[id].cost));
     const hdot = phaseReady(S).ok || unseen("hole");
     const mdot = unseen("map") || LOCATION_IDS.some((id) => !S.visited[id] && locationOpen(S, id) && canTravel(S, id) && (!S.star.done || CH3_LOCS.includes(id)));
-    const vdot = unseen("vent");
     const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5) || unseen("star");
     markSeen();
-    const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot || id === "map" && mdot || id === "vent" && vdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
+    const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot || id === "map" && mdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
     const el = $("tabs");
     if (el.innerHTML !== html) el.innerHTML = html;
   }
   function computeKey() {
-    if (tab === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax;
+    if (tab === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax + ventOpen(S);
     if (tab === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
     if (tab === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
     if (tab === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
     if (tab === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
-    if (tab === "vent") return "v";
     return "s";
   }
   function buildView() {
     let h = "";
     if (tab === "build") {
       h += `<div class="toolbar">${esc(t("ui.buyMode"))} <span class="seg"><button data-max="1" aria-pressed="${buyMax === 1}">\xD71</button><button data-max="10" aria-pressed="${buyMax === 10}">\xD710</button><button data-max="max" aria-pressed="${buyMax === true}">Max</button></span></div><div class="list">`;
+      if (ventOpen(S)) h += ventCards();
       const order = BUILDING_IDS.slice().reverse();
       for (const id of order) {
         if (!isUnlocked(S, id)) continue;
@@ -4370,7 +4362,6 @@
       h += "</div>";
     } else if (tab === "star") h += starHTML();
     else if (tab === "hole") h += holeHTML();
-    else if (tab === "vent") h += ventHTML();
     $("view").innerHTML = h;
   }
   var round2 = (v) => {
@@ -4483,8 +4474,7 @@
   var seenKey = {
     map: () => LOCATION_IDS.filter((id) => locationOpen(S, id) && !S.visited[id]).join(","),
     hole: () => `${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`,
-    star: () => `${S.star.stage}${S.star.collapse >= 0}`,
-    vent: () => ventOpen(S) ? "open" : ""
+    star: () => `${S.star.stage}${S.star.collapse >= 0}`
   };
   function unseen(id) {
     const k = seenKey[id]();
@@ -4554,14 +4544,14 @@
     coil: (l) => t("ui.vent.v.coil", { n: ventChainMax(l), p: Math.round(ventStep(l) * 100) }),
     auto: (l) => l ? t("ui.vent.v.auto", { s: dec(ventAutoSec(l), 1) }) : t("ui.vent.v.autoOff")
   };
-  function ventHTML() {
-    let h = `<p class="dim" style="margin:0 0 10px">${esc(t("ui.vent.intro"))}</p><div class="list">`;
+  function ventCards() {
+    let h = "";
     for (const id of VENT_IDS) {
       h += `<div class="item vcard" data-vu="${id}"><h3>${esc(t(`ui.vent.u.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`ui.vent.u.${id}.desc`))}</p>
     <div class="eff2 mono"><span class="k">${esc(t("ui.vent.now"))}</span><span data-f="now"></span><span class="k">${esc(t("ui.vent.next"))}</span><span class="up" data-f="next"></span></div>
     <div class="cost" data-f="cost"></div><div class="act"><button class="btn" data-vup="${id}">${esc(t("ui.vent.upgrade"))}</button></div></div>`;
     }
-    return h + "</div>";
+    return h;
   }
   function updateVent() {
     $("view").querySelectorAll("[data-vu]").forEach((el) => {
@@ -4703,6 +4693,7 @@
   function updateView() {
     const view = $("view");
     if (tab === "build") {
+      if (ventOpen(S)) updateVent();
       view.querySelectorAll("[data-b]").forEach((el) => {
         const id = el.dataset.b, d = B[id];
         const count = Math.floor(S.b[id]);
@@ -4764,7 +4755,6 @@
       });
     } else if (tab === "star") updateStar();
     else if (tab === "hole") updateHole();
-    else if (tab === "vent") updateVent();
     else if (tab === "map") {
       view.querySelectorAll("[data-go]").forEach((b) => {
         const id = b.dataset.go, item = b.closest("[data-l]");

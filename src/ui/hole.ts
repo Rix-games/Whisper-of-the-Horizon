@@ -64,7 +64,14 @@ function bakeDisk(px: number, phase: number) {
   return cv;
 }
 
-let bg: HTMLCanvasElement | null = null, bgKey = '';
+// pozadí zvlášť pro každou velikost plátna (scéna, profil i mapa se kreslí naráz)
+const bgCache = new Map<string, HTMLCanvasElement>();
+function bgFor(W: number, H: number, dpr: number) {
+  const key = `${W}x${H}@${dpr}`;
+  let b = bgCache.get(key);
+  if (!b) { if (bgCache.size > 6) bgCache.clear(); b = bakeMapBg(W, H, dpr); bgCache.set(key, b); }
+  return b;
+}
 let layer: HTMLCanvasElement | null = null;
 let neb: HTMLCanvasElement | null = null, nebKey = '';
 function prep(c: HTMLCanvasElement) {
@@ -85,9 +92,7 @@ export function drawHole(c: HTMLCanvasElement, v: HoleView, time: number, sub: s
   const p = prep(c); if (!p) return;
   const { x, W, H, dpr } = p, tt = reduce ? 0 : time, m = tilt ? Math.min(W, H * 1.15) : Math.min(W, H);
   if (full) {
-    const key = `${W}x${H}@${dpr}`;
-    if (!bg || bgKey !== key) { bg = bakeMapBg(W, H, dpr); bgKey = key; }
-    x.drawImage(bg, 0, 0, W, H);
+    x.drawImage(bgFor(W, H, dpr), 0, 0, W, H);
   } else x.clearRect(0, 0, W, H);
   const cx = W / 2, cy = H * 0.5, Rsh = m * 0.095, Rout = m * 0.43, incl = tilt ?? 0.2 + v.phase * 0.012;
   const pal = DISK[v.phase];
@@ -301,9 +306,7 @@ function rsText(x: CanvasRenderingContext2D, v: number, px: number, py: number) 
 export function drawProfile(c: HTMLCanvasElement, v: ProfileView, time: number, title: string) {
   const p = prep(c); if (!p) return;
   const { x, W, H, dpr } = p, tt = reduce ? 0 : time;
-  const key = `${W}x${H}@${dpr}`;
-  if (!bg || bgKey !== key) { bg = bakeMapBg(W, H, dpr); bgKey = key; }
-  x.drawImage(bg, 0, 0, W, H);
+  x.drawImage(bgFor(W, H, dpr), 0, 0, W, H);
   const narrow = W < 560, legW = narrow ? 0 : 214;
   const a = v.a, rp = 0.5 * (1 + Math.sqrt(1 - a * a));                      // horizont v rₛ
   const rph = 1 + Math.cos((2 / 3) * Math.acos(-a));                         // fotonová dráha (souběžná) v rₛ
@@ -514,9 +517,7 @@ function pos(id: LocationId, tt: number): [number, number] {
 export function drawHoleMap(c: HTMLCanvasElement, s: State, v: HoleView, time: number) {
   const p = prep(c); if (!p) return;
   const { x, W, H, dpr } = p, tt = reduce ? 0 : time;
-  const key = `${W}x${H}@${dpr}`;
-  if (!bg || bgKey !== key) { bg = bakeMapBg(W, H, dpr); bgKey = key; }
-  x.drawImage(bg, 0, 0, W, H);
+  x.drawImage(bgFor(W, H, dpr), 0, 0, W, H);
   const cx = W / 2, cy = H / 2, sc = Math.min(W / 2 * 0.9, H / 2 / TILT * 0.82);
   const P = (q: [number, number]): [number, number] => [cx + q[0] * sc, cy + q[1] * sc];
   // mlhovina: zploštělá obálka kolem díry

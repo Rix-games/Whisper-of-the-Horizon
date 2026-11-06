@@ -66,7 +66,7 @@ export const cs = {
         autoOff: "vypnuto"
       },
       u: {
-        valve: { name: "Ventil", desc: "Širší hrdlo pasti. V jednom chuchvalci vypustí víc plynu, takže záblesk dá víc dat a víc žáru." },
+        valve: { name: "Ventil pasti", desc: "Širší hrdlo magnetické pasti, ze které vypouštíš plyn klikáním do disku. V jednom chuchvalci vypustí víc plynu, takže záblesk dá víc dat a víc žáru." },
         trap: { name: "Magnetická past", desc: "Silnější pole udrží víc plynu a plní se rychleji. Víc chuchvalců za sebou a větší výbuch disku." },
         radius: { name: "Poloměr vypouštění", desc: "Vypouští dál od díry. Chuchvalec letí déle, takže stihneš poslat další a řetěz se nepřetrhne." },
         coil: { name: "Rezonanční cívky", desc: "Disk se rozkmitá do rytmu chuchvalců. Řetěz může růst výš a každý článek přidá víc." },

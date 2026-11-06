@@ -272,7 +272,6 @@ export function tabsAvail() {
   const list = [["build", t("ui.tabs.build")]];
   if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
   if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
-  if (ventOpen(S)) list.push(["vent", t("ui.tabs.vent")]);
   if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
   else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
   return list;
@@ -283,26 +282,26 @@ export function renderTabs() {
   const dot = RESEARCH_IDS.some((id) => researchAvailable(S, id) && affordable(S, R[id].cost));
   const hdot = phaseReady(S).ok || unseen("hole");
   const mdot = unseen("map") || LOCATION_IDS.some((id) => !S.visited[id] && locationOpen(S, id) && canTravel(S, id) && (!S.star.done || CH3_LOCS.includes(id)));
-  const vdot = unseen("vent");
+
   const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5) || unseen("star");
   markSeen();
-  const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot || id === "map" && mdot || id === "vent" && vdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
+  const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot || id === "map" && mdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
   const el = $("tabs");
   if (el.innerHTML !== html) el.innerHTML = html;
 }
 export function computeKey() {
-  if (tab === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax;
+  if (tab === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax + ventOpen(S);
   if (tab === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
   if (tab === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
   if (tab === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
   if (tab === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
-  if (tab === "vent") return "v";
   return "s";
 }
 export function buildView() {
   let h = "";
   if (tab === "build") {
     h += `<div class="toolbar">${esc(t("ui.buyMode"))} <span class="seg"><button data-max="1" aria-pressed="${buyMax === 1}">×1</button><button data-max="10" aria-pressed="${buyMax === 10}">×10</button><button data-max="max" aria-pressed="${buyMax === true}">Max</button></span></div><div class="list">`;
+    if (ventOpen(S)) h += ventCards();
     const order = BUILDING_IDS.slice().reverse();
     for (const id of order) {
       if (!isUnlocked(S, id)) continue;
@@ -330,7 +329,6 @@ export function buildView() {
     h += "</div>";
   } else if (tab === "star") h += starHTML();
   else if (tab === "hole") h += holeHTML();
-  else if (tab === "vent") h += ventHTML();
   $("view").innerHTML = h;
 }
 export const round2 = (v) => {
@@ -444,8 +442,7 @@ export function onRebuild() {
 const seenKey: Record<string, () => string> = {
   map: () => LOCATION_IDS.filter((id) => locationOpen(S, id) && !S.visited[id]).join(","),
   hole: () => `${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`,
-  star: () => `${S.star.stage}${S.star.collapse >= 0}`,
-  vent: () => ventOpen(S) ? "open" : ""
+  star: () => `${S.star.stage}${S.star.collapse >= 0}`
 };
 function unseen(id: string) {
   const k = seenKey[id]();
@@ -507,14 +504,14 @@ const ventNow: Record<VentUp, (l: number) => string> = {
   coil: (l) => t("ui.vent.v.coil", { n: ventChainMax(l), p: Math.round(ventStep(l) * 100) }),
   auto: (l) => l ? t("ui.vent.v.auto", { s: dec(ventAutoSec(l), 1) }) : t("ui.vent.v.autoOff")
 };
-function ventHTML() {
-  let h = `<p class="dim" style="margin:0 0 10px">${esc(t("ui.vent.intro"))}</p><div class="list">`;
+function ventCards() {
+  let h = "";
   for (const id of VENT_IDS) {
     h += `<div class="item vcard" data-vu="${id}"><h3>${esc(t(`ui.vent.u.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`ui.vent.u.${id}.desc`))}</p>
     <div class="eff2 mono"><span class="k">${esc(t("ui.vent.now"))}</span><span data-f="now"></span><span class="k">${esc(t("ui.vent.next"))}</span><span class="up" data-f="next"></span></div>
     <div class="cost" data-f="cost"></div><div class="act"><button class="btn" data-vup="${id}">${esc(t("ui.vent.upgrade"))}</button></div></div>`;
   }
-  return h + "</div>";
+  return h;
 }
 function updateVent() {
   $("view").querySelectorAll<El>("[data-vu]").forEach((el) => {
@@ -645,6 +642,7 @@ export function syncSettings() {
 export function updateView() {
   const view = $("view");
   if (tab === "build") {
+    if (ventOpen(S)) updateVent();
     view.querySelectorAll<El>("[data-b]").forEach((el) => {
       const id = el.dataset.b as BuildingId, d = B[id];
       const count = Math.floor(S.b[id]);
@@ -706,7 +704,6 @@ export function updateView() {
     });
   } else if (tab === "star") updateStar();
   else if (tab === "hole") updateHole();
-  else if (tab === "vent") updateVent();
   else if (tab === "map") {
     view.querySelectorAll<El>("[data-go]").forEach((b) => {
       const id = b.dataset.go as LocationId, item = b.closest("[data-l]");
