@@ -92,6 +92,13 @@ export function holeL(s: State) {
   if (raw <= edd) return raw;
   return s.r.slim ? edd * (1 + 2 * Math.log(raw / edd)) : edd;
 }
+/** Kolik W záření disku přidá další přítok kg/s (skutečný přírůstek, i s Eddingtonovou mezí a Štíhlým diskem). */
+export function diskGain(s: State, kgs: number) {
+  const heat = ventHeatMult(s), raw = holeLRaw(s) * heat, edd = HOLE.eddW * ventOverMult(s) * heat;
+  const L = (r: number) => r <= edd ? r : s.r.slim ? edd * (1 + 2 * Math.log(r / edd)) : edd;
+  const f = feedRate(s), perKg = f > 0 && raw > 0 ? raw / f : diskEta(s.hole.a) * HOLE.c2 * heat;   // průměr i s řetězením chuchvalců
+  return Math.max(0, L(raw + kgs * perKg) - L(raw));
+}
 export function ringCov(s: State) {
   const f = HOLE.ringF * (s.r.wide ? 2 : 1) * (s.r.thick ? 2 : 1);
   return 1 - Math.exp(-s.b.ring * f);

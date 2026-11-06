@@ -98,6 +98,7 @@ export const cs = {
     turnOff: "Vypnout",
     turnOn: "Zapnout",
     running: "běží na {n} %",
+    inj: { pct: "+{p} % disku", short: "past nestačí: postav naběrače nebo vylepši Sací kanály", capped: "disk je na Eddingtonově mezi" },
     stopped: "vypnuto",
     starved: "stojí, chybí vstup",
     each: "každý",

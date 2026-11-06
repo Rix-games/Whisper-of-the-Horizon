@@ -98,6 +98,7 @@
       turnOff: "Vypnout",
       turnOn: "Zapnout",
       running: "b\u011B\u017E\xED na {n} %",
+      inj: { pct: "+{p} % disku", short: "past nesta\u010D\xED: postav nab\u011Bra\u010De nebo vylep\u0161i Sac\xED kan\xE1ly", capped: "disk je na Eddingtonov\u011B mezi" },
       stopped: "vypnuto",
       starved: "stoj\xED, chyb\xED vstup",
       each: "ka\u017Ed\xFD",
@@ -907,6 +908,12 @@
     const raw = holeLRaw(s) * ventHeatMult(s), edd = HOLE.eddW * ventOverMult(s) * ventHeatMult(s);
     if (raw <= edd) return raw;
     return s.r.slim ? edd * (1 + 2 * Math.log(raw / edd)) : edd;
+  }
+  function diskGain(s, kgs) {
+    const heat = ventHeatMult(s), raw = holeLRaw(s) * heat, edd = HOLE.eddW * ventOverMult(s) * heat;
+    const L2 = (r) => r <= edd ? r : s.r.slim ? edd * (1 + 2 * Math.log(r / edd)) : edd;
+    const f = feedRate(s), perKg = f > 0 && raw > 0 ? raw / f : diskEta(s.hole.a) * HOLE.c2 * heat;
+    return Math.max(0, L2(raw + kgs * perKg) - L2(raw));
   }
   function ringCov(s) {
     const f = HOLE.ringF * (s.r.wide ? 2 : 1) * (s.r.thick ? 2 : 1);
@@ -4139,7 +4146,7 @@
   var VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
   var volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
   var audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-  var VERSION = "0.3.2";
+  var VERSION = "0.3.3";
   var KEY = "sepot-horizontu";
   var $ = (id) => document.getElementById(id);
   var SUP2 = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
@@ -4810,7 +4817,13 @@
           const part = (r, v, sign) => `<span><span style="color:${COLOR[r]}">${esc(t("res." + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
           const ins = id === "injector" ? [`<span><span style="color:${COLOR.plasma}">${esc(t("ui.vent.fromTrap"))}</span> \u2212${esc(rate("plasma", consOf(S, id, "plasma") * k))}</span>`] : Object.keys(d.cons ?? {}).map((r) => part(r, consOf(S, id, r) * k, "\u2212"));
           const outs = Object.keys(d.prod ?? {}).map((r) => part(r, prodOf(S, id, r) * k, "+"));
-          if (id === "injector") {
+          if (id === "injector" && k === 1) {
+            const short = !S.off.injector && S.b.injector >= 1 && (S.eff.injector ?? 1) < 0.995;
+            const g = short ? 0 : diskGain(S, consOf(S, id, "plasma")), L2 = holeL(S);
+            const pc = L2 > 0 ? g / L2 * 100 : 0;
+            outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(g))}</span>`);
+            if (L2 > 0) outs.push(`<span class="dim">(${esc(g <= 0 ? t(short ? "ui.inj.short" : "ui.inj.capped") : t("ui.inj.pct", { p: pc < 0.1 ? "< 0,1" : pc.toFixed(pc < 10 ? 1 : 0).replace(".", ",") }))})</span>`);
+          } else if (id === "injector") {
             const perKg = feedRate(S) > 0 ? holeL(S) / feedRate(S) : diskEta(S.hole.a) * HOLE.c2;
             outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(consOf(S, id, "plasma") * k * perKg))}</span>`);
           }
@@ -4830,6 +4843,7 @@
         if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
         }
+        if (id === "injector") el.classList.toggle("starvedcard", !S.off.injector && S.b.injector >= 1 && (S.eff.injector ?? 1) < 0.995);
         el.querySelector("[data-f=eff]").innerHTML = eff;
         let c = cost(S, id), n = 1, can = affordable(S, c);
         if (buyMax === true) {

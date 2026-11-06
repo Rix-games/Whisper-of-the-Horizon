@@ -298,3 +298,6 @@ body.cv:not(.ch3) #scenec, body.cv:not(.ch3) #burstBtn, body.cv:not(.ch3) #scene
 body.cv:not(.ch3) #scene .rockwrap { position: relative; flex: 1; min-height: 0; min-width: 0; display: block; }
 body.cv:not(.ch3) #scene #rock { position: absolute; top: 14px; bottom: 14px; left: 50%; transform: translateX(-50%); width: auto; height: auto; max-width: calc(100% - 28px); aspect-ratio: 1; }
 @media (max-width: 1100px) { body.cv:not(.ch3) #scene .rockwrap { height: min(70vw, 460px); } }
+
+.item.starvedcard { opacity: .62; }
+.item.starvedcard:hover { opacity: .9; }

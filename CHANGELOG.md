@@ -1,5 +1,12 @@
 # Novinky
 
+## 0.3.3 – Trysky a injektory
+
+- Tryskové lapače posilují naběrače, injektory a Hawkingovy reaktory
+- Karta injektoru ukazuje skutečný přínos dalšího kusu
+- Karta injektoru zešedne, když past nestačí
+- Úprava ceny diskových kolektorů
+
 ## 0.3.2 – Úpravy po Kapitole 3
 
 - Přestavba roje odstraněna, Lepší návrh roje je trvalý bonus

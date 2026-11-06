@@ -1,7 +1,7 @@
 import { cs } from '../i18n/cs.js';
 import { t } from '../i18n/index.js';
 import { type BuildingId, type LocationId, type Res, type ResearchId, HOLE, PHASES, B, BUILDING_IDS, EVENTS, L, LOCATION_IDS, PRESTIGE, R, RESEARCH_IDS, RESOURCES, STAGES, STAR, stage } from '../core/defs.js';
-import { REBUILD_ON, injEmitters, VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventBurst, ventTank, ventTankKg, ventFill, ventFlow, ventShare, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
+import { REBUILD_ON, diskGain, injEmitters, VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventBurst, ventTank, ventTankKg, ventFill, ventFlow, ventShare, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
 import { decodeSave, encodeSave, migrate, newState } from '../core/state.js';
 import { bytes, duration, energy, kValue, mass, num, power, sci } from '../core/format.js';
 import { drawHole, drawHoleMap, drawProfile, drawScene, holeMapHit, sceneGeom, type HoleView, type SceneView } from './hole.js';
@@ -14,7 +14,7 @@ export const VOL_KEYS = ["noise", "melody", "game"];
 export const VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
 export const volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
 export const audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-export const VERSION = "0.3.2";
+export const VERSION = "0.3.3";
 export const KEY = "sepot-horizontu";
 type El = HTMLElement & Record<string, any>;
 export const $ = (id: string): El => document.getElementById(id) as El;
@@ -665,7 +665,14 @@ export function updateView(which = tab, view = $("view")) {
           ? [`<span><span style="color:${COLOR.plasma}">${esc(t("ui.vent.fromTrap"))}</span> −${esc(rate("plasma", consOf(S, id, "plasma") * k))}</span>`]
           : (Object.keys(d.cons ?? {}) as Res[]).map((r) => part(r, consOf(S, id, r) * k, "−"));
         const outs = (Object.keys(d.prod ?? {}) as Res[]).map((r) => part(r, prodOf(S, id, r) * k, "+"));
-        if (id === "injector") {
+        if (id === "injector" && k === 1) {
+          // další kus: skutečný přírůstek záření; když past nestačí, nepřidá nic
+          const short = !S.off.injector && S.b.injector >= 1 && (S.eff.injector ?? 1) < 0.995;
+          const g = short ? 0 : diskGain(S, consOf(S, id, "plasma")), L = holeL(S);
+          const pc = L > 0 ? g / L * 100 : 0;
+          outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(g))}</span>`);
+          if (L > 0) outs.push(`<span class="dim">(${esc(g <= 0 ? t(short ? "ui.inj.short" : "ui.inj.capped") : t("ui.inj.pct", { p: pc < 0.1 ? "< 0,1" : pc.toFixed(pc < 10 ? 1 : 0).replace(".", ",") }))})</span>`);
+        } else if (id === "injector") {
           const perKg = feedRate(S) > 0 ? holeL(S) / feedRate(S) : diskEta(S.hole.a) * HOLE.c2;
           outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(consOf(S, id, "plasma") * k * perKg))}</span>`);
         }
@@ -685,6 +692,7 @@ export function updateView(which = tab, view = $("view")) {
       if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
       }
+      if (id === "injector") el.classList.toggle("starvedcard", !S.off.injector && S.b.injector >= 1 && (S.eff.injector ?? 1) < 0.995);
       el.querySelector<El>("[data-f=eff]").innerHTML = eff;
       let c = cost(S, id), n = 1, can = affordable(S, c);
       if (buyMax === true) {
