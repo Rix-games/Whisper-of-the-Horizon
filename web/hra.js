@@ -637,7 +637,7 @@
     kugel: { cost: { data: 1e39 }, req: phase(3), reqKey: "phase3" },
     penrose: { cost: { data: 1e40 }, req: phase(4), reqKey: "phase4" },
     evap: { cost: { data: 2e40 }, req: phase(4), reqKey: "phase4" },
-    yard: { cost: { data: 4e39 }, req: phase(4), reqKey: "phase4" },
+    yard: { cost: { data: 3e38 }, req: phase(3), reqKey: "phase3" },
     dive: { cost: { data: 6e40 }, req: phase(4), reqKey: "phase4" }
   };
   var RESEARCH_IDS = Object.keys(RESEARCH);
