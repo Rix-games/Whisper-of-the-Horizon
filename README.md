@@ -47,7 +47,7 @@ Hru vydávám po kapitolách. Každá verze se dá hrát a uložená hra se pře
 | 0.2 | Kapitola 2: Hvězda | vydáno |
 | 0.2.1 | Chytřejší loděnice, nákup ×10, plynulejší stárnutí hvězdy | vydáno |
 | 0.2.2 | Úpravy po supernově | vydáno |
-| 0.3 | Kapitola 3: Horizont | ve vývoji |
+| 0.3 | Kapitola 3: Horizont, nové rozložení | vydáno |
 | 0.4 | Kapitola 4: Most | v plánu |
 | 1.0 | Kapitola 5: Šepot, konce, anglická verze | v plánu |
 | později | nekonečný mód, verze pro mobil | v plánu |

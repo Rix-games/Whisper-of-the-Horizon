@@ -3,11 +3,16 @@
 ## 0.3 – Kapitola 3: Horizont
 
 - Nová kapitola: černá díra po Aldře a pět fází jejího disku
-- Naběrače mlhoviny, akreční injektory, diskové kolektory
-- Rotace díry, Eddingtonova mez, magnetické trysky
-- Dilatační stanice u horizontu, Hawkingův reaktor
-- Záložka Horizont s profilem díry, nová mapa a mise
+- Ruční vypouštění plynu z magnetické pasti, řetězení, souzvuk s pulsem, výbuch disku
+- Akreční injektory jako automatický stupeň
+- Naběrače mlhoviny, diskové kolektory, dilatační stanice, trysky, Hawkingův reaktor
+- Záložka Horizont s profilem díry, deset misí za energii
 - Ponor k horizontu na konci kapitoly
+- Kapitola 2: první stupeň staveb, sklad plazmatu, menší čísla
+- Staré stavby se v nové kapitole vypínají
+- Nové rozložení: objekt kapitoly uprostřed, stavby pod ním, ostatní záložky přes celý střed
+- Tečky u záložek s novinkami, stavby od nejnovější
+- Čas venku, kratší zalamování řádků
 
 ## 0.2.2 – Úpravy po supernově
 
