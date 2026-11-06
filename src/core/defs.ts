@@ -55,7 +55,7 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
   scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
   injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
-  ring: { base: { plasma: 6e7 }, growth: 1.145, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+  ring: { base: { plasma: 6e7 }, growth: 1.15, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
   station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 1.5e27 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
   jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
   hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }

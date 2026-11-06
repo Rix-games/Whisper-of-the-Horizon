@@ -324,12 +324,12 @@ export const cs = {
     lifter: { name: "Hvězdný trychtýř", desc: "Magnetické pole otevře v koróně trychtýř a vede jím proud plazmatu ven z hvězdy. Většinu práce odvede hvězdný vítr. Sílí s každým Dysonovým kolektorem." },
     separator: { name: "Separátor prvků", desc: "Třídí plazma podle hmotnosti. Vodík a helium vrací do hvězdy, těžší prvky jdou do skladu jako kov. Sílí s každým Dysonovým kolektorem." },
     seismo: { name: "Seismická stanice", desc: "Naslouchá chvění hvězdy a z tisíců tónů skládá obraz jejího nitra. Sílí s každým Dysonovým kolektorem." },
-    scoop: { name: "Naběrač mlhoviny", desc: "Magnetická síť dlouhá tisíce kilometrů. Sbírá ionizovaný plyn z mlhoviny, kterou po sobě Aldra zanechala. Sílí s každým diskovým kolektorem." },
-    injector: { name: "Akreční injektor", desc: "Automatický ventil. Sám bere nahromaděný plyn z magnetické pasti a posílá ho po spirále do disku, i když neklikáš. Když past nestačí, běží pomaleji. Každý diskový kolektor injektor zrychlí o 10 %." },
+    scoop: { name: "Naběrač mlhoviny", desc: "Magnetická síť dlouhá tisíce kilometrů. Sbírá ionizovaný plyn z mlhoviny, kterou po sobě Aldra zanechala. Sílí s každým diskovým kolektorem a tryskovým lapačem." },
+    injector: { name: "Akreční injektor", desc: "Automatický ventil. Sám bere nahromaděný plyn z magnetické pasti a posílá ho po spirále do disku, i když neklikáš. Když past nestačí, běží pomaleji. Každý diskový kolektor a tryskový lapač injektor zrychlí o 10 %." },
     ring: { name: "Diskový kolektor", desc: "Prstenec kolem disku, který chytá jeho záření. Každý další zakryje víc disku a o 10 % posílí naběrače, injektory a Hawkingovy reaktory." },
     station: { name: "Dilatační stanice", desc: "Obíhá těsně nad horizontem, kde čas plyne pomaleji. Měří disk i vzdálený vesmír, který odtud vypadá zrychleně. Víc dat, čím víc civilizace září." },
-    jet: { name: "Tryskový lapač", desc: "Zachytává energii trysek nad póly díry. Trysky berou energii z rotace, takže díru brzdí." },
-    hawking: { name: "Hawkingův reaktor", desc: "Mikroskopická černá díra stvořená z energie. Plyn, který do ní padá, se celý vyzáří zpátky jako Hawkingovo záření. V záření jsou i data. Sílí s každým diskovým kolektorem." },
+    jet: { name: "Tryskový lapač", desc: "Zachytává energii trysek nad póly díry. Trysky berou energii z rotace, takže díru brzdí. Magnetické pole trysek pomáhá i se sběrem: každý lapač o 10 % posílí naběrače, injektory a Hawkingovy reaktory." },
+    hawking: { name: "Hawkingův reaktor", desc: "Mikroskopická černá díra stvořená z energie. Plyn, který do ní padá, se celý vyzáří zpátky jako Hawkingovo záření. V záření jsou i data. Sílí s každým diskovým kolektorem a tryskovým lapačem." },
     swarmfab: { name: "Rojová loděnice", desc: "Druhý stupeň automatizace. Sama staví Dysonovy kolektory a podle toho, co v řetězci chybí, i trychtýře a separátory. Stavby na data nestaví. Bere nejvýš polovinu přírůstku kovu a energie, takže zásoby nevyčerpá. Rozebráním vrátíš polovinu ceny." }
   },
   r: {

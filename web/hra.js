@@ -324,12 +324,12 @@
       lifter: { name: "Hv\u011Bzdn\xFD trycht\xFD\u0159", desc: "Magnetick\xE9 pole otev\u0159e v kor\xF3n\u011B trycht\xFD\u0159 a vede j\xEDm proud plazmatu ven z hv\u011Bzdy. V\u011Bt\u0161inu pr\xE1ce odvede hv\u011Bzdn\xFD v\xEDtr. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
       separator: { name: "Separ\xE1tor prvk\u016F", desc: "T\u0159\xEDd\xED plazma podle hmotnosti. Vod\xEDk a helium vrac\xED do hv\u011Bzdy, t\u011B\u017E\u0161\xED prvky jdou do skladu jako kov. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
       seismo: { name: "Seismick\xE1 stanice", desc: "Naslouch\xE1 chv\u011Bn\xED hv\u011Bzdy a z tis\xEDc\u016F t\xF3n\u016F skl\xE1d\xE1 obraz jej\xEDho nitra. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
-      scoop: { name: "Nab\u011Bra\u010D mlhoviny", desc: "Magnetick\xE1 s\xED\u0165 dlouh\xE1 tis\xEDce kilometr\u016F. Sb\xEDr\xE1 ionizovan\xFD plyn z mlhoviny, kterou po sob\u011B Aldra zanechala. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem." },
-      injector: { name: "Akre\u010Dn\xED injektor", desc: "Automatick\xFD ventil. S\xE1m bere nahromad\u011Bn\xFD plyn z magnetick\xE9 pasti a pos\xEDl\xE1 ho po spir\xE1le do disku, i kdy\u017E neklik\xE1\u0161. Kdy\u017E past nesta\u010D\xED, b\u011B\u017E\xED pomaleji. Ka\u017Ed\xFD diskov\xFD kolektor injektor zrychl\xED o 10 %." },
+      scoop: { name: "Nab\u011Bra\u010D mlhoviny", desc: "Magnetick\xE1 s\xED\u0165 dlouh\xE1 tis\xEDce kilometr\u016F. Sb\xEDr\xE1 ionizovan\xFD plyn z mlhoviny, kterou po sob\u011B Aldra zanechala. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem a tryskov\xFDm lapa\u010Dem." },
+      injector: { name: "Akre\u010Dn\xED injektor", desc: "Automatick\xFD ventil. S\xE1m bere nahromad\u011Bn\xFD plyn z magnetick\xE9 pasti a pos\xEDl\xE1 ho po spir\xE1le do disku, i kdy\u017E neklik\xE1\u0161. Kdy\u017E past nesta\u010D\xED, b\u011B\u017E\xED pomaleji. Ka\u017Ed\xFD diskov\xFD kolektor a tryskov\xFD lapa\u010D injektor zrychl\xED o 10 %." },
       ring: { name: "Diskov\xFD kolektor", desc: "Prstenec kolem disku, kter\xFD chyt\xE1 jeho z\xE1\u0159en\xED. Ka\u017Ed\xFD dal\u0161\xED zakryje v\xEDc disku a o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
       station: { name: "Dilata\u010Dn\xED stanice", desc: "Ob\xEDh\xE1 t\u011Bsn\u011B nad horizontem, kde \u010Das plyne pomaleji. M\u011B\u0159\xED disk i vzd\xE1len\xFD vesm\xEDr, kter\xFD odtud vypad\xE1 zrychlen\u011B. V\xEDc dat, \u010D\xEDm v\xEDc civilizace z\xE1\u0159\xED." },
-      jet: { name: "Tryskov\xFD lapa\u010D", desc: "Zachyt\xE1v\xE1 energii trysek nad p\xF3ly d\xEDry. Trysky berou energii z rotace, tak\u017Ee d\xEDru brzd\xED." },
-      hawking: { name: "Hawking\u016Fv reaktor", desc: "Mikroskopick\xE1 \u010Dern\xE1 d\xEDra stvo\u0159en\xE1 z energie. Plyn, kter\xFD do n\xED pad\xE1, se cel\xFD vyz\xE1\u0159\xED zp\xE1tky jako Hawkingovo z\xE1\u0159en\xED. V z\xE1\u0159en\xED jsou i data. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem." },
+      jet: { name: "Tryskov\xFD lapa\u010D", desc: "Zachyt\xE1v\xE1 energii trysek nad p\xF3ly d\xEDry. Trysky berou energii z rotace, tak\u017Ee d\xEDru brzd\xED. Magnetick\xE9 pole trysek pom\xE1h\xE1 i se sb\u011Brem: ka\u017Ed\xFD lapa\u010D o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
+      hawking: { name: "Hawking\u016Fv reaktor", desc: "Mikroskopick\xE1 \u010Dern\xE1 d\xEDra stvo\u0159en\xE1 z energie. Plyn, kter\xFD do n\xED pad\xE1, se cel\xFD vyz\xE1\u0159\xED zp\xE1tky jako Hawkingovo z\xE1\u0159en\xED. V z\xE1\u0159en\xED jsou i data. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem a tryskov\xFDm lapa\u010Dem." },
       swarmfab: { name: "Rojov\xE1 lod\u011Bnice", desc: "Druh\xFD stupe\u0148 automatizace. Sama stav\xED Dysonovy kolektory a podle toho, co v \u0159et\u011Bzci chyb\xED, i trycht\xFD\u0159e a separ\xE1tory. Stavby na data nestav\xED. Bere nejv\xFD\u0161 polovinu p\u0159\xEDr\u016Fstku kovu a energie, tak\u017Ee z\xE1soby nevy\u010Derp\xE1. Rozebr\xE1n\xEDm vr\xE1t\xED\u0161 polovinu ceny." }
     },
     r: {
@@ -550,7 +550,7 @@
     // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
     scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
-    ring: { base: { plasma: 6e7 }, growth: 1.145, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+    ring: { base: { plasma: 6e7 }, growth: 1.15, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 15e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
     jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
     hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
@@ -877,6 +877,7 @@
     return Math.max(0, prestigeTarget(s) - s.p.pts);
   }
   var RING_BOOST = 1.1;
+  var JET_BOOST = 1.1;
   var HOLE_BUILDINGS = ["scoop", "injector", "ring", "station", "jet", "hawking"];
   function phaseDef(s) {
     return PHASES[Math.min(s.hole.phase, PHASES.length - 1)];
@@ -1224,7 +1225,7 @@
     if (id === "lab" || id === "qcomp") {
       if (r.silicon) m *= 10;
     }
-    if (id === "scoop" || id === "injector" || id === "hawking") m *= Math.pow(RING_BOOST, s.b.ring);
+    if (id === "scoop" || id === "injector" || id === "hawking") m *= Math.pow(RING_BOOST, s.b.ring) * Math.pow(JET_BOOST, s.b.jet);
     if (id === "lifter" || id === "separator" || id === "seismo") {
       m *= Math.pow(TUNE.boost, s.b.dyson) * prestigeMult(s);
       if (id === "lifter" && s.star.collapse >= 0) m *= STAR.collapseLift;

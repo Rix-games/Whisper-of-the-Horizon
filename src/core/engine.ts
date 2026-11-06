@@ -55,6 +55,7 @@ export function prestigeGain(s: State) {
 
 // ---------- Kapitola 3: černá díra ----------
 export const RING_BOOST = 1.1;
+export const JET_BOOST = 1.1;
 export const HOLE_BUILDINGS: BuildingId[] = ["scoop", "injector", "ring", "station", "jet", "hawking"];
 export function phaseDef(s: State) {
   return PHASES[Math.min(s.hole.phase, PHASES.length - 1)];
@@ -420,7 +421,7 @@ export function mult(s: State, id: BuildingId) {
     if (r.silicon) m *= 10;
   }
   // Kapitola 3: každý diskový kolektor posílí naběrače, injektory a Hawkingovy reaktory
-  if (id === "scoop" || id === "injector" || id === "hawking") m *= Math.pow(RING_BOOST, s.b.ring);
+  if (id === "scoop" || id === "injector" || id === "hawking") m *= Math.pow(RING_BOOST, s.b.ring) * Math.pow(JET_BOOST, s.b.jet);
   if (id === "lifter" || id === "separator" || id === "seismo") {
     m *= Math.pow(TUNE.boost, s.b.dyson) * prestigeMult(s);
     if (id === "lifter" && s.star.collapse >= 0) m *= STAR.collapseLift;
