@@ -636,7 +636,8 @@ export function drawScene(c: HTMLCanvasElement, v: HoleView, sv: SceneView, time
   // nové záblesky
   for (const f of sv.flares) {
     const [px, py] = P(f.r, f.th);
-    fx.push({ x: px, y: py, life: 1, gold: f.gold, s: Math.min(2.4, 0.8 + f.mult * 0.3), text: f.text });
+    const near = fx.filter((q) => q.life > 0.5 && Math.abs(q.x - px) < 90 && Math.abs(q.y - py) < 40).length;
+    fx.push({ x: px, y: py - near * 15, life: 1, gold: f.gold, s: Math.min(2.4, 0.8 + f.mult * 0.3), text: f.text });
   }
   for (let i = fx.length - 1; i >= 0; i--) {
     const f = fx[i];

@@ -289,17 +289,17 @@ export function renderTabs() {
   const el = $("tabs");
   if (el.innerHTML !== html) el.innerHTML = html;
 }
-export function computeKey() {
-  if (tab === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax + ventOpen(S);
-  if (tab === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
-  if (tab === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
-  if (tab === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
-  if (tab === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
+export function computeKey(which = tab) {
+  if (which === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax + ventOpen(S);
+  if (which === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
+  if (which === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
+  if (which === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
+  if (which === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
   return "s";
 }
-export function buildView() {
+export function buildView(which = tab, el = $("view")) {
   let h = "";
-  if (tab === "build") {
+  if (which === "build") {
     h += `<div class="toolbar">${esc(t("ui.buyMode"))} <span class="seg"><button data-max="1" aria-pressed="${buyMax === 1}">×1</button><button data-max="10" aria-pressed="${buyMax === 10}">×10</button><button data-max="max" aria-pressed="${buyMax === true}">Max</button></span></div><div class="list">`;
     if (ventOpen(S)) h += ventCards();
     const order = BUILDING_IDS.slice().reverse();
@@ -310,7 +310,7 @@ export function buildView() {
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
     }
     h += "</div>";
-  } else if (tab === "research") {
+  } else if (which === "research") {
     const open = RESEARCH_IDS.filter((id) => researchAvailable(S, id));
     const locked = RESEARCH_IDS.filter((id) => !S.r[id] && !researchAvailable(S, id) && R[id].reqKey);
     const done = RESEARCH_IDS.filter((id) => S.r[id]);
@@ -318,7 +318,7 @@ export function buildView() {
     const lockedShown = locked.filter((id, i, a) => a.findIndex((x) => R[x].reqKey === R[id].reqKey) === i);
     if (lockedShown.length) h += `<div class="section-label">${esc(t("ui.researchLocked"))}</div><div class="list">` + lockedShown.map((id) => `<div class="item done"><h3>?</h3><p>${esc(t("ui.needs", { x: t("req." + R[id].reqKey) }))}</p></div>`).join("") + "</div>";
     if (done.length) h += `<div class="section-label">${esc(t("ui.researchDone"))}</div><div class="list">` + done.slice().reverse().map((id) => `<div class="item done"><h3>${esc(t(`r.${id}.name`))}</h3><p>${esc(t(`r.${id}.desc`))}</p></div>`).join("") + "</div>";
-  } else if (tab === "map") {
+  } else if (which === "map") {
     h += '<div class="mapbox"><canvas id="map"></canvas></div><div class="list">';
     for (const id of LOCATION_IDS.slice().reverse()) {
       if (!locationOpen(S, id)) continue;
@@ -327,9 +327,9 @@ export function buildView() {
       h += `<div class="item${done ? " visited" : ""}" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))}</h3><p>${esc(t(`loc.${id}.${done ? "done" : "desc"}`))}</p>${done ? "" : '<div class="cost" data-f="cost"></div>'}<div class="act">${done ? `<span class="dim">${esc(t("ui.map.active"))}</span>` : `<button class="btn" data-go="${id}"></button>`}</div></div>`;
     }
     h += "</div>";
-  } else if (tab === "star") h += starHTML();
-  else if (tab === "hole") h += holeHTML();
-  $("view").innerHTML = h;
+  } else if (which === "star") h += starHTML();
+  else if (which === "hole") h += holeHTML();
+  el.innerHTML = h;
 }
 export const round2 = (v) => {
   const e = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.abs(v) || 1)) - 1));
@@ -513,8 +513,8 @@ function ventCards() {
   }
   return h;
 }
-function updateVent() {
-  $("view").querySelectorAll<El>("[data-vu]").forEach((el) => {
+function updateVent(root: El = $("view")) {
+  root.querySelectorAll<El>("[data-vu]").forEach((el) => {
     const id = el.dataset.vu as VentUp, l = ventLv(S, id), max = l >= VENT_UPS[id].max, c = ventUpCost(S, id);
     const set = (f: string, html: string) => { const e2 = el.querySelector<El>(`[data-f=${f}]`); if (e2.innerHTML !== html) e2.innerHTML = html; };
     set("n", esc(t("ui.vent.level", { n: l })));
@@ -639,10 +639,9 @@ export function syncSettings() {
   const sb = document.querySelector<El>("#drawerBody [data-act=sound]");
   if (sb) sb.textContent = S.settings.sound ? t("ui.settings.soundOn") : t("ui.settings.soundOff");
 }
-export function updateView() {
-  const view = $("view");
-  if (tab === "build") {
-    if (ventOpen(S)) updateVent();
+export function updateView(which = tab, view = $("view")) {
+  if (which === "build") {
+    if (ventOpen(S)) updateVent(view);
     view.querySelectorAll<El>("[data-b]").forEach((el) => {
       const id = el.dataset.b as BuildingId, d = B[id];
       const count = Math.floor(S.b[id]);
@@ -696,15 +695,15 @@ export function updateView() {
       const tg = el.querySelector<El>("[data-toggle]");
       if (tg) tg.textContent = S.off[id] ? t("ui.turnOn") : t("ui.turnOff");
     });
-  } else if (tab === "research") {
+  } else if (which === "research") {
     view.querySelectorAll<El>("[data-r]").forEach((el) => {
       const id = el.dataset.r as ResearchId;
       el.querySelector<El>("[data-f=cost]").innerHTML = costHTML(R[id].cost);
       el.querySelector<El>("[data-res]").disabled = !affordable(S, R[id].cost);
     });
-  } else if (tab === "star") updateStar();
-  else if (tab === "hole") updateHole();
-  else if (tab === "map") {
+  } else if (which === "star") updateStar();
+  else if (which === "hole") updateHole();
+  else if (which === "map") {
     view.querySelectorAll<El>("[data-go]").forEach((b) => {
       const id = b.dataset.go as LocationId, item = b.closest("[data-l]");
       const cf = item.querySelector<El>("[data-f=cost]");
@@ -714,7 +713,17 @@ export function updateView() {
     });
   }
 }
+export let bviewKey = "";
 export function renderView(force = false) {
+  // Kapitola 3: stavby jsou pořád dole přes celou šířku, ostatní záložky nahrazují díru uprostřed
+  const split = S.star.done;
+  document.body.classList.toggle("tabbuild", tab === "build");
+  if (split) {
+    const bk = computeKey("build"), bv = $("bview");
+    if (force || bk !== bviewKey) { bviewKey = bk; buildView("build", bv); }
+    updateView("build", bv);
+    if (tab === "build") return;
+  } else bviewKey = "";
   const k = computeKey();
   if (force || k !== viewKey) {
     viewKey = k;
@@ -911,7 +920,7 @@ export function bind() {
       return;
     }
     if (d.vup) {
-      if (ventUpgrade(S, d.vup)) { if (S.settings.sound) chime(); updateVent(); renderRig(); }
+      if (ventUpgrade(S, d.vup)) { if (S.settings.sound) chime(); renderView(); renderRig(); }
       return;
     }
     if (d.burst) {
@@ -1122,7 +1131,8 @@ export function start() {
     }
     if (S.star.done && snAge() > 8) {
       const sc = $("scenec") as unknown as HTMLCanvasElement;
-      if (sceneZoom) drawHoleMap(sc, S, holeView(), now / 1e3);
+      if (tab !== "build") drawHole($("rockc") as unknown as HTMLCanvasElement, holeView(), now / 1e3, t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }) + ` · a ${spinTxt(S.hole.a)}`);
+      else if (sceneZoom) drawHoleMap(sc, S, holeView(), now / 1e3);
       else drawScene(sc, holeView(), sceneView(), now / 1e3);
       if (sceneHold && sceneHover !== null && !sceneZoom) {
         sceneHoldAcc += dt;

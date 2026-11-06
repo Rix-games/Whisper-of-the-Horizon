@@ -3755,7 +3755,8 @@
     }
     for (const f of sv.flares) {
       const [px, py] = P(f.r, f.th);
-      fx.push({ x: px, y: py, life: 1, gold: f.gold, s: Math.min(2.4, 0.8 + f.mult * 0.3), text: f.text });
+      const near = fx.filter((q) => q.life > 0.5 && Math.abs(q.x - px) < 90 && Math.abs(q.y - py) < 40).length;
+      fx.push({ x: px, y: py - near * 15, life: 1, gold: f.gold, s: Math.min(2.4, 0.8 + f.mult * 0.3), text: f.text });
     }
     for (let i = fx.length - 1; i >= 0; i--) {
       const f = fx[i];
@@ -4322,17 +4323,17 @@
     const el = $("tabs");
     if (el.innerHTML !== html) el.innerHTML = html;
   }
-  function computeKey() {
-    if (tab === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax + ventOpen(S);
-    if (tab === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
-    if (tab === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
-    if (tab === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
-    if (tab === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
+  function computeKey(which = tab) {
+    if (which === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax + ventOpen(S);
+    if (which === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
+    if (which === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
+    if (which === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
+    if (which === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
     return "s";
   }
-  function buildView() {
+  function buildView(which = tab, el = $("view")) {
     let h = "";
-    if (tab === "build") {
+    if (which === "build") {
       h += `<div class="toolbar">${esc(t("ui.buyMode"))} <span class="seg"><button data-max="1" aria-pressed="${buyMax === 1}">\xD71</button><button data-max="10" aria-pressed="${buyMax === 10}">\xD710</button><button data-max="max" aria-pressed="${buyMax === true}">Max</button></span></div><div class="list">`;
       if (ventOpen(S)) h += ventCards();
       const order = BUILDING_IDS.slice().reverse();
@@ -4343,7 +4344,7 @@
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
       }
       h += "</div>";
-    } else if (tab === "research") {
+    } else if (which === "research") {
       const open = RESEARCH_IDS.filter((id) => researchAvailable(S, id));
       const locked = RESEARCH_IDS.filter((id) => !S.r[id] && !researchAvailable(S, id) && R[id].reqKey);
       const done = RESEARCH_IDS.filter((id) => S.r[id]);
@@ -4351,7 +4352,7 @@
       const lockedShown = locked.filter((id, i, a) => a.findIndex((x) => R[x].reqKey === R[id].reqKey) === i);
       if (lockedShown.length) h += `<div class="section-label">${esc(t("ui.researchLocked"))}</div><div class="list">` + lockedShown.map((id) => `<div class="item done"><h3>?</h3><p>${esc(t("ui.needs", { x: t("req." + R[id].reqKey) }))}</p></div>`).join("") + "</div>";
       if (done.length) h += `<div class="section-label">${esc(t("ui.researchDone"))}</div><div class="list">` + done.slice().reverse().map((id) => `<div class="item done"><h3>${esc(t(`r.${id}.name`))}</h3><p>${esc(t(`r.${id}.desc`))}</p></div>`).join("") + "</div>";
-    } else if (tab === "map") {
+    } else if (which === "map") {
       h += '<div class="mapbox"><canvas id="map"></canvas></div><div class="list">';
       for (const id of LOCATION_IDS.slice().reverse()) {
         if (!locationOpen(S, id)) continue;
@@ -4360,9 +4361,9 @@
         h += `<div class="item${done ? " visited" : ""}" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))}</h3><p>${esc(t(`loc.${id}.${done ? "done" : "desc"}`))}</p>${done ? "" : '<div class="cost" data-f="cost"></div>'}<div class="act">${done ? `<span class="dim">${esc(t("ui.map.active"))}</span>` : `<button class="btn" data-go="${id}"></button>`}</div></div>`;
       }
       h += "</div>";
-    } else if (tab === "star") h += starHTML();
-    else if (tab === "hole") h += holeHTML();
-    $("view").innerHTML = h;
+    } else if (which === "star") h += starHTML();
+    else if (which === "hole") h += holeHTML();
+    el.innerHTML = h;
   }
   var round2 = (v) => {
     const e = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.abs(v) || 1)) - 1));
@@ -4553,8 +4554,8 @@
     }
     return h;
   }
-  function updateVent() {
-    $("view").querySelectorAll("[data-vu]").forEach((el) => {
+  function updateVent(root = $("view")) {
+    root.querySelectorAll("[data-vu]").forEach((el) => {
       const id = el.dataset.vu, l = ventLv(S, id), max = l >= VENT_UPS[id].max, c = ventUpCost(S, id);
       const set = (f, html) => {
         const e2 = el.querySelector(`[data-f=${f}]`);
@@ -4690,10 +4691,9 @@
     const sb = document.querySelector("#drawerBody [data-act=sound]");
     if (sb) sb.textContent = S.settings.sound ? t("ui.settings.soundOn") : t("ui.settings.soundOff");
   }
-  function updateView() {
-    const view = $("view");
-    if (tab === "build") {
-      if (ventOpen(S)) updateVent();
+  function updateView(which = tab, view = $("view")) {
+    if (which === "build") {
+      if (ventOpen(S)) updateVent(view);
       view.querySelectorAll("[data-b]").forEach((el) => {
         const id = el.dataset.b, d = B[id];
         const count = Math.floor(S.b[id]);
@@ -4747,15 +4747,15 @@
         const tg = el.querySelector("[data-toggle]");
         if (tg) tg.textContent = S.off[id] ? t("ui.turnOn") : t("ui.turnOff");
       });
-    } else if (tab === "research") {
+    } else if (which === "research") {
       view.querySelectorAll("[data-r]").forEach((el) => {
         const id = el.dataset.r;
         el.querySelector("[data-f=cost]").innerHTML = costHTML(R[id].cost);
         el.querySelector("[data-res]").disabled = !affordable(S, R[id].cost);
       });
-    } else if (tab === "star") updateStar();
-    else if (tab === "hole") updateHole();
-    else if (tab === "map") {
+    } else if (which === "star") updateStar();
+    else if (which === "hole") updateHole();
+    else if (which === "map") {
       view.querySelectorAll("[data-go]").forEach((b) => {
         const id = b.dataset.go, item = b.closest("[data-l]");
         const cf = item.querySelector("[data-f=cost]");
@@ -4765,7 +4765,19 @@
       });
     }
   }
+  var bviewKey = "";
   function renderView(force = false) {
+    const split = S.star.done;
+    document.body.classList.toggle("tabbuild", tab === "build");
+    if (split) {
+      const bk = computeKey("build"), bv = $("bview");
+      if (force || bk !== bviewKey) {
+        bviewKey = bk;
+        buildView("build", bv);
+      }
+      updateView("build", bv);
+      if (tab === "build") return;
+    } else bviewKey = "";
     const k = computeKey();
     if (force || k !== viewKey) {
       viewKey = k;
@@ -4964,7 +4976,7 @@
       if (d.vup) {
         if (ventUpgrade(S, d.vup)) {
           if (S.settings.sound) chime();
-          updateVent();
+          renderView();
           renderRig();
         }
         return;
@@ -5177,7 +5189,8 @@
       }
       if (S.star.done && snAge() > 8) {
         const sc = $("scenec");
-        if (sceneZoom) drawHoleMap(sc, S, holeView(), now / 1e3);
+        if (tab !== "build") drawHole($("rockc"), holeView(), now / 1e3, t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }) + ` \xB7 a ${spinTxt(S.hole.a)}`);
+        else if (sceneZoom) drawHoleMap(sc, S, holeView(), now / 1e3);
         else drawScene(sc, holeView(), sceneView(), now / 1e3);
         if (sceneHold && sceneHover !== null && !sceneZoom) {
           sceneHoldAcc += dt;
