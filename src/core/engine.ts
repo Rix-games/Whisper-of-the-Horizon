@@ -85,7 +85,7 @@ export function holeLRaw(s: State) {
 export function holeL(s: State) {
   const raw = holeLRaw(s) * ventHeatMult(s), edd = HOLE.eddW * ventOverMult(s) * ventHeatMult(s);
   if (raw <= edd) return raw;
-  return s.r.slim ? edd * (1 + Math.log(raw / edd)) : edd;
+  return s.r.slim ? edd * (1 + 2 * Math.log(raw / edd)) : edd;
 }
 export function ringCov(s: State) {
   const f = HOLE.ringF * (s.r.wide ? 2 : 1) * (s.r.thick ? 2 : 1);
@@ -129,6 +129,7 @@ function holeTick(s: State, dt: number) {
     s.hole.started = true;
     add(s, "plasma", HOLE.startPlasma);
   }
+  if (!s.hole.cap && holeLRaw(s) * ventHeatMult(s) >= HOLE.eddW * ventOverMult(s) * ventHeatMult(s)) s.hole.cap = true;
   const { up, down } = spinRates(s);
   const a = s.hole.a + HOLE.spinRate * dt * (up * (HOLE.spinMax - s.hole.a) - down * s.hole.a);
   s.hole.a = Math.max(0, Math.min(HOLE.spinMax, a));

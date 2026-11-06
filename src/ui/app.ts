@@ -120,7 +120,7 @@ export function flashGain(r, v) {
 export function showTip(target) {
   const u = target.dataset.unit;
   const tip = $("tip");
-  tip.innerHTML = `<b>${esc(t(`unit.${u}.name`))}</b>${esc(t(`unit.${u}.text`))}` + (target.dataset.res ? breakdownHTML(target.dataset.res) : "");
+  tip.innerHTML = `<b>${esc(t(`unit.${u}.name`))}</b>${esc(t(`unit.${u}.text`) + (u === "K" ? kTypes() : ""))}` + (target.dataset.res ? breakdownHTML(target.dataset.res) : "");
   tip.hidden = false;
   const r = target.getBoundingClientRect(), w = tip.offsetWidth;
   tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + "px";
@@ -129,7 +129,14 @@ export function showTip(target) {
 export function hideTip() {
   $("tip").hidden = true;
 }
-export function breakdownHTML(r) {
+export /** Typy Kardaševovy škály, jen ty, ke kterým už hráč došel (kapitola 1 = Typ I, kapitola 2 = Typ II…). */
+function kTypes() {
+  const n = Math.min(4, (S.chapterDone ?? 0) + 1);
+  let out = "";
+  for (let i = 1; i <= n; i++) out += " " + t(`unit.K.t${i}`);
+  return out;
+}
+function breakdownHTML(r) {
   const { prod, cons } = rateParts(S, r);
   if (!prod.length && !cons.length) return "";
   const name = (k) => k === "reactor" || k === "auto" ? t("ui.breakdown." + k) : t(`b.${k}.name`);

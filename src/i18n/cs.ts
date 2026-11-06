@@ -15,7 +15,7 @@ export const cs = {
     J: { name: "J · joule", text: "Energie. Jeden joule dodá výkon 1 W za 1 sekundu. Slunce vyzáří každou sekundu 3,8·10²⁶ J." },
     W: { name: "W · watt", text: "Výkon, tedy energie za sekundu. LED žárovka má kolem 10 W, celé lidstvo dnes asi 2·10¹³ W." },
     B: { name: "B · bajt", text: "Množství dat. 1 kB = 1 000 B, 1 MB = milion B. Všechna data na světě mají dohromady odhadem 10²³ B." },
-    K: { name: "Kardaševovo číslo", text: "Ukazuje, kolik energie civilizace dokáže využít. Každý celý stupeň znamená zhruba deset miliardkrát větší výkon. Nula odpovídá 1 MW, výkonu velké větrné turbíny, pod ní vychází číslo záporné. Lidstvo je dnes na 0,73. Typ I je výkon celé planety, Typ II celé hvězdy." }
+    K: { name: "Kardaševovo číslo", text: "Ukazuje, kolik energie civilizace dokáže využít. Každý celý stupeň znamená zhruba deset miliardkrát větší výkon. Nula odpovídá 1 MW, výkonu velké větrné turbíny, pod ní vychází číslo záporné. Lidstvo je dnes na 0,73.", t1: "Typ I je výkon celé planety.", t2: "Typ II je výkon celé hvězdy.", t3: "Typ III je výkon celé galaxie, tedy stovek miliard hvězd.", t4: "Typ IV je výkon miliardy galaxií, daleko za hranicí té naší." }
   },
   ui: {
     perSec: "/s",
@@ -156,7 +156,7 @@ export const cs = {
     },
     hole: {
       title: "Černá díra",
-      profile: "Profil díry",
+      profile: "Profil černé díry",
       profileSub: "Řez rovinou osy rotace",
       legend: "Poloměry",
       phase: "Fáze {n} z {of}",
@@ -386,12 +386,12 @@ export const cs = {
     magscoop: { name: "Supravodivé sítě", desc: "Naběrače ×3." },
     wide: { name: "Široké prstence", desc: "Každý diskový kolektor zakryje dvakrát víc disku." },
     mri: { name: "Magnetorotační nestabilita", desc: "Turbulence v disku odvádí plynu moment hybnosti, takže do díry teče sám. Odemkne akreční injektory, které vypouštějí plyn z pasti bez tvého klikání." },
-    lower: { name: "Nižší dráhy", desc: "Stanice sestoupí na 1,2 Schwarzschildova poloměru." },
+    lower: { name: "Nižší dráhy", desc: "Stanice sestoupí na 1,2 Schwarzschildova poloměru. Čas u nich plyne 2,4× pomaleji, takže za každou jejich sekundu zachytí víc vesmíru venku: dilatační stanice dají 2× víc dat." },
     pulse3: { name: "Analýza pulsu", desc: "Z čeho se ten puls skládá? Stanice ×3." },
     thick: { name: "Husté prstence", desc: "Každý diskový kolektor zakryje dvakrát víc disku." },
-    slim: { name: "Štíhlý disk", desc: "Hustý disk uvězní část záření a pustí plyn dál. Záření může překročit Eddingtonovu mez." },
+    slim: { name: "Štíhlý disk", desc: "Hustý disk uvězní část záření a pustí plyn dál. Disk už nenaráží na Eddingtonovu mez: co nad ni přiteče, zvedá záření dál, jen pomaleji (každé zdvojnásobení přítoku přidá asi 1,4× mezního výkonu)." },
     mad: { name: "Magneticky zablokovaný disk", desc: "Magnetické pole nahromaděné u díry zastaví disk a otevře trysky. Odemkne tryskové lapače." },
-    edge: { name: "Na hraně horizontu", desc: "Stanice sestoupí na 1,01 Schwarzschildova poloměru. Čas u nich plyne desetkrát pomaleji." },
+    edge: { name: "Na hraně horizontu", desc: "Stanice sestoupí na 1,01 Schwarzschildova poloměru. Čas u nich plyne desetkrát pomaleji, takže za každou jejich sekundu zachytí víc vesmíru venku: dilatační stanice dají asi 4× víc dat." },
     bz: { name: "Blandfordův–Znajekův proces", desc: "Silnější pole odebírá rotaci účinněji. Trysky ×2." },
     fermi: { name: "Kde jsou všichni?", desc: "Stanice hledají jiné civilizace u jiných děr. Stanice ×10." },
     kugel: { name: "Kugelblitz", desc: "Soustředěné světlo stvoří malou černou díru. Odemkne Hawkingovy reaktory." },
@@ -501,7 +501,7 @@ export const cs = {
     penrose: "Roger Penrose v roce 1969 ukázal, že z ergosféry rotující díry se dá vytěžit energie. U nejrychlejší rotace až 29 % hmotnosti díry.",
     nova: "Supernova vyzáří za pár týdnů tolik světla jako Slunce za celý život. Většinu energie ale odnesou neutrina."
   },
-  req: { moon: "Vesper prozkoumá Kelvar", giant: "Vesper prozkoumá Tauris", sun: "Vesper prozkoumá korónu Aldry", typeI: "civilizace dosáhne Typu I", stage1: "se Aldra nafoukne do rudého veleobra", stage2: "začne Aldra spalovat uhlík", stage3: "začne Aldra spalovat neon a kyslík", stage4: "začne Aldra spalovat křemík", nova: "Aldra skončí jako supernova", phase1: "začne fáze Tenký disk", phase2: "začne fáze Eddingtonova mez", phase3: "začne fáze Magnetické trysky", phase4: "začne fáze Ergosféra" }
+  req: { moon: "Vesper prozkoumá Kelvar", giant: "Vesper prozkoumá Tauris", sun: "Vesper prozkoumá korónu Aldry", typeI: "civilizace dosáhne Typu I", stage1: "se Aldra nafoukne do rudého veleobra", stage2: "začne Aldra spalovat uhlík", stage3: "začne Aldra spalovat neon a kyslík", stage4: "začne Aldra spalovat křemík", nova: "Aldra skončí jako supernova", phase1: "začne fáze Tenký disk", phase2: "začne fáze Eddingtonova mez", phase3: "začne fáze Magnetické trysky", phase4: "začne fáze Ergosféra", eddCap: "disk narazí na Eddingtonovu mez" }
 };
 
 export type Dict = typeof cs;

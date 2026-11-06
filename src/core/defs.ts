@@ -127,7 +127,7 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   lower: { cost: { data: 8e33 }, req: phase(1), reqKey: "phase1" },
   pulse3: { cost: { data: 4e34 }, req: phase(1), reqKey: "phase1" },
   thick: { cost: { data: 2e35 }, req: phase(1), reqKey: "phase1" },
-  slim: { cost: { data: 1e36 }, req: phase(2), reqKey: "phase2" },
+  slim: { cost: { data: 1e36 }, req: (s) => phase(2)(s) && !!s.hole.cap, reqKey: "eddCap" },
   mad: { cost: { data: 4e36 }, req: phase(2), reqKey: "phase2" },
   edge: { cost: { data: 2e37 }, req: phase(2), reqKey: "phase2" },
   bz: { cost: { data: 1e38 }, req: phase(3), reqKey: "phase3" },

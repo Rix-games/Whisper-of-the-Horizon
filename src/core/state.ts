@@ -31,7 +31,7 @@ export interface State {
   // přestavba roje: body, kov tohoto běhu, počet, kolektory ze začátku Kap. 2
   p: { pts: number; run: number; count: number; base: number; total?: number };
   // Kapitola 3: černá díra. a = rotace (0–0,998), phase = fáze, dive = odpočet ponoru (−1 = neběží)
-  hole: { a: number; phase: number; dive: number; done: boolean; started: boolean };
+  hole: { a: number; phase: number; dive: number; done: boolean; started: boolean; cap?: boolean };
   // Kapitola 3: magnetická past a vypouštění plynu do disku (engine: vent*)
   vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[]; disk?: number; share?: number; kg?: number; inj?: number; injC?: number; injK?: number; man?: number };
   yrs?: number;                         // kolik let uplynulo venku (Vesper mezi směnami spí)

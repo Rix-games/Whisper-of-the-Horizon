@@ -15,7 +15,7 @@
       J: { name: "J \xB7 joule", text: "Energie. Jeden joule dod\xE1 v\xFDkon 1 W za 1 sekundu. Slunce vyz\xE1\u0159\xED ka\u017Edou sekundu 3,8\xB710\xB2\u2076 J." },
       W: { name: "W \xB7 watt", text: "V\xFDkon, tedy energie za sekundu. LED \u017E\xE1rovka m\xE1 kolem 10 W, cel\xE9 lidstvo dnes asi 2\xB710\xB9\xB3 W." },
       B: { name: "B \xB7 bajt", text: "Mno\u017Estv\xED dat. 1 kB = 1 000 B, 1 MB = milion B. V\u0161echna data na sv\u011Bt\u011B maj\xED dohromady odhadem 10\xB2\xB3 B." },
-      K: { name: "Karda\u0161evovo \u010D\xEDslo", text: "Ukazuje, kolik energie civilizace dok\xE1\u017Ee vyu\u017E\xEDt. Ka\u017Ed\xFD cel\xFD stupe\u0148 znamen\xE1 zhruba deset miliardkr\xE1t v\u011Bt\u0161\xED v\xFDkon. Nula odpov\xEDd\xE1 1 MW, v\xFDkonu velk\xE9 v\u011Btrn\xE9 turb\xEDny, pod n\xED vych\xE1z\xED \u010D\xEDslo z\xE1porn\xE9. Lidstvo je dnes na 0,73. Typ I je v\xFDkon cel\xE9 planety, Typ II cel\xE9 hv\u011Bzdy." }
+      K: { name: "Karda\u0161evovo \u010D\xEDslo", text: "Ukazuje, kolik energie civilizace dok\xE1\u017Ee vyu\u017E\xEDt. Ka\u017Ed\xFD cel\xFD stupe\u0148 znamen\xE1 zhruba deset miliardkr\xE1t v\u011Bt\u0161\xED v\xFDkon. Nula odpov\xEDd\xE1 1 MW, v\xFDkonu velk\xE9 v\u011Btrn\xE9 turb\xEDny, pod n\xED vych\xE1z\xED \u010D\xEDslo z\xE1porn\xE9. Lidstvo je dnes na 0,73.", t1: "Typ I je v\xFDkon cel\xE9 planety.", t2: "Typ II je v\xFDkon cel\xE9 hv\u011Bzdy.", t3: "Typ III je v\xFDkon cel\xE9 galaxie, tedy stovek miliard hv\u011Bzd.", t4: "Typ IV je v\xFDkon miliardy galaxi\xED, daleko za hranic\xED t\xE9 na\u0161\xED." }
     },
     ui: {
       perSec: "/s",
@@ -156,7 +156,7 @@
       },
       hole: {
         title: "\u010Cern\xE1 d\xEDra",
-        profile: "Profil d\xEDry",
+        profile: "Profil \u010Dern\xE9 d\xEDry",
         profileSub: "\u0158ez rovinou osy rotace",
         legend: "Polom\u011Bry",
         phase: "F\xE1ze {n} z {of}",
@@ -386,12 +386,12 @@
       magscoop: { name: "Supravodiv\xE9 s\xEDt\u011B", desc: "Nab\u011Bra\u010De \xD73." },
       wide: { name: "\u0160irok\xE9 prstence", desc: "Ka\u017Ed\xFD diskov\xFD kolektor zakryje dvakr\xE1t v\xEDc disku." },
       mri: { name: "Magnetorota\u010Dn\xED nestabilita", desc: "Turbulence v disku odv\xE1d\xED plynu moment hybnosti, tak\u017Ee do d\xEDry te\u010De s\xE1m. Odemkne akre\u010Dn\xED injektory, kter\xE9 vypou\u0161t\u011Bj\xED plyn z pasti bez tv\xE9ho klik\xE1n\xED." },
-      lower: { name: "Ni\u017E\u0161\xED dr\xE1hy", desc: "Stanice sestoup\xED na 1,2 Schwarzschildova polom\u011Bru." },
+      lower: { name: "Ni\u017E\u0161\xED dr\xE1hy", desc: "Stanice sestoup\xED na 1,2 Schwarzschildova polom\u011Bru. \u010Cas u nich plyne 2,4\xD7 pomaleji, tak\u017Ee za ka\u017Edou jejich sekundu zachyt\xED v\xEDc vesm\xEDru venku: dilata\u010Dn\xED stanice daj\xED 2\xD7 v\xEDc dat." },
       pulse3: { name: "Anal\xFDza pulsu", desc: "Z \u010Deho se ten puls skl\xE1d\xE1? Stanice \xD73." },
       thick: { name: "Hust\xE9 prstence", desc: "Ka\u017Ed\xFD diskov\xFD kolektor zakryje dvakr\xE1t v\xEDc disku." },
-      slim: { name: "\u0160t\xEDhl\xFD disk", desc: "Hust\xFD disk uv\u011Bzn\xED \u010D\xE1st z\xE1\u0159en\xED a pust\xED plyn d\xE1l. Z\xE1\u0159en\xED m\u016F\u017Ee p\u0159ekro\u010Dit Eddingtonovu mez." },
+      slim: { name: "\u0160t\xEDhl\xFD disk", desc: "Hust\xFD disk uv\u011Bzn\xED \u010D\xE1st z\xE1\u0159en\xED a pust\xED plyn d\xE1l. Disk u\u017E nenar\xE1\u017E\xED na Eddingtonovu mez: co nad ni p\u0159ite\u010De, zved\xE1 z\xE1\u0159en\xED d\xE1l, jen pomaleji (ka\u017Ed\xE9 zdvojn\xE1soben\xED p\u0159\xEDtoku p\u0159id\xE1 asi 1,4\xD7 mezn\xEDho v\xFDkonu)." },
       mad: { name: "Magneticky zablokovan\xFD disk", desc: "Magnetick\xE9 pole nahromad\u011Bn\xE9 u d\xEDry zastav\xED disk a otev\u0159e trysky. Odemkne tryskov\xE9 lapa\u010De." },
-      edge: { name: "Na hran\u011B horizontu", desc: "Stanice sestoup\xED na 1,01 Schwarzschildova polom\u011Bru. \u010Cas u nich plyne desetkr\xE1t pomaleji." },
+      edge: { name: "Na hran\u011B horizontu", desc: "Stanice sestoup\xED na 1,01 Schwarzschildova polom\u011Bru. \u010Cas u nich plyne desetkr\xE1t pomaleji, tak\u017Ee za ka\u017Edou jejich sekundu zachyt\xED v\xEDc vesm\xEDru venku: dilata\u010Dn\xED stanice daj\xED asi 4\xD7 v\xEDc dat." },
       bz: { name: "Blandford\u016Fv\u2013Znajek\u016Fv proces", desc: "Siln\u011Bj\u0161\xED pole odeb\xEDr\xE1 rotaci \xFA\u010Dinn\u011Bji. Trysky \xD72." },
       fermi: { name: "Kde jsou v\u0161ichni?", desc: "Stanice hledaj\xED jin\xE9 civilizace u jin\xFDch d\u011Br. Stanice \xD710." },
       kugel: { name: "Kugelblitz", desc: "Soust\u0159ed\u011Bn\xE9 sv\u011Btlo stvo\u0159\xED malou \u010Dernou d\xEDru. Odemkne Hawkingovy reaktory." },
@@ -501,7 +501,7 @@
       penrose: "Roger Penrose v roce 1969 uk\xE1zal, \u017Ee z ergosf\xE9ry rotuj\xEDc\xED d\xEDry se d\xE1 vyt\u011B\u017Eit energie. U nejrychlej\u0161\xED rotace a\u017E 29 % hmotnosti d\xEDry.",
       nova: "Supernova vyz\xE1\u0159\xED za p\xE1r t\xFDdn\u016F tolik sv\u011Btla jako Slunce za cel\xFD \u017Eivot. V\u011Bt\u0161inu energie ale odnesou neutrina."
     },
-    req: { moon: "Vesper prozkoum\xE1 Kelvar", giant: "Vesper prozkoum\xE1 Tauris", sun: "Vesper prozkoum\xE1 kor\xF3nu Aldry", typeI: "civilizace dos\xE1hne Typu I", stage1: "se Aldra nafoukne do rud\xE9ho veleobra", stage2: "za\u010Dne Aldra spalovat uhl\xEDk", stage3: "za\u010Dne Aldra spalovat neon a kysl\xEDk", stage4: "za\u010Dne Aldra spalovat k\u0159em\xEDk", nova: "Aldra skon\u010D\xED jako supernova", phase1: "za\u010Dne f\xE1ze Tenk\xFD disk", phase2: "za\u010Dne f\xE1ze Eddingtonova mez", phase3: "za\u010Dne f\xE1ze Magnetick\xE9 trysky", phase4: "za\u010Dne f\xE1ze Ergosf\xE9ra" }
+    req: { moon: "Vesper prozkoum\xE1 Kelvar", giant: "Vesper prozkoum\xE1 Tauris", sun: "Vesper prozkoum\xE1 kor\xF3nu Aldry", typeI: "civilizace dos\xE1hne Typu I", stage1: "se Aldra nafoukne do rud\xE9ho veleobra", stage2: "za\u010Dne Aldra spalovat uhl\xEDk", stage3: "za\u010Dne Aldra spalovat neon a kysl\xEDk", stage4: "za\u010Dne Aldra spalovat k\u0159em\xEDk", nova: "Aldra skon\u010D\xED jako supernova", phase1: "za\u010Dne f\xE1ze Tenk\xFD disk", phase2: "za\u010Dne f\xE1ze Eddingtonova mez", phase3: "za\u010Dne f\xE1ze Magnetick\xE9 trysky", phase4: "za\u010Dne f\xE1ze Ergosf\xE9ra", eddCap: "disk naraz\xED na Eddingtonovu mez" }
   };
 
   // src/i18n/index.ts
@@ -623,7 +623,7 @@
     lower: { cost: { data: 8e33 }, req: phase(1), reqKey: "phase1" },
     pulse3: { cost: { data: 4e34 }, req: phase(1), reqKey: "phase1" },
     thick: { cost: { data: 2e35 }, req: phase(1), reqKey: "phase1" },
-    slim: { cost: { data: 1e36 }, req: phase(2), reqKey: "phase2" },
+    slim: { cost: { data: 1e36 }, req: (s) => phase(2)(s) && !!s.hole.cap, reqKey: "eddCap" },
     mad: { cost: { data: 4e36 }, req: phase(2), reqKey: "phase2" },
     edge: { cost: { data: 2e37 }, req: phase(2), reqKey: "phase2" },
     bz: { cost: { data: 1e38 }, req: phase(3), reqKey: "phase3" },
@@ -902,7 +902,7 @@
   function holeL(s) {
     const raw = holeLRaw(s) * ventHeatMult(s), edd = HOLE.eddW * ventOverMult(s) * ventHeatMult(s);
     if (raw <= edd) return raw;
-    return s.r.slim ? edd * (1 + Math.log(raw / edd)) : edd;
+    return s.r.slim ? edd * (1 + 2 * Math.log(raw / edd)) : edd;
   }
   function ringCov(s) {
     const f = HOLE.ringF * (s.r.wide ? 2 : 1) * (s.r.thick ? 2 : 1);
@@ -942,6 +942,7 @@
       s.hole.started = true;
       add(s, "plasma", HOLE.startPlasma);
     }
+    if (!s.hole.cap && holeLRaw(s) * ventHeatMult(s) >= HOLE.eddW * ventOverMult(s) * ventHeatMult(s)) s.hole.cap = true;
     const { up, down } = spinRates(s);
     const a = s.hole.a + HOLE.spinRate * dt * (up * (HOLE.spinMax - s.hole.a) - down * s.hole.a);
     s.hole.a = Math.max(0, Math.min(HOLE.spinMax, a));
@@ -4239,7 +4240,7 @@
   function showTip(target) {
     const u = target.dataset.unit;
     const tip = $("tip");
-    tip.innerHTML = `<b>${esc(t(`unit.${u}.name`))}</b>${esc(t(`unit.${u}.text`))}` + (target.dataset.res ? breakdownHTML(target.dataset.res) : "");
+    tip.innerHTML = `<b>${esc(t(`unit.${u}.name`))}</b>${esc(t(`unit.${u}.text`) + (u === "K" ? kTypes() : ""))}` + (target.dataset.res ? breakdownHTML(target.dataset.res) : "");
     tip.hidden = false;
     const r = target.getBoundingClientRect(), w = tip.offsetWidth;
     tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + "px";
@@ -4247,6 +4248,12 @@
   }
   function hideTip() {
     $("tip").hidden = true;
+  }
+  function kTypes() {
+    const n = Math.min(4, (S.chapterDone ?? 0) + 1);
+    let out = "";
+    for (let i = 1; i <= n; i++) out += " " + t(`unit.K.t${i}`);
+    return out;
   }
   function breakdownHTML(r) {
     const { prod, cons } = rateParts(S, r);
