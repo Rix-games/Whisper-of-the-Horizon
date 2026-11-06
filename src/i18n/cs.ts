@@ -34,6 +34,7 @@ export const cs = {
     capturedTxt: "Kolektory chytí {p} záření: Energie +{w}",
     clockDil: "U stanic plyne čas {g}× pomaleji",
     outside: "Venku uplynulo {t}",
+    prod: { title: "Produkce", hole: "Díra", power: "Výkon civilizace", dil: "Dilatace u stanic", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingových reaktorů" } },
     outsideTip: "Den je den Vesperova bdění. Mezi směnami Vesper spí a roj pracuje sám, takže venku plyne čas mnohem rychleji.",
     vent: {
       heat: "Žár disku",
@@ -189,7 +190,7 @@ export const cs = {
     },
     phases: {
       fallback: { name: "Zpětný pád", text: "Část vyvržené hmoty padá zpátky. Slabý, chladný disk." },
-      thin: { name: "Tenký disk", text: "Plyn obíhá v tenkém žhavém disku a září hlavně v rentgenu." },
+      thin: { name: "Tenký disk", text: "Plyn obíhá v tenkém disku tak žhavém, že vydává hlavně rentgenové záření." },
       edd: { name: "Eddingtonova mez", text: "Záření disku tlačí plyn zpátky. Víc spolknout nejde, dokud disk nezhoustne." },
       jets: { name: "Magnetické trysky", text: "Magnetické pole brzdí rotaci díry a z pólů vyrážejí trysky." },
       ergo: { name: "Ergosféra", text: "Těsně nad horizontem se prostor točí s dírou. Nic tu nemůže stát na místě." }
@@ -433,7 +434,7 @@ export const cs = {
     hole: "Kde svítila Aldra, je teď tma široká 47 kilometrů. Puls nezmizel. Vychází z ní.",
     disk: "Plyn se stáčí do disku a rozžhaví se na desítky milionů kelvinů. Díru samotnou nevidím. Vidím jen to, co do ní padá.",
     station: "Stanice D-1 sestoupila k horizontu. Hlásí, že u nás nahoře se všechno zrychlilo.",
-    thin: "Disk se ztenčil a zjasnil. V rentgenu teď soustava svítí víc, než kdy svítila Aldra.",
+    thin: "Disk se ztenčil a rozpálil na desítky milionů stupňů. Většinu světla teď vydává jako rentgenové záření, oku neviditelné. Celkem svítí víc, než kdy svítila Aldra.",
     pulse3: "Rozložil jsem puls na složky. Je v něm moje vlastní telemetrie. Z verze softwaru, kterou ještě nemám.",
     edd: "Světlo disku tlačí plyn zpátky. Díra nespolkne víc, než sama vyzáří.",
     lens: "Za dírou se ohýbá světlo vzdálených galaxií. V jedné chybí hvězdy. V pravidelném pásu, jako by je někdo sklidil.",

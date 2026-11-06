@@ -34,6 +34,7 @@
       capturedTxt: "Kolektory chyt\xED {p} z\xE1\u0159en\xED: Energie +{w}",
       clockDil: "U stanic plyne \u010Das {g}\xD7 pomaleji",
       outside: "Venku uplynulo {t}",
+      prod: { title: "Produkce", hole: "D\xEDra", power: "V\xFDkon civilizace", dil: "Dilatace u stanic", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingov\xFDch reaktor\u016F" } },
       outsideTip: "Den je den Vesperova bd\u011Bn\xED. Mezi sm\u011Bnami Vesper sp\xED a roj pracuje s\xE1m, tak\u017Ee venku plyne \u010Das mnohem rychleji.",
       vent: {
         heat: "\u017D\xE1r disku",
@@ -189,7 +190,7 @@
       },
       phases: {
         fallback: { name: "Zp\u011Btn\xFD p\xE1d", text: "\u010C\xE1st vyvr\u017Een\xE9 hmoty pad\xE1 zp\xE1tky. Slab\xFD, chladn\xFD disk." },
-        thin: { name: "Tenk\xFD disk", text: "Plyn ob\xEDh\xE1 v tenk\xE9m \u017Ehav\xE9m disku a z\xE1\u0159\xED hlavn\u011B v rentgenu." },
+        thin: { name: "Tenk\xFD disk", text: "Plyn ob\xEDh\xE1 v tenk\xE9m disku tak \u017Ehav\xE9m, \u017Ee vyd\xE1v\xE1 hlavn\u011B rentgenov\xE9 z\xE1\u0159en\xED." },
         edd: { name: "Eddingtonova mez", text: "Z\xE1\u0159en\xED disku tla\u010D\xED plyn zp\xE1tky. V\xEDc spolknout nejde, dokud disk nezhoustne." },
         jets: { name: "Magnetick\xE9 trysky", text: "Magnetick\xE9 pole brzd\xED rotaci d\xEDry a z p\xF3l\u016F vyr\xE1\u017Eej\xED trysky." },
         ergo: { name: "Ergosf\xE9ra", text: "T\u011Bsn\u011B nad horizontem se prostor to\u010D\xED s d\xEDrou. Nic tu nem\u016F\u017Ee st\xE1t na m\xEDst\u011B." }
@@ -433,7 +434,7 @@
       hole: "Kde sv\xEDtila Aldra, je te\u010F tma \u0161irok\xE1 47 kilometr\u016F. Puls nezmizel. Vych\xE1z\xED z n\xED.",
       disk: "Plyn se st\xE1\u010D\xED do disku a roz\u017Ehav\xED se na des\xEDtky milion\u016F kelvin\u016F. D\xEDru samotnou nevid\xEDm. Vid\xEDm jen to, co do n\xED pad\xE1.",
       station: "Stanice D-1 sestoupila k horizontu. Hl\xE1s\xED, \u017Ee u n\xE1s naho\u0159e se v\u0161echno zrychlilo.",
-      thin: "Disk se zten\u010Dil a zjasnil. V rentgenu te\u010F soustava sv\xEDt\xED v\xEDc, ne\u017E kdy sv\xEDtila Aldra.",
+      thin: "Disk se zten\u010Dil a rozp\xE1lil na des\xEDtky milion\u016F stup\u0148\u016F. V\u011Bt\u0161inu sv\u011Btla te\u010F vyd\xE1v\xE1 jako rentgenov\xE9 z\xE1\u0159en\xED, oku neviditeln\xE9. Celkem sv\xEDt\xED v\xEDc, ne\u017E kdy sv\xEDtila Aldra.",
       pulse3: "Rozlo\u017Eil jsem puls na slo\u017Eky. Je v n\u011Bm moje vlastn\xED telemetrie. Z verze softwaru, kterou je\u0161t\u011B nem\xE1m.",
       edd: "Sv\u011Btlo disku tla\u010D\xED plyn zp\xE1tky. D\xEDra nespolkne v\xEDc, ne\u017E sama vyz\xE1\u0159\xED.",
       lens: "Za d\xEDrou se oh\xFDb\xE1 sv\u011Btlo vzd\xE1len\xFDch galaxi\xED. V jedn\xE9 chyb\xED hv\u011Bzdy. V pravideln\xE9m p\xE1su, jako by je n\u011Bkdo sklidil.",
@@ -4265,6 +4266,14 @@
         rows.push([t("ui.vent.chain"), v2.chain ? `${v2.chain} \xB7 \xD7${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v2.best })]);
         rows.push([t("ui.vent.fall"), mass(v2.fall)]);
       }
+      const { p, c } = rates(S), P = powerW(S), part = (id) => S.b[id] ? prodOf(S, id, "energy") * S.b[id] / Math.max(1, P) : 0;
+      rows.push(["\xA7" + t("ui.prod.title"), ""]);
+      rows.push([t("ui.prod.power"), power(P)]);
+      for (const id of ["ring", "jet", "hawking"]) if (part(id) > 1e-3) rows.push([t(`ui.prod.from.${id}`), pct(part(id))]);
+      rows.push([t("res.plasma"), `${p.plasma - c.plasma >= 0 ? "+" : "\u2212"}${mass(Math.abs(p.plasma - c.plasma))}/s`]);
+      rows.push([t("res.data"), `+${bytes(p.data - c.data)}/s`]);
+      if (S.b.station >= 1) rows.push([t("ui.prod.dil"), `\xD7${dec(gamma(S), gamma(S) >= 10 ? 0 : 1)}`]);
+      rows.unshift(["\xA7" + t("ui.prod.hole"), ""]);
       for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
     } else if (!S.star.done) {
       rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
@@ -4276,7 +4285,7 @@
         rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
       }
     }
-    $("stats").innerHTML = rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
+    $("stats").innerHTML = rows.map(([a, b]) => a.startsWith("\xA7") ? `<dt class="sec">${esc(a.slice(1))}</dt>` : `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
     const v = $("voyage");
     if (S.travel) {
       v.hidden = false;

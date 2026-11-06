@@ -229,6 +229,14 @@ export function renderRig() {
       rows.push([t("ui.vent.chain"), v.chain ? `${v.chain} · ×${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v.best })]);
       rows.push([t("ui.vent.fall"), mass(v.fall)]);
     }
+    const { p, c } = rates(S), P = powerW(S), part = (id: BuildingId) => S.b[id] ? prodOf(S, id, "energy") * S.b[id] / Math.max(1, P) : 0;
+    rows.push(["§" + t("ui.prod.title"), ""]);
+    rows.push([t("ui.prod.power"), power(P)]);
+    for (const id of ["ring", "jet", "hawking"] as BuildingId[]) if (part(id) > 0.001) rows.push([t(`ui.prod.from.${id}`), pct(part(id))]);
+    rows.push([t("res.plasma"), `${p.plasma - c.plasma >= 0 ? "+" : "−"}${mass(Math.abs(p.plasma - c.plasma))}/s`]);
+    rows.push([t("res.data"), `+${bytes(p.data - c.data)}/s`]);
+    if (S.b.station >= 1) rows.push([t("ui.prod.dil"), `×${dec(gamma(S), gamma(S) >= 10 ? 0 : 1)}`]);
+    rows.unshift(["§" + t("ui.prod.hole"), ""]);
     for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
   } else if (!S.star.done) {
     rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
@@ -237,7 +245,7 @@ export function renderRig() {
       rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
     }
   }
-  $("stats").innerHTML = rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
+  $("stats").innerHTML = rows.map(([a, b]) => a.startsWith("§") ? `<dt class="sec">${esc(a.slice(1))}</dt>` : `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
   const v = $("voyage");
   if (S.travel) {
     v.hidden = false;
