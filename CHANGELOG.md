@@ -1,5 +1,16 @@
 # Novinky
 
+## 0.4 – Kapitola 4: Most
+
+- Nová kapitola: síť červích děr mezi soustavami v rameni galaxie
+- Tah myší otevírá mosty, hrdla se plní a rozšiřují
+- Synchronizace s pulsem: zámek mostu na vlně
+- Exotická hmota jako nová surovina
+- Automatický stupeň: směrovače, raziče, fázové zámky, provázané páry
+- Pět stadií až za Kardašev Typ III, finále Průchod
+- Nové mise na mapě galaxie, výzkumy, deník a zajímavosti
+- Záložka Most: profil hrdla a ústí červí díry
+
 ## 0.3.4 – Orbitální montovna
 
 - Orbitální montovna od fáze Magnetické trysky: sama staví kolektory a lapače

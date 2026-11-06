@@ -7,6 +7,9 @@ import { bytes, duration, energy, kValue, mass, num, power, sci } from '../core/
 import { drawHole, drawHoleMap, drawProfile, drawScene, holeMapHit, sceneGeom, type HoleView, type SceneView } from './hole.js';
 import { drawMap, drawRock, drawSection, drawStar, drawStars, hitRock, label, sizeStars } from './scene.js';
 import { boom, chime, setSound, setVolumes, vols } from './audio.js';
+import * as NB from '../core/bridge.js';
+import { CH4_DATA, bridgeReady, bridgeAdvance, exoMult, RET } from '../core/engine.js';
+import { drawNet, drawMouth, drawThroat, drawGalaxy, galaxyHit, hitLink, hitNode, netGeo, toPx, waveIn, type NetUI } from './net.js';
 
 export const PRESTIGE_UNIT = PRESTIGE.metalUnit;
 export const PRESTIGE_PER_ORDER = PRESTIGE.perOrder;
@@ -14,7 +17,7 @@ export const VOL_KEYS = ["noise", "melody", "game"];
 export const VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
 export const volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
 export const audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-export const VERSION = "0.3.4";
+export const VERSION = "0.4";
 export const KEY = "sepot-horizontu";
 type El = HTMLElement & Record<string, any>;
 export const $ = (id: string): El => document.getElementById(id) as El;
@@ -25,8 +28,8 @@ export let tab: string = "build";
 export let buyMax: number | true = 1;
 export let viewKey = "";
 export let lastActive = Date.now();
-export const COLOR = { ore: "var(--ore)", metal: "var(--metal)", energy: "var(--energy)", data: "var(--data)", plasma: "var(--plasma)" };
-export const UNIT = { ore: "kg", metal: "kg", energy: "J", data: "B", plasma: "kg" };
+export const COLOR = { ore: "var(--ore)", metal: "var(--metal)", energy: "var(--energy)", data: "var(--data)", plasma: "var(--plasma)", exotic: "var(--exotic)" };
+export const UNIT = { ore: "kg", metal: "kg", energy: "J", data: "B", plasma: "kg", exotic: "kg" };
 export function amount(r, v) {
   return r === "energy" ? energy(v) : r === "data" ? bytes(v) : mass(v);
 }
@@ -139,7 +142,7 @@ function kTypes() {
 function breakdownHTML(r) {
   const { prod, cons } = rateParts(S, r);
   if (!prod.length && !cons.length) return "";
-  const name = (k) => k === "reactor" || k === "auto" ? t("ui.breakdown." + k) : t(`b.${k}.name`);
+  const name = (k) => k === "reactor" || k === "auto" || k === "home" ? t("ui.breakdown." + k) : k === "net" ? t("ui.breakdown.net4") : t(`b.${k}.name`);
   const line = (k, v, sign) => `<span class="bd"><span>${esc(name(k))}</span><span class="mono">${sign}${esc(rate(r, v))}</span></span>`;
   const p = prod.reduce((a, [, v]) => a + v, 0), c = cons.reduce((a, [, v]) => a + v, 0), net = p - c;
   let h = `<span class="bdh">${esc(t("ui.breakdown.prod"))}</span>` + prod.map(([k, v]) => line(k, v, "+")).join("");
@@ -159,6 +162,8 @@ export function renderTop() {
     const two = k >= 2, Lw = luminosity(S), kL = (Math.log10(Lw) - 6) / 10;
     $("kprogLabel").innerHTML = esc(two ? t("ui.toFullStar", { n: times(Lw / powerW(S)) }) : t("ui.toTypeII", { n: times(1e26 / powerW(S)) }));
     $("kbar").style.width = (two ? Math.max(0, Math.min(100, (k - 2) / (kL - 2) * 100)) : Math.max(0, Math.min(100, (k - 1) * 100))).toFixed(1) + "%";
+  } else if (S.hole.done) {
+    renderTop4(k, P);
   } else if (!S.hole.done) {
     const d = phaseDef(S), kT = (Math.log10(d.needW) - 6) / 10, k0 = S.hole.phase ? (Math.log10(PHASES[S.hole.phase - 1].needW) - 6) / 10 : 0.3;
     $("kprogLabel").innerHTML = esc(P >= d.needW ? t("ui.toPhaseDone") : t("ui.toPhase", { k: kValue(kT), n: times(d.needW / P) }));
@@ -167,7 +172,7 @@ export function renderTop() {
     $("kprogLabel").textContent = t("ui.toNext");
     $("kbar").style.width = "100%";
   }
-  const shown = RESOURCES.filter((r) => !(r === "ore" && S.chapterDone >= 1) && !(r === "metal" && S.star.done) && (r === "ore" || S.total[r] > 0));
+  const shown = RESOURCES.filter((r) => !(r === "ore" && S.chapterDone >= 1) && !(r === "metal" && S.star.done) && !(r === "plasma" && S.hole.done) && (r === "ore" || S.total[r] > 0));
   const key = shown.join();
   const bar = $("resbar");
   if (key !== chipKey) {
@@ -196,8 +201,9 @@ export const STAR_BUILDINGS2 = ["sieve", "corono", "lifter", "separator", "seism
 export const starView = () => ({ stage: stageDef(S).id, dyson: S.b.dyson, lifters: S.b.lifter, coverage: coverage(S), collapse: S.star.collapse, done: S.star.done, snAge: snAge() });
 export function renderRig() {
   const ch2 = S.chapterDone >= 1;
-  const ch3 = S.star.done;
-  $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch2 ? t("ui.star.title") : t("ui.asteroid");
+  const ch3 = S.star.done, ch4 = S.hole.done;
+  $("rigTitle").textContent = ch4 ? t("ui.net.title") : ch3 ? t("ui.hole.title") : ch2 ? t("ui.star.title") : t("ui.asteroid");
+  document.body.classList.toggle("ch4", ch4);
   document.body.classList.toggle("ch2", ch2);
   document.body.classList.toggle("ch3", ch3);
   document.body.classList.add("cv");
@@ -213,6 +219,8 @@ export function renderRig() {
   if (!ch2) {
     rows.push([t("ui.stats.drones"), num(Math.floor(S.b.drone))]);
     for (const id of CONVERTERS.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+  } else if (ch4) {
+    rows.push(...rig4Rows());
   } else if (ch3) {
     rows.push([t("ui.stats.phase"), `${S.hole.phase + 1} / ${PHASES.length}`], [t("ui.stats.spin"), spinTxt(S.hole.a)]);
     if (S.b.injector >= 1) rows.push([t("ui.stats.feed"), mass(feedRate(S)) + "/s"], [t("ui.stats.diskCov"), pct(ringCov(S))]);
@@ -273,6 +281,7 @@ export function tabsAvail() {
   const list = [["build", t("ui.tabs.build")]];
   if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
   if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
+  if (S.hole.done) list.push(["bridge", t("ui.tabs.bridge")]);
   if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
   else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
   return list;
@@ -281,17 +290,19 @@ export function renderTabs() {
   const list = tabsAvail();
   if (!list.find(([id]) => id === tab)) tab = "build";
   const dot = RESEARCH_IDS.some((id) => researchAvailable(S, id) && affordable(S, R[id].cost));
-  const hdot = phaseReady(S).ok || unseen("hole");
-  const mdot = unseen("map") || LOCATION_IDS.some((id) => !S.visited[id] && locationOpen(S, id) && canTravel(S, id) && (!S.star.done || CH3_LOCS.includes(id)));
+  const hdot = !S.hole.done && (phaseReady(S).ok || unseen("hole"));
+  const bdot = S.hole.done && (bridgeReady(S).ok || unseen("bridge"));
+  const mdot = unseen("map") || LOCATION_IDS.some((id) => !S.visited[id] && locationOpen(S, id) && canTravel(S, id) && chapterLoc(id));
 
   const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5) || unseen("star");
   markSeen();
-  const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot || id === "map" && mdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
+  const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot || id === "map" && mdot || id === "bridge" && bdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
   const el = $("tabs");
   if (el.innerHTML !== html) el.innerHTML = html;
 }
 export function computeKey(which = tab) {
-  if (which === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax + ventOpen(S);
+  if (which === "build") return "b" + BUILDING_IDS.filter((id) => isUnlocked(S, id)).join() + buyMax + ventOpen(S) + S.hole.done;
+  if (which === "bridge") return `n${S.bridge.stage}${S.bridge.pass >= 0}${S.bridge.done}`;
   if (which === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
   if (which === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
   if (which === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
@@ -315,10 +326,15 @@ export function buildView(which = tab, el = $("view")) {
       S.unl.vent ??= fresh ? order0("vent") : S.time;
       items.push({ key: "vent", t: S.unl.vent });
     }
+    if (S.hole.done && S.bridge.n >= 1) {
+      S.unl.sync ??= S.time;
+      items.push({ key: "sync", t: S.unl.sync });
+    }
     items.sort((a, b) => b.t - a.t);
     for (const { key: id } of items) {
       if (id === "vent") { h += ventCards(); continue; }
-      const conv = !!B[id].cons || id === "swarmfab" || id === "jet" || id === "yard";
+      if (id === "sync") { h += syncCards(); continue; }
+      const conv = !!B[id].cons || id === "swarmfab" || id === "jet" || id === "plock" || id === "raider" || id === "router" || id === "yard";
       h += `<div class="item" data-b="${id}"><h3>${esc(t(`b.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`b.${id}.desc`))}</p><div class="eff" data-f="eff"></div><div class="cost" data-f="cost"></div>
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
     }
@@ -335,13 +351,14 @@ export function buildView(which = tab, el = $("view")) {
     h += '<div class="mapbox"><canvas id="map"></canvas></div><div class="list">';
     for (const id of LOCATION_IDS.slice().reverse()) {
       if (!locationOpen(S, id)) continue;
-      if (S.star.done && !CH3_LOCS.includes(id)) continue;
+      if (!chapterLoc(id)) continue;
       const done = !!S.visited[id];
       h += `<div class="item${done ? " visited" : ""}" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))}</h3><p>${esc(t(`loc.${id}.${done ? "done" : "desc"}`))}</p>${done ? "" : '<div class="cost" data-f="cost"></div>'}<div class="act">${done ? `<span class="dim">${esc(t("ui.map.active"))}</span>` : `<button class="btn" data-go="${id}"></button>`}</div></div>`;
     }
     h += "</div>";
   } else if (which === "star") h += starHTML();
   else if (which === "hole") h += holeHTML();
+  else if (which === "bridge") h += bridgeHTML();
   el.innerHTML = h;
 }
 export const round2 = (v) => {
@@ -500,6 +517,7 @@ function sceneView(): SceneView {
 }
 function renderScene() {
   if (!S.star.done) return;
+  if (S.hole.done) { renderScene4(); return; }
   const open = ventOpen(S), full = ventCanBurst(S), btn = $("burstBtn");
   btn.hidden = !open || !!sceneZoom;
   btn.disabled = !full;
@@ -665,10 +683,12 @@ export function updateView(which = tab, view = $("view")) {
   if (which === "build") {
     if (ventOpen(S)) updateVent(view);
     injShort();
+    if (S.hole.done) updateSync(view);
     view.querySelectorAll<El>("[data-b]").forEach((el) => {
       const id = el.dataset.b as BuildingId, d = B[id];
       const count = Math.floor(S.b[id]);
       el.querySelector<El>("[data-f=n]").innerHTML = esc(t("ui.pieces", { n: num(count) }));
+      if (NB.CH4_BUILDINGS.includes(id)) { el.querySelector<El>("[data-f=eff]").innerHTML = eff4(id, count); priceRow(el, id); return; }
       const flow = (k) => {
         const part = (r, v, sign) => `<span><span style="color:${COLOR[r]}">${esc(t("res." + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
         const ins = id === "injector"
@@ -718,30 +738,7 @@ export function updateView(which = tab, view = $("view")) {
         if (injShortOn) eff += `<span class="effnote">${esc(t(ventLv(S, "inlet") >= VENT_UPS.inlet.max ? "ui.inj.shortScoop" : "ui.inj.short"))}</span>`;
       }
       el.querySelector<El>("[data-f=eff]").innerHTML = eff;
-      let c = cost(S, id), n = 1, can = affordable(S, c);
-      if (buyMax === true) {
-        const pv = previewMax(S, id);
-        if (pv.count > 0) {
-          c = pv.total;
-          n = pv.count;
-        }
-      } else if (buyMax === 10) {
-        c = previewMax(S, id, 10, true).total;
-        n = 10;
-        can = affordable(S, c);
-      }
-      el.querySelector<El>("[data-f=cost]").innerHTML = costHTML(c);
-      const btn = el.querySelector<El>("[data-buy]");
-      btn.disabled = !can;
-      btn.textContent = n > 1 ? t("ui.buyN", { n }) : t("ui.buy");
-      const sb = el.querySelector<El>("[data-sell]");
-      if (sb) {
-        const k = Math.min(Math.floor(S.b[id]), buyMax === true ? Infinity : buyMax);
-        sb.disabled = k < 1;
-        sb.textContent = k > 1 ? t("ui.sellN", { n: num(k) }) : t("ui.sell");
-      }
-      const tg = el.querySelector<El>("[data-toggle]");
-      if (tg) tg.textContent = S.off[id] ? t("ui.turnOn") : t("ui.turnOff");
+      priceRow(el, id);
     });
   } else if (which === "research") {
     view.querySelectorAll<El>("[data-r]").forEach((el) => {
@@ -751,6 +748,7 @@ export function updateView(which = tab, view = $("view")) {
     });
   } else if (which === "star") updateStar();
   else if (which === "hole") updateHole();
+  else if (which === "bridge") updateBridge();
   else if (which === "map") {
     view.querySelectorAll<El>("[data-go]").forEach((b) => {
       const id = b.dataset.go as LocationId, item = b.closest("[data-l]");
@@ -761,9 +759,33 @@ export function updateView(which = tab, view = $("view")) {
     });
   }
 }
+/** Cena a tlačítka karty stavby (×1, ×10, Max). */
+function priceRow(el: El, id: BuildingId) {
+  let c = cost(S, id), n = 1, can = affordable(S, c);
+  if (buyMax === true) {
+    const pv = previewMax(S, id);
+    if (pv.count > 0) { c = pv.total; n = pv.count; }
+  } else if (buyMax === 10) {
+    c = previewMax(S, id, 10, true).total;
+    n = 10;
+    can = affordable(S, c);
+  }
+  el.querySelector<El>("[data-f=cost]").innerHTML = costHTML(c);
+  const btn = el.querySelector<El>("[data-buy]");
+  btn.disabled = !can;
+  btn.textContent = n > 1 ? t("ui.buyN", { n }) : t("ui.buy");
+  const sb = el.querySelector<El>("[data-sell]");
+  if (sb) {
+    const k = Math.min(Math.floor(S.b[id]), buyMax === true ? Infinity : buyMax);
+    sb.disabled = k < 1;
+    sb.textContent = k > 1 ? t("ui.sellN", { n: num(k) }) : t("ui.sell");
+  }
+  const tg = el.querySelector<El>("[data-toggle]");
+  if (tg) tg.textContent = S.off[id] ? t("ui.turnOn") : t("ui.turnOff");
+}
 export let bviewKey = "";
 /** Pořadí, v jakém se stavby obvykle odemykají (pro starší uložené hry bez záznamu). */
-const UNLOCK_ORDER = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion", "dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab", "scoop", "ring", "vent", "station", "injector", "jet", "hawking", "yard"];
+const UNLOCK_ORDER = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion", "dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab", "scoop", "ring", "vent", "station", "injector", "jet", "hawking", "yard", "plate", "bswarm", "beacon", "sync", "anchor", "router", "pump", "plock", "raider", "pair", "kcol", "gwdet", "trap"];
 /** Kap. 1 a 2: asteroid / hvězda je uprostřed na záložce Stavby, jinak vlevo jako náhled. */
 function placeRock() {
   const rw = $("rockwrap"), center = !S.star.done && tab === "build";
@@ -853,9 +875,13 @@ export function checkChapterModal() {
   } else if (S.chapterDone >= 2 && !S.story.modal2 && snAge() > 7) {
     S.story.modal2 = true;
     showModal(t("ui.chapterDone2.title"), t("ui.chapterDone2.body"), t("ui.chapterDone2.ok"));
-  } else if (S.chapterDone >= 3 && !S.story.modal3) {
+  } else if (S.chapterDone >= 3 && (!S.story.modal3 || !S.story.ch4intro)) {
     S.story.modal3 = true;
+    S.story.ch4intro = true;
     showModal(t("ui.chapterDone3.title"), t("ui.chapterDone3.body"), t("ui.chapterDone3.ok"));
+  } else if (S.chapterDone >= 4 && !S.story.modal4) {
+    S.story.modal4 = true;
+    showModal(t("ui.chapterDone4.title"), t("ui.chapterDone4.body"), t("ui.chapterDone4.ok"));
   }
 }
 export let snAt = -1;
@@ -981,6 +1007,15 @@ export function bind() {
       if (ventUpgrade(S, d.vup)) { if (S.settings.sound) chime(); renderView(); renderRig(); }
       return;
     }
+    if (d.sup) {
+      if (NB.syncUpgrade(S, d.sup)) { if (S.settings.sound) chime(); renderView(); }
+      return;
+    }
+    if (d.adv4) { onAdvance4(); return; }
+    if (d.widen) { onWiden(d.widen); return; }
+    if (d.open) { onOpen(d.open); return; }
+    if (d.bclose) { netSel = null; netBubble = null; renderBubble(); return; }
+    if (d.bsel) { netSel = d.bsel; S.bridge.sel = d.bsel; tab = "bridge"; renderTabs(); renderView(true); return; }
     if (d.burst) {
       if (ventBurst(S) && S.settings.sound) boom();
       renderScene();
@@ -994,9 +1029,11 @@ export function bind() {
     if (d.act) return settingsAction(d.act, b);
   });
   const sc = $("scenec");
-  sc.addEventListener("pointermove", (e) => { sceneHover = sceneAngle(e); });
+  bindNet(sc);
+  sc.addEventListener("pointermove", (e) => { if (!S.hole.done) sceneHover = sceneAngle(e); });
   sc.addEventListener("pointerleave", () => { sceneHover = null; sceneHold = false; });
   sc.addEventListener("pointerdown", (e) => {
+    if (S.hole.done) return;
     if (sceneZoom) {
       const r = sc.getBoundingClientRect(), id = holeMapHit(r.width, r.height, S, e.clientX - r.left, e.clientY - r.top, performance.now() / 1e3);
       if (id) { if (canTravel(S, id)) { depart(S, id); renderAll(); save(); } return; }
@@ -1204,7 +1241,8 @@ export function start() {
       saveAcc = 0;
       save();
     }
-    if (S.star.done && snAge() > 8) {
+    if (S.hole.done) frame4(now / 1e3);
+    else if (S.star.done && snAge() > 8) {
       const sc = $("scenec") as unknown as HTMLCanvasElement;
       if (tab !== "build") drawHole($("rockc") as unknown as HTMLCanvasElement, holeView(), now / 1e3, t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }) + ` · a ${spinTxt(S.hole.a)}`);
       else if (sceneZoom) drawHoleMap(sc, S, holeView(), now / 1e3);
@@ -1224,7 +1262,7 @@ export function start() {
     }
     if (tab === "map") {
       const m = (document.getElementById("map") as any);
-      if (m) S.star.done ? drawHoleMap(m, S, holeView(), now / 1e3) : drawMap(m, S, now / 1e3);
+      if (m) S.hole.done ? drawGalaxy(m, S, now / 1e3, (id) => id === ("home" as LocationId) ? t("ui.net.ourRegion") : t(`loc.${id}.short`), (id) => locationOpen(S, id) || !!S.visited[id]) : S.star.done ? drawHoleMap(m, S, holeView(), now / 1e3) : drawMap(m, S, now / 1e3);
     }
     if (tab === "hole") {
       const c = document.getElementById("holec") as HTMLCanvasElement;
@@ -1254,4 +1292,346 @@ export function start() {
     lastActive = Date.now();
   });
   addEventListener("pagehide", () => save());
+}
+
+// =================== Kapitola 4: Most ===================
+const CH4_LOCS: LocationId[] = ["flyby", "magnetar", "globular", "kilonova", "frb", "rotation", "bubbles"];
+function chapterLoc(id: LocationId) {
+  if (S.hole.done) return CH4_LOCS.includes(id);
+  if (S.star.done) return CH3_LOCS.includes(id);
+  return !CH3_LOCS.includes(id) && !CH4_LOCS.includes(id);
+}
+seenKey.bridge = () => `${S.bridge.stage}${S.bridge.pass >= 0}${S.bridge.done}`;
+const nodeName = (n: NB.GNode) => n.type === "home" ? t("ui.net.home") : n.name;
+const linkName = (id: string) => `${nodeName(NB.NODE[S.bridge.links[id].p])} – ${nodeName(NB.NODE[id])}`;
+const kOf = (w: number) => (Math.log10(w) - 6) / 10;
+const ly = (d: number) => `${Math.round(d * NB.MAP.ly).toLocaleString("cs-CZ")} ly`;
+function renderTop4(k: number, P: number) {
+  if (S.bridge.done) { $("kprogLabel").textContent = t("ui.toNext5"); $("kbar").style.width = "100%"; return; }
+  const d = NB.bstageDef(S), st = S.bridge.stage, kT = kOf(d.needW), k0 = st ? kOf(NB.BSTAGES[st - 1].needW) : kOf(S.bridge.holeW || 2.5e34);
+  $("kprogLabel").innerHTML = esc(P >= d.needW ? t("ui.toStageDone") : st === 2 && k >= 3 ? t("ui.toArm", { n: times(d.needW / P) }) : t("ui.toPhase", { k: kValue(kT), n: times(d.needW / P) }));
+  $("kbar").style.width = Math.max(0, Math.min(100, (k - k0) / (kT - k0) * 100)).toFixed(1) + "%";
+}
+/** Kmen: most z domova, který nese nejvíc. */
+function trunk() {
+  const f = NB.netNow(S);
+  let best = "", bv = -1;
+  for (const id in S.bridge.links) if (S.bridge.links[id].p === "home" && (f.supply[id] ?? 0) > bv) { bv = f.supply[id]; best = id; }
+  return best;
+}
+function rig4Rows(): [string, string][] {
+  const P = powerW(S), f = NB.netNow(S), st = S.bridge.stage, rows: [string, string][] = [];
+  rows.push(["§" + t("ui.net.sec"), ""]);
+  rows.push([t("ui.net.stage"), S.bridge.done ? t("ui.net.passDone") : `${st + 1} / ${NB.BSTAGES.length} · ${t(`ui.bstages.${NB.BSTAGES[st].id}.name`)}`]);
+  rows.push([t("ui.net.power"), power(P)], [t("ui.net.fromHole"), power(S.bridge.holeW)]);
+  rows.push([t("ui.net.systems"), `${num(S.bridge.n)} / ${num(NB.revealed(S).length)}`]);
+  rows.push([t("ui.net.capture"), pct(NB.capture(S))]);
+  if (S.b.trap >= 1) rows.push([t("ui.net.trapCap"), pct(NB.trapCapture(S))]);
+  const lk = Object.values(S.bridge.links as Record<string, NB.Link>).filter((l) => l.lk > 0), man = lk.filter((l) => !l.la);
+  rows.push([t("ui.net.locked"), lk.length ? `${num(lk.length)}${man.length ? ` · ${t("ui.net.byHand", { n: num(man.length) })}` : ""}` : "0"]);
+  const tr = trunk();
+  if (tr) {
+    const l = S.bridge.links[tr], cap = NB.capOf(S, l), sup = f.supply[tr] ?? 0;
+    rows.push(["§" + t("ui.net.trunk", { n: linkName(tr) }), ""]);
+    rows.push([t("ui.net.carries"), power(f.flow[tr] ?? 0)]);
+    rows.push([t("ui.net.state"), sup > cap * 1.001 ? t("ui.net.full", { m: dec(Math.min(99, sup / cap), sup / cap >= 10 ? 0 : 1) }) : t("ui.net.free", { p: Math.round(sup / cap * 100) })]);
+  }
+  const { p, c } = rates(S);
+  rows.push(["§" + t("ui.prod.title"), ""]);
+  rows.push([t("res.exotic"), `${p.exotic - c.exotic >= 0 ? "+" : "−"}${mass(Math.abs(p.exotic - c.exotic))}/s`]);
+  rows.push([t("res.data"), `+${bytes(p.data - c.data)}/s`]);
+  return rows;
+}
+// ---------- karty staveb Kapitoly 4 ----------
+const effRow = (lbl: string, body: string) => `<span class="effrow"><span class="lbl">${esc(lbl)}</span>${body}</span>`;
+const part = (r: Res, v: number, sign = "+") => `<span><span style="color:${COLOR[r]}">${esc(t("res." + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
+function withOne<T>(id: BuildingId, f: () => T): T {
+  S.b[id] += 1;
+  try { return f(); } finally { S.b[id] -= 1; }
+}
+function eff4(id: BuildingId, count: number) {
+  const d = B[id];
+  let h = "";
+  if (d.prod) {
+    const outs = (k: number) => (Object.keys(d.prod) as Res[]).map((r) => part(r, prodOf(S, id, r) * k)).join(" ");
+    h += effRow(t("ui.one"), outs(1));
+    if (count >= 2) h += effRow(t("ui.all", { n: num(count) }), outs(count));
+  }
+  const you = t("ui.forYou");
+  if (id === "bswarm") h += effRow(you, esc(t("ui.net.eff.swarm", { a: pct(NB.capture(S)), b: pct(withOne(id, () => NB.capture(S))) })));
+  if (id === "trap") h += effRow(you, esc(t("ui.net.eff.trap", { a: pct(NB.trapCapture(S)), b: pct(withOne(id, () => NB.trapCapture(S))) })));
+  if (id === "anchor") h += effRow(you, esc(t("ui.net.eff.anchor", { a: dec(NB.anchorMult(S), 2), b: dec(withOne(id, () => NB.anchorMult(S)), 2) })));
+  if (id === "plate" && S.b.anchor >= 1) h += effRow(you, esc(t("ui.net.eff.plateAnchor")));
+  if (id === "beacon") {
+    const more = withOne(id, () => NB.revealCount(S)) - NB.revealCount(S), left = NB.NODES.filter((n) => n.rank < 100 && !NB.isRevealed(S, n)).length;
+    h += effRow(you, esc(left ? t("ui.net.eff.beacon", { n: Math.min(more, left) }) : t("ui.net.eff.beaconAll")));
+  }
+  if (id === "pair") h += effRow(you, esc(t("ui.net.eff.pair", { m: dec(S.r.pairs2 ? NB.NET.pairM2 : NB.NET.pairM, 2), t: times(exoMult(S)) })));
+  if (id === "plock") {
+    const auto = Object.values(S.bridge.links as Record<string, NB.Link>).filter((l) => l.lk > 0 && l.la).length;
+    h += effRow(t("ui.net.now"), esc(t("ui.net.eff.plock", { n: num(auto), m: dec(S.r.quiet ? NB.NET.autoM2 : NB.NET.autoM, 2) })));
+  }
+  if (id === "raider" || id === "router") {
+    const r = S.bridge.rate?.[id] ?? 0, tg = S.bridge.target?.[id] ?? "";
+    if (S.off[id]) h += effRow(t("ui.net.takes"), `<span class="dim">${esc(t("ui.stopped"))}</span>`);
+    else if (!count) h += "";
+    else if (!tg) h += effRow(t("ui.net.takes"), `<span class="dim">${esc(t(id === "raider" ? "ui.net.eff.raiderIdle" : "ui.net.eff.routerIdle"))}</span>`);
+    else {
+      const what = id === "raider" ? t("ui.net.eff.raider", { n: nodeName(NB.NODE[tg]) }) : t("ui.net.eff.router", { n: linkName(tg), a: S.bridge.links[tg].lv, b: S.bridge.links[tg].lv + 1 });
+      h += effRow(t("ui.net.takes"), `${part("exotic", r, "−")} <span class="arrow">→</span> <span style="color:var(--exotic)">${esc(what)}</span>`);
+    }
+    if (S.bridge.made[id]) h += effRow(t("ui.net.made"), esc(t(id === "raider" ? "ui.net.eff.raiderMade" : "ui.net.eff.routerMade", { n: num(S.bridge.made[id]) })));
+  }
+  return h;
+}
+const syncNow: Record<NB.SyncUp, (l: number) => string> = {
+  win: (l) => t("ui.net.sync.v.win", { s: dec(NB.syncWin(S, l), 2) }),
+  len: (l) => t("ui.net.sync.v.len", { s: NB.lockLen(S, l) }),
+  dbl: (l) => t(l ? "ui.net.sync.v.dbl2" : "ui.net.sync.v.dbl1")
+};
+function syncCards() {
+  return NB.SYNC_IDS.map((id) => `<div class="item vcard" data-su="${id}"><h3>${esc(t(`ui.net.sync.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`ui.net.sync.${id}.desc`))}</p>
+    <div class="eff2 mono"><span class="k">${esc(t("ui.vent.now"))}</span><span data-f="now"></span><span class="k">${esc(t("ui.vent.next"))}</span><span class="up" data-f="next"></span></div>
+    <div class="cost" data-f="cost"></div><div class="act"><button class="btn" data-sup="${id}">${esc(t("ui.vent.upgrade"))}</button></div></div>`).join("");
+}
+function updateSync(root: El) {
+  root.querySelectorAll<El>("[data-su]").forEach((el) => {
+    const id = el.dataset.su as NB.SyncUp, l = NB.syncLv(S, id), max = l >= NB.SYNC_UPS[id].max, c = NB.syncCost(S, id);
+    const set = (f: string, html: string) => { const e2 = el.querySelector<El>(`[data-f=${f}]`); if (e2.innerHTML !== html) e2.innerHTML = html; };
+    set("n", esc(t("ui.vent.level", { n: l })));
+    set("now", esc(syncNow[id](l)));
+    set("next", esc(max ? t("ui.vent.max") : syncNow[id](l + 1)));
+    set("cost", max ? "" : costHTML({ exotic: c }));
+    el.querySelector<El>("[data-sup]").disabled = max || S.res.exotic < c;
+  });
+}
+// ---------- záložka Most: stadia a detail mostu ----------
+function bridgeHTML() {
+  const ladder = NB.BSTAGES.map((st, i) => `<li data-bs="${i}"><span class="num">${i + 1}</span>${esc(t(`ui.bstages.${st.id}.name`))}</li>`).join("") + `<li data-bs="${NB.BSTAGES.length}"><span class="num">✦</span>${esc(t("ui.net.passName"))}</li>`;
+  return `<div class="starbox"><canvas id="throatc"></canvas></div>
+  <div class="bridgegrid">
+  <div class="stagecard"><div class="sc-head"><h3 data-f="bname"></h3><span class="tag mono" data-f="blv"></span></div>
+    <dl class="sgrid" data-f="bgrid"></dl><div class="bar"><b data-f="bfill"></b></div><p class="dim" data-f="bnote"></p>
+    <div class="row"><button class="btn" data-widen="" data-f="wbtn"></button><span class="dim" data-f="wnow"></span></div>
+    <div class="section-label">${esc(t("ui.net.allLinks"))}</div><div class="linklist" data-f="links"></div></div>
+  <div><ol class="ladder">${ladder}</ol>
+  <div class="stagecard">
+    <div class="sc-head"><h3 data-f="name"></h3><span class="tag mono" data-f="of"></span></div>
+    <p class="burn" data-f="text"></p>
+    <div class="sprog"><div class="sp-head"><span class="dim">${esc(t("ui.power"))}</span><span class="mono" data-f="ptext"></span></div><div class="bar"><b data-f="prog"></b></div></div>
+    <div class="ready"><span class="dim">${esc(t("ui.net.ready"))}</span><ul class="checks" data-f="checks"></ul></div>
+    <div class="row"><button class="btn" data-adv4="1"></button><span class="dim" data-f="wait"></span></div>
+  </div></div></div>`;
+}
+function selLink() {
+  const sel = netSel ?? S.bridge.sel;
+  return sel && S.bridge.links[sel] ? sel : trunk();
+}
+function updateBridge() {
+  const view = $("view"), set = (f: string, html: string) => {
+    const el = view.querySelector<El>(`[data-f=${f}]`);
+    if (el && el.innerHTML !== html) el.innerHTML = html;
+  };
+  const cur = S.bridge.done ? NB.BSTAGES.length + 1 : S.bridge.pass >= 0 ? NB.BSTAGES.length : S.bridge.stage;
+  view.querySelectorAll<El>(".ladder li").forEach((li) => { const i = Number(li.dataset.bs); li.className = i < cur ? "done" : i === cur ? "cur" : ""; });
+  const d = NB.bstageDef(S), st = S.bridge.stage, P = powerW(S);
+  if (S.bridge.done) { set("name", esc(t("ui.net.passName"))); set("of", ""); set("text", esc(t("ui.net.doneText"))); set("checks", ""); }
+  else {
+    set("name", esc(t(`ui.bstages.${d.id}.name`)));
+    set("of", esc(t("ui.net.stageOf", { n: st + 1, of: NB.BSTAGES.length })));
+    set("text", esc(t(`ui.bstages.${d.id}.text`)));
+    const w0 = st ? NB.BSTAGES[st - 1].needW : S.bridge.holeW || 2.5e34, f = Math.max(0, Math.min(1, Math.log10(P / w0) / Math.log10(d.needW / w0)));
+    view.querySelector<El>("[data-f=prog]")?.style.setProperty("width", (f * 100).toFixed(1) + "%");
+    set("ptext", esc(`${power(P)} / ${power(d.needW)}`));
+    const rd = bridgeReady(S), chk = (ok: boolean, txt: string) => `<li class="${ok ? "ok" : ""}">${ok ? "✓" : "·"} ${esc(txt)}</li>`;
+    let c = chk(rd.power, t("ui.hole.needPower", { w: power(d.needW) }));
+    if (st === 2) c += chk(rd.mission, t("ui.net.needKilonova"));
+    if (st === NB.BSTAGES.length - 1) c += chk(rd.research, t("ui.net.needPassage"));
+    set("checks", c);
+    const btn = view.querySelector<El>("[data-adv4]");
+    if (btn) {
+      const going = S.bridge.pass >= 0;
+      btn.disabled = !rd.ok;
+      btn.textContent = going ? t("ui.net.passing", { t: duration(S.bridge.pass) }) : st === NB.BSTAGES.length - 1 ? t("ui.net.pass") : t("ui.net.next", { n: t(`ui.bstages.${NB.BSTAGES[st + 1].id}.name`) });
+      btn.classList.toggle("warn", going);
+      set("wait", esc(going ? t("ui.net.passNote") : rd.ok ? "" : t("ui.net.waiting")));
+    }
+  }
+  // vybraný most
+  const id = selLink(), f = NB.netNow(S);
+  if (!id) { set("bname", esc(t("ui.net.noLink"))); set("bgrid", ""); set("links", ""); return; }
+  const l = S.bridge.links[id], cap = NB.capOf(S, l), sup = f.supply[id] ?? 0, fl = f.flow[id] ?? 0;
+  set("bname", esc(linkName(id)));
+  set("blv", esc(t("ui.net.level", { n: l.lv })));
+  const rows: [string, string][] = [
+    [t("ui.net.wants"), power(sup)], [t("ui.net.capacity"), power(NB.capBase(S, l.lv))],
+    [t("ui.net.lock"), l.lk > 0 ? t(l.la ? "ui.net.lockAuto" : "ui.net.lockHand", { m: dec(NB.lockMult(S, l), 2), s: Math.ceil(l.lk) }) : t("ui.net.lockNone", { s: dec(waveIn(S, id), 1) })],
+    [t("ui.net.flowHome"), power(fl)], [t("ui.net.length"), ly(NB.linkLen(id, l))], [t("ui.net.shift"), S.r.shifted ? t("ui.net.shiftOn") : "0 s"]
+  ];
+  set("bgrid", rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join(""));
+  view.querySelector<El>("[data-f=bfill]")?.style.setProperty("width", (Math.min(1, fl / Math.max(1, sup)) * 100).toFixed(1) + "%");
+  set("bnote", esc(sup > cap * 1.001 ? t("ui.net.over", { m: dec(sup / cap, sup / cap >= 10 ? 0 : 1) }) : t("ui.net.under")));
+  const wb = view.querySelector<El>("[data-f=wbtn]"), c = NB.upCost(S, l.lv);
+  if (wb) {
+    wb.dataset.widen = id;
+    wb.disabled = S.res.exotic < c;
+    wb.innerHTML = esc(t("ui.net.widenBtn", { c: mass(c) }));
+  }
+  const g = NB.widenGain(S, id);
+  set("wnow", esc(g > 0 ? t("ui.net.widenGain", { w: power(g) }) : t("ui.net.widenNoGain")));
+  const ids = Object.keys(S.bridge.links).sort((a, b) => (f.supply[b] ?? 0) - (f.supply[a] ?? 0)).slice(0, 14);
+  set("links", ids.map((k) => {
+    const lk = S.bridge.links[k], full = (f.supply[k] ?? 0) > NB.capOf(S, lk) * 1.001;
+    return `<button class="lnk${k === id ? " on" : ""}${full ? " full" : ""}" data-bsel="${k}"><span>${esc(linkName(k))}</span><span class="mono">${esc(t("ui.net.level", { n: lk.lv }))}${lk.lk > 0 ? " ·" + (lk.la ? " ◇" : " ◆") : ""}</span></button>`;
+  }).join(""));
+}
+function onAdvance4() {
+  if (!bridgeReady(S).ok) return;
+  const go = () => { if (bridgeAdvance(S)) { onJournal(checkJournal(S)); renderAll(); save(); } };
+  if (S.bridge.stage === NB.BSTAGES.length - 1) confirmModal(t("ui.net.passWarn.title"), t("ui.net.passWarn.body", { t: duration(NB.NET.passSec) }), t("ui.net.passWarn.ok"), t("ui.net.passWarn.cancel"), go);
+  else go();
+}
+// ---------- mapa sítě uprostřed: tah = most, ťuknutí = zámek, uzel = bublina ----------
+let netSel: string | null = null, netBubble: string | null = null, netHover: string | null = null, netHoverLink: string | null = null;
+let netDrag: NetUI["drag"] = null, dragStart: { x: number; y: number; id: string | null; link: string | null } | null = null;
+const netFx: { flashes: NetUI["flashes"]; burst: NetUI["burst"] } = { flashes: [], burst: [] };
+function netXY(e: PointerEvent) {
+  const c = $("scenec"), r = c.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top, W: r.width, H: r.height };
+}
+function onWiden(id: string) {
+  if (NB.widen(S, id)) {
+    netFx.burst.push({ id, t: performance.now() / 1e3 });
+    if (S.settings.sound) chime();
+    renderAll(); save();
+  }
+}
+function onOpen(to: string) {
+  const from = NB.bestFrom(S, to);
+  if (from && NB.openLink(S, from, to)) {
+    if (S.settings.sound) chime();
+    netBubble = to;
+    onJournal(checkJournal(S)); renderAll(); save();
+  }
+}
+function bindNet(sc: El) {
+  const wrap = sc.parentElement as El, bub = document.createElement("div");
+  bub.id = "netBubble"; bub.className = "netbubble"; bub.hidden = true;
+  wrap.appendChild(bub);
+  sc.addEventListener("pointermove", (e: PointerEvent) => {
+    if (!S.hole.done) return;
+    const p = netXY(e), g = netGeo(p.W, p.H);
+    netHover = hitNode(g, S, p.x, p.y);
+    netHoverLink = netHover ? null : hitLink(g, S, p.x, p.y);
+    sc.style.cursor = netHover || netHoverLink ? "pointer" : "default";
+    if (dragStart?.id && NB.isConnected(S, dragStart.id) && Math.hypot(p.x - dragStart.x, p.y - dragStart.y) > 6) {
+      const to = netHover && !NB.isConnected(S, netHover) ? netHover : null;
+      const ok = !!to && NB.canLink(S, dragStart.id, to), cst = to ? NB.openCost(S, dragStart.id, to) : 0;
+      const far = !!to && !ok && NB.dist(NB.NODE[dragStart.id], NB.NODE[to]) > NB.NET.reach;
+      netDrag = { from: dragStart.id, mx: p.x, my: p.y, to, ok: ok && S.res.exotic >= cst, cost: to ? far ? t("ui.net.tooFar") : `${mass(cst)}${S.res.exotic < cst ? " · " + t("ui.net.notEnough") : ""}` : "" };
+    }
+  });
+  sc.addEventListener("pointerdown", (e: PointerEvent) => {
+    if (!S.hole.done) return;
+    const p = netXY(e), g = netGeo(p.W, p.H), node = hitNode(g, S, p.x, p.y), link = node ? null : hitLink(g, S, p.x, p.y);
+    dragStart = { x: p.x, y: p.y, id: node, link };
+    sc.setPointerCapture(e.pointerId);
+    if (link) {
+      // ťuknutí na most: když jím prochází vlna, zamkne se; jinak se jen vybere
+      const ok = NB.tapLock(S, link);
+      netFx.flashes.push({ id: link, t: performance.now() / 1e3, ok });
+      if (ok && S.settings.sound) chime();
+      netSel = link; S.bridge.sel = link; netBubble = link;
+      renderBubble(); renderRig();
+      onJournal(checkJournal(S));
+    }
+  });
+  const end = (e: PointerEvent) => {
+    if (!S.hole.done || !dragStart) return;
+    const p = netXY(e);
+    if (netDrag) {
+      if (netDrag.to && netDrag.ok && NB.openLink(S, netDrag.from, netDrag.to)) {
+        if (S.settings.sound) chime();
+        netBubble = netDrag.to;
+        onJournal(checkJournal(S)); renderAll(); save();
+      }
+    } else if (dragStart.id && Math.hypot(p.x - dragStart.x, p.y - dragStart.y) <= 6) {
+      netBubble = dragStart.id === "home" ? null : dragStart.id;
+      if (dragStart.id !== "home" && S.bridge.links[dragStart.id]) { netSel = dragStart.id; S.bridge.sel = dragStart.id; }
+    } else if (!dragStart.link) netBubble = null;
+    netDrag = null; dragStart = null;
+    renderBubble();
+  };
+  sc.addEventListener("pointerup", end);
+  sc.addEventListener("pointercancel", () => { netDrag = null; dragStart = null; });
+  sc.addEventListener("pointerleave", () => { netHover = null; netHoverLink = null; });
+  // mapa galaxie na záložce Mapa: kliknutí na misi ji pošle
+  document.addEventListener("pointerdown", (e) => {
+    const m = (e.target as HTMLElement)?.closest?.("#map") as HTMLCanvasElement | null;
+    if (!m || !S.hole.done) return;
+    const r = m.getBoundingClientRect(), id = galaxyHit(r.width, r.height, S, e.clientX - r.left, e.clientY - r.top, (x) => locationOpen(S, x));
+    if (id && canTravel(S, id)) { depart(S, id); renderAll(); save(); }
+  });
+}
+const TYPE_KEY = (n: NB.GNode) => `ui.net.types.${n.type}`;
+function renderBubble() {
+  const el = $("netBubble");
+  if (!el) return;
+  const id = netBubble;
+  if (!id || !S.hole.done || tab !== "build" || !NB.NODE[id] || !NB.isRevealed(S, NB.NODE[id])) { el.hidden = true; el.dataset.k = ""; return; }
+  const n = NB.NODE[id], l = S.bridge.links[id], f = NB.netNow(S);
+  let h = `<div class="bh"><b>${esc(nodeName(n))}</b><button class="iconbtn" data-bclose="1" aria-label="${esc(t("ui.close"))}">×</button></div><div class="dim">${esc(t(TYPE_KEY(n)))}</div>`;
+  const rows: [string, string][] = [[n.type === "dark" ? t("ui.net.darkL") : t("ui.net.L"), power(n.L)], [t("ui.net.fromHome"), ly(n.d)]];
+  if (l) {
+    rows.push([t("ui.net.sends"), power(NB.nodeOut(S, n))], [t("ui.net.bridge"), t("ui.net.level", { n: l.lv })], [t("ui.net.flowCap"), `${power(f.flow[id] ?? 0)} / ${power(NB.capOf(S, l))}`]);
+  }
+  h += `<dl>${rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}</dl>`;
+  if (l) {
+    const c = NB.upCost(S, l.lv), g = NB.widenGain(S, id);
+    h += `<p class="dim">${esc(g > 0 ? t("ui.net.widenGain", { w: power(g) }) : t("ui.net.widenNoGain"))}</p><div class="row"><button class="btn" data-widen="${id}" ${S.res.exotic < c ? "disabled" : ""}>${esc(t("ui.net.widenBtn", { c: mass(c) }))}</button><button class="btn ghost" data-bsel="${id}">${esc(t("ui.net.detail"))}</button></div>`;
+  } else {
+    const from = NB.bestFrom(S, id);
+    if (from) {
+      const c = NB.openCost(S, from, id);
+      h += `<p class="dim">${esc(t("ui.net.openFrom", { n: nodeName(NB.NODE[from]), g: power(NB.openGain(S, from, id)) }))}</p><div class="row"><button class="btn" data-open="${id}" ${S.res.exotic < c ? "disabled" : ""}>${esc(t("ui.net.openBtn", { c: mass(c) }))}</button></div>`;
+    } else h += `<p class="dim">${esc(t("ui.net.outOfReach", { d: ly(NB.NET.reach) }))}</p>`;
+  }
+  if (el.innerHTML !== h) el.innerHTML = h;
+  el.hidden = false;
+  const c = $("scenec"), r = c.getBoundingClientRect(), g = netGeo(r.width, r.height), [px, py] = toPx(g, n);
+  const w = el.offsetWidth || 260, hh = el.offsetHeight || 160;
+  el.style.left = Math.max(8, Math.min(r.width - w - 8, px + 18)) + "px";
+  el.style.top = Math.max(8, Math.min(r.height - hh - 8, py - hh / 2)) + "px";
+}
+function renderScene4() {
+  $("burstBtn").hidden = true;
+  const hint = $("sceneHint");
+  hint.hidden = tab !== "build" || S.bridge.n >= 4 && S.bridge.locks >= 3;
+  const html = t("ui.net.help").split("|").map((x, i) => `<b>${i + 1}</b> ${esc(x)}`).join("<br>");
+  if (hint.innerHTML !== html) hint.innerHTML = html;
+  renderBubble();
+}
+function frame4(time: number) {
+  const sel = selLink(), n = sel ? NB.NODE[sel] : NB.NODE["home"];
+  if (tab === "build") {
+    const tg = S.bridge.target ?? { raider: "", router: "" }, bo = tg.raider ? NB.bestFrom(S, tg.raider) : null;
+    const f = NB.netNow(S), wi = sel ? waveIn(S, sel) : 0;
+    drawNet($("scenec") as unknown as HTMLCanvasElement, S, {
+      flow: f, hover: netHover, hoverLink: netHoverLink, sel: netSel, drag: netDrag,
+      raider: S.off.raider ? "" : tg.raider, router: S.off.router ? "" : tg.router, raiderFrom: bo ?? "",
+      raiderP: tg.raider ? S.bridge.bank.raider / Math.max(1, bo ? NB.openCost(S, bo, tg.raider) : 1) : 0,
+      pulseText: sel ? t("ui.net.pulseLine", { w: dec(wi, 1) }) : t("ui.net.pulseOnly"), flashes: netFx.flashes, burst: netFx.burst
+    }, time, nodeName);
+  } else {
+    const sub = sel ? t("ui.net.mouthSub", { d: ly(n.d), n: S.bridge.links[sel].lv }) : t("ui.net.mouthNone");
+    drawMouth($("rockc") as unknown as HTMLCanvasElement, n, time, t("ui.net.mouth", { n: nodeName(n) }), sub);
+  }
+  if (tab === "bridge" && sel) {
+    const c = document.getElementById("throatc") as HTMLCanvasElement, l = S.bridge.links[sel], f = NB.netNow(S);
+    if (c) drawThroat(c, {
+      a: NB.NODE[l.p], b: n, lv: l.lv, fill: (f.supply[sel] ?? 0) / NB.capOf(S, l), lock: l.lk > 0, title: t("ui.net.profile"),
+      aName: nodeName(NB.NODE[l.p]), bName: nodeName(n),
+      lines: [t("ui.net.level", { n: l.lv }), t("ui.net.throatR", { r: sci(3e5 * Math.pow(NB.NET.capG, l.lv / 2), 1) }), t("ui.net.exoHeld", { m: mass(NB.upCost(S, l.lv) * 2) })]
+    }, time);
+  }
 }

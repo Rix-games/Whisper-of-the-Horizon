@@ -2,14 +2,16 @@
 // ruda, kov a plazma v kg, energie v J (výroba ve W = J/s), data v bajtech.
 import type { State } from './state.js';
 
-export type Res = 'ore' | 'metal' | 'energy' | 'data' | 'plasma';
+export type Res = 'ore' | 'metal' | 'energy' | 'data' | 'plasma' | 'exotic';
 export type Amounts = Partial<Record<Res, number>>;
 
 export type BuildingId = 'drone' | 'smelter' | 'solar' | 'lab' | 'drill' | 'mirror' | 'replicator' | 'forge' | 'catcher' | 'qcomp' | 'fusion' | 'dyson' | 'windnet' | 'sieve' | 'corono' | 'lifter' | 'separator' | 'seismo' | 'swarmfab'
-  | 'scoop' | 'injector' | 'ring' | 'station' | 'jet' | 'hawking' | 'yard';
+  | 'scoop' | 'injector' | 'ring' | 'station' | 'jet' | 'hawking' | 'yard'
+  | 'plate' | 'beacon' | 'bswarm' | 'anchor' | 'plock' | 'raider' | 'router' | 'pair' | 'pump' | 'kcol' | 'gwdet' | 'trap';
 export type ResearchId = 'vib' | 'swarm' | 'deep' | 'arc' | 'scan' | 'thinfilm' | 'auto' | 'lab2' | 'mirror' | 'repl' | 'resonance' | 'forge' | 'cryo' | 'signal' | 'optics' | 'catcher' | 'swarm2' | 'fusion' | 'supercond' | 'plasma' | 'quantum' | 'vib2' | 'dyson' | 'nano' | 'statite' | 'induct' | 'beam' | 'lagrange' | 'lift' | 'sep' | 'seismo' | 'coil' | 'fab' | 'sail' | 'redesign' | 'highorbit' | 'census' | 'rotlift' | 'carbon' | 'seis2' | 'mg' | 'neon' | 'pulse2' | 'silicon' | 'magsail' | 'iron' | 'neutrino'
   | 'accrete' | 'dilate' | 'prograde' | 'magscoop' | 'wide' | 'mri' | 'lower' | 'pulse3' | 'thick' | 'slim' | 'mad' | 'edge'
-  | 'bz' | 'fermi' | 'kugel' | 'penrose' | 'evap' | 'dive' | 'yard';
+  | 'bz' | 'fermi' | 'kugel' | 'penrose' | 'evap' | 'dive' | 'yard'
+  | 'interf' | 'widen' | 'vacuum' | 'pumpr' | 'router' | 'plockr' | 'raider' | 'pairs' | 'pairs2' | 'spectral' | 'quiet' | 'shifted' | 'detector' | 'microlens' | 'trapr' | 'passage';
 
 export interface BuildingDef {
   base: Amounts;          // cena prvního kusu
@@ -27,7 +29,7 @@ export interface EventDef { res: Res; seconds: number; min: number; unlock: (s: 
 export interface Trigger { id: string; when: (s: State, c?: { powerW: number }) => boolean }
 
 
-export const RESOURCES: Res[] = ["ore", "metal", "energy", "data", "plasma"];
+export const RESOURCES: Res[] = ["ore", "metal", "energy", "data", "plasma", "exotic"];
 export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   drone: { base: { ore: 10 }, growth: 1.25, prod: { ore: 0.5 }, unlock: () => true },
   smelter: { base: { ore: 500 }, growth: 1.17, prod: { metal: 1 }, cons: { ore: 2 }, unlock: (s) => s.total.ore >= 800 || s.b.smelter > 0 },
@@ -60,13 +62,30 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
   hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) },
   // Orbitální montovna: sama staví diskové kolektory a tryskové lapače z podílu čistého přírůstku plazmatu (engine yardTick)
-  yard: { base: { plasma: 3e16 }, growth: 1.6, unlock: (s) => !!s.r.yard && hole3(s) }
+  yard: { base: { plasma: 3e16 }, growth: 1.6, unlock: (s) => !!s.r.yard && hole3(s) },
+  // Kapitola 4: Most. Exotická hmota (kg) drží hrdla červích děr otevřená. Výkon domů počítá síť (bridge.ts).
+  // Ruční stupeň: desky, majáky, roje, kotvy. Automatický stupeň: zámky, raziče, směrovače, páry, pumpy.
+  plate: { base: { exotic: 2e18 }, growth: 1.15, prod: { exotic: 2e17 }, unlock: ch4 },
+  bswarm: { base: { exotic: 3e18 }, growth: 1.13, unlock: ch4 },
+  beacon: { base: { exotic: 4e18 }, growth: 1.4, prod: { data: 1 }, unlock: ch4 },
+  anchor: { base: { exotic: 4e19 }, growth: 1.2, unlock: (s) => ch4(s) && (s.bridge?.n ?? 0) >= 3 },
+  pump: { base: { exotic: 3e21 }, growth: 1.16, prod: { exotic: 4e19 }, unlock: (s) => ch4(s) && !!s.r.pumpr },
+  router: { base: { exotic: 2e21 }, growth: 1.3, unlock: (s) => ch4(s) && !!s.r.router },
+  plock: { base: { exotic: 5e21 }, growth: 1.25, unlock: (s) => ch4(s) && !!s.r.plockr },
+  raider: { base: { exotic: 3e21 }, growth: 1.3, unlock: (s) => ch4(s) && !!s.r.raider },
+  pair: { base: { exotic: 2e22 }, growth: 1.25, unlock: (s) => ch4(s) && !!s.r.pairs },
+  kcol: { base: { exotic: 3e23 }, growth: 1.2, prod: { exotic: 1e20, data: 1 }, unlock: (s) => ch4(s) && !!s.visited.kilonova },
+  gwdet: { base: { exotic: 1e24 }, growth: 1.22, prod: { data: 1 }, unlock: (s) => ch4(s) && !!s.r.detector },
+  trap: { base: { exotic: 2e24 }, growth: 1.2, unlock: (s) => ch4(s) && !!s.r.trapr }
 };
 export const BUILDING_IDS = Object.keys(BUILDINGS) as BuildingId[];
 function ch2(s: State) { return s.chapterDone >= 1 && !s.star.done; }
+/** Kapitola 4 běží od konce ponoru (díra je hotová). */
+export function ch4(s: State) { return !!s.hole?.done; }
+export function bstage(n: number) { return (s: State) => ch4(s) && (s.bridge?.stage ?? 0) >= n; }
 export const B: Record<BuildingId, BuildingDef> = BUILDINGS;
 /** Kapitola 3 běží: po supernově, před koncem kapitoly se díra pořád krmí. */
-export const hole3 = (s: State) => s.star.done;
+export const hole3 = (s: State) => s.star.done && !s.hole?.done;
 export const phase = (n: number) => (s: State) => s.star.done && (s.hole?.phase ?? 0) >= n;
 export const stage = (n: number) => (s: State) => s.chapterDone >= 1 && s.star.stage >= n && !s.star.done;
 export const has = (...ids: string[]) => (s: State) => ids.every((id) => (s.r as Record<string, true>)[id] || (s.visited as Record<string, true>)[id]);
@@ -138,7 +157,24 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   penrose: { cost: { data: 1e40 }, req: phase(4), reqKey: "phase4" },
   evap: { cost: { data: 2e40 }, req: phase(4), reqKey: "phase4" },
   yard: { cost: { data: 3e38 }, req: phase(3), reqKey: "phase3" },
-  dive: { cost: { data: 6e40 }, req: phase(4), reqKey: "phase4" }
+  dive: { cost: { data: 6e40 }, req: phase(4), reqKey: "phase4" },
+  // Kapitola 4: Most
+  interf: { cost: { data: 1.5e40 }, req: ch4, reqKey: "ch4" },
+  widen: { cost: { data: 4e40 }, req: ch4, reqKey: "ch4" },
+  vacuum: { cost: { data: 2e41 }, req: has("widen") },
+  router: { cost: { data: 8e41 }, req: bstage(1), reqKey: "bstage1" },
+  plockr: { cost: { data: 2e42 }, req: has("router") },
+  raider: { cost: { data: 4e42 }, req: has("router") },
+  pumpr: { cost: { data: 1.5e42 }, req: bstage(1), reqKey: "bstage1" },
+  pairs: { cost: { data: 2e43 }, req: bstage(2), reqKey: "bstage2" },
+  spectral: { cost: { data: 4e43 }, req: bstage(2), reqKey: "bstage2" },
+  quiet: { cost: { data: 6e43 }, req: has("plockr", "pairs") },
+  pairs2: { cost: { data: 2e44 }, req: bstage(3), reqKey: "bstage3" },
+  shifted: { cost: { data: 6e43 }, req: bstage(3), reqKey: "bstage3" },
+  detector: { cost: { data: 1e44 }, req: bstage(3), reqKey: "bstage3" },
+  microlens: { cost: { data: 1e45 }, req: bstage(4), reqKey: "bstage4" },
+  trapr: { cost: { data: 4e44 }, req: bstage(4), reqKey: "bstage4" },
+  passage: { cost: { data: 2e45 }, req: bstage(4), reqKey: "bstage4" }
 };
 export const RESEARCH_IDS = Object.keys(RESEARCH) as ResearchId[];
 export const R: Record<ResearchId, ResearchDef> = RESEARCH;
@@ -163,7 +199,15 @@ export const LOCATIONS = {
   pulsar: { cost: 1.2e42, time: 110, orbit: 0.88, angle: 2.8, speed: 2.5e-3, req: phase(1) },
   cloud: { cost: 4e42, time: 140, orbit: 0.97, angle: 4.3, speed: 1e-3, req: phase(2) },
   dwarf: { cost: 1e43, time: 120, orbit: 0.5, angle: 0.2, speed: 8e-3, req: phase(3) },
-  stream: { cost: 2.5e43, time: 150, orbit: 0.72, angle: 3.2, speed: 4e-3, req: phase(4) }
+  stream: { cost: 2.5e43, time: 150, orbit: 0.72, angle: 3.2, speed: 4e-3, req: phase(4) },
+  // Kapitola 4: mise v oblasti galaxie (orbit/angle = poloha na mapě galaxie)
+  flyby: { cost: 1e42, time: 60, orbit: 0.68, angle: 4.4, speed: 0, req: (s) => ch4(s) && (s.bridge?.n ?? 0) >= 1 },
+  magnetar: { cost: 2e42, time: 90, orbit: 0.45, angle: 3.1, speed: 0, req: bstage(1) },
+  globular: { cost: 3e42, time: 100, orbit: 0.9, angle: 4.5, speed: 0, req: bstage(2) },
+  kilonova: { cost: 4e42, time: 120, orbit: 0.38, angle: 2.4, speed: 0, req: bstage(2) },
+  frb: { cost: 4e42, time: 90, orbit: 0.92, angle: 0.8, speed: 0, req: bstage(3) },
+  rotation: { cost: 5e42, time: 120, orbit: 0.99, angle: 5.3, speed: 0, req: bstage(4) },
+  bubbles: { cost: 6e42, time: 150, orbit: 0.06, angle: 1.57, speed: 0, req: (s: State): boolean => bstage(4)(s) && has("rotation")(s) }
 } satisfies Record<string, LocationDef>;
 export type LocationId = keyof typeof LOCATIONS;
 export const LOCATION_IDS = Object.keys(LOCATIONS) as LocationId[];
@@ -227,7 +271,9 @@ export const EVENTS = {
   echo: { res: "data", seconds: 60, min: 2e3, unlock: (s) => !!s.r.scan },
   prominence: { res: "plasma", seconds: 90, min: 1e6, unlock: (s) => s.b.lifter >= 1 && !s.star.done },
   // Kapitola 3: shluk plynu z mlhoviny
-  clump: { res: "plasma", seconds: 90, min: 1e7, unlock: (s) => s.b.scoop >= 1 && s.star.done }
+  clump: { res: "plasma", seconds: 90, min: 1e7, unlock: (s) => s.b.scoop >= 1 && hole3(s) },
+  // Kapitola 4: fluktuace hrdla (exotika)
+  flux: { res: "exotic", seconds: 90, min: 1e19, unlock: (s) => ch4(s) && (s.bridge?.n ?? 0) >= 1 }
 } satisfies Record<string, EventDef>;
 export type EventId = keyof typeof EVENTS;
 export const EVENT_IDS = Object.keys(EVENTS) as EventId[];
@@ -275,7 +321,18 @@ export const STORY: Trigger[] = [
   { id: "fermi", when: (s) => !!s.r.fermi },
   { id: "ergo", when: (s) => (s.hole?.phase ?? 0) >= 4 },
   { id: "dive", when: (s) => (s.hole?.dive ?? -1) >= 0 },
-  { id: "horizon", when: (s) => !!s.hole?.done }
+  { id: "horizon", when: (s) => !!s.hole?.done },
+  // Kapitola 4
+  { id: "order", when: (s) => !!s.bridge?.started },
+  { id: "bridge1", when: (s) => (s.bridge?.n ?? 0) >= 1 },
+  { id: "relic", when: (s) => (s.bridge?.stage ?? 0) >= 1 && (s.bridge?.n ?? 0) >= 8 },
+  { id: "rhythm", when: (s) => (s.bridge?.locks ?? 0) >= 12 },
+  { id: "typeIII", when: (s) => ch4(s) && s.peakK >= 3 },
+  { id: "kilonova", when: (s) => !!s.visited.kilonova },
+  { id: "shifted", when: (s) => !!s.r.shifted },
+  { id: "halo", when: (s) => !!s.visited.rotation },
+  { id: "pass", when: (s) => (s.bridge?.pass ?? -1) >= 0 },
+  { id: "through", when: (s) => !!s.bridge?.done }
 ];
 export const FACTS: Trigger[] = [
   { id: "kardashev", when: (s) => s.time > 20 },
@@ -313,7 +370,17 @@ export const FACTS: Trigger[] = [
   { id: "bz", when: (s) => s.b.jet >= 1 },
   { id: "fermi", when: (s) => !!s.r.fermi },
   { id: "hawking", when: (s) => !!s.r.kugel },
-  { id: "penrose", when: (s) => !!s.r.penrose }
+  { id: "penrose", when: (s) => !!s.r.penrose },
+  // Kapitola 4
+  { id: "er", when: (s) => (s.bridge?.n ?? 0) >= 1 },
+  { id: "casimir", when: (s) => ch4(s) && s.b.plate >= 1 },
+  { id: "morris", when: (s) => (s.bridge?.n ?? 0) >= 3 },
+  { id: "pll", when: (s) => s.b.plock >= 1 },
+  { id: "erepr", when: (s) => s.b.pair >= 1 },
+  { id: "sagan", when: (s) => ch4(s) && s.peakK >= 3 },
+  { id: "gw170817", when: (s) => !!s.visited.kilonova },
+  { id: "rubin", when: (s) => !!s.visited.rotation },
+  { id: "fermib", when: (s) => !!s.visited.bubbles }
 ];
 export const RULES = {
   baseReactorW: 500,

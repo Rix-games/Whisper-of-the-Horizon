@@ -5,6 +5,12 @@ type Bag = { metal: number; energy: number; plasma: number };
 
 /** Chuchvalec plynu na cestě k díře: start (čas, poloměr, úhel), hmotnost, násobič řetězu. */
 export interface Blob { t0: number; r0: number; th0: number; kg: number; mult: number; gold: boolean; auto: boolean; inj?: boolean }
+export interface Link { p: string; lv: number; lk: number; la: boolean; t: number }
+export interface Bridge {
+  started: boolean; holeW: number; links: Record<string, Link>; n: number; stage: number; pass: number; done: boolean;
+  locks: number; lv: Record<string, number>; bank: { raider: number; router: number }; made: { raider: number; router: number };
+  archive?: number; rate?: { raider: number; router: number }; target?: { raider: string; router: string }; wave?: number; sel?: string;
+}
 export interface State {
   v: number;
   res: Record<Res, number>;
@@ -34,6 +40,8 @@ export interface State {
   hole: { a: number; phase: number; dive: number; done: boolean; started: boolean; cap?: boolean };
   // Kapitola 3: magnetická past a vypouštění plynu do disku (engine: vent*)
   vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[]; disk?: number; share?: number; kg?: number; inj?: number; injC?: number; injK?: number; man?: number; miss?: number };
+  // Kapitola 4: síť mostů. links: cílový uzel → most (p = odkud, lv = úroveň hrdla, lk = zbývá zámku v s, la = zámek je automatický)
+  bridge: Bridge;
   yrs?: number;                         // kolik let uplynulo venku (Vesper mezi směnami spí)
   yrs1?: number;                        // roky venku na začátku Kap. 2
   seen?: Record<string, string>;
@@ -73,6 +81,7 @@ export function newState(now = Date.now()): State {
     p: { pts: 0, run: 0, count: 0, base: -1 },
     hole: { a: 0.2, phase: 0, dive: -1, done: false, started: false },
     vent: { tank: 0, kg: 0, fall: 0, chain: 0, best: 0, heat: 0, over: 0, auto: 0, lv: {}, fly: [] },
+    bridge: { started: false, holeW: 0, links: {}, n: 0, stage: 0, pass: -1, done: false, locks: 0, lv: {}, bank: { raider: 0, router: 0 }, made: { raider: 0, router: 0 } },
     settings: { sound: false, lang: "cs", vol: {} },
     last: now
   };

@@ -304,3 +304,31 @@ body.cv #bview .effnote, .effnote { display: block; white-space: normal; color: 
 body.cv #bview .item .eff { overflow: hidden; }
 body.cv #bview [data-b=injector] .effrow { flex-wrap: wrap; white-space: normal; }
 body.cv #bview [data-b=injector] .effrow > span { white-space: nowrap; }
+
+/* ---------- Kapitola 4: Most ---------- */
+:root { --exotic: #8ef0c8; }
+body.ch4 #scenec { cursor: default; }
+.netbubble { position: absolute; z-index: 5; width: max-content; min-width: 260px; max-width: 360px; background: rgba(17,20,42,.96); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+.netbubble .bh { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.netbubble .bh b { font-family: "Chakra Petch", sans-serif; font-size: 15px; }
+.netbubble .bh .iconbtn { width: 28px; height: 28px; font-size: 18px; line-height: 1; }
+.netbubble dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 8px 0 6px; }
+.netbubble dt { color: var(--dim); white-space: nowrap; }
+.netbubble dd { margin: 0; text-align: right; font-family: var(--f-mono); white-space: nowrap; }
+.netbubble p { margin: 4px 0 8px; font-size: 12.5px; }
+.netbubble .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.netbubble .btn { font-size: 12.5px; }
+body.cv #view #throatc { height: clamp(260px, 38vh, 440px); }
+.bridgegrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; margin-top: 12px; }
+@media (max-width: 1100px) { .bridgegrid { grid-template-columns: minmax(0, 1fr); } }
+.bridgegrid .stagecard .bar { margin: 8px 0 4px; }
+.bridgegrid .stagecard .bar b { background: var(--exotic); }
+.linklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 6px; }
+.linklist .lnk { display: flex; justify-content: space-between; gap: 8px; padding: 7px 10px; min-height: 36px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 12.5px; cursor: pointer; text-align: left; }
+.linklist .lnk span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.linklist .lnk.full { border-color: rgba(242,165,65,.6); }
+.linklist .lnk.on { border-color: var(--exotic); background: rgba(142,240,200,.08); }
+.linklist .lnk:hover { border-color: var(--dim); }
+@media (min-width: 1101px) {
+  body.cv.ch4.tabbuild .grid { grid-template-rows: auto minmax(360px, 1.25fr) minmax(0, 0.95fr); }
+}

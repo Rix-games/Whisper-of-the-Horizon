@@ -1,6 +1,8 @@
 // Čistá herní logika bez prohlížeče. Dá se spustit v Node (simulace) i na mobilu.
 import type { Blob, State } from './state.js';
-import { HOLE, PHASES, type Amounts, type BuildingId, type EventId, type LocationId, type Res, type ResearchId, B, BUILDING_IDS, EVENTS, EVENT_IDS, FACTS, L, PRESTIGE, R, RESOURCES, RULES, STAGES, STAR, STORY } from './defs.js';
+import { NET, bridgeTick, exoticProd, autoShares, countType, netPower, bstageReady, bstageAdvance } from './bridge.js';
+import { ch4, HOLE, PHASES, type Amounts, type BuildingId, type EventId, type LocationId, type Res, type ResearchId, B, BUILDING_IDS, EVENTS, EVENT_IDS, FACTS, L, PRESTIGE, R, RESOURCES, RULES, STAGES, STAR, STORY } from './defs.js';
+export { ch4 };
 
 const keys = <T extends object>(o: T) => Object.keys(o) as (keyof T)[];
 
@@ -12,7 +14,7 @@ export const DYSON_CH1_CHEAP = 20;
 export const DYSON_CH1_DISCOUNT = 0.4;
 export const CONVERTERS: BuildingId[] = ["smelter", "forge", "lab", "qcomp", "replicator", "sieve", "corono", "lifter", "separator", "seismo", "injector", "station", "hawking"];
 export const CONVERTER_SCALES = { smelter: true, forge: true, sieve: true, lifter: true, separator: true, seismo: true, injector: true, hawking: true };
-const zeroRates = (): Record<Res, number> => ({ ore: 0, metal: 0, energy: 0, data: 0, plasma: 0 });
+const zeroRates = (): Record<Res, number> => ({ ore: 0, metal: 0, energy: 0, data: 0, plasma: 0, exotic: 0 });
 export function stageDef(s: State) {
   return STAGES[Math.min(s.star.stage, STAGES.length - 1)];
 }
@@ -198,7 +200,7 @@ export const VENT_UPS: Record<VentUp, { base: number; g: number; max: number }> 
 };
 export const VENT_IDS = Object.keys(VENT_UPS) as VentUp[];
 export const ventLv = (s: State, id: VentUp) => s.vent.lv[id] ?? 0;
-export const ventOpen = (s: State) => s.star.done && !!s.r.accrete;
+export const ventOpen = (s: State) => s.star.done && !!s.r.accrete && !s.hole.done;
 /** Past se plní z přírůstku plazmatu z naběračů: hráč volí, jaký díl do ní jde. */
 export const ventShare = (s: State, l = ventLv(s, "inlet")) => Math.min(0.8, VENT.share + 0.1 * l);
 export function ventFill(s: State, l = ventLv(s, "inlet")) {
@@ -421,6 +423,13 @@ export function mult(s: State, id: BuildingId) {
       if (r.evap) m *= 4;
       if (v.ergo) m *= 3;
       break;
+    case "plate":
+      if (r.vacuum) m *= 3;
+      break;
+    case "beacon":
+    case "gwdet":
+    case "kcol":
+      break;
     case "separator":
       if (r.mg) m *= 5;
       if (r.iron) m *= 5;
@@ -433,6 +442,8 @@ export function mult(s: State, id: BuildingId) {
   }
   // Kapitola 3: každý diskový kolektor posílí naběrače, injektory a Hawkingovy reaktory
   if (id === "scoop" || id === "injector" || id === "hawking") m *= Math.pow(RING_BOOST, s.b.ring) * Math.pow(JET_BOOST, s.b.jet);
+  // Kapitola 4: výroba exotiky sílí s provázanými páry, neutronovými hvězdami v síti a magnetarem
+  if (id === "plate" || id === "pump" || id === "kcol") m *= exoMult(s);
   if (id === "lifter" || id === "separator" || id === "seismo") {
     m *= Math.pow(TUNE.boost, s.b.dyson) * prestigeMult(s);
     if (id === "lifter" && s.star.collapse >= 0) m *= STAR.collapseLift;
@@ -455,6 +466,15 @@ export function mult(s: State, id: BuildingId) {
   }
   return m;
 }
+export function exoMult(s: State) {
+  return Math.pow(s.r.pairs2 ? NET.pairM2 : NET.pairM, Math.floor(s.b.pair)) * Math.pow(1.12, countType(s, "neutron")) * (s.visited.magnetar ? 2 : 1);
+}
+/** Data z Kap. 4 sílí s výkonem domů (P / 2,5·10³⁴ W)^½, dvojhvězdami v síti a misemi. */
+export const CH4_DATA = { beacon: 3e37, gwdet: 1e39, kcol: 1e38, pw0: 2.5e34, k: 0.5 };
+export function dataMult4(s: State) {
+  return Math.pow(Math.max(1, powerW(s) / CH4_DATA.pw0), CH4_DATA.k) * Math.pow(1.15, countType(s, "binary"))
+    * (s.visited.flyby ? 2 : 1) * (s.visited.frb ? 3 : 1) * (s.r.shifted ? 4 : 1);
+}
 export function baseOreRate(s: State) {
   return (["drone", "drill", "catcher"] as BuildingId[]).reduce((a, id) => a + s.b[id] * B[id].prod.ore * mult(s, id), 0);
 }
@@ -471,8 +491,11 @@ export function reactorW(s: State) {
 /** Stavby z minulých kapitol: Kap. 1 kromě kolektorů končí v Kap. 2, kolektory zanikly v supernově. */
 export const CH1_OLD: BuildingId[] = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion"];
 export const CH2_OLD: BuildingId[] = ["dyson", "windnet", "sieve", "corono", "lifter", "separator", "seismo", "swarmfab"];
+/** RET.off = počítat i se stavbami minulé kapitoly (zmrazení výkonu díry na začátku Kap. 4). */
+export const RET = { off: false };
 export function retired(s: State, id: BuildingId) {
-  return s.chapterDone >= 1 && CH1_OLD.includes(id) || s.star.done && CH2_OLD.includes(id);
+  if (RET.off) return false;
+  return s.chapterDone >= 1 && CH1_OLD.includes(id) || s.star.done && CH2_OLD.includes(id) || s.hole.done && (HOLE_BUILDINGS.includes(id) || id === "yard");
 }
 export const SALVAGE = { metal: 0.5, dataSec: 120 };
 /** Na začátku Kap. 2 Vesper rozebere starou platformu: vrátí půlku kovu z jejích staveb a archiv dat. */
@@ -503,6 +526,8 @@ export function prodOf(s: State, id: BuildingId, r: Res) {
   if (id === "ring") return s.b.ring ? holeL(s) * ringCov(s) / s.b.ring : 0;
   if (id === "jet") return s.b.jet ? jetP(s) * jetCov(s) * (s.visited.pole ? 3 : 1) * (s.visited.stream ? 1.5 : 1) / s.b.jet : 0;
   if (id === "hawking") return consOf(s, "hawking", "plasma") * HOLE.c2 * (r === "data" ? HOLE.hawkData : 1);
+  if (r === "data" && (id === "beacon" || id === "gwdet" || id === "kcol")) return CH4_DATA[id] * dataMult4(s) * (id === "kcol" ? Math.max(1, countType(s, "kilo")) : 1);
+  if (id === "kcol") v *= Math.max(1, countType(s, "kilo"));
   return v;
 }
 export function consOf(s: State, id: BuildingId, r: Res) {
@@ -629,7 +654,7 @@ export function chainTick(s: State, dt, lim) {
   }
 }
 export function powerW(s: State) {
-  let w = reactorW(s);
+  let w = reactorW(s) + (s.bridge?.started ? s.bridge.holeW + netPower(s) : 0);
   for (const id of BUILDING_IDS) if (s.b[id] && B[id].prod?.energy) w += prodOf(s, id, "energy") * s.b[id];
   return w;
 }
@@ -649,6 +674,11 @@ export function rates(s: State) {
   }
   if (s.r.auto && !s.chapterDone) p.ore += clickPower(s) * RULES.autoClicksPerSec;
   if (ventOpen(s) && ventTank(s) < 0.999) c.plasma += ventFill(s);
+  if (s.bridge?.started) {
+    p.energy += s.bridge.holeW + netPower(s);
+    const r = s.bridge.rate;
+    if (r) c.exotic += r.raider + r.router;
+  }
   return { p, c };
 }
 export function rateParts(s: State, r) {
@@ -663,6 +693,11 @@ export function rateParts(s: State, r) {
     if (cv) cons.push([id, cv * n * e]);
   }
   if (r === "ore" && s.r.auto && !s.chapterDone) prod.push(["auto", clickPower(s) * RULES.autoClicksPerSec]);
+  if (r === "energy" && s.bridge?.started) prod.push(["home", s.bridge.holeW], ["net", netPower(s)]);
+  if (r === "exotic" && s.bridge?.rate) {
+    if (s.bridge.rate.raider) cons.push(["raider", s.bridge.rate.raider]);
+    if (s.bridge.rate.router) cons.push(["router", s.bridge.rate.router]);
+  }
   return { prod, cons };
 }
 export function add(s: State, r: Res, v: number) {
@@ -851,9 +886,28 @@ export function tick(s: State, dt, rng = Math.random) {
   if (s.chapterDone >= 1 && s.p.base < 0) s.p.base = Math.floor(s.b.dyson);
   salvageTick(s);
   yearsTick(s, dt);
-  if (s.star.done) { holeTick(s, dt); ventTick(s, dt); }
+  if (s.star.done && !s.hole.done) { holeTick(s, dt); ventTick(s, dt); }
+  if (ch4(s)) {
+    bridgeStart(s);
+    bridgeTick(s, dt, exoticProd(s, (id, r) => prodOf(s, id, r)));
+  }
   return checkJournal(s);
 }
+/** Začátek Kap. 4: výkon díry se zmrazí jako Domovská díra, stanice a reaktory se převedou na archiv dat, sonda z ponoru přinese první exotiku. */
+function bridgeStart(s: State) {
+  if (s.bridge.started) return;
+  RET.off = true;
+  const holeW = powerW(s) - reactorW(s), data = baseDataRate(s) * NET.holeData;
+  RET.off = false;
+  s.bridge.holeW = holeW;
+  s.bridge.started = true;
+  add(s, "data", data);
+  add(s, "exotic", NET.startExotic);
+  s.bridge.archive = data;
+  if (s.event?.id === "clump") s.event = null;
+}
+export function bridgeReady(s: State) { return bstageReady(s, powerW(s)); }
+export function bridgeAdvance(s: State) { return bstageAdvance(s, powerW(s)); }
 export function clockYears(s: State) {
   const d = stageDef(s);
   return d.years / d.sec;

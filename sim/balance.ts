@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { BUILDING_IDS, LOCATION_IDS, RESEARCH_IDS, B, type BuildingId, type Res } from '../src/core/defs.js';
 import { newState, migrate, encodeSave } from '../src/core/state.js';
 import * as E from '../src/core/engine.js';
+import * as N from '../src/core/bridge.js';
 
 const CLICKS_PER_SEC = Number(process.env.CPS ?? 4);
 const EVENT_CATCH = Number(process.env.CATCH ?? 0.6);
@@ -31,7 +32,8 @@ let lastBuy = 0, longestWait = 0, waitStart = s.time;
 const CH1: BuildingId[] = ['drone', 'smelter', 'solar', 'lab', 'drill', 'mirror', 'replicator', 'forge', 'catcher', 'qcomp', 'fusion', 'dyson'];
 const CH2: BuildingId[] = ['dyson', 'windnet', 'sieve', 'corono', 'lifter', 'separator', 'seismo', 'swarmfab'];
 const CH2_SET = new Set(CH2);
-const chapterSet = (): BuildingId[] => s.chapterDone === 0 ? CH1 : s.chapterDone === 1 ? CH2 : BUILDING_IDS.filter((id) => !CH1.includes(id) && !CH2_SET.has(id));
+const CH4B = N.CH4_BUILDINGS as BuildingId[];
+const chapterSet = (): BuildingId[] => s.chapterDone === 0 ? CH1 : s.chapterDone === 1 ? CH2 : s.chapterDone >= 3 ? CH4B : BUILDING_IDS.filter((id) => !CH1.includes(id) && !CH2_SET.has(id) && !CH4B.includes(id));
 const e = (v: number) => v.toExponential(1);
 
 // ---- chování bota podle kapitoly ----
@@ -43,15 +45,43 @@ function botWants(st: typeof s, id: BuildingId) {
   if (id === 'injector') return E.injDemand(st) + E.consOf(st, id, 'plasma') <= 0.85 * E.ventFill(st);
   if (id === 'hawking') return c.plasma + E.consOf(st, id, 'plasma') <= FEED_SHARE * p.plasma;
   if (id === 'jet') return E.jetCov(st) < 0.97;
+  if (id === 'bswarm') return N.capture(st) < 0.97;
+  if (id === 'trap') return N.trapCapture(st) < 0.97;
+  if (id === 'beacon') return N.revealCount(st) < 48;
   return true;
 }
 function botWeight(_s: typeof s, _id: BuildingId) { return 1; }
 function botAct(st: typeof s) {
   if (VENTBOT && st.star.done) {
     for (let k = 0; k < VENTBOT; k++) E.ventRelease(st, rng() * 6.28); if (E.ventCanBurst(st)) E.ventBurst(st); for (const id of E.VENT_IDS) if (E.ventUpCost(st, id) < 0.1 * st.res.plasma) E.ventUpgrade(st, id); }
-  if (st.star.done && E.phaseReady(st).ok) { E.advancePhase(st); marks.push([st.hole.dive >= 0 ? 'PONOR' : 'FÁZE ' + st.hole.phase, st.time, E.kardashev(st).toFixed(2)]); }
+  botNet(st);
+  if (E.ch4(st) && E.bridgeReady(st).ok) { E.bridgeAdvance(st); marks.push([st.bridge.pass >= 0 ? 'PRŮCHOD' : 'STADIUM4 ' + st.bridge.stage, st.time, E.kardashev(st).toFixed(2)]); }
+  if (st.star.done && !st.hole.done && E.phaseReady(st).ok) { E.advancePhase(st); marks.push([st.hole.dive >= 0 ? 'PONOR' : 'FÁZE ' + st.hole.phase, st.time, E.kardashev(st).toFixed(2)]); }
+}
+const SYNC = Number(process.env.SYNC ?? 0.6); // podíl pulsů, kdy bot trefí vlnu
+let lastWave = 0;
+function botNet(st: typeof s) {
+  if (!E.ch4(st) || !st.bridge.started) return;
+  // synchronizace: na začátku vlny zamkne až 4 nejvytíženější mosty
+  const ph = N.wavePhase(st);
+  if (ph < lastWave && rng() < SYNC) {
+    const f = N.netNow(st), L = st.bridge.links;
+    Object.keys(L).filter((id) => L[id].lk <= 0 || L[id].la).sort((a, b) => f.supply[b] / N.capBase(st, L[b].lv) - f.supply[a] / N.capBase(st, L[a].lv)).slice(0, 4)
+      .forEach((id) => { L[id].lk = N.lockLen(st); L[id].la = false; st.bridge.locks++; });
+  }
+  lastWave = ph;
+  for (const id of N.SYNC_IDS) if (N.syncCost(st, id) < 0.05 * st.res.exotic) N.syncUpgrade(st, id);
+  if (st.b.plate < 3) return;
+  for (let k = 0; k < 30; k++) {
+    const o = N.bestOpen(st), w = N.bestWiden(st);
+    const vo = o ? (o.gain + 0.15 * N.nodeOut(st, N.NODE[o.to])) / o.cost : 0, vw = w ? N.widenGain(st, w) / N.upCost(st, st.bridge.links[w].lv) : 0;
+    if (!o && !w) break;
+    const cw = w ? N.upCost(st, st.bridge.links[w].lv) : Infinity;
+    if (vw > vo && w) { if (cw > 0.6 * st.res.exotic || !N.widen(st, w)) break; } else if (o) { if (o.cost > 0.6 * st.res.exotic || !N.openLink(st, o.from, o.to)) break; } else break;
+  }
 }
 function botStatus(st: typeof s) {
+  if (E.ch4(st)) { const f = N.netNow(st); return `stadium ${st.bridge.stage} mosty ${st.bridge.n} vidět ${N.revealCount(st)} sběr ${N.capture(st).toFixed(2)} síť ${e(f.total)} díra ${e(st.bridge.holeW)} exo ${e(st.res.exotic)} ${e(E.rates(st).p.exotic)}/s | ${chapterSet().map((id) => id + ' ' + Math.floor(st.b[id])).join(' ')}`; }
   if (st.chapterDone === 1) return `stadium ${st.star.stage} t ${Math.round(st.star.t)} pokrytí ${E.coverage(st).toFixed(2)} body ${st.p.pts}`;
   if (st.star.done) return `fáze ${st.hole.phase} a ${st.hole.a.toFixed(2)} L ${e(E.holeL(st))} kryt ${E.ringCov(st).toFixed(2)} trysky ${e(E.jetP(st))} γ ${E.gamma(st).toFixed(1)} | ${chapterSet().map((id) => id + ' ' + Math.floor(st.b[id])).join(' ')}`;
   return '';
@@ -143,13 +173,14 @@ for (let t = 0; t < LIMIT_H * 3600; t++) {
   if (SNAP.includes(Math.round(s.time - t0))) console.log(`STAV ${fmt(s.time - t0)}:`, Object.entries(s.b).filter(([id, v]) => v >= 1 && chapterSet().includes(id as BuildingId)).map(([k, v]) => `${k} ${Math.floor(v)}`).join(', '));
   for (const [sec, file] of DUMPAT) if (Math.round(s.time - t0) === Number(sec)) writeFileSync(file, JSON.stringify(s));
   for (const id of BUILDING_IDS) if (s.b[id] >= 1) mark('B ' + id);
-  for (const k of [0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.25, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3]) if (E.kardashev(s) >= k) mark('K ' + k);
+  for (const k of [0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.25, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.95, 3, 3.05, 3.1, 3.15]) if (E.kardashev(s) >= k) mark('K ' + k);
   if (s.chapterDone > ch) {
     mark('KONEC KAPITOLY ' + s.chapterDone);
     longestWait = 0; waitStart = s.time;
     if (SAVEAT.includes('ch' + (s.chapterDone + 1))) console.log(`SAVE ch${s.chapterDone + 1}:`, encodeSave(s));
     if (s.chapterDone === 2 && process.env.DUMP) writeFileSync(process.env.DUMP, JSON.stringify(s));
     if (s.chapterDone === 1 && process.env.DUMP1) writeFileSync(process.env.DUMP1, JSON.stringify(s));
+    if (s.chapterDone === 3 && process.env.DUMP3) writeFileSync(process.env.DUMP3, JSON.stringify(s));
   }
   if (s.chapterDone >= STOP_CH) break;
 }
