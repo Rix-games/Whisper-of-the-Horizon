@@ -34,7 +34,7 @@ export const cs = {
     capturedTxt: "Kolektory chytí {p} záření: Energie +{w}",
     clockDil: "U stanic plyne čas {g}× pomaleji",
     outside: "Venku uplynulo {t}",
-    prod: { title: "Produkce", hole: "Díra", power: "Výkon civilizace", dil: "Dilatace u stanic", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingových reaktorů" } },
+    prod: { title: "Produkce", hole: "Díra", power: "Výkon civilizace", dil: "Dilatace u stanic", fromVent: "plyn z ventilu", fromInj: "plyn z injektorů", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingových reaktorů" } },
     outsideTip: "Den je den Vesperova bdění. Mezi směnami Vesper spí a roj pracuje sám, takže venku plyne čas mnohem rychleji.",
     vent: {
       flow: "Z ventilu do díry",
@@ -128,7 +128,7 @@ export const cs = {
     fact: "Věděl jsi?",
     report: "Hlášení",
     voyage: { flying: "Expedice Vesperu · {to}", remaining: "přílet za {t}", docked: "Vesper čeká u platformy" },
-    map: { fly: "Vyslat", onWay: "Na cestě", flight: "doba letu {t}", visited: "prozkoumáno", active: "Prozkoumáno" },
+    map: { clickGo: "klikni a leť", fly: "Vyslat", onWay: "Na cestě", flight: "doba letu {t}", visited: "prozkoumáno", active: "Prozkoumáno" },
     events: {
       comet: { name: "Kometa na dosah", claim: "Zachytit kometu", got: "Kometa zachycena: +{v} rudy" },
       flare: { name: "Sluneční erupce", claim: "Zachytit erupci", got: "Erupce zachycena: +{v} energie" },

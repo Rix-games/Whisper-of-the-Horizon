@@ -3,7 +3,8 @@
 // ohnutý obraz zadní strany disku, trysky a ergosféra podle fáze.
 import { HOLE, L, type LocationId } from '../core/defs.js';
 import type { State } from '../core/state.js';
-import { iscoR } from '../core/engine.js';
+import { canTravel, iscoR } from '../core/engine.js';
+import { energy } from '../core/format.js';
 import { t } from '../i18n/index.js';
 import { bakeMapBg, bakeNebula, sfbm } from './scene.js';
 
@@ -558,6 +559,11 @@ export function drawHoleMap(c: HTMLCanvasElement, s: State, v: HoleView, time: n
     if (done) { x.fillStyle = 'rgba(127,214,154,0.35)'; x.fill(); }
     x.fillStyle = done ? '#e1e4f4' : '#b0b5d4';
     x.fillText(t(`loc.${id}.short`), px + 9, py + 4);
+    if (!done && s.travel?.to !== id) {
+      const ok = canTravel(s, id);
+      x.fillStyle = ok ? 'rgba(242,165,65,0.95)' : 'rgba(138,144,184,0.85)';
+      x.fillText(`${energy(L[id].cost).replace(/<\/?sup>/g, '')}${ok ? ' · ' + t('ui.map.clickGo') : ''}`, px + 9, py + 19);
+    }
   }
   // Vesper
   let sp: [number, number], ang = -Math.PI / 2;
@@ -589,7 +595,7 @@ export function drawHoleMap(c: HTMLCanvasElement, s: State, v: HoleView, time: n
 export interface SceneBlob { r: number; th: number; gold: boolean; mult: number; trail: [number, number][]; auto?: boolean }
 export interface SceneFlare { r: number; th: number; gold: boolean; mult: number; text: string }
 export interface SceneView {
-  blobs: SceneBlob[]; flares: SceneFlare[]; relR: number; hover: number | null; hoverText: string;
+  blobs: SceneBlob[]; flares: SceneFlare[]; inj?: number[]; relR: number; hover: number | null; hoverText: string;
   tank: number; tankText: string; chainText: string; pulse: number; pulseSec: number; overText: string; locked: string;
 }
 export const SCENE_TILT = 0.36;
@@ -613,6 +619,13 @@ export function drawScene(c: HTMLCanvasElement, v: HoleView, sv: SceneView, time
     x.strokeStyle = `rgba(184,146,255,${0.55 * (1 - f)})`; x.lineWidth = 1.6;
     x.beginPath(); x.ellipse(cx, cy, Rsh + f * R * 1.1, (Rsh + f * R * 1.1) * tilt, 0, 0, 7); x.stroke();
   }
+  // injektory: tyrkysové značky na okraji disku
+  for (const th of sv.inj ?? []) {
+    const [ix, iy] = P(0.97, th);
+    x.strokeStyle = 'rgba(127,211,234,0.95)'; x.lineWidth = 1.5;
+    x.beginPath(); x.moveTo(ix, iy - 6); x.lineTo(ix + 5, iy); x.lineTo(ix, iy + 6); x.lineTo(ix - 5, iy); x.closePath(); x.stroke();
+    x.fillStyle = 'rgba(127,211,234,0.35)'; x.fill();
+  }
   // kružnice vypouštění
   if (!sv.locked) {
     x.setLineDash([5, 6]); x.strokeStyle = 'rgba(242,165,65,0.5)'; x.lineWidth = 1.2;
@@ -624,13 +637,13 @@ export function drawScene(c: HTMLCanvasElement, v: HoleView, sv: SceneView, time
       const [ar, at] = b.trail[i - 1], [br, bt] = b.trail[i];
       if (hidden(br, bt)) continue;
       const [ax, ay] = P(ar, at), [bx, by] = P(br, bt), k = i / b.trail.length;
-      x.strokeStyle = b.auto ? `rgba(196,214,255,${k * 0.45})` : b.gold ? `rgba(245,205,85,${k * 0.8})` : `rgba(255,176,146,${k * 0.7})`; x.lineWidth = b.auto ? 1 + k : 1 + k * 2;
+      x.strokeStyle = b.auto ? `rgba(127,211,234,${k * 0.75})` : b.gold ? `rgba(245,205,85,${k * 0.8})` : `rgba(255,176,146,${k * 0.7})`; x.lineWidth = b.auto ? 1 + k * 1.5 : 1 + k * 2;
       x.beginPath(); x.moveTo(ax, ay); x.lineTo(bx, by); x.stroke();
     }
     if (hidden(b.r, b.th)) continue;
     const [px, py] = P(b.r, b.th), rr = 6 + Math.min(6, b.mult * 2);
     const gg = x.createRadialGradient(px, py, 0, px, py, rr);
-    gg.addColorStop(0, b.auto ? 'rgba(220,230,255,0.8)' : b.gold ? 'rgba(255,244,196,1)' : 'rgba(255,226,210,1)'); gg.addColorStop(1, b.auto ? 'rgba(160,180,255,0)' : b.gold ? 'rgba(245,205,85,0)' : 'rgba(255,143,122,0)');
+    gg.addColorStop(0, b.auto ? 'rgba(214,246,255,1)' : b.gold ? 'rgba(255,244,196,1)' : 'rgba(255,226,210,1)'); gg.addColorStop(1, b.auto ? 'rgba(127,211,234,0)' : b.gold ? 'rgba(245,205,85,0)' : 'rgba(255,143,122,0)');
     x.fillStyle = gg; x.beginPath(); x.arc(px, py, rr, 0, 7); x.fill();
   }
   // nové záblesky
@@ -677,4 +690,16 @@ export function drawScene(c: HTMLCanvasElement, v: HoleView, sv: SceneView, time
 }
 function drawHoleAt(c: HTMLCanvasElement, v: HoleView, time: number, _g: ReturnType<typeof sceneGeom>) {
   drawHole(c, v, time, '', true, SCENE_TILT);
+}
+
+/** Kterou misi hráč v pohledu Soustava trefil (nebo null). Stejná geometrie jako drawHoleMap. */
+export function holeMapHit(W: number, H: number, s: State, mx: number, my: number, time: number): LocationId | null {
+  const tt = reduce ? 0 : time, cx = W / 2, cy = H / 2, sc = Math.min(W / 2 * 0.9, H / 2 / TILT * 0.82);
+  let best: LocationId | null = null, bd = 22;
+  for (const id of MAP_IDS) {
+    if (!(L[id].req?.(s) || s.visited[id])) continue;
+    const q = pos(id, tt), px = cx + q[0] * sc, py = cy + q[1] * sc, d = Math.hypot(mx - px, my - py);
+    if (d < bd) { bd = d; best = id; }
+  }
+  return best;
 }

@@ -34,7 +34,7 @@
       capturedTxt: "Kolektory chyt\xED {p} z\xE1\u0159en\xED: Energie +{w}",
       clockDil: "U stanic plyne \u010Das {g}\xD7 pomaleji",
       outside: "Venku uplynulo {t}",
-      prod: { title: "Produkce", hole: "D\xEDra", power: "V\xFDkon civilizace", dil: "Dilatace u stanic", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingov\xFDch reaktor\u016F" } },
+      prod: { title: "Produkce", hole: "D\xEDra", power: "V\xFDkon civilizace", dil: "Dilatace u stanic", fromVent: "plyn z ventilu", fromInj: "plyn z injektor\u016F", from: { ring: "z disku", jet: "z trysek", hawking: "z Hawkingov\xFDch reaktor\u016F" } },
       outsideTip: "Den je den Vesperova bd\u011Bn\xED. Mezi sm\u011Bnami Vesper sp\xED a roj pracuje s\xE1m, tak\u017Ee venku plyne \u010Das mnohem rychleji.",
       vent: {
         flow: "Z ventilu do d\xEDry",
@@ -128,7 +128,7 @@
       fact: "V\u011Bd\u011Bl jsi?",
       report: "Hl\xE1\u0161en\xED",
       voyage: { flying: "Expedice Vesperu \xB7 {to}", remaining: "p\u0159\xEDlet za {t}", docked: "Vesper \u010Dek\xE1 u platformy" },
-      map: { fly: "Vyslat", onWay: "Na cest\u011B", flight: "doba letu {t}", visited: "prozkoum\xE1no", active: "Prozkoum\xE1no" },
+      map: { clickGo: "klikni a le\u0165", fly: "Vyslat", onWay: "Na cest\u011B", flight: "doba letu {t}", visited: "prozkoum\xE1no", active: "Prozkoum\xE1no" },
       events: {
         comet: { name: "Kometa na dosah", claim: "Zachytit kometu", got: "Kometa zachycena: +{v} rudy" },
         flare: { name: "Slune\u010Dn\xED erupce", claim: "Zachytit erupci", got: "Erupce zachycena: +{v} energie" },
@@ -3687,6 +3687,11 @@
       }
       x.fillStyle = done ? "#e1e4f4" : "#b0b5d4";
       x.fillText(t(`loc.${id}.short`), px + 9, py + 4);
+      if (!done && s.travel?.to !== id) {
+        const ok = canTravel(s, id);
+        x.fillStyle = ok ? "rgba(242,165,65,0.95)" : "rgba(138,144,184,0.85)";
+        x.fillText(`${energy(L[id].cost).replace(/<\/?sup>/g, "")}${ok ? " \xB7 " + t("ui.map.clickGo") : ""}`, px + 9, py + 19);
+      }
     }
     let sp, ang = -Math.PI / 2;
     const home = P([-0.62, -0.22]);
@@ -3765,6 +3770,20 @@
       x.ellipse(cx, cy, Rsh + f * R2 * 1.1, (Rsh + f * R2 * 1.1) * tilt, 0, 0, 7);
       x.stroke();
     }
+    for (const th of sv.inj ?? []) {
+      const [ix, iy] = P(0.97, th);
+      x.strokeStyle = "rgba(127,211,234,0.95)";
+      x.lineWidth = 1.5;
+      x.beginPath();
+      x.moveTo(ix, iy - 6);
+      x.lineTo(ix + 5, iy);
+      x.lineTo(ix, iy + 6);
+      x.lineTo(ix - 5, iy);
+      x.closePath();
+      x.stroke();
+      x.fillStyle = "rgba(127,211,234,0.35)";
+      x.fill();
+    }
     if (!sv.locked) {
       x.setLineDash([5, 6]);
       x.strokeStyle = "rgba(242,165,65,0.5)";
@@ -3779,8 +3798,8 @@
         const [ar, at] = b.trail[i - 1], [br, bt] = b.trail[i];
         if (hidden(br, bt)) continue;
         const [ax, ay] = P(ar, at), [bx, by] = P(br, bt), k = i / b.trail.length;
-        x.strokeStyle = b.auto ? `rgba(196,214,255,${k * 0.45})` : b.gold ? `rgba(245,205,85,${k * 0.8})` : `rgba(255,176,146,${k * 0.7})`;
-        x.lineWidth = b.auto ? 1 + k : 1 + k * 2;
+        x.strokeStyle = b.auto ? `rgba(127,211,234,${k * 0.75})` : b.gold ? `rgba(245,205,85,${k * 0.8})` : `rgba(255,176,146,${k * 0.7})`;
+        x.lineWidth = b.auto ? 1 + k * 1.5 : 1 + k * 2;
         x.beginPath();
         x.moveTo(ax, ay);
         x.lineTo(bx, by);
@@ -3789,8 +3808,8 @@
       if (hidden(b.r, b.th)) continue;
       const [px, py] = P(b.r, b.th), rr = 6 + Math.min(6, b.mult * 2);
       const gg = x.createRadialGradient(px, py, 0, px, py, rr);
-      gg.addColorStop(0, b.auto ? "rgba(220,230,255,0.8)" : b.gold ? "rgba(255,244,196,1)" : "rgba(255,226,210,1)");
-      gg.addColorStop(1, b.auto ? "rgba(160,180,255,0)" : b.gold ? "rgba(245,205,85,0)" : "rgba(255,143,122,0)");
+      gg.addColorStop(0, b.auto ? "rgba(214,246,255,1)" : b.gold ? "rgba(255,244,196,1)" : "rgba(255,226,210,1)");
+      gg.addColorStop(1, b.auto ? "rgba(127,211,234,0)" : b.gold ? "rgba(245,205,85,0)" : "rgba(255,143,122,0)");
       x.fillStyle = gg;
       x.beginPath();
       x.arc(px, py, rr, 0, 7);
@@ -3869,6 +3888,19 @@
   }
   function drawHoleAt(c, v, time, _g) {
     drawHole(c, v, time, "", true, SCENE_TILT);
+  }
+  function holeMapHit(W, H, s, mx, my, time) {
+    const tt = reduce2 ? 0 : time, cx = W / 2, cy = H / 2, sc = Math.min(W / 2 * 0.9, H / 2 / TILT2 * 0.82);
+    let best = null, bd = 22;
+    for (const id of MAP_IDS) {
+      if (!(L[id].req?.(s) || s.visited[id])) continue;
+      const q = pos(id, tt), px = cx + q[0] * sc, py = cy + q[1] * sc, d = Math.hypot(mx - px, my - py);
+      if (d < bd) {
+        bd = d;
+        best = id;
+      }
+    }
+    return best;
   }
 
   // src/ui/audio.ts
@@ -4250,38 +4282,6 @@
     $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch22 ? t("ui.star.title") : t("ui.asteroid");
     document.body.classList.toggle("ch2", ch22);
     document.body.classList.toggle("ch3", ch3);
-    const sc = $("scenec");
-    sc.addEventListener("pointermove", (e) => {
-      sceneHover = sceneAngle(e);
-    });
-    sc.addEventListener("pointerleave", () => {
-      sceneHover = null;
-      sceneHold = false;
-    });
-    sc.addEventListener("pointerdown", (e) => {
-      if (sceneZoom) {
-        sceneZoom = 0;
-        renderScene();
-        return;
-      }
-      sceneHover = sceneAngle(e);
-      sceneHold = true;
-      sceneHoldAcc = 0;
-      sc.setPointerCapture(e.pointerId);
-      ventRelease(S, sceneHover);
-    });
-    sc.addEventListener("pointerup", () => {
-      sceneHold = false;
-    });
-    sc.addEventListener("pointercancel", () => {
-      sceneHold = false;
-    });
-    sc.addEventListener("wheel", (e) => {
-      if (!S.star.done) return;
-      e.preventDefault();
-      sceneZoom = e.deltaY > 0 ? 1 : 0;
-      renderScene();
-    }, { passive: false });
     const rock = $("rock");
     rock.disabled = ch22;
     rock.setAttribute("aria-label", ch22 ? t("ui.star.title") : t("ui.mineAria"));
@@ -4309,6 +4309,11 @@
       rows.push(["\xA7" + t("ui.prod.title"), ""]);
       rows.push([t("ui.prod.power"), power(P)]);
       for (const id of ["ring", "jet", "hawking"]) if (part(id) > 1e-3) rows.push([t(`ui.prod.from.${id}`), pct(part(id))]);
+      const fv = ventFlow(S), fi = feedRate(S);
+      if (fv + fi > 0) {
+        rows.push([t("ui.prod.fromVent"), pct(fv / (fv + fi))]);
+        if (fi > 0) rows.push([t("ui.prod.fromInj"), pct(fi / (fv + fi))]);
+      }
       rows.push([t("res.plasma"), `${p.plasma - c.plasma >= 0 ? "+" : "\u2212"}${mass(Math.abs(p.plasma - c.plasma))}/s`]);
       rows.push([t("res.data"), `+${bytes(p.data - c.data)}/s`]);
       if (S.b.station >= 1) rows.push([t("ui.prod.dil"), `\xD7${dec(gamma(S), gamma(S) >= 10 ? 0 : 1)}`]);
@@ -4550,17 +4555,23 @@
       trail3.push([p0.r, p0.th]);
       return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail: trail3 };
     });
-    const ni = S.b.injector >= 1 ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, S.b.injector)) * 3)) : 0;
+    const ni = S.b.injector >= 1 && !S.off.injector ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, S.b.injector)) * 3)) : 0;
+    const inj = [];
     for (let k = 0; k < ni; k++) {
-      const T = ventFlight(0.8), ph = ((S.time / T + k / ni) % 1 + 1) % 1, cyc = Math.floor(S.time / T + k / ni);
-      const b = { t0: S.time - ph * T, r0: 0.8, th0: k * 2.399 + cyc * 1.3, kg: 0, mult: 1, gold: false, auto: true };
-      const p0 = blobPos(b, ph * T), trail3 = [];
-      for (let j = 6; j >= 1; j--) {
-        const q = blobPos(b, Math.max(0, ph * T - j * 0.05));
-        trail3.push([q.r, q.th]);
+      const th0 = k * (Math.PI * 2 / ni) + 0.4;
+      inj.push(th0);
+      const T = ventFlight(0.95);
+      for (let q = 0; q < 3; q++) {
+        const ph = ((S.time / T + q / 3 + k * 0.17) % 1 + 1) % 1;
+        const b = { t0: S.time - ph * T, r0: 0.95, th0, kg: 0, mult: 1, gold: false, auto: true };
+        const p0 = blobPos(b, ph * T), trail3 = [];
+        for (let j = 8; j >= 1; j--) {
+          const qq = blobPos(b, Math.max(0, ph * T - j * 0.06));
+          trail3.push([qq.r, qq.th]);
+        }
+        trail3.push([p0.r, p0.th]);
+        blobs.push({ r: p0.r, th: p0.th, gold: false, mult: 1, trail: trail3, auto: true });
       }
-      trail3.push([p0.r, p0.th]);
-      blobs.push({ r: p0.r, th: p0.th, gold: false, mult: 0.6, trail: trail3, auto: true });
     }
     const fl = flares.splice(0).map((f) => {
       const q = blobPos(f.b, ventFlight(f.b.r0));
@@ -4569,6 +4580,7 @@
     return {
       blobs,
       flares: fl,
+      inj,
       relR: ventR(ventLv(S, "radius")),
       hover: sceneHover,
       hoverText: t("ui.vent.hover", { kg: mass(ventKg(S)), s: dec(ventFlight(ventR(ventLv(S, "radius"))), 1) }),
@@ -5050,6 +5062,47 @@
       }
       if (d.act) return settingsAction(d.act, b);
     });
+    const sc = $("scenec");
+    sc.addEventListener("pointermove", (e) => {
+      sceneHover = sceneAngle(e);
+    });
+    sc.addEventListener("pointerleave", () => {
+      sceneHover = null;
+      sceneHold = false;
+    });
+    sc.addEventListener("pointerdown", (e) => {
+      if (sceneZoom) {
+        const r = sc.getBoundingClientRect(), id = holeMapHit(r.width, r.height, S, e.clientX - r.left, e.clientY - r.top, performance.now() / 1e3);
+        if (id) {
+          if (canTravel(S, id)) {
+            depart(S, id);
+            renderAll();
+            save();
+          }
+          return;
+        }
+        sceneZoom = 0;
+        renderScene();
+        return;
+      }
+      sceneHover = sceneAngle(e);
+      sceneHold = true;
+      sceneHoldAcc = 0;
+      sc.setPointerCapture(e.pointerId);
+      ventRelease(S, sceneHover);
+    });
+    sc.addEventListener("pointerup", () => {
+      sceneHold = false;
+    });
+    sc.addEventListener("pointercancel", () => {
+      sceneHold = false;
+    });
+    sc.addEventListener("wheel", (e) => {
+      if (!S.star.done) return;
+      e.preventDefault();
+      sceneZoom = e.deltaY > 0 ? 1 : 0;
+      renderScene();
+    }, { passive: false });
     const rock = $("rock");
     rock.addEventListener("keydown", (e) => {
       if (e.repeat && (e.key === "Enter" || e.key === " ")) e.preventDefault();

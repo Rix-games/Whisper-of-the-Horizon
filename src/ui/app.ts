@@ -4,7 +4,7 @@ import { type BuildingId, type LocationId, type Res, type ResearchId, HOLE, PHAS
 import { VENT, VENT_IDS, VENT_UPS, type VentUp, blobPos, flares, pulsePhase, ventBurst, ventTank, ventTankKg, ventFill, ventFlow, ventShare, ventCanBurst, ventCap, ventChainMax, ventChainMult, ventFlight, ventHeatMult, ventKg, ventLv, ventOpen, ventOverMult, ventR, ventRelease, ventStep, ventUpCost, ventUpgrade, diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
 import { decodeSave, encodeSave, migrate, newState } from '../core/state.js';
 import { bytes, duration, energy, kValue, mass, num, power, sci } from '../core/format.js';
-import { drawHole, drawHoleMap, drawProfile, drawScene, sceneGeom, type HoleView, type SceneView } from './hole.js';
+import { drawHole, drawHoleMap, drawProfile, drawScene, holeMapHit, sceneGeom, type HoleView, type SceneView } from './hole.js';
 import { drawMap, drawRock, drawSection, drawStar, drawStars, hitRock, label, sizeStars } from './scene.js';
 import { boom, chime, setSound, setVolumes, vols } from './audio.js';
 
@@ -193,20 +193,6 @@ export function renderRig() {
   $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch2 ? t("ui.star.title") : t("ui.asteroid");
   document.body.classList.toggle("ch2", ch2);
   document.body.classList.toggle("ch3", ch3);
-  const sc = $("scenec");
-  sc.addEventListener("pointermove", (e) => { sceneHover = sceneAngle(e); });
-  sc.addEventListener("pointerleave", () => { sceneHover = null; sceneHold = false; });
-  sc.addEventListener("pointerdown", (e) => {
-    if (sceneZoom) { sceneZoom = 0; renderScene(); return; }
-    sceneHover = sceneAngle(e);
-    sceneHold = true;
-    sceneHoldAcc = 0;
-    sc.setPointerCapture(e.pointerId);
-    ventRelease(S, sceneHover);
-  });
-  sc.addEventListener("pointerup", () => { sceneHold = false; });
-  sc.addEventListener("pointercancel", () => { sceneHold = false; });
-  sc.addEventListener("wheel", (e) => { if (!S.star.done) return; e.preventDefault(); sceneZoom = e.deltaY > 0 ? 1 : 0; renderScene(); }, { passive: false });
   const rock = $("rock");
   rock.disabled = ch2;
   rock.setAttribute("aria-label", ch2 ? t("ui.star.title") : t("ui.mineAria"));
@@ -234,6 +220,11 @@ export function renderRig() {
     rows.push(["§" + t("ui.prod.title"), ""]);
     rows.push([t("ui.prod.power"), power(P)]);
     for (const id of ["ring", "jet", "hawking"] as BuildingId[]) if (part(id) > 0.001) rows.push([t(`ui.prod.from.${id}`), pct(part(id))]);
+    const fv = ventFlow(S), fi = feedRate(S);
+    if (fv + fi > 0) {
+      rows.push([t("ui.prod.fromVent"), pct(fv / (fv + fi))]);
+      if (fi > 0) rows.push([t("ui.prod.fromInj"), pct(fi / (fv + fi))]);
+    }
     rows.push([t("res.plasma"), `${p.plasma - c.plasma >= 0 ? "+" : "−"}${mass(Math.abs(p.plasma - c.plasma))}/s`]);
     rows.push([t("res.data"), `+${bytes(p.data - c.data)}/s`]);
     if (S.b.station >= 1) rows.push([t("ui.prod.dil"), `×${dec(gamma(S), gamma(S) >= 10 ? 0 : 1)}`]);
@@ -472,22 +463,28 @@ function sceneView(): SceneView {
     trail.push([p0.r, p0.th]);
     return { r: p0.r, th: p0.th, gold: b.gold, mult: b.mult, trail };
   });
-  // injektory: plyn teče sám, vidět jako drobné chuchvalce v pravidelném rytmu
-  const ni = S.b.injector >= 1 ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, S.b.injector)) * 3)) : 0;
+  // injektory: každý proud má své místo na okraji disku a plyn z něj teče sám
+  const ni = S.b.injector >= 1 && !S.off.injector ? Math.min(8, 2 + Math.floor(Math.log10(Math.max(1, S.b.injector)) * 3)) : 0;
+  const inj: number[] = [];
   for (let k = 0; k < ni; k++) {
-    const T = ventFlight(0.8), ph = ((S.time / T + k / ni) % 1 + 1) % 1, cyc = Math.floor(S.time / T + k / ni);
-    const b = { t0: S.time - ph * T, r0: 0.8, th0: k * 2.399 + cyc * 1.3, kg: 0, mult: 1, gold: false, auto: true };
-    const p0 = blobPos(b, ph * T), trail: [number, number][] = [];
-    for (let j = 6; j >= 1; j--) { const q = blobPos(b, Math.max(0, ph * T - j * 0.05)); trail.push([q.r, q.th]); }
-    trail.push([p0.r, p0.th]);
-    blobs.push({ r: p0.r, th: p0.th, gold: false, mult: 0.6, trail, auto: true } as any);
+    const th0 = k * (Math.PI * 2 / ni) + 0.4;
+    inj.push(th0);
+    const T = ventFlight(0.95);
+    for (let q = 0; q < 3; q++) {
+      const ph = ((S.time / T + q / 3 + k * 0.17) % 1 + 1) % 1;
+      const b = { t0: S.time - ph * T, r0: 0.95, th0, kg: 0, mult: 1, gold: false, auto: true };
+      const p0 = blobPos(b, ph * T), trail: [number, number][] = [];
+      for (let j = 8; j >= 1; j--) { const qq = blobPos(b, Math.max(0, ph * T - j * 0.06)); trail.push([qq.r, qq.th]); }
+      trail.push([p0.r, p0.th]);
+      blobs.push({ r: p0.r, th: p0.th, gold: false, mult: 1, trail, auto: true } as any);
+    }
   }
   const fl = flares.splice(0).map((f) => {
     const q = blobPos(f.b, ventFlight(f.b.r0));
     return { r: q.r, th: q.th, gold: f.b.gold, mult: f.b.mult, text: `+${bytes(f.data)}${f.b.mult > 1.01 ? ` ×${dec(f.b.mult, 2)}` : ""}` };
   });
   return {
-    blobs, flares: fl, relR: ventR(ventLv(S, "radius")), hover: sceneHover,
+    blobs, flares: fl, inj, relR: ventR(ventLv(S, "radius")), hover: sceneHover,
     hoverText: t("ui.vent.hover", { kg: mass(ventKg(S)), s: dec(ventFlight(ventR(ventLv(S, "radius"))), 1) }),
     tank: ventTank(S), tankText: open ? t("ui.vent.tankLine", { kg: mass(ventTankKg(S)), p: Math.round(ventTank(S) * 100) }) : "",
     chainText: v.chain > 1 ? t("ui.vent.chainBig", { n: v.chain, m: dec(ventChainMult(S), 2) }) : "",
@@ -947,6 +944,24 @@ export function bind() {
     }
     if (d.act) return settingsAction(d.act, b);
   });
+  const sc = $("scenec");
+  sc.addEventListener("pointermove", (e) => { sceneHover = sceneAngle(e); });
+  sc.addEventListener("pointerleave", () => { sceneHover = null; sceneHold = false; });
+  sc.addEventListener("pointerdown", (e) => {
+    if (sceneZoom) {
+      const r = sc.getBoundingClientRect(), id = holeMapHit(r.width, r.height, S, e.clientX - r.left, e.clientY - r.top, performance.now() / 1e3);
+      if (id) { if (canTravel(S, id)) { depart(S, id); renderAll(); save(); } return; }
+      sceneZoom = 0; renderScene(); return;
+    }
+    sceneHover = sceneAngle(e);
+    sceneHold = true;
+    sceneHoldAcc = 0;
+    sc.setPointerCapture(e.pointerId);
+    ventRelease(S, sceneHover);
+  });
+  sc.addEventListener("pointerup", () => { sceneHold = false; });
+  sc.addEventListener("pointercancel", () => { sceneHold = false; });
+  sc.addEventListener("wheel", (e) => { if (!S.star.done) return; e.preventDefault(); sceneZoom = e.deltaY > 0 ? 1 : 0; renderScene(); }, { passive: false });
   const rock = $("rock");
   rock.addEventListener("keydown", (e) => {
     if (e.repeat && (e.key === "Enter" || e.key === " ")) e.preventDefault();

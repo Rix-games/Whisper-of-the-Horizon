@@ -280,3 +280,15 @@ body.ch3:not(.tabbuild) #rockwrap { display: block; }
 .scene-hint b { color: var(--accent); font-family: var(--f-mono); margin-right: 4px; }
 body.ch3 #view #map { height: clamp(320px, 50vh, 620px); }
 body.ch3 #view #holec { height: clamp(300px, 46vh, 560px); }
+/* Kap. 3: širší rozložení, aby se řádky nezalamovaly */
+body.ch3 .app { max-width: 1880px; }
+@media (min-width: 1101px) {
+  body.ch3 .grid { grid-template-columns: minmax(300px, 340px) minmax(0, 1fr) minmax(270px, 330px); }
+}
+body.ch3 .stats { font-size: 13px; gap: 4px 8px; }
+body.ch3 .stats dt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.ch3 .stats dd { white-space: nowrap; }
+body.ch3 #bview .list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); }
+body.ch3 #bview .effrow { flex-wrap: nowrap; white-space: nowrap; }
+body.ch3 #bview .eff2 span { white-space: nowrap; }
+body.ch3 #bview .cost { white-space: nowrap; }
