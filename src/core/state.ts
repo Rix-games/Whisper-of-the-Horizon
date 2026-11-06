@@ -33,7 +33,7 @@ export interface State {
   // Kapitola 3: černá díra. a = rotace (0–0,998), phase = fáze, dive = odpočet ponoru (−1 = neběží)
   hole: { a: number; phase: number; dive: number; done: boolean; started: boolean; cap?: boolean };
   // Kapitola 3: magnetická past a vypouštění plynu do disku (engine: vent*)
-  vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[]; disk?: number; share?: number; kg?: number; inj?: number; injC?: number; injK?: number; man?: number };
+  vent: { tank: number; fall: number; chain: number; best: number; heat: number; over: number; auto: number; lv: Record<string, number>; fly: Blob[]; disk?: number; share?: number; kg?: number; inj?: number; injC?: number; injK?: number; man?: number; miss?: number };
   yrs?: number;                         // kolik let uplynulo venku (Vesper mezi směnami spí)
   yrs1?: number;                        // roky venku na začátku Kap. 2
   seen?: Record<string, string>;

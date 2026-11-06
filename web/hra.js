@@ -1099,19 +1099,23 @@
     }
     if (s.b.injector && !s.off.injector) {
       const dem = injDemand(s), per = Math.max(Math.min(ventKg(s), dem * 1.5), dem / 4), em = injEmitters(s);
-      v.injC = Math.min((v.injC ?? 0) + dem * dt, per * 2);
+      const want = (v.injC ?? 0) + dem * dt;
+      v.injC = Math.min(want, per * 2);
+      let lost = Math.max(0, want - v.injC);
       let sent = 0;
       while (v.injC >= per && v.kg >= per * 0.2) {
         const kg = Math.min(per, v.kg);
         v.injC -= per;
         v.kg -= kg;
         sent += kg;
+        lost += per - kg;
         v.injK = ((v.injK ?? 0) + 1) % em.length;
         chainUp(s);
         s.vent.fly.push({ t0: s.time, r0: ventR(ventLv(s, "radius")), th0: em[v.injK], kg, mult: ventChainMult(s), gold: ventGoldNow(s), auto: true, inj: true });
       }
       v.inj = (v.inj ?? 0) * (1 - Math.min(1, dt / 3)) + sent / 3;
-      s.eff.injector = dem > 0 ? Math.min(1, v.inj / dem) : 1;
+      v.miss = (v.miss ?? 0) * (1 - Math.min(1, dt / 5)) + lost / 5;
+      s.eff.injector = dem > 0 ? Math.max(0, 1 - v.miss / dem) : 1;
     } else v.inj = 0;
     v.man = (v.man ?? 0) * (1 - Math.min(1, dt / 3));
     if (v.over > 0) v.over = Math.max(0, v.over - dt);
