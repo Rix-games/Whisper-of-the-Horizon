@@ -652,9 +652,18 @@ export function syncSettings() {
   const sb = document.querySelector<El>("#drawerBody [data-act=sound]");
   if (sb) sb.textContent = S.settings.sound ? t("ui.settings.soundOn") : t("ui.settings.soundOff");
 }
+// Injektory: vyhlazené využití s hysterezí, aby karta neproblikávala, když se past střídavě plní a vyprazdňuje.
+let injAvg = 1, injShortOn = false;
+function injShort() {
+  if (S.off.injector || S.b.injector < 1) { injAvg = 1; injShortOn = false; return false; }
+  injAvg += ((S.eff.injector ?? 1) - injAvg) * 0.05;
+  if (injShortOn ? injAvg > 0.99 : injAvg < 0.95) injShortOn = !injShortOn;
+  return injShortOn;
+}
 export function updateView(which = tab, view = $("view")) {
   if (which === "build") {
     if (ventOpen(S)) updateVent(view);
+    injShort();
     view.querySelectorAll<El>("[data-b]").forEach((el) => {
       const id = el.dataset.b as BuildingId, d = B[id];
       const count = Math.floor(S.b[id]);
@@ -667,11 +676,11 @@ export function updateView(which = tab, view = $("view")) {
         const outs = (Object.keys(d.prod ?? {}) as Res[]).map((r) => part(r, prodOf(S, id, r) * k, "+"));
         if (id === "injector" && k === 1) {
           // další kus: skutečný přírůstek záření; když past nestačí, nepřidá nic
-          const short = !S.off.injector && S.b.injector >= 1 && (S.eff.injector ?? 1) < 0.995;
+          const short = injShortOn;
           const g = short ? 0 : diskGain(S, consOf(S, id, "plasma")), L = holeL(S);
           const pc = L > 0 ? g / L * 100 : 0;
           outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(g))}</span>`);
-          if (L > 0) outs.push(`<span class="dim">(${esc(g <= 0 ? t(short ? "ui.inj.short" : "ui.inj.capped") : t("ui.inj.pct", { p: pc < 0.1 ? "< 0,1" : pc.toFixed(pc < 10 ? 1 : 0).replace(".", ",") }))})</span>`);
+          if (L > 0 && !short) outs.push(`<span class="dim">(${esc(g <= 0 ? t("ui.inj.capped") : t("ui.inj.pct", { p: pc < 0.1 ? "< 0,1" : pc.toFixed(pc < 10 ? 1 : 0).replace(".", ",") }))})</span>`);
         } else if (id === "injector") {
           const perKg = feedRate(S) > 0 ? holeL(S) / feedRate(S) : diskEta(S.hole.a) * HOLE.c2;
           outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(consOf(S, id, "plasma") * k * perKg))}</span>`);
@@ -682,7 +691,8 @@ export function updateView(which = tab, view = $("view")) {
       let eff = `<span class="effrow"><span class="lbl">${esc(t("ui.one"))}</span>${flow(1)}</span>`;
       if (count >= 2 || count >= 1 && d.cons) {
         const e = d.cons ? S.off[id] ? 0 : S.eff[id] ?? 1 : 1;
-        let note2 = d.cons && e < 0.995 ? ` <span class="dim">(${esc(S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round(e * 100) }))})</span>` : "";
+        const shown = id === "injector" ? injAvg : e;   // injektory: vyhlazené, ať číslo neskáče
+        let note2 = d.cons && (id === "injector" ? injShortOn : e < 0.995) ? ` <span class="dim">(${esc(S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round(shown * 100) }))})</span>` : "";
         if (id === "swarmfab" && !S.off[id] && S.fab?.lim) note2 = ` <span class="dim">(${esc(t("ui.fabLim." + S.fab.lim) + (S.fab.target ? " · " + t("ui.fabChain." + S.fab.target) : ""))})</span>`;
         const body = e < 5e-3 ? `<span class="dim">${esc(S.off[id] ? t("ui.stopped") : t("ui.starved"))}</span>` : flow(count * e) + note2;
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
@@ -692,7 +702,10 @@ export function updateView(which = tab, view = $("view")) {
       if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
       }
-      if (id === "injector") el.classList.toggle("starvedcard", !S.off.injector && S.b.injector >= 1 && (S.eff.injector ?? 1) < 0.995);
+      if (id === "injector") {
+        el.classList.toggle("starvedcard", injShortOn);
+        if (injShortOn) eff += `<span class="effnote">${esc(t(ventLv(S, "inlet") >= VENT_UPS.inlet.max ? "ui.inj.shortScoop" : "ui.inj.short"))}</span>`;
+      }
       el.querySelector<El>("[data-f=eff]").innerHTML = eff;
       let c = cost(S, id), n = 1, can = affordable(S, c);
       if (buyMax === true) {

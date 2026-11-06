@@ -299,5 +299,8 @@ body.cv:not(.ch3) #scene .rockwrap { position: relative; flex: 1; min-height: 0;
 body.cv:not(.ch3) #scene #rock { position: absolute; top: 14px; bottom: 14px; left: 50%; transform: translateX(-50%); width: auto; height: auto; max-width: calc(100% - 28px); aspect-ratio: 1; }
 @media (max-width: 1100px) { body.cv:not(.ch3) #scene .rockwrap { height: min(70vw, 460px); } }
 
-.item.starvedcard { opacity: .62; }
-.item.starvedcard:hover { opacity: .9; }
+.item.starvedcard .eff { opacity: .7; }
+body.cv #bview .effnote, .effnote { display: block; white-space: normal; color: var(--warn, #f2a541); font-size: 12.5px; line-height: 1.4; margin-top: 4px; }
+body.cv #bview .item .eff { overflow: hidden; }
+body.cv #bview [data-b=injector] .effrow { flex-wrap: wrap; white-space: normal; }
+body.cv #bview [data-b=injector] .effrow > span { white-space: nowrap; }

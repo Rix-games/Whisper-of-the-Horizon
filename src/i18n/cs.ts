@@ -98,7 +98,7 @@ export const cs = {
     turnOff: "Vypnout",
     turnOn: "Zapnout",
     running: "běží na {n} %",
-    inj: { pct: "+{p} % disku", short: "past nestačí: postav naběrače nebo vylepši Sací kanály", capped: "disk je na Eddingtonově mezi" },
+    inj: { pct: "+{p} % disku", short: "Past nestíhá, další injektor nic nepřidá. Víc plynu dají naběrače nebo Sací kanály.", shortScoop: "Past nestíhá, další injektor nic nepřidá. Víc plynu dají naběrače.", capped: "disk je na Eddingtonově mezi" },
     stopped: "vypnuto",
     starved: "stojí, chybí vstup",
     each: "každý",

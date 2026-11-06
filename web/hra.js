@@ -98,7 +98,7 @@
       turnOff: "Vypnout",
       turnOn: "Zapnout",
       running: "b\u011B\u017E\xED na {n} %",
-      inj: { pct: "+{p} % disku", short: "past nesta\u010D\xED: postav nab\u011Bra\u010De nebo vylep\u0161i Sac\xED kan\xE1ly", capped: "disk je na Eddingtonov\u011B mezi" },
+      inj: { pct: "+{p} % disku", short: "Past nest\xEDh\xE1, dal\u0161\xED injektor nic nep\u0159id\xE1. V\xEDc plynu daj\xED nab\u011Bra\u010De nebo Sac\xED kan\xE1ly.", shortScoop: "Past nest\xEDh\xE1, dal\u0161\xED injektor nic nep\u0159id\xE1. V\xEDc plynu daj\xED nab\u011Bra\u010De.", capped: "disk je na Eddingtonov\u011B mezi" },
       stopped: "vypnuto",
       starved: "stoj\xED, chyb\xED vstup",
       each: "ka\u017Ed\xFD",
@@ -4806,9 +4806,22 @@
     const sb = document.querySelector("#drawerBody [data-act=sound]");
     if (sb) sb.textContent = S.settings.sound ? t("ui.settings.soundOn") : t("ui.settings.soundOff");
   }
+  var injAvg = 1;
+  var injShortOn = false;
+  function injShort() {
+    if (S.off.injector || S.b.injector < 1) {
+      injAvg = 1;
+      injShortOn = false;
+      return false;
+    }
+    injAvg += ((S.eff.injector ?? 1) - injAvg) * 0.05;
+    if (injShortOn ? injAvg > 0.99 : injAvg < 0.95) injShortOn = !injShortOn;
+    return injShortOn;
+  }
   function updateView(which = tab, view = $("view")) {
     if (which === "build") {
       if (ventOpen(S)) updateVent(view);
+      injShort();
       view.querySelectorAll("[data-b]").forEach((el) => {
         const id = el.dataset.b, d = B[id];
         const count = Math.floor(S.b[id]);
@@ -4818,11 +4831,11 @@
           const ins = id === "injector" ? [`<span><span style="color:${COLOR.plasma}">${esc(t("ui.vent.fromTrap"))}</span> \u2212${esc(rate("plasma", consOf(S, id, "plasma") * k))}</span>`] : Object.keys(d.cons ?? {}).map((r) => part(r, consOf(S, id, r) * k, "\u2212"));
           const outs = Object.keys(d.prod ?? {}).map((r) => part(r, prodOf(S, id, r) * k, "+"));
           if (id === "injector" && k === 1) {
-            const short = !S.off.injector && S.b.injector >= 1 && (S.eff.injector ?? 1) < 0.995;
+            const short = injShortOn;
             const g = short ? 0 : diskGain(S, consOf(S, id, "plasma")), L2 = holeL(S);
             const pc = L2 > 0 ? g / L2 * 100 : 0;
             outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(g))}</span>`);
-            if (L2 > 0) outs.push(`<span class="dim">(${esc(g <= 0 ? t(short ? "ui.inj.short" : "ui.inj.capped") : t("ui.inj.pct", { p: pc < 0.1 ? "< 0,1" : pc.toFixed(pc < 10 ? 1 : 0).replace(".", ",") }))})</span>`);
+            if (L2 > 0 && !short) outs.push(`<span class="dim">(${esc(g <= 0 ? t("ui.inj.capped") : t("ui.inj.pct", { p: pc < 0.1 ? "< 0,1" : pc.toFixed(pc < 10 ? 1 : 0).replace(".", ",") }))})</span>`);
           } else if (id === "injector") {
             const perKg = feedRate(S) > 0 ? holeL(S) / feedRate(S) : diskEta(S.hole.a) * HOLE.c2;
             outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(consOf(S, id, "plasma") * k * perKg))}</span>`);
@@ -4833,7 +4846,8 @@
         let eff = `<span class="effrow"><span class="lbl">${esc(t("ui.one"))}</span>${flow(1)}</span>`;
         if (count >= 2 || count >= 1 && d.cons) {
           const e = d.cons ? S.off[id] ? 0 : S.eff[id] ?? 1 : 1;
-          let note2 = d.cons && e < 0.995 ? ` <span class="dim">(${esc(S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round(e * 100) }))})</span>` : "";
+          const shown = id === "injector" ? injAvg : e;
+          let note2 = d.cons && (id === "injector" ? injShortOn : e < 0.995) ? ` <span class="dim">(${esc(S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round(shown * 100) }))})</span>` : "";
           if (id === "swarmfab" && !S.off[id] && S.fab?.lim) note2 = ` <span class="dim">(${esc(t("ui.fabLim." + S.fab.lim) + (S.fab.target ? " \xB7 " + t("ui.fabChain." + S.fab.target) : ""))})</span>`;
           const body = e < 5e-3 ? `<span class="dim">${esc(S.off[id] ? t("ui.stopped") : t("ui.starved"))}</span>` : flow(count * e) + note2;
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
@@ -4843,7 +4857,10 @@
         if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
         }
-        if (id === "injector") el.classList.toggle("starvedcard", !S.off.injector && S.b.injector >= 1 && (S.eff.injector ?? 1) < 0.995);
+        if (id === "injector") {
+          el.classList.toggle("starvedcard", injShortOn);
+          if (injShortOn) eff += `<span class="effnote">${esc(t(ventLv(S, "inlet") >= VENT_UPS.inlet.max ? "ui.inj.shortScoop" : "ui.inj.short"))}</span>`;
+        }
         el.querySelector("[data-f=eff]").innerHTML = eff;
         let c = cost(S, id), n = 1, can = affordable(S, c);
         if (buyMax === true) {
