@@ -64,6 +64,11 @@
       close: "Zav\u0159\xEDt",
       breakdown: { prod: "V\xFDroba", cons: "Spot\u0159eba", net: "Celkem", reactor: "Palubn\xED reaktor", auto: "Asistent t\u011B\u017Eby" },
       makesDyson: "postav\xED {n} kolektor\u016F/s",
+      fabRate: "{n} kolektor\u016F/s",
+      fabLim: { metal: "brzd\xED kov", energy: "brzd\xED energie" },
+      fabChain: { lifter: "dostavuje trycht\xFD\u0159e", separator: "dostavuje separ\xE1tory" },
+      fabBuilt: "Samo postaveno",
+      fabBuiltList: "{l} trycht\xFD\u0159\u016F, {s} separ\xE1tor\u016F",
       stats: { clicks: "Kliknut\xED", drones: "Drony", converters: "P\u0159evodn\xEDky", stage: "Stadium", cov: "Roj zachyt\xED", fab: "Lod\u011Bnice" },
       journal: "Palubn\xED den\xEDk",
       fact: "V\u011Bd\u011Bl jsi?",
@@ -204,7 +209,7 @@
       lifter: { name: "Hv\u011Bzdn\xFD trycht\xFD\u0159", desc: "Magnetick\xE9 pole otev\u0159e v kor\xF3n\u011B trycht\xFD\u0159 a vede j\xEDm proud plazmatu ven z hv\u011Bzdy. V\u011Bt\u0161inu pr\xE1ce odvede hv\u011Bzdn\xFD v\xEDtr. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
       separator: { name: "Separ\xE1tor prvk\u016F", desc: "T\u0159\xEDd\xED plazma podle hmotnosti. Vod\xEDk a helium vrac\xED do hv\u011Bzdy, t\u011B\u017E\u0161\xED prvky jdou do skladu jako kov. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
       seismo: { name: "Seismick\xE1 stanice", desc: "Naslouch\xE1 chv\u011Bn\xED hv\u011Bzdy a z tis\xEDc\u016F t\xF3n\u016F skl\xE1d\xE1 obraz jej\xEDho nitra. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
-      swarmfab: { name: "Rojov\xE1 lod\u011Bnice", desc: "Sama stav\xED kolektory za polovinu ceny. Bere nejv\xFD\u0161 polovinu p\u0159\xEDr\u016Fstku kovu a energie, tak\u017Ee v\xFDroba nikdy nejde do m\xEDnusu. Kdy\u017E p\u0159\xEDr\u016Fstek nesta\u010D\xED, zpomal\xED. Rozebr\xE1n\xEDm vr\xE1t\xED\u0161 polovinu ceny." }
+      swarmfab: { name: "Rojov\xE1 lod\u011Bnice", desc: "Sama stav\xED kolektory za polovinu ceny. Bere nejv\xFD\u0161 polovinu p\u0159\xEDr\u016Fstku kovu a energie. Kdy\u017E ji brzd\xED kov, dostavuje z \u010D\xE1sti zbyl\xE9ho p\u0159\xEDr\u016Fstku i trycht\xFD\u0159e a separ\xE1tory, podle toho, co v \u0159et\u011Bzci chyb\xED. Rozebr\xE1n\xEDm vr\xE1t\xED\u0161 polovinu ceny." }
     },
     r: {
       vib: { name: "Vibra\u010Dn\xED hroty", desc: "Ru\u010Dn\xED t\u011B\u017Eba \xD73." },
@@ -290,7 +295,7 @@
       red: "Aldra se nafoukla do rud\xE9ho veleobra. Kde byla kor\xF3na, je te\u010F nitro hv\u011Bzdy. Puls zes\xEDlil.",
       typeII: "Typ II. V\xFDkon jako cel\xE9 Slunce, a Aldra d\xE1v\xE1 mnohem v\xEDc. Puls je te\u010F tak siln\xFD, \u017Ee se chv\u011Bj\xED i drony v doku.",
       carbon: "V j\xE1d\u0159e ho\u0159\xED uhl\xEDk. Ald\u0159e zb\xFDvaj\xED stovky let. Zdroj pulsu se posouv\xE1 dovnit\u0159 hv\u011Bzdy.",
-      pulse2: "Puls nep\u0159ich\xE1z\xED z povrchu ani z kor\xF3ny. P\u0159ich\xE1z\xED z m\xEDsta, kde jednou bude j\xE1dro.",
+      pulse2: "Puls nep\u0159ich\xE1z\xED z povrchu ani z kor\xF3ny. P\u0159ich\xE1z\xED z j\xE1dra. Z m\xEDsta, kde se hv\u011Bzda jednou zhrout\xED.",
       neo: "Neon a kysl\xEDk. Aldra m\xE1 p\u0159ed sebou mo\u017En\xE1 rok. Puls zn\xED z j\xE1dra, pravideln\u011B jako dech.",
       si: "K\u0159em\xEDk. Zb\xFDv\xE1 jedin\xFD den. V j\xE1d\u0159e roste \u017Eelezo a puls na n\u011Bco \u010Dek\xE1.",
       collapse: "J\xE1dro se hrout\xED. V\u0161echny trycht\xFD\u0159e naplno.",
@@ -697,7 +702,7 @@
     const n = Math.floor(s.b.swarmfab);
     if (!n || s.off.swarmfab) {
       s.eff.swarmfab = n ? 0 : 1;
-      s.fab = { m: 0, e: 0, made: 0 };
+      s.fab = { ...s.fab ?? {}, m: 0, e: 0, made: 0, lim: null, target: null };
       return;
     }
     const { p, c } = rates(s);
@@ -711,7 +716,48 @@
     s.b.dyson += made;
     s.bought.dyson = (s.bought.dyson ?? 0) + made;
     s.eff.swarmfab = e;
-    s.fab = { m: m / dt, e: en / dt, made: made / dt };
+    const rm = needM ? FAB_MAX * netM / needM : 1, re = needE ? FAB_MAX * netE / needE : 1;
+    const lim = e >= 0.995 ? null : rm <= re ? "metal" : "energy";
+    const prev = s.fab ?? {};
+    s.fab = { m: m / dt, e: en / dt, made: made / dt, lim, target: null, bank: prev.bank ?? { metal: 0, energy: 0, plasma: 0 }, built: prev.built ?? { lifter: 0, separator: 0 } };
+    chainTick(s, dt, lim);
+  }
+  // Loděnice dostavuje i těžební řetězec, když ji brzdí kov: chybí-li plazma, trychtýř, jinak separátor.
+  // Bere jen podíl čistého přírůstku, který zbyde po kolektorech, takže zásoby nevyčerpá.
+  var CHAIN_SHARE = 0.3;
+  function chainTarget(s) {
+    if (!s.b.lifter || !s.b.separator || !isUnlocked(s, "lifter") || !isUnlocked(s, "separator")) return null;
+    if (s.off.lifter || s.off.separator) return null;
+    // separátor jen když plazma přibývá (aspoň 10 % výroby trychtýřů), jinak trychtýř
+    const { p, c } = rates(s);
+    if (p.plasma - c.plasma > 0.1 * p.plasma) return "separator";
+    return (s.eff.lifter ?? 1) < 0.97 ? null : "lifter";
+  }
+  function chainTick(s, dt, lim) {
+    const f = s.fab, target = lim === "metal" ? chainTarget(s) : null;
+    f.target = target;
+    if (!target) return;
+    const { p, c } = rates(s);
+    for (const r of ["metal", "energy", "plasma"]) {
+      const v = Math.max(0, p[r] - c[r]) * CHAIN_SHARE * dt;
+      const take = Math.min(v, s.res[r]);
+      s.res[r] -= take;
+      f.bank[r] += take;
+    }
+    for (let k = 0; k < 2; k++) {
+      const cst = cost(s, target);
+      if (!Object.keys(cst).every((r) => f.bank[r] >= cst[r])) break;
+      for (const r of Object.keys(cst)) f.bank[r] -= cst[r];
+      s.b[target] += 1;
+      s.bought[target] = (s.bought[target] ?? 0) + 1;
+      f.built[target] += 1;
+    }
+    // co se do řetězce nepoužije (jiné suroviny než cíl), se vrací do skladu
+    const need = cost(s, target);
+    for (const r of ["metal", "energy", "plasma"]) if (!(r in need) && f.bank[r] > 0) {
+      s.res[r] += f.bank[r];
+      f.bank[r] = 0;
+    }
   }
   function powerW(s) {
     let w = reactorW(s);
@@ -1877,11 +1923,11 @@
     si: { core: [255, 214, 160], mid: [248, 128, 66], edge: [145, 36, 26], glow: "255,115,66", plasma: "255,170,120", contrast: 0.85, freq: 3.8 }
   };
   var LAYERS = {
-    ms: [["H", 1, "#2b3a78"], ["He", 0.4, "#5b3f92"]],
-    he: [["H", 1, "#6e2a3e"], ["He", 0.58, "#5b3f92"], ["C \xB7 O", 0.32, "#93406f"]],
-    c: [["H", 1, "#6e2a3e"], ["He", 0.72, "#5b3f92"], ["C \xB7 O", 0.5, "#93406f"], ["Ne \xB7 Mg", 0.28, "#bb5a40"]],
-    neo: [["H", 1, "#6e2a3e"], ["He", 0.78, "#5b3f92"], ["C \xB7 O", 0.6, "#93406f"], ["Ne \xB7 O", 0.43, "#bb5a40"], ["Si \xB7 S", 0.26, "#d8903c"]],
-    si: [["H", 1, "#6e2a3e"], ["He", 0.8, "#5b3f92"], ["C \xB7 O", 0.66, "#93406f"], ["Ne \xB7 O", 0.52, "#bb5a40"], ["Si \xB7 S", 0.37, "#d8903c"], ["Fe", 0.2, "#a9b2c6"]]
+    ms: [["H", 1, "#2b3a78"], ["H \u2192 He", 0.4, "#5b3f92"]],
+    he: [["H", 1, "#6e2a3e"], ["He", 0.58, "#5b3f92"], ["He \u2192 C \xB7 O", 0.32, "#93406f"]],
+    c: [["H", 1, "#6e2a3e"], ["He", 0.72, "#5b3f92"], ["C \xB7 O", 0.5, "#93406f"], ["C \u2192 Ne \xB7 Mg", 0.28, "#bb5a40"]],
+    neo: [["H", 1, "#6e2a3e"], ["He", 0.78, "#5b3f92"], ["C \xB7 O", 0.6, "#93406f"], ["Ne \xB7 O", 0.43, "#bb5a40"], ["Ne \xB7 O \u2192 Si \xB7 S", 0.26, "#d8903c"]],
+    si: [["H", 1, "#6e2a3e"], ["He", 0.8, "#5b3f92"], ["C \xB7 O", 0.66, "#93406f"], ["Ne \xB7 O", 0.52, "#bb5a40"], ["Si \xB7 S", 0.37, "#d8903c"], ["Si \u2192 Fe", 0.2, "#a9b2c6"]]
   };
   var STAR_LAT = 64;
   var slat = [];
@@ -2567,7 +2613,7 @@
   var VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
   var volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
   var audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-  var VERSION = "0.2.0";
+  var VERSION = "0.2.1";
   var KEY = "sepot-horizontu";
   var $ = (id) => document.getElementById(id);
   var SUP2 = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
@@ -2751,6 +2797,7 @@
     } else if (!S.star.done) {
       rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
       for (const id of STAR_BUILDINGS2.filter((id2) => S.b[id2] >= 1)) {
+        if (id === "swarmfab" && !S.off[id]) { rows.push([t(`b.${id}.name`), t("ui.fabRate", { n: num(S.fab?.made ?? 0) })]); continue; }
         rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
       }
     }
@@ -2985,9 +3032,13 @@
         let eff = `<span class="effrow"><span class="lbl">${esc(t("ui.one"))}</span>${flow(1)}</span>`;
         if (count >= 2 || count >= 1 && d.cons) {
           const e = d.cons ? S.off[id] ? 0 : S.eff[id] ?? 1 : 1;
-          const note2 = d.cons && e < 0.995 ? ` <span class="dim">(${esc(S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round(e * 100) }))})</span>` : "";
+          let note2 = d.cons && e < 0.995 ? ` <span class="dim">(${esc(S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round(e * 100) }))})</span>` : "";
+          if (id === "swarmfab" && !S.off[id] && S.fab?.lim) note2 = ` <span class="dim">(${esc(t("ui.fabLim." + S.fab.lim) + (S.fab.target ? " \xB7 " + t("ui.fabChain." + S.fab.target) : ""))})</span>`;
           const body = e < 5e-3 ? `<span class="dim">${esc(S.off[id] ? t("ui.stopped") : t("ui.starved"))}</span>` : flow(count * e) + note2;
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
+        }
+        if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
+          eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
         }
         el.querySelector("[data-f=eff]").innerHTML = eff;
         let c = cost(S, id), n = 1, can = affordable(S, c);

@@ -1,5 +1,14 @@
 # Novinky
 
+## 0.2.1 – Chytřejší loděnice
+
+- Rojové loděnice samy dostavují trychtýře a separátory, když jim chybí kov
+- Loděnice ukazují kolektory za sekundu a co je brzdí
+- Loděnice jdou rozebrat, vrátí polovinu ceny
+- Nákup ×10
+- Hvězda stárne rychleji, když jsi technologicky napřed
+- Řez hvězdou ukazuje, co v jádře hoří a co vzniká
+
 ## 0.2 – Kapitola 2: Hvězda
 
 - Nová kapitola: hvězda Aldra a pět stadií jejího života
