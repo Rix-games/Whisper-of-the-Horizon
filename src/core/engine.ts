@@ -152,8 +152,8 @@ export const VENT = {
   isco: 0.23,          // vnitřní okraj disku v poloměrech disku (jen geometrie letu)
   fallIn: 0.085,       // rychlost pádu dovnitř: dr/dt = −k·r^−½
   spin: 0.55,          // úhlová rychlost na okraji disku (Kepler: ω ∝ r^−3/2)
-  capSec: 60,          // kapacita pasti v sekundách plnění
-  valveSec: 6,         // kolik sekund plnění je v jednom chuchvalci
+  capSec: 40,          // kapacita pasti v sekundách plnění
+  valveSec: 2,         // kolik sekund plnění je v jednom chuchvalci (jeden klik za ~2 s)
   share: 0.3,          // jaký díl plynu z naběračů jde do pasti (+10 % za úroveň Sacích kanálů)
   tau: 90,             // jak dlouho plyn v disku září, než spadne do díry (viskózní čas)
   dataPerJ: 1e19,      // data ze záblesku: dataPerJ·√E
