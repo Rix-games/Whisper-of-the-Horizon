@@ -1,5 +1,14 @@
 # Novinky
 
+## 0.3 – Kapitola 3: Horizont
+
+- Nová kapitola: černá díra po Aldře a pět fází jejího disku
+- Naběrače mlhoviny, akreční injektory, diskové kolektory
+- Rotace díry, Eddingtonova mez, magnetické trysky
+- Dilatační stanice u horizontu, Hawkingův reaktor
+- Záložka Horizont s profilem díry, nová mapa a mise
+- Ponor k horizontu na konci kapitoly
+
 ## 0.2.2 – Úpravy po supernově
 
 - Upravený text o černé díře po supernově

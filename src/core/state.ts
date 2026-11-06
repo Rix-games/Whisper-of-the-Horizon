@@ -28,6 +28,9 @@ export interface State {
   star: { stage: number; t: number; collapse: number; done: boolean; p0?: number };
   // přestavba roje: body, kov tohoto běhu, počet, kolektory ze začátku Kap. 2
   p: { pts: number; run: number; count: number; base: number; total?: number };
+  // Kapitola 3: černá díra. a = rotace (0–0,998), phase = fáze, dive = odpočet ponoru (−1 = neběží)
+  hole: { a: number; phase: number; dive: number; done: boolean; started: boolean };
+  salvaged?: { metal: number; data: number };  // rozebraná platforma Kap. 1 (jednou na začátku Kap. 2)
   fab?: { m: number; e: number; made: number; lim: 'metal' | 'energy' | null; target: BuildingId | null; bank?: Bag; built?: { lifter: number; separator: number } };
   settings: { sound: boolean; lang: 'cs' | 'en'; vol: Record<string, number> };
   last: number;                         // čas posledního uložení (ms)
@@ -59,6 +62,7 @@ export function newState(now = Date.now()): State {
     peakK: -1,
     star: { stage: 0, t: 0, collapse: -1, done: false },
     p: { pts: 0, run: 0, count: 0, base: -1 },
+    hole: { a: 0.2, phase: 0, dive: -1, done: false, started: false },
     settings: { sound: false, lang: "cs", vol: {} },
     last: now
   };

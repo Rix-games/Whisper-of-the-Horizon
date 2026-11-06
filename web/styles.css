@@ -192,6 +192,8 @@ body.ch2 #rock { max-width: 100%; border-radius: 12px; }
 /* hvězda zblízka (Kapitola 2) */
 .starbox { position: relative; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--void); }
 #starc { width: 100%; height: clamp(220px, 32vh, 300px); display: block; }
+#holec { width: 100%; height: clamp(300px, 44vh, 400px); display: block; }
+.warnc { color: var(--accent); }
 .ladder { list-style: none; margin: 10px 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
 .ladder li { position: relative; padding: 7px 6px 6px; border-top: 2px solid var(--line); font-size: 12px; color: var(--faint); line-height: 1.25; }
 .ladder li .num { display: block; font-family: var(--f-mono); font-size: 11px; margin-bottom: 2px; }

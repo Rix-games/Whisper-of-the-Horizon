@@ -1,6 +1,6 @@
 // Čistá herní logika bez prohlížeče. Dá se spustit v Node (simulace) i na mobilu.
 import type { State } from './state.js';
-import { type Amounts, type BuildingId, type EventId, type LocationId, type Res, type ResearchId, B, BUILDING_IDS, EVENTS, EVENT_IDS, FACTS, L, PRESTIGE, R, RESOURCES, RULES, STAGES, STAR, STORY } from './defs.js';
+import { HOLE, PHASES, type Amounts, type BuildingId, type EventId, type LocationId, type Res, type ResearchId, B, BUILDING_IDS, EVENTS, EVENT_IDS, FACTS, L, PRESTIGE, R, RESOURCES, RULES, STAGES, STAR, STORY } from './defs.js';
 
 const keys = <T extends object>(o: T) => Object.keys(o) as (keyof T)[];
 
@@ -8,8 +8,8 @@ export const DYSON_BOOST = 1.1;
 export const DYSON_CROWD = 1.03;
 export const DYSON_CH1_CHEAP = 20;
 export const DYSON_CH1_DISCOUNT = 0.4;
-export const CONVERTERS: BuildingId[] = ["smelter", "forge", "lab", "qcomp", "replicator", "lifter", "separator", "seismo"];
-export const CONVERTER_SCALES = { smelter: true, forge: true, lifter: true, separator: true, seismo: true };
+export const CONVERTERS: BuildingId[] = ["smelter", "forge", "lab", "qcomp", "replicator", "lifter", "separator", "seismo", "injector", "station", "hawking"];
+export const CONVERTER_SCALES = { smelter: true, forge: true, lifter: true, separator: true, seismo: true, injector: true, hawking: true };
 const zeroRates = (): Record<Res, number> => ({ ore: 0, metal: 0, energy: 0, data: 0, plasma: 0 });
 export function stageDef(s: State) {
   return STAGES[Math.min(s.star.stage, STAGES.length - 1)];
@@ -45,6 +45,102 @@ export function prestigeTarget(s: State) {
 }
 export function prestigeGain(s: State) {
   return Math.max(0, prestigeTarget(s) - s.p.pts);
+}
+
+// ---------- Kapitola 3: černá díra ----------
+export const RING_BOOST = 1.1;
+export const HOLE_BUILDINGS: BuildingId[] = ["scoop", "injector", "ring", "station", "jet", "hawking"];
+export function phaseDef(s: State) {
+  return PHASES[Math.min(s.hole.phase, PHASES.length - 1)];
+}
+/** Poloměr nejmenší stabilní kruhové dráhy (ISCO) v jednotkách GM/c² pro rotaci a (Bardeen, Press, Teukolsky 1972). */
+export function iscoR(a: number) {
+  const z1 = 1 + Math.cbrt(1 - a * a) * (Math.cbrt(1 + a) + Math.cbrt(1 - a));
+  const z2 = Math.sqrt(3 * a * a + z1 * z1);
+  return 3 + z2 - Math.sqrt((3 - z1) * (3 + z1 + 2 * z2));
+}
+/** Účinnost akrece: podíl klidové hmotnosti, který disk vyzáří (5,7 % bez rotace, 32 % u a = 0,998). */
+export function diskEta(a: number) {
+  return 1 - Math.sqrt(1 - 2 / (3 * iscoR(a)));
+}
+/** Kolik kg plynu za sekundu injektory skutečně posílají do disku. */
+export function feedRate(s: State) {
+  const n = s.b.injector;
+  return n ? consOf(s, "injector", "plasma") * n * effOf(s, "injector") : 0;
+}
+/** Svítivost disku ve W. Nad Eddingtonovou mezí jen se štíhlým diskem a jen logaritmicky. */
+export function holeLRaw(s: State) {
+  return diskEta(s.hole.a) * feedRate(s) * HOLE.c2;
+}
+export function holeL(s: State) {
+  const raw = holeLRaw(s), edd = HOLE.eddW;
+  if (raw <= edd) return raw;
+  return s.r.slim ? edd * (1 + Math.log(raw / edd)) : edd;
+}
+export function ringCov(s: State) {
+  const f = HOLE.ringF * (s.r.wide ? 2 : 1) * (s.r.thick ? 2 : 1);
+  return 1 - Math.exp(-s.b.ring * f);
+}
+/** Účinnost trysek (Blandford–Znajek): roste s druhou mocninou rotace, v magneticky zablokovaném disku i přes 100 %. */
+export function jetEta(s: State) {
+  if (!s.r.mad) return 0;
+  const a = s.hole.a / HOLE.spinMax;
+  return 1.4 * a * a * (s.r.bz ? 2 : 1) * (s.r.penrose ? 2 : 1);
+}
+export function jetP(s: State) {
+  return jetEta(s) * feedRate(s) * HOLE.c2;
+}
+export function jetCov(s: State) {
+  return s.off.jet ? 0 : 1 - Math.exp(-s.b.jet * HOLE.jetF);
+}
+/** Oběžná dráha stanic v Schwarzschildových poloměrech a dilatace času γ = 1/√(1 − rₛ/r). */
+export function stationR(s: State) {
+  return s.r.edge ? 1.01 : s.r.lower ? 1.2 : 3;
+}
+export function gamma(s: State) {
+  return 1 / Math.sqrt(1 - 1 / stationR(s));
+}
+/** Stanice měří tím víc, čím víc díra a civilizace září: (P / 10²⁰ W)^k, nejméně 1. */
+export function holeFb(s: State, k: number) {
+  return Math.pow(Math.max(1, powerW(s) / HOLE.fbBase), k);
+}
+/** Krmení roztáčí díru, trysky ji brzdí. Rovnovážná rotace. */
+function spinRates(s: State) {
+  const up = feedRate(s) > 0 ? (s.r.prograde ? 2 : 1) : 0;
+  const down = s.b.jet && s.r.mad ? jetCov(s) * (s.r.penrose ? 0.5 : 1) : 0;
+  return { up, down };
+}
+export function spinEq(s: State) {
+  const { up, down } = spinRates(s);
+  return up + down ? HOLE.spinMax * up / (up + down) : s.hole.a;
+}
+function holeTick(s: State, dt: number) {
+  if (!s.hole.started) {
+    s.hole.started = true;
+    add(s, "plasma", HOLE.startPlasma);
+  }
+  const { up, down } = spinRates(s);
+  const a = s.hole.a + HOLE.spinRate * dt * (up * (HOLE.spinMax - s.hole.a) - down * s.hole.a);
+  s.hole.a = Math.max(0, Math.min(HOLE.spinMax, a));
+  if (s.hole.dive >= 0) {
+    s.hole.dive -= dt;
+    if (s.hole.dive <= 0) {
+      s.hole.dive = -1;
+      s.hole.done = true;
+      if (s.chapterDone < 3) s.chapterDone = 3;
+    }
+  }
+}
+export function phaseReady(s: State) {
+  const d = phaseDef(s), last = s.hole.phase >= PHASES.length - 1;
+  const power2 = powerW(s) >= d.needW, research = !last || !!s.r.dive;
+  return { power: power2, research, ok: s.star.done && !s.hole.done && s.hole.dive < 0 && power2 && research };
+}
+export function advancePhase(s: State) {
+  if (!phaseReady(s).ok) return false;
+  if (s.hole.phase >= PHASES.length - 1) s.hole.dive = HOLE.diveSec;
+  else s.hole.phase++;
+  return true;
 }
 export function mult(s: State, id: BuildingId) {
   const r = s.r, v = s.visited;
@@ -93,6 +189,23 @@ export function mult(s: State, id: BuildingId) {
       if (r.magsail) m *= 2;
       if (v.kuiper) m *= 3;
       break;
+    case "scoop":
+      if (r.magscoop) m *= 3;
+      if (v.cas) m *= 3;
+      if (v.tde) m *= 4;
+      break;
+    case "injector":
+      if (r.mri) m *= 3;
+      break;
+    case "station":
+      if (r.pulse3) m *= 3;
+      if (v.lens) m *= 4;
+      if (r.fermi) m *= 10;
+      break;
+    case "hawking":
+      if (r.evap) m *= 4;
+      if (v.ergo) m *= 3;
+      break;
     case "separator":
       if (r.mg) m *= 5;
       if (r.iron) m *= 5;
@@ -103,11 +216,13 @@ export function mult(s: State, id: BuildingId) {
   if (id === "lab" || id === "qcomp") {
     if (r.silicon) m *= 10;
   }
+  // Kapitola 3: každý diskový kolektor posílí naběrače, injektory a Hawkingovy reaktory
+  if (id === "scoop" || id === "injector" || id === "hawking") m *= Math.pow(RING_BOOST, s.b.ring);
   if (id === "lifter" || id === "separator" || id === "seismo") {
     m *= Math.pow(DYSON_BOOST, s.b.dyson) * prestigeMult(s);
     if (id === "lifter" && s.star.collapse >= 0) m *= STAR.collapseLift;
   }
-  if (B[id].prod?.energy) {
+  if (B[id].prod?.energy && !HOLE_BUILDINGS.includes(id)) {
     if (id === "solar" && r.thinfilm) m *= 2;
     if (id === "mirror" && r.optics) m *= 3;
     if (id === "dyson" && r.statite) m *= 2;
@@ -138,18 +253,46 @@ export function clickPower(s: State) {
 export function reactorW(s: State) {
   return RULES.baseReactorW * (s.r.supercond ? 2 : 1);
 }
+/** Stavby z minulých kapitol: Kap. 1 kromě kolektorů končí v Kap. 2, kolektory zanikly v supernově. */
+export const CH1_OLD: BuildingId[] = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion"];
+export function retired(s: State, id: BuildingId) {
+  return s.chapterDone >= 1 && CH1_OLD.includes(id) || s.star.done && id === "dyson";
+}
+export const SALVAGE = { metal: 0.5, dataSec: 900 };
+/** Na začátku Kap. 2 Vesper rozebere starou platformu: vrátí půlku kovu z jejích staveb a archiv dat. */
+export function salvageGain(s: State) {
+  let metal = 0, data = 0;
+  for (const id of CH1_OLD) {
+    const n = Math.floor(s.b[id]), d = B[id];
+    if (!n) continue;
+    if (d.base.metal) metal += d.base.metal * (Math.pow(d.growth, n) - 1) / (d.growth - 1);
+    if (d.prod?.data) data += d.prod.data * mult(s, id) * n;
+  }
+  return { metal: metal * SALVAGE.metal, data: data * SALVAGE.dataSec };
+}
+function salvageTick(s: State) {
+  if (s.salvaged || !s.chapterDone || s.star.done) return;
+  const g = salvageGain(s);
+  add(s, "metal", g.metal);
+  add(s, "data", g.data);
+  s.salvaged = g;
+}
 export function prodOf(s: State, id: BuildingId, r: Res) {
   const base = B[id].prod?.[r];
-  if (!base) return 0;
+  if (!base || retired(s, id)) return 0;
   let v = base * mult(s, id);
   if (id === "separator") v *= metallicity(s);
   if (id === "dyson") v *= dysonSat(s);
+  if (id === "station") v *= gamma(s) * holeFb(s, HOLE.dataFb);
+  if (id === "ring") return s.b.ring ? holeL(s) * ringCov(s) / s.b.ring : 0;
+  if (id === "jet") return s.b.jet ? jetP(s) * jetCov(s) * (s.visited.pole ? 3 : 1) / s.b.jet : 0;
+  if (id === "hawking") return consOf(s, "hawking", "plasma") * HOLE.c2 * (r === "data" ? HOLE.hawkData : 1);
   return v;
 }
 export function consOf(s: State, id: BuildingId, r: Res) {
   if (id === "swarmfab") return r === "metal" || r === "energy" ? makesOf(s, id) * fabPriceFrac(s) * (cost(s, "dyson")[r] ?? 0) : 0;
   const base = B[id].cons?.[r];
-  if (!base) return 0;
+  if (!base || retired(s, id)) return 0;
   let v = base * (CONVERTER_SCALES[id] ? mult(s, id) : 1);
   if (id === "lifter" && r === "energy") v *= liftJ(s);
   return v;
@@ -240,7 +383,7 @@ export function rates(s: State) {
     for (const r of keys(B[id].prod ?? {})) p[r] += prodOf(s, id, r) * n * e;
     for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
   }
-  if (s.r.auto) p.ore += clickPower(s) * RULES.autoClicksPerSec;
+  if (s.r.auto && !s.chapterDone) p.ore += clickPower(s) * RULES.autoClicksPerSec;
   return { p, c };
 }
 export function rateParts(s: State, r) {
@@ -254,7 +397,7 @@ export function rateParts(s: State, r) {
     if (pv) prod.push([id, pv * n * e]);
     if (cv) cons.push([id, cv * n * e]);
   }
-  if (r === "ore" && s.r.auto) prod.push(["auto", clickPower(s) * RULES.autoClicksPerSec]);
+  if (r === "ore" && s.r.auto && !s.chapterDone) prod.push(["auto", clickPower(s) * RULES.autoClicksPerSec]);
   return { prod, cons };
 }
 export function add(s: State, r: Res, v: number) {
@@ -275,7 +418,7 @@ export function pay(s: State, c: Amounts) {
   for (const r of keys(c)) s.res[r] -= c[r];
 }
 export function isUnlocked(s: State, id: BuildingId) {
-  return B[id].unlock(s);
+  return !retired(s, id) && B[id].unlock(s);
 }
 export function buy(s: State, id: BuildingId, max: boolean | number = false) {
   if (!isUnlocked(s, id)) return 0;
@@ -372,7 +515,7 @@ export function tick(s: State, dt, rng = Math.random) {
     for (const r of keys(d.prod ?? {})) add(s, r, prodOf(s, id, r) * n * dt);
     if (d.makes && !d.cons) s.b[d.makes.building] += makesOf(s, id) * Math.floor(n) * dt;
   }
-  if (s.r.auto) add(s, "ore", clickPower(s) * RULES.autoClicksPerSec * dt);
+  if (s.r.auto && !s.chapterDone) add(s, "ore", clickPower(s) * RULES.autoClicksPerSec * dt);
   for (const id of CONVERTERS) {
     const d = B[id], n = s.b[id];
     if (!n || s.off[id]) {
@@ -434,6 +577,8 @@ export function tick(s: State, dt, rng = Math.random) {
   if (k > s.peakK) s.peakK = k;
   if (!s.chapterDone && k >= RULES.chapter1K) s.chapterDone = 1;
   if (s.chapterDone >= 1 && s.p.base < 0) s.p.base = Math.floor(s.b.dyson);
+  salvageTick(s);
+  if (s.star.done) holeTick(s, dt);
   return checkJournal(s);
 }
 export function clockYears(s: State) {

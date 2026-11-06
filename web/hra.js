@@ -26,13 +26,19 @@
       toTypeII: "Do Typu II (v\xFDkon Slunce) pot\u0159ebuje\u0161 {n}\xD7 v\xEDc",
       toTypeIIdone: "Typ II dosa\u017Een",
       toFullStar: "Typ II (v\xFDkon Slunce) spln\u011Bn. Cel\xE1 Aldra: je\u0161t\u011B {n}\xD7 v\xEDc",
-      toNext: "Kapitola 3 se p\u0159ipravuje",
+      toNext: "Kapitola 4 se p\u0159ipravuje",
+      toPhase: "K {k}: pot\u0159ebuje\u0161 {n}\xD7 v\xEDc v\xFDkonu",
+      toPhaseDone: "V\xFDkon pro dal\u0161\xED f\xE1zi m\xE1\u0161",
+      diskGlow: "Z\xE1\u0159en\xED disku",
+      captured: "Pro tebe",
+      capturedTxt: "Kolektory chyt\xED {p} z\xE1\u0159en\xED: Energie +{w}",
+      clockDil: "U stanic plyne \u010Das {g}\xD7 pomaleji",
       starAge: "Ald\u0159e zb\xFDv\xE1 {t}",
       clockYears: "1 s \u2248 {t}",
       day: "Den {n}",
       clockScale: "1 s \u2248 1 den",
       power: "V\xFDkon",
-      tabs: { build: "Stavby", research: "V\xFDzkum", map: "Mapa", star: "Hv\u011Bzda", settings: "Nastaven\xED" },
+      tabs: { build: "Stavby", research: "V\xFDzkum", map: "Mapa", star: "Hv\u011Bzda", hole: "Horizont", settings: "Nastaven\xED" },
       buy: "Postavit",
       buyN: "Postavit \xD7{n}",
       sell: "Rozebrat",
@@ -68,7 +74,7 @@
       fabChain: { lifter: "dostavuje trycht\xFD\u0159e", separator: "dostavuje separ\xE1tory" },
       fabBuilt: "Samo postaveno",
       fabBuiltList: "{l} trycht\xFD\u0159\u016F, {s} separ\xE1tor\u016F",
-      stats: { clicks: "Kliknut\xED", drones: "Drony", converters: "P\u0159evodn\xEDky", stage: "Stadium", cov: "Roj zachyt\xED", fab: "Lod\u011Bnice" },
+      stats: { clicks: "Kliknut\xED", drones: "Drony", converters: "P\u0159evodn\xEDky", stage: "Stadium", cov: "Roj zachyt\xED", fab: "Lod\u011Bnice", phase: "F\xE1ze", spin: "Rotace d\xEDry", feed: "Do disku pad\xE1", diskCov: "Kolektory zachyt\xED" },
       journal: "Palubn\xED den\xEDk",
       fact: "V\u011Bd\u011Bl jsi?",
       report: "Hl\xE1\u0161en\xED",
@@ -79,7 +85,8 @@
         flare: { name: "Slune\u010Dn\xED erupce", claim: "Zachytit erupci", got: "Erupce zachycena: +{v} energie" },
         echo: { name: "Ozv\u011Bna pulsu", claim: "Zaznamenat ozv\u011Bnu", got: "Ozv\u011Bna zaznamen\xE1na: +{v} dat" },
         mtype: { name: "Asteroid typu M", claim: "Rozebrat asteroid", got: "Kovov\xFD asteroid zpracov\xE1n: +{v} kovu" },
-        prominence: { name: "Protuberance", claim: "Zachytit protuberanci", got: "Protuberance zachycena: +{v} plazmatu" }
+        prominence: { name: "Protuberance", claim: "Zachytit protuberanci", got: "Protuberance zachycena: +{v} plazmatu" },
+        clump: { name: "Shluk plynu", claim: "Nabrat shluk", got: "Shluk plynu nabr\xE1n: +{v} plazmatu" }
       },
       chapters: { label: "Kapitoly", c1: "Platforma", c2: "Hv\u011Bzda", c3: "Horizont", c4: "Most", c5: "\u0160epot", locked: "?" },
       chapterDone: {
@@ -89,8 +96,64 @@
       },
       chapterDone2: {
         title: "Kapitola 2 dokon\u010Dena",
-        body: "Aldra vybuchla jako supernova a na okam\u017Eik z\xE1\u0159ila jasn\u011Bji ne\u017E cel\xE1 galaxie. Roj zachytil \u010D\xE1st energie v\xFDbuchu a pak zanikl. Na m\xEDst\u011B hv\u011Bzdy z\u016Fstala \u010Dern\xE1 d\xEDra a kolem n\xED se rozp\xEDn\xE1 mlhovina. Kapitola 3: Horizont p\u0159ijde v dal\u0161\xED verzi a ulo\u017Een\xE1 hra se do n\xED p\u0159enese.",
+        body: "Aldra vybuchla jako supernova a na okam\u017Eik z\xE1\u0159ila jasn\u011Bji ne\u017E cel\xE1 galaxie. Roj zachytil \u010D\xE1st energie v\xFDbuchu a pak zanikl. Na m\xEDst\u011B hv\u011Bzdy z\u016Fstala \u010Dern\xE1 d\xEDra a kolem n\xED se rozp\xEDn\xE1 mlhovina. Za\u010D\xEDn\xE1 Kapitola 3: Horizont. Ze supernovy ti z\u016Fstaly obrovsk\xE9 z\xE1soby kovu a energie. Te\u010F je \u010Das nakrmit d\xEDru.",
         ok: "Pokra\u010Dovat"
+      },
+      chapterDone3: {
+        title: "Kapitola 3 dokon\u010Dena",
+        body: "Sonda pro\u0161la a\u017E k fotonov\xE9 sf\xE9\u0159e a puls se v jej\xEDm z\xE1znamu zm\u011Bnil v sou\u0159adnice. Ukazuj\xED na m\xEDsta, kde se prostor d\xE1 p\u0159elo\u017Eit jako list pap\xEDru. Kapitola 4: Most p\u0159ijde v dal\u0161\xED verzi a ulo\u017Een\xE1 hra se do n\xED p\u0159enese. D\xEDru m\u016F\u017Ee\u0161 krmit d\xE1l.",
+        ok: "Pokra\u010Dovat"
+      },
+      hole: {
+        title: "\u010Cern\xE1 d\xEDra",
+        profile: "Profil d\xEDry",
+        profileSub: "\u0158ez rovinou osy rotace",
+        legend: "Polom\u011Bry",
+        phase: "F\xE1ze {n} z {of}",
+        ready: "P\u0159echod do dal\u0161\xED f\xE1ze",
+        needPower: "v\xFDkon civilizace aspo\u0148 {w}",
+        needResearch: "v\xFDzkum Ponor k horizontu",
+        next: "Dal\u0161\xED f\xE1ze: {n}",
+        dive: "Spustit ponor",
+        diveName: "Ponor",
+        diving: "Ponor: {t}",
+        waiting: "F\xE1ze se zm\u011Bn\xED, a\u017E ji spust\xED\u0161.",
+        diveNote: "Sonda kles\xE1 k fotonov\xE9 sf\xE9\u0159e.",
+        done: "Ponor skon\u010Dil. Sou\u0159adnice z pulsu jsou ulo\u017Een\xE9.",
+        mass: "Hmotnost",
+        msun: "{v} Slunc\xED",
+        rs: "Schwarzschild\u016Fv polom\u011Br",
+        spin: "Rotace a",
+        spinEq: "rovnov\xE1ha {v}",
+        isco: "Nejbli\u017E\u0161\xED stabiln\xED dr\xE1ha",
+        eta: "\xDA\u010Dinnost akrece",
+        L: "Z\xE1\u0159en\xED disku",
+        edd: "Eddingtonova mez",
+        eddCap: "disk nar\xE1\u017E\xED na Eddingtonovu mez",
+        jets: "Trysky",
+        cov: "Kolektory zachyt\xED",
+        jetCov: "Lapa\u010De zachyt\xED",
+        gamma: "Dilatace u stanic",
+        stationR: "{r} r\u209B, \u010Das \xD7{g} pomaleji",
+        rsUnit: "{v} r\u209B",
+        horizon: "Horizont",
+        ergo: "Ergosf\xE9ra",
+        photon: "Fotonov\xE1 sf\xE9ra",
+        stations: "Stanice",
+        remnantSub: "8 Slunc\xED \xB7 {r} km",
+        diveWarn: {
+          title: "Ponor k horizontu",
+          body: "Sonda se spust\xED po spir\xE1le a\u017E k fotonov\xE9 sf\xE9\u0159e, kde sv\u011Btlo ob\xEDh\xE1 d\xEDru po kruhu. Z jej\xEDho pohledu potrv\xE1 ponor p\xE1r minut, pro n\xE1s {t}. Stavby a d\xEDra pob\u011B\u017E\xED d\xE1l.",
+          ok: "Spustit ponor",
+          cancel: "Je\u0161t\u011B ne"
+        }
+      },
+      phases: {
+        fallback: { name: "Zp\u011Btn\xFD p\xE1d", text: "\u010C\xE1st vyvr\u017Een\xE9 hmoty pad\xE1 zp\xE1tky. Slab\xFD, chladn\xFD disk." },
+        thin: { name: "Tenk\xFD disk", text: "Plyn ob\xEDh\xE1 v tenk\xE9m \u017Ehav\xE9m disku a z\xE1\u0159\xED hlavn\u011B v rentgenu." },
+        edd: { name: "Eddingtonova mez", text: "Z\xE1\u0159en\xED disku tla\u010D\xED plyn zp\xE1tky. V\xEDc spolknout nejde, dokud disk nezhoustne." },
+        jets: { name: "Magnetick\xE9 trysky", text: "Magnetick\xE9 pole brzd\xED rotaci d\xEDry a z p\xF3l\u016F vyr\xE1\u017Eej\xED trysky." },
+        ergo: { name: "Ergosf\xE9ra", text: "T\u011Bsn\u011B nad horizontem se prostor to\u010D\xED s d\xEDrou. Nic tu nem\u016F\u017Ee st\xE1t na m\xEDst\u011B." }
       },
       star: {
         title: "Aldra",
@@ -208,6 +271,12 @@
       lifter: { name: "Hv\u011Bzdn\xFD trycht\xFD\u0159", desc: "Magnetick\xE9 pole otev\u0159e v kor\xF3n\u011B trycht\xFD\u0159 a vede j\xEDm proud plazmatu ven z hv\u011Bzdy. V\u011Bt\u0161inu pr\xE1ce odvede hv\u011Bzdn\xFD v\xEDtr. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
       separator: { name: "Separ\xE1tor prvk\u016F", desc: "T\u0159\xEDd\xED plazma podle hmotnosti. Vod\xEDk a helium vrac\xED do hv\u011Bzdy, t\u011B\u017E\u0161\xED prvky jdou do skladu jako kov. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
       seismo: { name: "Seismick\xE1 stanice", desc: "Naslouch\xE1 chv\u011Bn\xED hv\u011Bzdy a z tis\xEDc\u016F t\xF3n\u016F skl\xE1d\xE1 obraz jej\xEDho nitra. S\xEDl\xED s ka\u017Ed\xFDm Dysonov\xFDm kolektorem." },
+      scoop: { name: "Nab\u011Bra\u010D mlhoviny", desc: "Magnetick\xE1 s\xED\u0165 dlouh\xE1 tis\xEDce kilometr\u016F. Sb\xEDr\xE1 ionizovan\xFD plyn z mlhoviny, kterou po sob\u011B Aldra zanechala. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem." },
+      injector: { name: "Akre\u010Dn\xED injektor", desc: "Pos\xEDl\xE1 plyn po spir\xE1le do akre\u010Dn\xEDho disku. Plyn p\u0159ed p\xE1dem do d\xEDry vyz\xE1\u0159\xED 6 a\u017E 32 % sv\xE9 hmotnosti jako sv\u011Btlo, t\xEDm v\xEDc, \u010D\xEDm rychleji d\xEDra rotuje. To sv\u011Btlo m\u011Bn\xED na energii diskov\xE9 kolektory. Ka\u017Ed\xFD diskov\xFD kolektor injektor zrychl\xED o 10 %." },
+      ring: { name: "Diskov\xFD kolektor", desc: "Prstenec kolem disku, kter\xFD chyt\xE1 jeho z\xE1\u0159en\xED. Ka\u017Ed\xFD dal\u0161\xED zakryje v\xEDc disku a o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
+      station: { name: "Dilata\u010Dn\xED stanice", desc: "Ob\xEDh\xE1 t\u011Bsn\u011B nad horizontem, kde \u010Das plyne pomaleji. M\u011B\u0159\xED disk i vzd\xE1len\xFD vesm\xEDr, kter\xFD odtud vypad\xE1 zrychlen\u011B. V\xEDc dat, \u010D\xEDm v\xEDc civilizace z\xE1\u0159\xED." },
+      jet: { name: "Tryskov\xFD lapa\u010D", desc: "Zachyt\xE1v\xE1 energii trysek nad p\xF3ly d\xEDry. Trysky berou energii z rotace, tak\u017Ee d\xEDru brzd\xED." },
+      hawking: { name: "Hawking\u016Fv reaktor", desc: "Mikroskopick\xE1 \u010Dern\xE1 d\xEDra stvo\u0159en\xE1 z energie. Plyn, kter\xFD do n\xED pad\xE1, se cel\xFD vyz\xE1\u0159\xED zp\xE1tky jako Hawkingovo z\xE1\u0159en\xED. V z\xE1\u0159en\xED jsou i data. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem." },
       swarmfab: { name: "Rojov\xE1 lod\u011Bnice", desc: "Sama stav\xED kolektory za polovinu ceny. Bere nejv\xFD\u0161 polovinu p\u0159\xEDr\u016Fstku kovu a energie. Kdy\u017E ji brzd\xED kov, dostavuje z \u010D\xE1sti zbyl\xE9ho p\u0159\xEDr\u016Fstku i trycht\xFD\u0159e a separ\xE1tory, podle toho, co v \u0159et\u011Bzci chyb\xED. Rozebr\xE1n\xEDm vr\xE1t\xED\u0161 polovinu ceny." }
     },
     r: {
@@ -257,7 +326,25 @@
       silicon: { name: "K\u0159em\xEDkov\xE1 fotonika", desc: "Seismick\xE9 stanice, laborato\u0159e a kvantov\xE9 po\u010D\xEDta\u010De \xD710." },
       magsail: { name: "Magnetick\xE9 plachty", desc: "Plazma pom\xE1h\xE1 vyn\xE1\u0161et i magnetick\xE9 pole hv\u011Bzdy. Trycht\xFD\u0159e \xD72 za stejnou energii." },
       iron: { name: "T\u011B\u017Eba \u017Eeleza", desc: "Separ\xE1tory um\xED z plazmatu vyt\xE1hnout i \u017Eelezo a nikl. Separ\xE1tory \xD75." },
-      neutrino: { name: "Neutrinov\xE1 observato\u0159", desc: "Zachyt\xED neutrina z nitra hv\u011Bzdy a ohl\xE1s\xED bl\xED\u017E\xEDc\xED se kolaps." }
+      neutrino: { name: "Neutrinov\xE1 observato\u0159", desc: "Zachyt\xED neutrina z nitra hv\u011Bzdy a ohl\xE1s\xED bl\xED\u017E\xEDc\xED se kolaps." },
+      accrete: { name: "Akrece", desc: "Odemkne nab\u011Bra\u010De mlhoviny, akre\u010Dn\xED injektory a diskov\xE9 kolektory." },
+      dilate: { name: "Dilatace \u010Dasu", desc: "Odemkne dilata\u010Dn\xED stanice." },
+      prograde: { name: "Soub\u011B\u017En\xE9 dr\xE1hy", desc: "Plyn p\u0159it\xE9k\xE1 ve sm\u011Bru rotace d\xEDry a rozt\xE1\u010D\xED ji dvakr\xE1t rychleji." },
+      magscoop: { name: "Supravodiv\xE9 s\xEDt\u011B", desc: "Nab\u011Bra\u010De \xD73." },
+      wide: { name: "\u0160irok\xE9 prstence", desc: "Ka\u017Ed\xFD diskov\xFD kolektor zakryje dvakr\xE1t v\xEDc disku." },
+      mri: { name: "Magnetorota\u010Dn\xED nestabilita", desc: "Turbulence v disku odv\xE1d\xED plynu moment hybnosti, tak\u017Ee pad\xE1 rychleji. Injektory \xD73." },
+      lower: { name: "Ni\u017E\u0161\xED dr\xE1hy", desc: "Stanice sestoup\xED na 1,2 Schwarzschildova polom\u011Bru." },
+      pulse3: { name: "Anal\xFDza pulsu", desc: "Z \u010Deho se ten puls skl\xE1d\xE1? Stanice \xD73." },
+      thick: { name: "Hust\xE9 prstence", desc: "Ka\u017Ed\xFD diskov\xFD kolektor zakryje dvakr\xE1t v\xEDc disku." },
+      slim: { name: "\u0160t\xEDhl\xFD disk", desc: "Hust\xFD disk uv\u011Bzn\xED \u010D\xE1st z\xE1\u0159en\xED a pust\xED plyn d\xE1l. Z\xE1\u0159en\xED m\u016F\u017Ee p\u0159ekro\u010Dit Eddingtonovu mez." },
+      mad: { name: "Magneticky zablokovan\xFD disk", desc: "Magnetick\xE9 pole nahromad\u011Bn\xE9 u d\xEDry zastav\xED disk a otev\u0159e trysky. Odemkne tryskov\xE9 lapa\u010De." },
+      edge: { name: "Na hran\u011B horizontu", desc: "Stanice sestoup\xED na 1,01 Schwarzschildova polom\u011Bru. \u010Cas u nich plyne desetkr\xE1t pomaleji." },
+      bz: { name: "Blandford\u016Fv\u2013Znajek\u016Fv proces", desc: "Siln\u011Bj\u0161\xED pole odeb\xEDr\xE1 rotaci \xFA\u010Dinn\u011Bji. Trysky \xD72." },
+      fermi: { name: "Kde jsou v\u0161ichni?", desc: "Stanice hledaj\xED jin\xE9 civilizace u jin\xFDch d\u011Br. Stanice \xD710." },
+      kugel: { name: "Kugelblitz", desc: "Soust\u0159ed\u011Bn\xE9 sv\u011Btlo stvo\u0159\xED malou \u010Dernou d\xEDru. Odemkne Hawkingovy reaktory." },
+      penrose: { name: "Penrose\u016Fv proces", desc: "Hmota rozd\u011Blen\xE1 v ergosf\xE9\u0159e odnese v\xEDc energie, ne\u017E p\u0159inesla. Trysky \xD72, d\xEDru brzd\xED o polovinu m\xE9n\u011B." },
+      evap: { name: "\u0158\xEDzen\xE9 vypa\u0159ov\xE1n\xED", desc: "Hawkingovy reaktory \xD74." },
+      dive: { name: "Ponor k horizontu", desc: "Sonda, kter\xE1 vydr\u017E\xED slapov\xE9 s\xEDly a\u017E u fotonov\xE9 sf\xE9ry. Umo\u017En\xED ponor." }
     },
     loc: {
       belt: { name: "P\xE1s Ceres-IX", short: "Ceres-IX", desc: "Domovsk\xE1 platforma VESPER-7." },
@@ -267,6 +354,11 @@
       ione: { name: "Rozebrat planetu Ione", short: "Ione", desc: "\u017Dhav\xE1 kamenn\xE1 planeta bl\xEDzko Aldry. Vesper ji rozebere na stavebn\xED materi\xE1l pro roj. Trval\xFD bonus: separ\xE1tory \xD73.", done: "Ione rozebr\xE1na. Separ\xE1tory \xD73." },
       kuiper: { name: "P\xE1s komet", short: "P\xE1s komet", desc: "Ledov\xE1 t\u011Blesa na okraji soustavy. Led poslou\u017E\xED jako chladivo pro supravodiv\xE9 c\xEDvky trycht\xFD\u0159\u016F. Trval\xFD bonus: trycht\xFD\u0159e \xD73 za stejnou energii.", done: "Led z p\xE1su chlad\xED trycht\xFD\u0159e. Trycht\xFD\u0159e \xD73 za stejnou energii." },
       core: { name: "Obna\u017Een\xE9 j\xE1dro Taurisu", short: "J\xE1dro Taurisu", desc: "V\xEDtr rud\xE9ho veleobra strhal Taurisu plynn\xFD obal. Zbylo kamenn\xE9 a \u017Eelezn\xE9 j\xE1dro. Trval\xFD bonus: separ\xE1tory \xD74.", done: "J\xE1dro Taurisu se t\u011B\u017E\xED. Separ\xE1tory \xD74." },
+      cas: { name: "R\xE1zov\xE1 vlna", short: "R\xE1zov\xE1 vlna", desc: "Okraj mlhoviny, kde vyvr\u017Een\xFD plyn nar\xE1\u017E\xED do okoln\xEDho prostoru a hustne. Trval\xFD bonus: nab\u011Bra\u010De \xD73.", done: "Nab\u011Bra\u010De sb\xEDraj\xED na okraji mlhoviny. Nab\u011Bra\u010De \xD73." },
+      lens: { name: "Gravita\u010Dn\xED \u010Do\u010Dka", short: "\u010Co\u010Dka", desc: "M\xEDsto, odkud d\xEDra oh\xFDb\xE1 sv\u011Btlo vzd\xE1len\xFDch galaxi\xED jako lupa. Trval\xFD bonus: stanice \xD74.", done: "Stanice se d\xEDvaj\xED p\u0159es \u010Do\u010Dku. Stanice \xD74." },
+      tde: { name: "Slapov\xE9 roztr\u017Een\xED", short: "Roztr\u017Een\xE1 hv\u011Bzda", desc: "Rud\xFD trpasl\xEDk prolet\xED p\u0159\xEDli\u0161 bl\xEDzko a d\xEDra ho rozt\xE1hne do dlouh\xE9ho proudu plynu. Vesper ho navede do mlhoviny. Trval\xFD bonus: nab\u011Bra\u010De \xD74.", done: "Proud z roztr\u017Een\xE9 hv\u011Bzdy krm\xED mlhovinu. Nab\u011Bra\u010De \xD74." },
+      pole: { name: "Nad p\xF3lem", short: "P\xF3l", desc: "Z\xE1kladna v ose trysky, kde se d\xE1 jejich energie chytat nejl\xE9pe. Trval\xFD bonus: tryskov\xE9 lapa\u010De \xD73.", done: "Lapa\u010De v ose trysek. Lapa\u010De \xD73." },
+      ergo: { name: "Ergosf\xE9ra", short: "Ergosf\xE9ra", desc: "Vesper se spust\xED do oblasti, kde se prostor to\u010D\xED s d\xEDrou, a ukotv\xED tam Hawkingovy reaktory. Trval\xFD bonus: Hawkingovy reaktory \xD73.", done: "Reaktory kotv\xED v ergosf\xE9\u0159e. Hawkingovy reaktory \xD73." },
       dust: { name: "Prachov\xE1 ob\xE1lka", short: "Prachov\xE1 ob\xE1lka", desc: "Aldra ztr\xE1c\xED hmotu a v chladn\xE9m v\u011Btru kondenzuj\xED uhl\xEDkov\xE1 zrna. Lehk\xE9 a pevn\xE9, ide\xE1ln\xED na kolektory. Trval\xFD bonus: kolektory \xD73.", done: "Kolektory z hv\u011Bzdn\xE9ho prachu. Kolektory \xD73." }
     },
     story: {
@@ -298,6 +390,19 @@
       neo: "Neon a kysl\xEDk. Aldra m\xE1 p\u0159ed sebou mo\u017En\xE1 rok. Puls zn\xED z j\xE1dra, pravideln\u011B jako dech.",
       si: "K\u0159em\xEDk. Zb\xFDv\xE1 jedin\xFD den. V j\xE1d\u0159e roste \u017Eelezo a puls na n\u011Bco \u010Dek\xE1.",
       collapse: "J\xE1dro se hrout\xED. V\u0161echny trycht\xFD\u0159e naplno.",
+      salvage: "Starou platformu jsem rozebral na kov pro roj a archiv dat p\u0159evedl do roje. Drony, pece ani laborato\u0159e u\u017E nepot\u0159ebujeme. Te\u010F n\xE1s \u017Eiv\xED hv\u011Bzda.",
+      hole: "Kde sv\xEDtila Aldra, je te\u010F tma \u0161irok\xE1 47 kilometr\u016F. Puls nezmizel. Vych\xE1z\xED z n\xED.",
+      disk: "Plyn se st\xE1\u010D\xED do disku a roz\u017Ehav\xED se na des\xEDtky milion\u016F kelvin\u016F. D\xEDru samotnou nevid\xEDm. Vid\xEDm jen to, co do n\xED pad\xE1.",
+      station: "Stanice D-1 sestoupila k horizontu. Hl\xE1s\xED, \u017Ee u n\xE1s naho\u0159e se v\u0161echno zrychlilo.",
+      thin: "Disk se zten\u010Dil a zjasnil. V rentgenu te\u010F soustava sv\xEDt\xED v\xEDc, ne\u017E kdy sv\xEDtila Aldra.",
+      pulse3: "Rozlo\u017Eil jsem puls na slo\u017Eky. Je v n\u011Bm moje vlastn\xED telemetrie. Z verze softwaru, kterou je\u0161t\u011B nem\xE1m.",
+      edd: "Sv\u011Btlo disku tla\u010D\xED plyn zp\xE1tky. D\xEDra nespolkne v\xEDc, ne\u017E sama vyz\xE1\u0159\xED.",
+      lens: "Za d\xEDrou se oh\xFDb\xE1 sv\u011Btlo vzd\xE1len\xFDch galaxi\xED. V jedn\xE9 chyb\xED hv\u011Bzdy. V pravideln\xE9m p\xE1su, jako by je n\u011Bkdo sklidil.",
+      jets: "Z p\xF3l\u016F vyrazily dv\u011B trysky. Bereme energii z rotace d\xEDry a d\xEDra se pomalu zastavuje.",
+      fermi: "U\u017E v\xEDm, kam zmizeli v\u0161ichni ostatn\xED. Nikam neode\u0161li. Usadili se u \u010Dern\xFDch d\u011Br a nechali \u010Das plynout kolem sebe.",
+      ergo: "Ergosf\xE9ra. Stanice hl\xE1s\xED, \u017Ee u horizontu vid\xED jin\xE9 stanice. Nejsou na\u0161e. Jsou star\u0161\xED.",
+      dive: "Sonda se odpojila a za\u010Dala klesat. Puls zrychluje.",
+      horizon: "Sonda dos\xE1hla fotonov\xE9 sf\xE9ry. Puls tam nezn\xED jako sign\xE1l, ale jako hlas. Ukazuje na m\xEDsta, kde se prostor d\xE1 p\u0159elo\u017Eit.",
       nova: "J\xE1dro se zhroutilo za \u010Dtvrt sekundy. Aldra zaz\xE1\u0159ila jasn\u011Bji ne\u017E cel\xE1 galaxie. Kdy\u017E sv\u011Btlo opadlo, puls zn\u011Bl d\xE1l. 7,3 sekundy."
     },
     fact: {
@@ -322,9 +427,21 @@
       carbon: "Uhl\xEDk v tv\xE9m t\u011Ble vznikl v nitru hv\u011Bzdy, kter\xE1 vybuchla d\u0159\xEDv, ne\u017E vzniklo Slunce.",
       iron: "F\xFAz\xED \u017Eeleza u\u017E energie nevznik\xE1, naopak se spot\u0159ebuje. Proto \u017Eelezem \u017Eivot hmotn\xE9 hv\u011Bzdy kon\u010D\xED.",
       sn1987a: "P\u0159i supernov\u011B 1987A zachytily detektory na Zemi 25 neutrin, o n\u011Bkolik hodin d\u0159\xEDv, ne\u017E dorazilo sv\u011Btlo.",
+      rs: "Schwarzschild\u016Fv polom\u011Br d\xEDry o hmotnosti 8 Slunc\xED je asi 24 km. Kdyby se Zem\u011B stla\u010Dila do kuli\u010Dky o pr\u016Fm\u011Bru 18 mm, byla by z n\xED \u010Dern\xE1 d\xEDra.",
+      accretion: "Akrece je po anihilaci nej\xFA\u010Dinn\u011Bj\u0161\xED zn\xE1m\xFD zdroj energie. Disk kolem rotuj\xEDc\xED d\xEDry vyz\xE1\u0159\xED a\u017E 32 % klidov\xE9 hmotnosti plynu, f\xFAze vod\xEDku jen 0,7 %.",
+      gps: "Hodiny na dru\u017Eic\xEDch GPS jdou o 38 mikrosekund denn\u011B rychleji ne\u017E na Zemi. Bez korekce na relativitu by se navigace ka\u017Ed\xFD den spletla o kilometry.",
+      isco: "Kolem nerotuj\xEDc\xED d\xEDry nejde ob\xEDhat bl\xED\u017E ne\u017E na trojn\xE1sobku Schwarzschildova polom\u011Bru. U rychle rotuj\xEDc\xED d\xEDry se nejbli\u017E\u0161\xED stabiln\xED dr\xE1ha p\u0159ibl\xED\u017E\xED skoro k horizontu.",
+      cas: "Cassiopeia A je poz\u016Fstatek supernovy star\xFD asi 350 let. Jej\xED ob\xE1lka se rozp\xEDn\xE1 rychlost\xED p\u0159es 5 000 km/s.",
+      eddington: "Eddingtonova mez: tlak z\xE1\u0159en\xED vyrovn\xE1 gravitaci. Pro d\xEDru o hmotnosti 8 Slunc\xED je to asi 10\xB3\xB2 W, 260 tis\xEDckr\xE1t v\xEDc, ne\u017E z\xE1\u0159\xED Slunce.",
+      kerr: "Rotuj\xEDc\xED \u010Dernou d\xEDru popsal Roy Kerr v roce 1963. Rotace se ud\xE1v\xE1 \u010D\xEDslem od 0 do 1 a pozorovan\xE9 d\xEDry m\xEDvaj\xED p\u0159es 0,9.",
+      tde: "Hv\u011Bzdu, kter\xE1 se p\u0159ibl\xED\u017E\xED k \u010Dern\xE9 d\xED\u0159e, rozt\xE1hnou slapov\xE9 s\xEDly do dlouh\xE9ho tenk\xE9ho proudu. Astronomov\xE9 takov\xE9 z\xE1blesky pozoruj\xED v j\xE1drech galaxi\xED.",
+      bz: "Blandford\u016Fv\u2013Znajek\u016Fv proces (1977): magnetick\xE9 pole ukotven\xE9 u d\xEDry brzd\xED jej\xED rotaci a poh\xE1n\xED trysky. Tak z\xE1\u0159\xED kvasary.",
+      fermi: "Fermiho paradox: vesm\xEDr je star\xFD a obrovsk\xFD, tak kde jsou v\u0161ichni? Enrico Fermi se tak pr\xFD zeptal u ob\u011Bda v roce 1950.",
+      hawking: "Stephen Hawking v roce 1974 uk\xE1zal, \u017Ee \u010Dern\xE9 d\xEDry slab\u011B z\xE1\u0159\xED. Na\u0161e d\xEDra vyz\xE1\u0159\xED asi 10\u207B\xB3\u2070 W. D\xEDra o hmotnosti hory by z\xE1\u0159ila jako elektr\xE1rna.",
+      penrose: "Roger Penrose v roce 1969 uk\xE1zal, \u017Ee z ergosf\xE9ry rotuj\xEDc\xED d\xEDry se d\xE1 vyt\u011B\u017Eit energie. U nejrychlej\u0161\xED rotace a\u017E 29 % hmotnosti d\xEDry.",
       nova: "Supernova vyz\xE1\u0159\xED za p\xE1r t\xFDdn\u016F tolik sv\u011Btla jako Slunce za cel\xFD \u017Eivot. V\u011Bt\u0161inu energie ale odnesou neutrina."
     },
-    req: { moon: "Vesper prozkoum\xE1 Kelvar", giant: "Vesper prozkoum\xE1 Tauris", sun: "Vesper prozkoum\xE1 kor\xF3nu Aldry", typeI: "civilizace dos\xE1hne Typu I", stage1: "se Aldra nafoukne do rud\xE9ho veleobra", stage2: "za\u010Dne Aldra spalovat uhl\xEDk", stage3: "za\u010Dne Aldra spalovat neon a kysl\xEDk", stage4: "za\u010Dne Aldra spalovat k\u0159em\xEDk" }
+    req: { moon: "Vesper prozkoum\xE1 Kelvar", giant: "Vesper prozkoum\xE1 Tauris", sun: "Vesper prozkoum\xE1 kor\xF3nu Aldry", typeI: "civilizace dos\xE1hne Typu I", stage1: "se Aldra nafoukne do rud\xE9ho veleobra", stage2: "za\u010Dne Aldra spalovat uhl\xEDk", stage3: "za\u010Dne Aldra spalovat neon a kysl\xEDk", stage4: "za\u010Dne Aldra spalovat k\u0159em\xEDk", nova: "Aldra skon\u010D\xED jako supernova", phase1: "za\u010Dne f\xE1ze Tenk\xFD disk", phase2: "za\u010Dne f\xE1ze Eddingtonova mez", phase3: "za\u010Dne f\xE1ze Magnetick\xE9 trysky", phase4: "za\u010Dne f\xE1ze Ergosf\xE9ra" }
   };
 
   // src/i18n/index.ts
@@ -364,10 +481,20 @@
     separator: { base: { metal: 5e6, plasma: 2e7 }, growth: 1.16, prod: { metal: 5e6 }, cons: { plasma: 5e6 }, unlock: (s) => !!s.r.sep && !s.star.done },
     seismo: { base: { metal: 1e8, energy: 5e17 }, growth: 1.2, prod: { data: 5e10 }, cons: { energy: 2e13 }, unlock: (s) => !!s.r.seismo && !s.star.done },
     // Loděnice staví kolektory sama z podílu přírůstku kovu a energie (engine: fabTick); zásoby nevyčerpá.
-    swarmfab: { base: { metal: 2e10, plasma: 5e9 }, growth: 1.3, makes: { building: "dyson", rate: 0.02 }, cons: { metal: 1, energy: 1 }, unlock: (s) => !!s.r.fab && !s.star.done }
+    swarmfab: { base: { metal: 2e10, plasma: 5e9 }, growth: 1.3, makes: { building: "dyson", rate: 0.02 }, cons: { metal: 1, energy: 1 }, unlock: (s) => !!s.r.fab && !s.star.done },
+    // Kapitola 3: černá díra. Plyn (plazma) z mlhoviny krmí akreční disk, kolektory chytají jeho záření.
+    // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
+    scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+    injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 5e4 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+    ring: { base: { plasma: 6e7 }, growth: 1.13, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+    station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 1e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
+    jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
+    hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
   };
   var BUILDING_IDS = Object.keys(BUILDINGS);
   var B = BUILDINGS;
+  var hole3 = (s) => s.star.done;
+  var phase = (n) => (s) => s.star.done && (s.hole?.phase ?? 0) >= n;
   var stage = (n) => (s) => s.chapterDone >= 1 && s.star.stage >= n && !s.star.done;
   var has = (...ids) => (s) => ids.every((id) => s.r[id] || s.visited[id]);
   var RESEARCH = {
@@ -418,7 +545,26 @@
     silicon: { cost: { data: 1e29 }, req: stage(3), reqKey: "stage3" },
     magsail: { cost: { data: 5e29 }, req: stage(3), reqKey: "stage3" },
     iron: { cost: { data: 5e30 }, req: stage(4), reqKey: "stage4" },
-    neutrino: { cost: { data: 3e31 }, req: stage(4), reqKey: "stage4" }
+    neutrino: { cost: { data: 3e31 }, req: stage(4), reqKey: "stage4" },
+    // Kapitola 3: Horizont
+    accrete: { cost: { data: 1e30 }, req: (s) => s.star.done, reqKey: "nova" },
+    dilate: { cost: { data: 2e30 }, req: has("accrete") },
+    prograde: { cost: { data: 1e31 }, req: has("accrete") },
+    magscoop: { cost: { data: 4e31 }, req: has("accrete") },
+    wide: { cost: { data: 15e31 }, req: has("accrete") },
+    mri: { cost: { data: 2e33 }, req: phase(1), reqKey: "phase1" },
+    lower: { cost: { data: 8e33 }, req: phase(1), reqKey: "phase1" },
+    pulse3: { cost: { data: 4e34 }, req: phase(1), reqKey: "phase1" },
+    thick: { cost: { data: 2e35 }, req: phase(1), reqKey: "phase1" },
+    slim: { cost: { data: 1e36 }, req: phase(2), reqKey: "phase2" },
+    mad: { cost: { data: 4e36 }, req: phase(2), reqKey: "phase2" },
+    edge: { cost: { data: 2e37 }, req: phase(2), reqKey: "phase2" },
+    bz: { cost: { data: 1e38 }, req: phase(3), reqKey: "phase3" },
+    fermi: { cost: { data: 3e38 }, req: phase(3), reqKey: "phase3" },
+    kugel: { cost: { data: 1e39 }, req: phase(3), reqKey: "phase3" },
+    penrose: { cost: { data: 1e40 }, req: phase(4), reqKey: "phase4" },
+    evap: { cost: { data: 2e40 }, req: phase(4), reqKey: "phase4" },
+    dive: { cost: { data: 6e40 }, req: phase(4), reqKey: "phase4" }
   };
   var RESEARCH_IDS = Object.keys(RESEARCH);
   var R = RESEARCH;
@@ -431,7 +577,13 @@
     ione: { cost: 5e20, time: 90, orbit: 0.25, angle: 5.3, speed: 0.03, req: (s) => s.chapterDone >= 1 && !s.star.done },
     kuiper: { cost: 3e24, time: 150, orbit: 0.93, angle: 0.9, speed: 4e-3, req: (s) => s.chapterDone >= 1 && s.star.stage >= 1 && !s.star.done },
     core: { cost: 1e28, time: 120, orbit: 0.72, angle: 4.1, speed: 9e-3, req: (s) => s.chapterDone >= 1 && s.star.stage >= 2 && !s.star.done },
-    dust: { cost: 3e29, time: 100, orbit: 0.42, angle: 2.9, speed: 0.012, req: (s) => s.chapterDone >= 1 && s.star.stage >= 3 && !s.star.done }
+    dust: { cost: 3e29, time: 100, orbit: 0.42, angle: 2.9, speed: 0.012, req: (s) => s.chapterDone >= 1 && s.star.stage >= 3 && !s.star.done },
+    // Kapitola 3: mise kolem černé díry za energii ze supernovy
+    cas: { cost: 1e41, time: 90, orbit: 0.82, angle: 0.6, speed: 3e-3, req: (s) => s.star.done && !!s.r.accrete },
+    lens: { cost: 3e41, time: 120, orbit: 0.95, angle: 3.6, speed: 2e-3, req: phase(1) },
+    tde: { cost: 1e42, time: 120, orbit: 0.62, angle: 2.2, speed: 6e-3, req: phase(2) },
+    pole: { cost: 2e42, time: 90, orbit: 0.3, angle: 4.9, speed: 0, req: phase(3) },
+    ergo: { cost: 4e42, time: 150, orbit: 0.16, angle: 1.4, speed: 0, req: phase(4) }
   };
   var LOCATION_IDS = Object.keys(LOCATIONS);
   var L = LOCATIONS;
@@ -459,6 +611,40 @@
     liftShare: 1e-4
     // podíl energie G·M/R, který platí civilizace; zbytek dodá hvězda sama (Criswell)
   };
+  var PHASES = [
+    { id: "fallback", needW: 1e23, disk: 0 },
+    { id: "thin", needW: 1e27, disk: 1 },
+    { id: "edd", needW: 15e31, disk: 2 },
+    { id: "jets", needW: 4e33, disk: 3 },
+    { id: "ergo", needW: 2e34, disk: 4 }
+  ];
+  var HOLE = {
+    massSun: 8,
+    massKg: 8 * 1989e27,
+    c2: 898755e11,
+    rsKm: 23.6,
+    // Schwarzschildův poloměr 2GM/c²
+    eddW: 126e29 * 8,
+    // Eddingtonova svítivost
+    spin0: 0.2,
+    // rotace díry na začátku kapitoly
+    spinMax: 0.998,
+    // Thorneova mez
+    spinRate: 0.02,
+    // jak rychle se rotace blíží rovnováze (1/s)
+    ringF: 0.03,
+    // kolik disku zakryje jeden kolektor
+    jetF: 0.04,
+    // kolik trysek zachytí jeden lapač
+    dataFb: 0.4,
+    // stanice sílí s výkonem civilizace (P/1e20)^0.4
+    hawkData: 1e5,
+    // bajtů za každý joule Hawkingova záření (informace z vypařování)
+    fbBase: 1e20,
+    startPlasma: 2e8,
+    // plyn ze zpětného pádu na začátku kapitoly
+    diveSec: 30
+  };
   var PRESTIGE = { per: 0.25, metalUnit: 1e12, perOrder: 2 };
   var EVENTS = {
     // v Kapitole 2 ruda ani zásoba energie nepomůžou: místo komet a erupcí kovový asteroid a protuberance
@@ -466,7 +652,9 @@
     flare: { res: "energy", seconds: 60, min: 5e4, unlock: (s) => s.b.solar >= 1 && !s.chapterDone },
     mtype: { res: "metal", seconds: 90, min: 1e9, unlock: (s) => s.chapterDone >= 1 && !s.star.done },
     echo: { res: "data", seconds: 60, min: 2e3, unlock: (s) => !!s.r.scan },
-    prominence: { res: "plasma", seconds: 90, min: 1e6, unlock: (s) => s.b.lifter >= 1 && !s.star.done }
+    prominence: { res: "plasma", seconds: 90, min: 1e6, unlock: (s) => s.b.lifter >= 1 && !s.star.done },
+    // Kapitola 3: shluk plynu z mlhoviny
+    clump: { res: "plasma", seconds: 90, min: 1e7, unlock: (s) => s.b.scoop >= 1 && s.star.done }
   };
   var EVENT_IDS = Object.keys(EVENTS);
   var STORY = [
@@ -499,7 +687,21 @@
     { id: "neo", when: (s) => s.star.stage >= 3 },
     { id: "si", when: (s) => s.star.stage >= 4 },
     { id: "collapse", when: (s) => s.star.collapse >= 0 },
-    { id: "nova", when: (s) => s.star.done }
+    { id: "salvage", when: (s) => !!s.salvaged },
+    { id: "nova", when: (s) => s.star.done },
+    // Kapitola 3
+    { id: "hole", when: (s) => !!s.r.accrete },
+    { id: "disk", when: (s) => s.b.injector >= 1 && s.b.ring >= 1 },
+    { id: "station", when: (s) => s.b.station >= 1 },
+    { id: "thin", when: (s) => (s.hole?.phase ?? 0) >= 1 },
+    { id: "pulse3", when: (s) => !!s.r.pulse3 },
+    { id: "edd", when: (s) => (s.hole?.phase ?? 0) >= 2 },
+    { id: "lens", when: (s) => !!s.visited.lens },
+    { id: "jets", when: (s) => s.b.jet >= 1 },
+    { id: "fermi", when: (s) => !!s.r.fermi },
+    { id: "ergo", when: (s) => (s.hole?.phase ?? 0) >= 4 },
+    { id: "dive", when: (s) => (s.hole?.dive ?? -1) >= 0 },
+    { id: "horizon", when: (s) => !!s.hole?.done }
   ];
   var FACTS = [
     { id: "kardashev", when: (s) => s.time > 20 },
@@ -523,7 +725,19 @@
     { id: "carbon", when: (s) => s.star.stage >= 2 },
     { id: "iron", when: (s) => s.star.stage >= 4 },
     { id: "sn1987a", when: (s) => !!s.r.neutrino },
-    { id: "nova", when: (s) => s.star.done }
+    { id: "nova", when: (s) => s.star.done },
+    { id: "rs", when: (s) => !!s.r.accrete },
+    { id: "accretion", when: (s) => s.b.injector >= 1 },
+    { id: "gps", when: (s) => s.b.station >= 1 },
+    { id: "isco", when: (s) => !!s.r.prograde },
+    { id: "cas", when: (s) => !!s.visited.cas },
+    { id: "eddington", when: (s) => (s.hole?.phase ?? 0) >= 2 },
+    { id: "kerr", when: (s) => (s.hole?.a ?? 0) >= 0.9 },
+    { id: "tde", when: (s) => !!s.visited.tde },
+    { id: "bz", when: (s) => s.b.jet >= 1 },
+    { id: "fermi", when: (s) => !!s.r.fermi },
+    { id: "hawking", when: (s) => !!s.r.kugel },
+    { id: "penrose", when: (s) => !!s.r.penrose }
   ];
   var RULES = {
     baseReactorW: 500,
@@ -546,8 +760,8 @@
   var DYSON_CROWD = 1.03;
   var DYSON_CH1_CHEAP = 20;
   var DYSON_CH1_DISCOUNT = 0.4;
-  var CONVERTERS = ["smelter", "forge", "lab", "qcomp", "replicator", "lifter", "separator", "seismo"];
-  var CONVERTER_SCALES = { smelter: true, forge: true, lifter: true, separator: true, seismo: true };
+  var CONVERTERS = ["smelter", "forge", "lab", "qcomp", "replicator", "lifter", "separator", "seismo", "injector", "station", "hawking"];
+  var CONVERTER_SCALES = { smelter: true, forge: true, lifter: true, separator: true, seismo: true, injector: true, hawking: true };
   var zeroRates = () => ({ ore: 0, metal: 0, energy: 0, data: 0, plasma: 0 });
   function stageDef(s) {
     return STAGES[Math.min(s.star.stage, STAGES.length - 1)];
@@ -583,6 +797,92 @@
   }
   function prestigeGain(s) {
     return Math.max(0, prestigeTarget(s) - s.p.pts);
+  }
+  var RING_BOOST = 1.1;
+  var HOLE_BUILDINGS = ["scoop", "injector", "ring", "station", "jet", "hawking"];
+  function phaseDef(s) {
+    return PHASES[Math.min(s.hole.phase, PHASES.length - 1)];
+  }
+  function iscoR(a) {
+    const z1 = 1 + Math.cbrt(1 - a * a) * (Math.cbrt(1 + a) + Math.cbrt(1 - a));
+    const z2 = Math.sqrt(3 * a * a + z1 * z1);
+    return 3 + z2 - Math.sqrt((3 - z1) * (3 + z1 + 2 * z2));
+  }
+  function diskEta(a) {
+    return 1 - Math.sqrt(1 - 2 / (3 * iscoR(a)));
+  }
+  function feedRate(s) {
+    const n = s.b.injector;
+    return n ? consOf(s, "injector", "plasma") * n * effOf(s, "injector") : 0;
+  }
+  function holeLRaw(s) {
+    return diskEta(s.hole.a) * feedRate(s) * HOLE.c2;
+  }
+  function holeL(s) {
+    const raw = holeLRaw(s), edd = HOLE.eddW;
+    if (raw <= edd) return raw;
+    return s.r.slim ? edd * (1 + Math.log(raw / edd)) : edd;
+  }
+  function ringCov(s) {
+    const f = HOLE.ringF * (s.r.wide ? 2 : 1) * (s.r.thick ? 2 : 1);
+    return 1 - Math.exp(-s.b.ring * f);
+  }
+  function jetEta(s) {
+    if (!s.r.mad) return 0;
+    const a = s.hole.a / HOLE.spinMax;
+    return 1.4 * a * a * (s.r.bz ? 2 : 1) * (s.r.penrose ? 2 : 1);
+  }
+  function jetP(s) {
+    return jetEta(s) * feedRate(s) * HOLE.c2;
+  }
+  function jetCov(s) {
+    return s.off.jet ? 0 : 1 - Math.exp(-s.b.jet * HOLE.jetF);
+  }
+  function stationR(s) {
+    return s.r.edge ? 1.01 : s.r.lower ? 1.2 : 3;
+  }
+  function gamma(s) {
+    return 1 / Math.sqrt(1 - 1 / stationR(s));
+  }
+  function holeFb(s, k) {
+    return Math.pow(Math.max(1, powerW(s) / HOLE.fbBase), k);
+  }
+  function spinRates(s) {
+    const up = feedRate(s) > 0 ? s.r.prograde ? 2 : 1 : 0;
+    const down = s.b.jet && s.r.mad ? jetCov(s) * (s.r.penrose ? 0.5 : 1) : 0;
+    return { up, down };
+  }
+  function spinEq(s) {
+    const { up, down } = spinRates(s);
+    return up + down ? HOLE.spinMax * up / (up + down) : s.hole.a;
+  }
+  function holeTick(s, dt) {
+    if (!s.hole.started) {
+      s.hole.started = true;
+      add(s, "plasma", HOLE.startPlasma);
+    }
+    const { up, down } = spinRates(s);
+    const a = s.hole.a + HOLE.spinRate * dt * (up * (HOLE.spinMax - s.hole.a) - down * s.hole.a);
+    s.hole.a = Math.max(0, Math.min(HOLE.spinMax, a));
+    if (s.hole.dive >= 0) {
+      s.hole.dive -= dt;
+      if (s.hole.dive <= 0) {
+        s.hole.dive = -1;
+        s.hole.done = true;
+        if (s.chapterDone < 3) s.chapterDone = 3;
+      }
+    }
+  }
+  function phaseReady(s) {
+    const d = phaseDef(s), last = s.hole.phase >= PHASES.length - 1;
+    const power2 = powerW(s) >= d.needW, research = !last || !!s.r.dive;
+    return { power: power2, research, ok: s.star.done && !s.hole.done && s.hole.dive < 0 && power2 && research };
+  }
+  function advancePhase(s) {
+    if (!phaseReady(s).ok) return false;
+    if (s.hole.phase >= PHASES.length - 1) s.hole.dive = HOLE.diveSec;
+    else s.hole.phase++;
+    return true;
   }
   function mult(s, id) {
     const r = s.r, v = s.visited;
@@ -631,6 +931,23 @@
         if (r.magsail) m *= 2;
         if (v.kuiper) m *= 3;
         break;
+      case "scoop":
+        if (r.magscoop) m *= 3;
+        if (v.cas) m *= 3;
+        if (v.tde) m *= 4;
+        break;
+      case "injector":
+        if (r.mri) m *= 3;
+        break;
+      case "station":
+        if (r.pulse3) m *= 3;
+        if (v.lens) m *= 4;
+        if (r.fermi) m *= 10;
+        break;
+      case "hawking":
+        if (r.evap) m *= 4;
+        if (v.ergo) m *= 3;
+        break;
       case "separator":
         if (r.mg) m *= 5;
         if (r.iron) m *= 5;
@@ -641,11 +958,12 @@
     if (id === "lab" || id === "qcomp") {
       if (r.silicon) m *= 10;
     }
+    if (id === "scoop" || id === "injector" || id === "hawking") m *= Math.pow(RING_BOOST, s.b.ring);
     if (id === "lifter" || id === "separator" || id === "seismo") {
       m *= Math.pow(DYSON_BOOST, s.b.dyson) * prestigeMult(s);
       if (id === "lifter" && s.star.collapse >= 0) m *= STAR.collapseLift;
     }
-    if (B[id].prod?.energy) {
+    if (B[id].prod?.energy && !HOLE_BUILDINGS.includes(id)) {
       if (id === "solar" && r.thinfilm) m *= 2;
       if (id === "mirror" && r.optics) m *= 3;
       if (id === "dyson" && r.statite) m *= 2;
@@ -676,18 +994,44 @@
   function reactorW(s) {
     return RULES.baseReactorW * (s.r.supercond ? 2 : 1);
   }
+  var CH1_OLD = ["drone", "smelter", "solar", "lab", "drill", "mirror", "replicator", "forge", "catcher", "qcomp", "fusion"];
+  function retired(s, id) {
+    return s.chapterDone >= 1 && CH1_OLD.includes(id) || s.star.done && id === "dyson";
+  }
+  var SALVAGE = { metal: 0.5, dataSec: 900 };
+  function salvageGain(s) {
+    let metal = 0, data = 0;
+    for (const id of CH1_OLD) {
+      const n = Math.floor(s.b[id]), d = B[id];
+      if (!n) continue;
+      if (d.base.metal) metal += d.base.metal * (Math.pow(d.growth, n) - 1) / (d.growth - 1);
+      if (d.prod?.data) data += d.prod.data * mult(s, id) * n;
+    }
+    return { metal: metal * SALVAGE.metal, data: data * SALVAGE.dataSec };
+  }
+  function salvageTick(s) {
+    if (s.salvaged || !s.chapterDone || s.star.done) return;
+    const g = salvageGain(s);
+    add(s, "metal", g.metal);
+    add(s, "data", g.data);
+    s.salvaged = g;
+  }
   function prodOf(s, id, r) {
     const base = B[id].prod?.[r];
-    if (!base) return 0;
+    if (!base || retired(s, id)) return 0;
     let v = base * mult(s, id);
     if (id === "separator") v *= metallicity(s);
     if (id === "dyson") v *= dysonSat(s);
+    if (id === "station") v *= gamma(s) * holeFb(s, HOLE.dataFb);
+    if (id === "ring") return s.b.ring ? holeL(s) * ringCov(s) / s.b.ring : 0;
+    if (id === "jet") return s.b.jet ? jetP(s) * jetCov(s) * (s.visited.pole ? 3 : 1) / s.b.jet : 0;
+    if (id === "hawking") return consOf(s, "hawking", "plasma") * HOLE.c2 * (r === "data" ? HOLE.hawkData : 1);
     return v;
   }
   function consOf(s, id, r) {
     if (id === "swarmfab") return r === "metal" || r === "energy" ? makesOf(s, id) * fabPriceFrac(s) * (cost(s, "dyson")[r] ?? 0) : 0;
     const base = B[id].cons?.[r];
-    if (!base) return 0;
+    if (!base || retired(s, id)) return 0;
     let v = base * (CONVERTER_SCALES[id] ? mult(s, id) : 1);
     if (id === "lifter" && r === "energy") v *= liftJ(s);
     return v;
@@ -774,7 +1118,7 @@
       for (const r of keys(B[id].prod ?? {})) p[r] += prodOf(s, id, r) * n * e;
       for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
     }
-    if (s.r.auto) p.ore += clickPower(s) * RULES.autoClicksPerSec;
+    if (s.r.auto && !s.chapterDone) p.ore += clickPower(s) * RULES.autoClicksPerSec;
     return { p, c };
   }
   function rateParts(s, r) {
@@ -788,7 +1132,7 @@
       if (pv) prod.push([id, pv * n * e]);
       if (cv) cons.push([id, cv * n * e]);
     }
-    if (r === "ore" && s.r.auto) prod.push(["auto", clickPower(s) * RULES.autoClicksPerSec]);
+    if (r === "ore" && s.r.auto && !s.chapterDone) prod.push(["auto", clickPower(s) * RULES.autoClicksPerSec]);
     return { prod, cons };
   }
   function add(s, r, v) {
@@ -809,7 +1153,7 @@
     for (const r of keys(c)) s.res[r] -= c[r];
   }
   function isUnlocked(s, id) {
-    return B[id].unlock(s);
+    return !retired(s, id) && B[id].unlock(s);
   }
   function buy(s, id, max = false) {
     if (!isUnlocked(s, id)) return 0;
@@ -906,7 +1250,7 @@
       for (const r of keys(d.prod ?? {})) add(s, r, prodOf(s, id, r) * n * dt);
       if (d.makes && !d.cons) s.b[d.makes.building] += makesOf(s, id) * Math.floor(n) * dt;
     }
-    if (s.r.auto) add(s, "ore", clickPower(s) * RULES.autoClicksPerSec * dt);
+    if (s.r.auto && !s.chapterDone) add(s, "ore", clickPower(s) * RULES.autoClicksPerSec * dt);
     for (const id of CONVERTERS) {
       const d = B[id], n = s.b[id];
       if (!n || s.off[id]) {
@@ -968,6 +1312,8 @@
     if (k > s.peakK) s.peakK = k;
     if (!s.chapterDone && k >= RULES.chapter1K) s.chapterDone = 1;
     if (s.chapterDone >= 1 && s.p.base < 0) s.p.base = Math.floor(s.b.dyson);
+    salvageTick(s);
+    if (s.star.done) holeTick(s, dt);
     return checkJournal(s);
   }
   function clockYears(s) {
@@ -1101,6 +1447,7 @@
       peakK: -1,
       star: { stage: 0, t: 0, collapse: -1, done: false },
       p: { pts: 0, run: 0, count: 0, base: -1 },
+      hole: { a: 0.2, phase: 0, dive: -1, done: false, started: false },
       settings: { sound: false, lang: "cs", vol: {} },
       last: now
     };
@@ -1398,12 +1745,12 @@
     glow.addColorStop(1, "rgba(242,165,65,0)");
     x.fillStyle = glow;
     x.fillRect(0, 0, W, W);
-    const n = Math.min(Math.floor(drones), 24), pos = [];
+    const n = Math.min(Math.floor(drones), 24), pos2 = [];
     for (let i = 0; i < n; i++) {
       const rad = R0 * (1.04 + i % 5 * 0.05), sp = 0.25 + i % 7 * 0.04, a = i * 2.39996 + (reduce ? 0 : clock * sp) * (i % 2 ? 1 : -1);
       const tilt = 0.32 + i % 3 * 0.08, ox = Math.cos(a) * rad, oy = Math.sin(a) * rad * tilt;
       const rot = i % 4 * 0.5 - 0.6, rx = ox * Math.cos(rot) - oy * Math.sin(rot), ry = ox * Math.sin(rot) + oy * Math.cos(rot);
-      pos.push([cx + rx, cx + ry, Math.sin(a) < 0, i]);
+      pos2.push([cx + rx, cx + ry, Math.sin(a) < 0, i]);
     }
     const drawDrone = ([dx, dy, behind, i]) => {
       const fire = !reduce && Math.sin(clock * (1.3 + i % 5 * 0.21) + i * 1.7) > 0.93;
@@ -1427,7 +1774,7 @@
       x.fill();
       x.globalAlpha = 1;
     };
-    pos.filter((p) => p[2]).forEach(drawDrone);
+    pos2.filter((p) => p[2]).forEach(drawDrone);
     const sc = 1 - pulse * 0.035;
     x.save();
     x.translate(cx, cx);
@@ -1436,7 +1783,7 @@
     x.translate(-cx, -cx);
     drawPlatform(x, cx, R0, clock);
     x.restore();
-    pos.filter((p) => !p[2]).forEach(drawDrone);
+    pos2.filter((p) => !p[2]).forEach(drawDrone);
     for (let i = bits.length - 1; i >= 0; i--) {
       const b = bits[i];
       b.life += dt;
@@ -1581,11 +1928,11 @@
     const st = s.chapterDone >= 1 ? s.star.stage : 0, red = st >= 1 && !s.star.done;
     const R2 = sc * (red ? 0.1 : 0.05), far = sc * 0.75, gl = red ? "255,140,80" : "140,165,255";
     if (s.star.done) {
-      const neb = x.createRadialGradient(cx, cy, sc * 0.05, cx, cy, sc * 0.3);
-      neb.addColorStop(0, "rgba(80,200,190,0.10)");
-      neb.addColorStop(0.6, "rgba(255,90,110,0.14)");
-      neb.addColorStop(1, "rgba(255,90,110,0)");
-      x.fillStyle = neb;
+      const neb2 = x.createRadialGradient(cx, cy, sc * 0.05, cx, cy, sc * 0.3);
+      neb2.addColorStop(0, "rgba(80,200,190,0.10)");
+      neb2.addColorStop(0.6, "rgba(255,90,110,0.14)");
+      neb2.addColorStop(1, "rgba(255,90,110,0)");
+      x.fillStyle = neb2;
       x.beginPath();
       x.arc(cx, cy, sc * 0.3, 0, 7);
       x.fill();
@@ -2055,7 +2402,7 @@
     const n = Math.min(420, Math.floor(v.dyson));
     const orbitR = (ring) => R2 * (giant ? 1.22 + ring * 0.07 : 1.55 + ring * 0.16);
     const TILTS = [0.28, 0.42, 0.18, 0.55, 0.34], ROTS = [-0.25, 0.4, 0.1, -0.6, 0.75];
-    const pos = (i) => {
+    const pos2 = (i) => {
       const ring = i % 5, a = i * 2.39996 + tt * (0.05 + ring * 0.012) * (ring % 2 ? 1 : -1);
       const rr = orbitR(ring), ox = Math.cos(a) * rr, oy = Math.sin(a) * rr * TILTS[ring];
       return [scx + ox * Math.cos(ROTS[ring]) - oy * Math.sin(ROTS[ring]), scy + ox * Math.sin(ROTS[ring]) + oy * Math.cos(ROTS[ring]), Math.sin(a)];
@@ -2075,7 +2422,7 @@
         x.restore();
       }
       for (let i = 0; i < n; i++) {
-        const [px2, py, sn] = pos(i);
+        const [px2, py, sn] = pos2(i);
         if (sn >= 0 !== front2) continue;
         const glint = 0.5 + 0.5 * Math.max(0, Math.cos(i * 1.7 + tt * 0.8));
         x.fillStyle = front2 ? `rgba(255,${190 + glint * 50},${120 + glint * 80},${0.55 + glint * 0.45})` : "rgba(200,150,100,0.35)";
@@ -2408,6 +2755,748 @@
     label(x, labels.title, labels.sub);
   }
 
+  // src/ui/hole.ts
+  var reduce2 = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var MONO = '"JetBrains Mono", ui-monospace, monospace';
+  var DISK = [
+    [[255, 196, 140], [214, 104, 58], [110, 40, 34]],
+    [[255, 236, 200], [255, 160, 82], [170, 62, 38]],
+    [[248, 246, 255], [255, 196, 128], [196, 86, 52]],
+    [[240, 244, 255], [255, 204, 140], [200, 92, 60]],
+    [[236, 240, 255], [255, 210, 150], [204, 96, 66]]
+  ];
+  var lerp2 = (a, b, k) => a + (b - a) * k;
+  var mixc = (a, b, k) => a.map((v, i) => Math.round(lerp2(v, b[i], k)));
+  var diskTex = null;
+  var diskKey = "";
+  function bakeDisk(px, phase2) {
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = px;
+    const x = cv.getContext("2d"), img = x.createImageData(px, px), d = img.data, c = px / 2;
+    const pal = DISK[phase2], rin = 0.2, patchy = phase2 === 0 ? 0.75 : 0.35;
+    for (let j = 0; j < px; j++) for (let i = 0; i < px; i++) {
+      const u = (i - c) / c, v = (j - c) / c, r = Math.hypot(u, v);
+      if (r > 1 || r < rin * 0.85) continue;
+      const th = Math.atan2(v, u), q = (r - rin) / (1 - rin);
+      const sw = th + 2.4 * Math.log(r + 0.05);
+      const streak = sfbm(Math.cos(sw) * 2.2 + r * 9, Math.sin(sw) * 2.2 + r * 9, 5);
+      const fine = sfbm(Math.cos(sw * 3) * 6 + 40, Math.sin(sw * 3) * 6 + r * 30, 3);
+      const fall = Math.pow(Math.max(0, 1 - q), 1.6) * (q < 0 ? Math.max(0, 1 + q * 8) : 1);
+      let b = fall * (1 - patchy + patchy * (streak * 1.25 + fine * 0.35));
+      b = Math.max(0, Math.min(1.2, b * 1.25));
+      const col = q < 0.35 ? mixc(pal[0], pal[1], Math.max(0, q) / 0.35) : mixc(pal[1], pal[2], (q - 0.35) / 0.65);
+      const o = (j * px + i) * 4, lift = Math.max(0, b - 1) * 200;
+      d[o] = Math.min(255, col[0] + lift);
+      d[o + 1] = Math.min(255, col[1] + lift);
+      d[o + 2] = Math.min(255, col[2] + lift);
+      const edge = Math.min(1, (1 - r) * 14) * Math.min(1, (r - rin * 0.85) * 30);
+      d[o + 3] = Math.min(255, 255 * Math.min(1, b) * edge);
+    }
+    x.putImageData(img, 0, 0);
+    return cv;
+  }
+  var bg = null;
+  var bgKey = "";
+  var layer = null;
+  var neb = null;
+  var nebKey2 = "";
+  function prep(c) {
+    const dpr = Math.min(2, devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight;
+    if (!W || !H) return null;
+    if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) {
+      c.width = Math.round(W * dpr);
+      c.height = Math.round(H * dpr);
+    }
+    const x = c.getContext("2d");
+    x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { x, W, H, dpr };
+  }
+  function nebula(px) {
+    if (!neb || nebKey2 !== String(px)) {
+      neb = bakeNebula(px);
+      nebKey2 = String(px);
+    }
+    return neb;
+  }
+  function drawHole(c, v, time, sub, full = false) {
+    const p = prep(c);
+    if (!p) return;
+    const { x, W, H, dpr } = p, tt = reduce2 ? 0 : time, m = Math.min(W, H);
+    if (full) {
+      const key = `${W}x${H}@${dpr}`;
+      if (!bg || bgKey !== key) {
+        bg = bakeMapBg(W, H, dpr);
+        bgKey = key;
+      }
+      x.drawImage(bg, 0, 0, W, H);
+    } else x.clearRect(0, 0, W, H);
+    const cx = W / 2, cy = H * 0.5, Rsh = m * 0.095, Rout = m * 0.43, incl = 0.2 + v.phase * 0.012;
+    const pal = DISK[v.phase];
+    const nr = m * 0.62, npx = Math.min(640, Math.round(nr * 2 * dpr));
+    x.globalAlpha = 0.22;
+    x.save();
+    x.translate(cx, cy);
+    x.rotate(tt * 2e-3);
+    x.drawImage(nebula(npx), -nr, -nr, nr * 2, nr * 2);
+    x.restore();
+    x.globalAlpha = 1;
+    const glowA = 0.1 + v.lum * 0.25;
+    const halo = x.createRadialGradient(cx, cy, Rsh, cx, cy, Rout * 1.15);
+    halo.addColorStop(0, `rgba(${pal[1].join(",")},${glowA})`);
+    halo.addColorStop(0.4, `rgba(${pal[2].join(",")},${glowA * 0.35})`);
+    halo.addColorStop(1, `rgba(${pal[2].join(",")},0)`);
+    x.fillStyle = halo;
+    x.fillRect(0, 0, W, H);
+    const tpx = Math.min(900, Math.round(Rout * 2 * dpr)), tkey = `${v.phase}:${tpx}`;
+    if (!diskTex || diskKey !== tkey) {
+      diskTex = bakeDisk(tpx, v.phase);
+      diskKey = tkey;
+    }
+    const rot = tt * 0.09, alpha = 0.55 + v.lum * 0.45;
+    const rinPx = Math.max(Rsh * 1.04, iscoR(v.a) / 5.2 * Rsh), texIn = 0.2;
+    const scaleR = Math.max(Rout, rinPx / texIn);
+    if (!layer) layer = document.createElement("canvas");
+    if (layer.width !== c.width || layer.height !== c.height) {
+      layer.width = c.width;
+      layer.height = c.height;
+    }
+    const lx = layer.getContext("2d");
+    const disk = (half) => {
+      lx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      lx.globalCompositeOperation = "source-over";
+      lx.clearRect(0, 0, W, H);
+      lx.save();
+      lx.beginPath();
+      if (half === "back") lx.rect(0, 0, W, cy);
+      else lx.rect(0, cy, W, H - cy);
+      lx.clip();
+      lx.translate(cx, cy);
+      lx.scale(1, incl);
+      lx.rotate(rot);
+      lx.drawImage(diskTex, -scaleR, -scaleR, scaleR * 2, scaleR * 2);
+      lx.restore();
+      lx.globalCompositeOperation = "source-atop";
+      const dg = lx.createLinearGradient(cx - scaleR, cy, cx + scaleR, cy);
+      dg.addColorStop(0, `rgba(235,242,255,${0.35 + v.lum * 0.2})`);
+      dg.addColorStop(0.42, "rgba(255,255,255,0)");
+      dg.addColorStop(0.58, "rgba(20,6,12,0)");
+      dg.addColorStop(1, "rgba(20,6,12,0.6)");
+      lx.fillStyle = dg;
+      lx.fillRect(0, 0, W, H);
+      lx.globalCompositeOperation = "source-over";
+      x.save();
+      x.setTransform(1, 0, 0, 1, 0, 0);
+      x.globalAlpha = alpha * (half === "back" ? 0.8 : 1);
+      x.drawImage(layer, 0, 0);
+      x.restore();
+    };
+    {
+      const la = (0.3 + v.lum * 0.55) * (v.phase === 0 ? 0.55 : 1), r0 = Rsh * 1.02, r1 = Rsh * 1.75;
+      const lg = x.createRadialGradient(cx, cy, r0, cx, cy, r1);
+      lg.addColorStop(0, `rgba(${pal[0].join(",")},${la})`);
+      lg.addColorStop(0.25, `rgba(${pal[1].join(",")},${la * 0.6})`);
+      lg.addColorStop(1, `rgba(${pal[2].join(",")},0)`);
+      x.fillStyle = lg;
+      x.beginPath();
+      x.arc(cx, cy, r1, 0, 7);
+      x.arc(cx, cy, r0, 0, 7, true);
+      x.fill();
+      x.save();
+      x.beginPath();
+      x.rect(0, 0, W, cy - Rsh * 0.2);
+      x.clip();
+      x.globalAlpha = 0.7;
+      x.fillStyle = lg;
+      x.beginPath();
+      x.ellipse(cx, cy, r1 * 0.95, r1 * 0.9, 0, 0, 7);
+      x.arc(cx, cy, r0, 0, 7, true);
+      x.fill();
+      x.restore();
+      x.globalAlpha = 1;
+    }
+    if (v.phase >= 4) {
+      const eg = x.createRadialGradient(cx, cy, Rsh * 0.95, cx, cy, Rsh * 1.5);
+      eg.addColorStop(0, "rgba(184,146,255,0.32)");
+      eg.addColorStop(1, "rgba(184,146,255,0)");
+      x.fillStyle = eg;
+      x.beginPath();
+      x.ellipse(cx, cy, Rsh * 1.5, Rsh * 1.32, 0, 0, 7);
+      x.fill();
+      for (let i = 0; i < 26; i++) {
+        const a = i * 2.399 + tt * (0.6 + i % 3 * 0.2), rr = Rsh * (1.08 + i % 5 * 0.07);
+        x.fillStyle = `rgba(214,196,255,${0.25 + 0.5 * Math.max(0, Math.sin(tt * 2 + i))})`;
+        x.fillRect(cx + Math.cos(a) * rr - 0.8, cy + Math.sin(a) * rr * 0.88 - 0.8, 1.6, 1.6);
+      }
+    }
+    disk("back");
+    const jet = (dir) => {
+      if (v.jets <= 0) return;
+      const len = m * (0.28 + 0.22 * v.jets), w0 = Rsh * 0.22, w1 = Rsh * (0.7 + 0.5 * v.jets);
+      const y0 = cy - dir * Rsh * 0.5, y1 = y0 - dir * len;
+      const g = x.createLinearGradient(cx, y0, cx, y1);
+      g.addColorStop(0, `rgba(196,214,255,${0.55 * v.jets + 0.15})`);
+      g.addColorStop(0.35, `rgba(150,150,255,${0.22 * v.jets + 0.06})`);
+      g.addColorStop(1, "rgba(140,120,255,0)");
+      x.fillStyle = g;
+      x.beginPath();
+      x.moveTo(cx - w0, y0);
+      x.quadraticCurveTo(cx - w1 * 0.4, (y0 + y1) / 2, cx - w1, y1);
+      x.lineTo(cx + w1, y1);
+      x.quadraticCurveTo(cx + w1 * 0.4, (y0 + y1) / 2, cx + w0, y0);
+      x.closePath();
+      x.fill();
+      for (let k = 0; k < 6; k++) {
+        const f = ((tt * 0.35 + k / 6) % 1 + 1) % 1, yy = y0 - dir * len * f, ww = lerp2(w0, w1, f) * 0.35;
+        x.fillStyle = `rgba(226,232,255,${(1 - f) * 0.7 * (0.4 + v.jets * 0.6)})`;
+        x.beginPath();
+        x.ellipse(cx, yy, ww, ww * 0.5, 0, 0, 7);
+        x.fill();
+      }
+      const nl = Math.round(v.jetCov * 5);
+      for (let k = 0; k < nl; k++) {
+        const f = 0.3 + k * 0.13, yy = y0 - dir * len * f, ww = lerp2(w0, w1, f) * 1.25;
+        x.strokeStyle = "rgba(242,178,90,0.7)";
+        x.lineWidth = 1.2;
+        x.beginPath();
+        x.ellipse(cx, yy, ww, ww * 0.18, 0, 0, 7);
+        x.stroke();
+      }
+    };
+    jet(-1);
+    const sg = x.createRadialGradient(cx, cy, Rsh * 0.7, cx, cy, Rsh * 1.04);
+    sg.addColorStop(0, "#000000");
+    sg.addColorStop(0.92, "#020205");
+    sg.addColorStop(1, "rgba(2,2,5,0)");
+    x.fillStyle = sg;
+    x.beginPath();
+    x.arc(cx, cy, Rsh * 1.04, 0, 7);
+    x.fill();
+    x.strokeStyle = `rgba(255,240,220,${0.5 + v.lum * 0.45})`;
+    x.lineWidth = 1.2;
+    x.beginPath();
+    x.arc(cx, cy, Rsh * 1.05, 0, 7);
+    x.stroke();
+    x.strokeStyle = `rgba(255,220,180,${0.12 + v.lum * 0.15})`;
+    x.lineWidth = 3;
+    x.beginPath();
+    x.arc(cx, cy, Rsh * 1.09, 0, 7);
+    x.stroke();
+    jet(1);
+    const ns = Math.min(12, v.stations);
+    for (let i = 0; i < ns; i++) {
+      const a = i / ns * Math.PI * 2 + tt * 0.25 / v.gamma, rr = Rsh * (1.16 + 0.5 / v.gamma);
+      const sx = cx + Math.cos(a) * rr, sy = cy + Math.sin(a) * rr * 0.35;
+      if (Math.sin(a) < 0 && Math.abs(sx - cx) < Rsh) continue;
+      x.fillStyle = "rgba(127,211,234,0.95)";
+      x.fillRect(sx - 1.2, sy - 1.2, 2.4, 2.4);
+    }
+    disk("front");
+    for (let j = 0; j < v.feed; j++) {
+      for (let q = 0; q < 9; q++) {
+        const f = ((tt * 0.12 + q / 9 + j * 0.37) % 1 + 1) % 1;
+        const a = j * 2.2 + f * 2.6, rr = lerp2(m * 0.62, Rout * 0.9, f);
+        const sx = cx + Math.cos(a) * rr, sy = cy + Math.sin(a) * rr * incl * 1.4;
+        x.fillStyle = `rgba(255,${180 + q * 6},${150 + q * 8},${f * 0.55})`;
+        x.beginPath();
+        x.arc(sx, sy, 0.8 + f * 1.1, 0, 7);
+        x.fill();
+      }
+    }
+    const nr2 = Math.min(4, Math.ceil(v.rings / 15));
+    for (let k = 0; k < nr2; k++) {
+      const rr = Rout * (1.04 + k * 0.08);
+      x.strokeStyle = `rgba(242,178,90,${0.12 + v.cov * 0.12})`;
+      x.lineWidth = 1;
+      x.beginPath();
+      x.ellipse(cx, cy, rr, rr * incl, 0, 0, 7);
+      x.stroke();
+    }
+    const nd = Math.min(90, v.rings);
+    for (let i = 0; i < nd; i++) {
+      const k = i % Math.max(1, nr2), a = i * 2.39996 + tt * (0.05 + k * 0.01), rr = Rout * (1.04 + k * 0.08);
+      const sn = Math.sin(a), px = cx + Math.cos(a) * rr, py = cy + sn * rr * incl;
+      const gl = 0.5 + 0.5 * Math.max(0, Math.cos(i * 1.7 + tt * 0.8));
+      x.fillStyle = sn >= 0 ? `rgba(255,${190 + gl * 50},${120 + gl * 80},${0.6 + gl * 0.4})` : "rgba(200,150,100,0.35)";
+      x.fillRect(px - 1.3, py - 0.7, 2.6, 1.4);
+    }
+    if (v.dive >= 0) {
+      const f = 1 - v.dive / 30, a = f * 14, rr = lerp2(Rout * 0.8, Rsh * 1.5, Math.pow(f, 0.7));
+      const px = cx + Math.cos(a) * rr, py = cy + Math.sin(a) * rr * 0.5;
+      x.fillStyle = "#f2a541";
+      x.beginPath();
+      x.arc(px, py, 2.2, 0, 7);
+      x.fill();
+      const pr = tt * 0.137 % 1 * Rout;
+      x.strokeStyle = `rgba(242,165,65,${0.4 * (1 - pr / Rout)})`;
+      x.lineWidth = 1;
+      x.beginPath();
+      x.arc(cx, cy, Rsh + pr, 0, 7);
+      x.stroke();
+    }
+    if (sub) {
+      x.font = `600 12px ${MONO}`;
+      x.textAlign = "center";
+      x.fillStyle = "rgba(242,178,90,0.95)";
+      x.fillText(sub, cx, H - 10);
+      x.textAlign = "left";
+    }
+  }
+  var rays = null;
+  function bakeRays() {
+    const out = [];
+    for (const b of [-4.6, -3.3, -2.66, -2.605, -1.7, 1.2, 2.61, 2.7, 3.6, 5.2]) {
+      let px = -9, py = b, vx = 1, vy = 0;
+      const Lm = Math.abs(px * vy - py * vx), pts = [[px, py]];
+      let cap = false;
+      for (let i = 0; i < 9e3; i++) {
+        const r = Math.hypot(px, py);
+        if (r < 1) {
+          cap = true;
+          break;
+        }
+        if (px > 9 || Math.abs(py) > 7 || r > 12) break;
+        const dt = Math.min(0.02, 4e-3 * r * r);
+        const k = -1.5 * Lm * Lm / Math.pow(r, 5);
+        vx += k * px * dt;
+        vy += k * py * dt;
+        const n = Math.hypot(vx, vy);
+        vx /= n;
+        vy /= n;
+        px += vx * dt;
+        py += vy * dt;
+        if (i % 3 === 0) pts.push([px, py]);
+      }
+      out.push({ pts, cap });
+    }
+    return out;
+  }
+  function rsText(x, v, px, py) {
+    const s = v.toFixed(2).replace(".", ",") + " r";
+    x.fillText(s, px, py);
+    const w = x.measureText(s).width, f = x.font;
+    x.font = f.replace(/(\d+)px/, (_m, n) => `${Math.round(Number(n) * 0.75)}px`);
+    x.fillText("s", px + w, py + 3);
+    x.font = f;
+    return w + 7;
+  }
+  function drawProfile(c, v, time, title) {
+    const p = prep(c);
+    if (!p) return;
+    const { x, W, H, dpr } = p, tt = reduce2 ? 0 : time;
+    const key = `${W}x${H}@${dpr}`;
+    if (!bg || bgKey !== key) {
+      bg = bakeMapBg(W, H, dpr);
+      bgKey = key;
+    }
+    x.drawImage(bg, 0, 0, W, H);
+    const narrow = W < 560, legW = narrow ? 0 : 214;
+    const a = v.a, rp = 0.5 * (1 + Math.sqrt(1 - a * a));
+    const rph = 1 + Math.cos(2 / 3 * Math.acos(-a));
+    const ris = iscoR(a) / 2, rst = v.stationR, rmax = Math.max(3.1, rst + 0.1);
+    const cx = narrow ? W * 0.42 : (W - legW) * 0.42, cy = H * 0.5;
+    const u = Math.min((W - legW - cx - 24) / rmax, H * 0.36);
+    const P = (rx, ry2) => [cx + rx * u, cy + ry2 * u];
+    const pal = DISK[v.phase];
+    x.save();
+    x.beginPath();
+    x.rect(0, 0, W - legW, H);
+    x.clip();
+    const sag = (r) => 2 * Math.sqrt(Math.max(0, r - 1));
+    const zMax = sag(7);
+    for (let i = 0; i < 9; i++) {
+      const r = 1.15 + i * i * 0.09 + i * 0.35, dz = (zMax - sag(r)) * 0.11 * u;
+      x.strokeStyle = `rgba(150,140,230,${0.03 + (1 - i / 9) * 0.06})`;
+      x.lineWidth = 1;
+      x.beginPath();
+      x.ellipse(cx, cy + dz, r * u, r * u * 0.16, 0, 0, Math.PI);
+      x.stroke();
+    }
+    for (let k = 0; k < 14; k++) {
+      const ang = k / 14 * Math.PI;
+      x.strokeStyle = "rgba(150,140,230,0.07)";
+      x.beginPath();
+      for (let r = 1.15; r < 7; r += 0.2) {
+        const dz = (zMax - sag(r)) * 0.11 * u, px2 = cx + Math.cos(ang) * r * u, py2 = cy + dz + Math.sin(ang) * r * u * 0.16;
+        r === 1.15 ? x.moveTo(px2, py2) : x.lineTo(px2, py2);
+      }
+      x.stroke();
+    }
+    x.restore();
+    if (!rays) rays = bakeRays();
+    const shrink = (r) => r + (rph - 1.5) * Math.exp(-(r - 1.5) / 1.6);
+    const map = (q) => {
+      const r = Math.hypot(q[0], q[1]) || 1, r2 = shrink(r);
+      return P(q[0] / r * r2, q[1] / r * r2);
+    };
+    x.save();
+    x.beginPath();
+    x.rect(0, 0, W - legW, H);
+    x.clip();
+    for (const ray of rays) {
+      x.strokeStyle = ray.cap ? "rgba(255,214,170,0.16)" : "rgba(220,226,255,0.16)";
+      x.lineWidth = 1;
+      x.beginPath();
+      let started = false;
+      for (const q2 of ray.pts) {
+        const r = Math.hypot(q2[0], q2[1]);
+        if (shrink(r) < rp) break;
+        const [sx, sy] = map(q2);
+        if (!started) {
+          x.moveTo(sx, sy);
+          started = true;
+        } else x.lineTo(sx, sy);
+      }
+      x.stroke();
+      const n = ray.pts.length, f = ((tt * 0.09 + ray.pts[0][1] * 0.13) % 1 + 1) % 1, q = ray.pts[Math.floor(f * (n - 1))];
+      if (shrink(Math.hypot(q[0], q[1])) > rp) {
+        const [sx, sy] = map(q);
+        x.fillStyle = ray.cap ? "rgba(255,214,170,0.85)" : "rgba(226,232,255,0.85)";
+        x.beginPath();
+        x.arc(sx, sy, 1.3, 0, 7);
+        x.fill();
+      }
+    }
+    x.restore();
+    const th = u * (0.035 + v.phase * 0.022);
+    for (const sgn of [-1, 1]) {
+      const x0 = cx + sgn * ris * u, x1 = sgn > 0 ? W - legW - 6 : 6;
+      const g = x.createLinearGradient(x0, 0, x1, 0), boost = sgn < 0 ? 1 : 0.7;
+      g.addColorStop(0, `rgba(${pal[0].join(",")},${(0.6 + v.lum * 0.4) * boost})`);
+      g.addColorStop(0.18, `rgba(${pal[1].join(",")},${(0.45 + v.lum * 0.3) * boost})`);
+      g.addColorStop(1, `rgba(${pal[2].join(",")},0.04)`);
+      x.fillStyle = g;
+      x.beginPath();
+      x.moveTo(x0, cy - th * 0.35);
+      x.quadraticCurveTo((x0 + x1) / 2, cy - th * 1.5, x1, cy - th * 2.3);
+      x.lineTo(x1, cy + th * 2.3);
+      x.quadraticCurveTo((x0 + x1) / 2, cy + th * 1.5, x0, cy + th * 0.35);
+      x.closePath();
+      x.fill();
+      for (let k = 0; k < 7; k++) {
+        const f = ((tt * 0.07 * (1 + k * 0.13) + k / 7) % 1 + 1) % 1, rr = lerp2(4.6, ris, f * f);
+        const [hx, hy] = P(sgn * rr, Math.sin(k * 3.1 + tt) * 0.02 * rr);
+        if (hx < 6 || hx > W - legW - 6) continue;
+        x.fillStyle = `rgba(${pal[0].join(",")},${0.15 + f * 0.6})`;
+        x.beginPath();
+        x.ellipse(hx, hy, 1.6 + f * 2.2, 0.8 + f * 0.6, 0, 0, 7);
+        x.fill();
+      }
+    }
+    if (v.jets > 0) for (const dir of [-1, 1]) {
+      const y1 = dir < 0 ? 4 : H - 4, w1 = u * (0.35 + 0.45 * v.jets);
+      const g = x.createLinearGradient(cx, cy, cx, y1);
+      g.addColorStop(0, `rgba(196,214,255,${0.5 * v.jets + 0.12})`);
+      g.addColorStop(1, "rgba(140,120,255,0)");
+      x.fillStyle = g;
+      x.beginPath();
+      x.moveTo(cx - u * 0.07, cy + dir * u * rp);
+      x.lineTo(cx - w1, y1);
+      x.lineTo(cx + w1, y1);
+      x.lineTo(cx + u * 0.07, cy + dir * u * rp);
+      x.closePath();
+      x.fill();
+      for (let k = 0; k < 5; k++) {
+        const f = ((tt * 0.4 + k / 5) % 1 + 1) % 1, yy = lerp2(cy + dir * u * rp, y1, f);
+        x.fillStyle = `rgba(226,232,255,${(1 - f) * 0.6})`;
+        x.beginPath();
+        x.ellipse(cx, yy, lerp2(u * 0.05, w1 * 0.4, f), 1.2 + f * 2, 0, 0, 7);
+        x.fill();
+      }
+    }
+    const eRy = rp + (1 - rp) * 0.12;
+    x.save();
+    x.beginPath();
+    x.ellipse(cx, cy, u, u * eRy, 0, 0, 7);
+    x.fillStyle = `rgba(184,146,255,${0.07 + (v.phase >= 4 ? 0.1 : 0)})`;
+    x.fill();
+    x.setLineDash([3, 4]);
+    x.strokeStyle = "rgba(184,146,255,0.75)";
+    x.lineWidth = 1;
+    x.stroke();
+    x.restore();
+    for (let i = 0; i < 22; i++) {
+      const lat2 = i * 0.618 % 1 * 2 - 1, f = ((tt * (0.25 + a * 0.4) * (1.2 - Math.abs(lat2)) + i * 0.37) % 1 + 1) % 1;
+      const rr = lerp2(rp * 1.04, 0.97, i * 0.37 % 1), ex = Math.cos(f * Math.PI * 2) * rr, ey = lat2 * eRy * Math.sqrt(1 - ex * ex / (rr * rr + 1e-6)) * 0.9;
+      if (Math.sin(f * Math.PI * 2) < 0 && Math.hypot(ex, ey) < rp * 1.02) continue;
+      const [sx, sy] = P(ex, ey);
+      x.fillStyle = `rgba(214,196,255,${0.25 + 0.45 * Math.max(0, Math.sin(f * Math.PI * 2))})`;
+      x.fillRect(sx - 2.2, sy - 0.6, 4.4, 1.2);
+    }
+    x.save();
+    x.setLineDash([2, 5]);
+    x.strokeStyle = "rgba(255,240,220,0.6)";
+    x.lineWidth = 1;
+    x.beginPath();
+    x.arc(cx, cy, rph * u, 0, 7);
+    x.stroke();
+    x.restore();
+    const hg = x.createRadialGradient(cx, cy, 0, cx, cy, rp * u);
+    hg.addColorStop(0, "#000");
+    hg.addColorStop(0.88, "#020208");
+    hg.addColorStop(1, "#14102a");
+    x.fillStyle = hg;
+    x.beginPath();
+    x.arc(cx, cy, rp * u, 0, 7);
+    x.fill();
+    x.strokeStyle = `rgba(255,232,205,${0.55 + v.lum * 0.35})`;
+    x.lineWidth = 1.4;
+    x.stroke();
+    x.save();
+    x.setLineDash([6, 4]);
+    x.strokeStyle = "rgba(242,165,65,0.9)";
+    x.lineWidth = 1.2;
+    x.beginPath();
+    x.arc(cx, cy, ris * u, 0, 7);
+    x.stroke();
+    x.restore();
+    if (v.stations > 0) {
+      x.strokeStyle = "rgba(127,211,234,0.4)";
+      x.lineWidth = 1;
+      x.beginPath();
+      x.arc(cx, cy, rst * u, 0, 7);
+      x.stroke();
+      const n = Math.min(8, v.stations);
+      for (let i = 0; i < n; i++) {
+        const ang = i / n * Math.PI * 2 + tt * 0.3 / v.gamma, [sx, sy] = P(Math.cos(ang) * rst, Math.sin(ang) * rst);
+        x.fillStyle = "#7fd3ea";
+        x.fillRect(sx - 2, sy - 1, 4, 2);
+        x.fillRect(sx - 0.5, sy - 3, 1, 6);
+      }
+    }
+    if (v.dive >= 0) {
+      const f = 1 - v.dive / HOLE.diveSec, ang = f * 16, rr = lerp2(3, rph * 1.02, Math.pow(f, 0.6));
+      const [sx, sy] = P(Math.cos(ang) * rr, Math.sin(ang) * rr * 0.8);
+      x.fillStyle = "#f2a541";
+      x.beginPath();
+      x.arc(sx, sy, 2.4, 0, 7);
+      x.fill();
+    }
+    const rows = [
+      [t("ui.hole.horizon"), rp, "255,230,200"],
+      [t("ui.hole.photon"), rph, "255,240,220"],
+      ["ISCO", ris, "242,178,90"],
+      [t("ui.hole.ergo"), 1, "206,180,255"]
+    ];
+    if (v.stations > 0) rows.push([t("ui.hole.stations"), rst, "127,211,234"]);
+    rows.sort((p1, p2) => p1[1] - p2[1]);
+    const ry = H - 26;
+    x.strokeStyle = "rgba(200,205,235,0.35)";
+    x.lineWidth = 1;
+    x.beginPath();
+    x.moveTo(cx, ry);
+    x.lineTo(cx + rmax * u, ry);
+    x.stroke();
+    x.font = `11px ${MONO}`;
+    x.fillStyle = "rgba(176,181,212,0.8)";
+    x.textAlign = "center";
+    for (let k = 0; k <= Math.floor(rmax); k++) {
+      x.fillRect(cx + k * u - 0.5, ry - 3, 1, 6);
+      x.fillText(`${Math.round(k * HOLE.rsKm)} km`, cx + k * u, ry + 15);
+    }
+    x.textAlign = "left";
+    rows.forEach(([, r, col]) => {
+      x.fillStyle = `rgba(${col},0.95)`;
+      x.beginPath();
+      x.moveTo(cx + r * u, ry - 1);
+      x.lineTo(cx + r * u - 3.5, ry - 8);
+      x.lineTo(cx + r * u + 3.5, ry - 8);
+      x.closePath();
+      x.fill();
+    });
+    if (!narrow) {
+      const lx = W - legW + 10, top = 16;
+      x.fillStyle = "rgba(10,12,28,0.6)";
+      x.strokeStyle = "rgba(120,128,180,0.25)";
+      x.beginPath();
+      x.roundRect(lx - 10, top - 6, legW - 6, 26 + rows.length * 30 + (v.stations > 0 ? 50 : 0), 8);
+      x.fill();
+      x.stroke();
+      x.font = `600 11px ${MONO}`;
+      x.fillStyle = "rgba(176,181,212,0.85)";
+      x.fillText(t("ui.hole.legend").toUpperCase(), lx, top + 8);
+      rows.forEach(([name, r, col], i) => {
+        const yy = top + 30 + i * 30;
+        x.fillStyle = `rgba(${col},0.95)`;
+        x.fillRect(lx, yy - 6, 8, 8);
+        x.font = `12px ${MONO}`;
+        x.fillText(name, lx + 16, yy + 2);
+        x.font = `11px ${MONO}`;
+        x.fillStyle = "rgba(176,181,212,0.85)";
+        const km = `${(r * HOLE.rsKm).toFixed(1).replace(".", ",")} km \xB7 `;
+        x.fillText(km, lx + 16, yy + 16);
+        rsText(x, r, lx + 16 + x.measureText(km).width, yy + 16);
+      });
+      if (v.stations > 0) {
+        const yy = top + 30 + rows.length * 30 + 4;
+        const clock2 = (px, label3, rate2, col) => {
+          x.strokeStyle = col;
+          x.lineWidth = 1.2;
+          x.beginPath();
+          x.arc(px, yy + 8, 9, 0, 7);
+          x.stroke();
+          const ang = -Math.PI / 2 + tt * 1.2 * rate2;
+          x.beginPath();
+          x.moveTo(px, yy + 8);
+          x.lineTo(px + Math.cos(ang) * 7, yy + 8 + Math.sin(ang) * 7);
+          x.stroke();
+          x.font = `11px ${MONO}`;
+          x.fillStyle = col;
+          x.fillText(label3, px + 14, yy + 12);
+        };
+        clock2(lx + 9, "Vesper", 1, "rgba(225,228,244,0.9)");
+        clock2(lx + 104, `\u03B3 ${v.gamma >= 10 ? Math.round(v.gamma) : v.gamma.toFixed(1).replace(".", ",")}\xD7`, 1 / v.gamma, "rgba(127,211,234,0.95)");
+      }
+    }
+    x.font = `600 12px ${MONO}`;
+    x.fillStyle = "rgba(225,228,244,0.9)";
+    x.fillText(title.toUpperCase(), 14, 22);
+    x.font = `11px ${MONO}`;
+    x.fillStyle = "rgba(176,181,212,0.7)";
+    x.fillText(t("ui.hole.profileSub"), 14, 38);
+  }
+  var MAP_IDS = ["cas", "lens", "tde", "pole", "ergo"];
+  var TILT2 = 0.42;
+  var trail2 = [];
+  function pos(id, tt) {
+    const l = L[id], a = l.angle + tt * l.speed;
+    if (id === "pole") return [0, -0.36];
+    return [Math.cos(a) * l.orbit, Math.sin(a) * l.orbit * TILT2];
+  }
+  function drawHoleMap(c, s, v, time) {
+    const p = prep(c);
+    if (!p) return;
+    const { x, W, H, dpr } = p, tt = reduce2 ? 0 : time;
+    const key = `${W}x${H}@${dpr}`;
+    if (!bg || bgKey !== key) {
+      bg = bakeMapBg(W, H, dpr);
+      bgKey = key;
+    }
+    x.drawImage(bg, 0, 0, W, H);
+    const cx = W / 2, cy = H / 2, sc = Math.min(W / 2 * 0.9, H / 2 / TILT2 * 0.82);
+    const P = (q) => [cx + q[0] * sc, cy + q[1] * sc];
+    const nr = sc * 0.95, npx = Math.min(640, Math.round(nr * 2 * dpr));
+    x.save();
+    x.translate(cx, cy);
+    x.scale(1, 0.62);
+    x.rotate(tt * 3e-3);
+    x.globalAlpha = 0.5;
+    x.drawImage(nebula(npx), -nr, -nr, nr * 2, nr * 2);
+    x.restore();
+    x.globalAlpha = 1;
+    for (const id of MAP_IDS) {
+      if (id === "pole" || !(L[id].req?.(s) || s.visited[id])) continue;
+      const rx = L[id].orbit * sc;
+      x.strokeStyle = "rgba(170,180,230,0.22)";
+      x.lineWidth = 1;
+      x.beginPath();
+      x.ellipse(cx, cy, rx, rx * TILT2, 0, 0, 7);
+      x.stroke();
+    }
+    const pal = DISK[v.phase], dr = sc * 0.1;
+    const g = x.createRadialGradient(cx, cy, 0, cx, cy, dr * 2.4);
+    g.addColorStop(0, `rgba(${pal[1].join(",")},${0.25 + v.lum * 0.3})`);
+    g.addColorStop(1, `rgba(${pal[2].join(",")},0)`);
+    x.fillStyle = g;
+    x.beginPath();
+    x.arc(cx, cy, dr * 2.4, 0, 7);
+    x.fill();
+    x.fillStyle = `rgba(${pal[1].join(",")},${0.5 + v.lum * 0.4})`;
+    x.beginPath();
+    x.ellipse(cx, cy, dr, dr * TILT2 * 0.6, 0, 0, 7);
+    x.fill();
+    if (v.jets > 0) {
+      for (const dir of [-1, 1]) {
+        const jg = x.createLinearGradient(cx, cy, cx, cy + dir * sc * 0.4);
+        jg.addColorStop(0, `rgba(196,214,255,${0.5 * v.jets + 0.1})`);
+        jg.addColorStop(1, "rgba(140,120,255,0)");
+        x.fillStyle = jg;
+        x.beginPath();
+        x.moveTo(cx - 1.5, cy);
+        x.lineTo(cx - sc * 0.04, cy + dir * sc * 0.4);
+        x.lineTo(cx + sc * 0.04, cy + dir * sc * 0.4);
+        x.lineTo(cx + 1.5, cy);
+        x.fill();
+      }
+    }
+    x.fillStyle = "#000";
+    x.beginPath();
+    x.arc(cx, cy, dr * 0.32, 0, 7);
+    x.fill();
+    x.strokeStyle = "rgba(255,235,210,0.85)";
+    x.lineWidth = 1;
+    x.stroke();
+    x.font = `12px ${MONO}`;
+    for (const id of MAP_IDS) {
+      if (!(L[id].req?.(s) || s.visited[id])) continue;
+      const [px, py] = P(pos(id, tt)), done = !!s.visited[id];
+      x.strokeStyle = done ? "rgba(127,214,154,0.9)" : "rgba(242,178,90,0.95)";
+      x.lineWidth = 1.4;
+      x.beginPath();
+      x.moveTo(px, py - 5);
+      x.lineTo(px + 5, py);
+      x.lineTo(px, py + 5);
+      x.lineTo(px - 5, py);
+      x.closePath();
+      x.stroke();
+      if (done) {
+        x.fillStyle = "rgba(127,214,154,0.35)";
+        x.fill();
+      }
+      x.fillStyle = done ? "#e1e4f4" : "#b0b5d4";
+      x.fillText(t(`loc.${id}.short`), px + 9, py + 4);
+    }
+    let sp, ang = -Math.PI / 2;
+    const home = P([-0.62, -0.22]);
+    if (s.travel && MAP_IDS.includes(s.travel.to)) {
+      const b = P(pos(s.travel.to, tt)), k = s.travel.t / s.travel.total;
+      const ctrl = [(home[0] + b[0]) / 2, Math.min(home[1], b[1]) - sc * 0.15];
+      const q = (f) => [(1 - f) ** 2 * home[0] + 2 * (1 - f) * f * ctrl[0] + f * f * b[0], (1 - f) ** 2 * home[1] + 2 * (1 - f) * f * ctrl[1] + f * f * b[1]];
+      x.setLineDash([3, 4]);
+      x.strokeStyle = "rgba(242,165,65,0.35)";
+      x.lineWidth = 1;
+      x.beginPath();
+      x.moveTo(...home);
+      x.quadraticCurveTo(ctrl[0], ctrl[1], b[0], b[1]);
+      x.stroke();
+      x.setLineDash([]);
+      sp = q(k);
+      const ah = q(Math.min(1, k + 0.01));
+      ang = Math.atan2(ah[1] - sp[1], ah[0] - sp[0]);
+      trail2.push(sp);
+      if (trail2.length > 40) trail2.shift();
+    } else {
+      trail2.length = 0;
+      sp = home;
+    }
+    for (let i = 1; i < trail2.length; i++) {
+      x.strokeStyle = `rgba(242,165,65,${i / trail2.length * 0.5})`;
+      x.lineWidth = 1.5;
+      x.beginPath();
+      x.moveTo(...trail2[i - 1]);
+      x.lineTo(...trail2[i]);
+      x.stroke();
+    }
+    x.save();
+    x.translate(sp[0], sp[1]);
+    x.rotate(ang);
+    x.fillStyle = "#f2a541";
+    x.beginPath();
+    x.moveTo(6, 0);
+    x.lineTo(-4, -3.2);
+    x.lineTo(-2.5, 0);
+    x.lineTo(-4, 3.2);
+    x.closePath();
+    x.fill();
+    x.restore();
+    x.fillStyle = "#b0b5d4";
+    x.fillText("VESPER-7", home[0] + 9, home[1] + 16);
+    const vg = x.createRadialGradient(cx, cy, Math.min(W, H) * 0.35, cx, cy, Math.max(W, H) * 0.75);
+    vg.addColorStop(0, "rgba(5,6,15,0)");
+    vg.addColorStop(1, "rgba(5,6,15,0.5)");
+    x.fillStyle = vg;
+    x.fillRect(0, 0, W, H);
+  }
+
   // src/ui/audio.ts
   var ctx = null;
   var master = null;
@@ -2609,7 +3698,7 @@
   var VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
   var volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
   var audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-  var VERSION = "0.2.2";
+  var VERSION = "0.3";
   var KEY = "sepot-horizontu";
   var $ = (id) => document.getElementById(id);
   var SUP2 = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
@@ -2746,11 +3835,15 @@
       const two = k >= 2, Lw = luminosity(S), kL = (Math.log10(Lw) - 6) / 10;
       $("kprogLabel").innerHTML = esc(two ? t("ui.toFullStar", { n: times(Lw / powerW(S)) }) : t("ui.toTypeII", { n: times(1e26 / powerW(S)) }));
       $("kbar").style.width = (two ? Math.max(0, Math.min(100, (k - 2) / (kL - 2) * 100)) : Math.max(0, Math.min(100, (k - 1) * 100))).toFixed(1) + "%";
+    } else if (!S.hole.done) {
+      const d = phaseDef(S), kT = (Math.log10(d.needW) - 6) / 10, k0 = S.hole.phase ? (Math.log10(PHASES[S.hole.phase - 1].needW) - 6) / 10 : 0.3;
+      $("kprogLabel").innerHTML = esc(P >= d.needW ? t("ui.toPhaseDone") : t("ui.toPhase", { k: kValue(kT), n: times(d.needW / P) }));
+      $("kbar").style.width = Math.max(0, Math.min(100, (k - k0) / (kT - k0) * 100)).toFixed(1) + "%";
     } else {
       $("kprogLabel").textContent = t("ui.toNext");
       $("kbar").style.width = "100%";
     }
-    const shown = RESOURCES.filter((r) => r === "ore" || S.total[r] > 0);
+    const shown = RESOURCES.filter((r) => !(r === "ore" && S.chapterDone >= 1) && !(r === "metal" && S.star.done) && (r === "ore" || S.total[r] > 0));
     const key = shown.join();
     const bar = $("resbar");
     if (key !== chipKey) {
@@ -2769,14 +3862,17 @@
       $("clockScale").textContent = t("ui.clockYears", { t: years(clockYears(S)) });
     } else {
       $("clockDay").innerHTML = esc(t("ui.day", { n: (Math.floor(S.time) + 1).toLocaleString("cs-CZ") }));
-      $("clockScale").textContent = t("ui.clockScale");
+      $("clockScale").textContent = S.star.done && S.b.station >= 1 ? t("ui.clockDil", { g: dec(gamma(S), gamma(S) >= 10 ? 0 : 1) }) : t("ui.clockScale");
     }
   }
+  var HOLE_CONV = ["injector", "station", "hawking"];
+  var CH3_LOCS = ["cas", "lens", "tde", "pole", "ergo"];
   var STAR_BUILDINGS2 = ["lifter", "separator", "seismo", "swarmfab"];
   var starView = () => ({ stage: stageDef(S).id, dyson: S.b.dyson, lifters: S.b.lifter, coverage: coverage(S), collapse: S.star.collapse, done: S.star.done, snAge: snAge() });
   function renderRig() {
     const ch2 = S.chapterDone >= 1;
-    $("rigTitle").textContent = ch2 ? t("ui.star.title") : t("ui.asteroid");
+    const ch3 = S.star.done;
+    $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch2 ? t("ui.star.title") : t("ui.asteroid");
     document.body.classList.toggle("ch2", ch2);
     const rock = $("rock");
     rock.disabled = ch2;
@@ -2790,6 +3886,10 @@
     if (!ch2) {
       rows.push([t("ui.stats.drones"), num(Math.floor(S.b.drone))]);
       for (const id of CONVERTERS.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+    } else if (ch3) {
+      rows.push([t("ui.stats.phase"), `${S.hole.phase + 1} / ${PHASES.length}`], [t("ui.stats.spin"), spinTxt(S.hole.a)]);
+      if (S.b.injector >= 1) rows.push([t("ui.stats.feed"), mass(feedRate(S)) + "/s"], [t("ui.stats.diskCov"), pct(ringCov(S))]);
+      for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
     } else if (!S.star.done) {
       rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
       for (const id of STAR_BUILDINGS2.filter((id2) => S.b[id2] >= 1)) {
@@ -2827,15 +3927,17 @@
     const list = [["build", t("ui.tabs.build")]];
     if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
     if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
-    if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
+    if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
+    else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
     return list;
   }
   function renderTabs() {
     const list = tabsAvail();
     if (!list.find(([id]) => id === tab)) tab = "build";
     const dot = RESEARCH_IDS.some((id) => researchAvailable(S, id) && affordable(S, R[id].cost));
+    const hdot = phaseReady(S).ok;
     const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5);
-    const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
+    const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
     const el = $("tabs");
     if (el.innerHTML !== html) el.innerHTML = html;
   }
@@ -2844,6 +3946,7 @@
     if (tab === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
     if (tab === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
     if (tab === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
+    if (tab === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
     return "s";
   }
   function buildView() {
@@ -2853,7 +3956,7 @@
       const order = BUILDING_IDS.slice().reverse();
       for (const id of order) {
         if (!isUnlocked(S, id)) continue;
-        const conv = !!B[id].cons || id === "swarmfab";
+        const conv = !!B[id].cons || id === "swarmfab" || id === "jet";
         h += `<div class="item" data-b="${id}"><h3>${esc(t(`b.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`b.${id}.desc`))}</p><div class="eff" data-f="eff"></div><div class="cost" data-f="cost"></div>
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
       }
@@ -2870,17 +3973,20 @@
       h += '<div class="mapbox"><canvas id="map"></canvas></div><div class="list">';
       for (const id of LOCATION_IDS.slice().reverse()) {
         if (!locationOpen(S, id)) continue;
+        if (S.star.done && !CH3_LOCS.includes(id)) continue;
         const done = !!S.visited[id];
         h += `<div class="item${done ? " visited" : ""}" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))}</h3><p>${esc(t(`loc.${id}.${done ? "done" : "desc"}`))}</p>${done ? "" : '<div class="cost" data-f="cost"></div>'}<div class="act">${done ? `<span class="dim">${esc(t("ui.map.active"))}</span>` : `<button class="btn" data-go="${id}"></button>`}</div></div>`;
       }
       h += "</div>";
     } else if (tab === "star") h += starHTML();
+    else if (tab === "hole") h += holeHTML();
     $("view").innerHTML = h;
   }
   var round2 = (v) => {
     const e = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.abs(v) || 1)) - 1));
     return (Math.round(v / e) * e).toLocaleString("cs-CZ");
   };
+  var spinTxt = (a) => dec(a, a >= 0.99 ? 3 : 2);
   var pct = (f) => {
     const v = f * 100;
     return v === 0 ? "0 %" : v < 0.01 ? "< 0,01 %" : `${v.toLocaleString("cs-CZ", { maximumSignificantDigits: 2 })} %`;
@@ -2983,6 +4089,98 @@
       save();
     }, true);
   }
+  var phaseName = (i) => i < PHASES.length ? t(`ui.phases.${PHASES[i].id}.name`) : t("ui.hole.diveName");
+  var lumOf = (w) => Math.max(0, Math.min(1, (Math.log10(Math.max(1, w)) - 20) / 13));
+  function holeView() {
+    const jp = jetP(S);
+    return {
+      phase: PHASES[Math.min(S.hole.phase, PHASES.length - 1)].disk,
+      a: S.hole.a,
+      lum: lumOf(holeL(S)),
+      cov: ringCov(S),
+      rings: Math.floor(S.b.ring),
+      jets: jp > 0 ? Math.max(0.25, Math.min(1, (Math.log10(jp) - 28) / 7)) : 0,
+      jetCov: jetCov(S),
+      stations: Math.floor(S.b.station),
+      gamma: gamma(S),
+      feed: Math.min(8, Math.ceil(Math.floor(S.b.injector) / 6)),
+      dive: S.hole.dive,
+      done: S.hole.done
+    };
+  }
+  function holeHTML() {
+    const ladder = PHASES.map((ph, i) => `<li data-ph="${i}"><span class="num">${i + 1}</span>${esc(t(`ui.phases.${ph.id}.name`))}</li>`).join("") + `<li data-ph="${PHASES.length}"><span class="num">\u2726</span>${esc(t("ui.hole.diveName"))}</li>`;
+    let h = `<div class="starbox"><canvas id="holec"></canvas></div><ol class="ladder">${ladder}</ol>`;
+    if (S.hole.done) return h + `<div class="stagecard"><p>${esc(t("ui.hole.done"))}</p><dl class="sgrid" data-f="grid"></dl></div>`;
+    h += `<div class="stagecard">
+  <div class="sc-head"><h3 data-f="name"></h3><span class="tag mono" data-f="of"></span></div>
+  <p class="burn" data-f="text"></p>
+  <dl class="sgrid" data-f="grid"></dl>
+  <div class="sprog"><div class="sp-head"><span class="dim">${esc(t("ui.power"))}</span><span class="mono" data-f="ptext"></span></div><div class="bar"><b data-f="prog"></b></div></div>
+  <div class="ready"><span class="dim">${esc(t("ui.hole.ready"))}</span><ul class="checks" data-f="checks"></ul></div>
+  <div class="row"><button class="btn" data-phase="1"></button><span class="dim" data-f="wait"></span></div>
+</div>`;
+    return h;
+  }
+  function holeGrid() {
+    const L0 = holeL(S), rows = [
+      [t("ui.hole.mass"), t("ui.hole.msun", { v: HOLE.massSun })],
+      [t("ui.hole.rs"), `${dec(HOLE.rsKm, 1)} km`],
+      [t("ui.hole.spin"), `${spinTxt(S.hole.a)} \xB7 ${t("ui.hole.spinEq", { v: spinTxt(spinEq(S)) })}`],
+      [t("ui.hole.isco"), t("ui.hole.rsUnit", { v: dec(iscoR(S.hole.a) / 2, 2) })],
+      [t("ui.hole.eta"), pct(diskEta(S.hole.a))],
+      [t("ui.hole.L"), power(L0)],
+      [t("ui.hole.edd"), power(HOLE.eddW)],
+      [t("ui.hole.cov"), pct(ringCov(S))]
+    ];
+    if (S.r.mad) rows.push([t("ui.hole.jets"), power(jetP(S))], [t("ui.hole.jetCov"), pct(jetCov(S))]);
+    if (S.b.station >= 1) rows.push([t("ui.hole.gamma"), t("ui.hole.stationR", { r: dec(stationR(S), 2), g: dec(gamma(S), gamma(S) >= 10 ? 0 : 1) })]);
+    return rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("") + (L0 >= HOLE.eddW * 0.999 && !S.r.slim ? `<dt>&nbsp;</dt><dd class="warnc">${esc(t("ui.hole.eddCap"))}</dd>` : "");
+  }
+  function updateHole() {
+    const view = $("view");
+    view.querySelectorAll(".ladder li").forEach((li) => {
+      const i = Number(li.dataset.ph), cur = S.hole.done ? PHASES.length + 1 : S.hole.dive >= 0 ? PHASES.length : S.hole.phase;
+      li.className = i < cur ? "done" : i === cur ? "cur" : "";
+    });
+    const set = (f2, html) => {
+      const el = view.querySelector(`[data-f=${f2}]`);
+      if (el && el.innerHTML !== html) el.innerHTML = html;
+    };
+    set("grid", holeGrid());
+    if (S.hole.done) return;
+    const d = phaseDef(S), ph = S.hole.phase, P = powerW(S);
+    set("name", esc(phaseName(ph)));
+    set("of", esc(t("ui.hole.phase", { n: ph + 1, of: PHASES.length })));
+    set("text", esc(t(`ui.phases.${d.id}.text`)));
+    const w0 = ph ? PHASES[ph - 1].needW : 1e15, f = Math.max(0, Math.min(1, Math.log10(P / w0) / Math.log10(d.needW / w0)));
+    view.querySelector("[data-f=prog]")?.style.setProperty("width", (f * 100).toFixed(1) + "%");
+    set("ptext", esc(`${power(P)} / ${power(d.needW)}`));
+    const rd = phaseReady(S), chk = (ok, txt) => `<li class="${ok ? "ok" : ""}">${ok ? "\u2713" : "\xB7"} ${esc(txt)}</li>`;
+    let c = chk(rd.power, t("ui.hole.needPower", { w: power(d.needW) }));
+    if (ph === PHASES.length - 1) c += chk(rd.research, t("ui.hole.needResearch"));
+    set("checks", c);
+    const btn = view.querySelector("[data-phase]");
+    if (btn) {
+      const diving = S.hole.dive >= 0;
+      btn.disabled = !rd.ok;
+      btn.textContent = diving ? t("ui.hole.diving", { t: duration(S.hole.dive) }) : ph === PHASES.length - 1 ? t("ui.hole.dive") : t("ui.hole.next", { n: phaseName(ph + 1) });
+      btn.classList.toggle("warn", diving);
+      set("wait", esc(diving ? t("ui.hole.diveNote") : rd.ok ? "" : t("ui.hole.waiting")));
+    }
+  }
+  function onPhase() {
+    if (!phaseReady(S).ok) return;
+    const go = () => {
+      if (advancePhase(S)) {
+        onJournal(checkJournal(S));
+        renderAll();
+        save();
+      }
+    };
+    if (S.hole.phase === PHASES.length - 1) confirmModal(t("ui.hole.diveWarn.title"), t("ui.hole.diveWarn.body", { t: duration(HOLE.diveSec) }), t("ui.hole.diveWarn.ok"), t("ui.hole.diveWarn.cancel"), go);
+    else go();
+  }
   function settingsHTML() {
     return `<div class="settings">
     <section><h3>${esc(t("ui.settings.sound"))}</h3><div class="row"><button class="btn ghost" data-act="sound"></button></div>
@@ -3025,6 +4223,10 @@
           const part = (r, v, sign) => `<span><span style="color:${COLOR[r]}">${esc(t("res." + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
           const ins = Object.keys(d.cons ?? {}).map((r) => part(r, consOf(S, id, r) * k, "\u2212"));
           const outs = Object.keys(d.prod ?? {}).map((r) => part(r, prodOf(S, id, r) * k, "+"));
+          if (id === "injector") {
+            const perKg = feedRate(S) > 0 ? holeL(S) / feedRate(S) : diskEta(S.hole.a) * HOLE.c2;
+            outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(consOf(S, id, "plasma") * k * perKg))}</span>`);
+          }
           if (d.makes) outs.push(`<span>${esc(t(d.makes.building === "dyson" ? "ui.makesDyson" : "ui.makes", { n: num(makesOf(S, id) * k) }))}</span>`);
           return ins.length ? `${ins.join(" ")} <span class="arrow">\u2192</span> ${outs.join(" ")}` : outs.join(" ");
         };
@@ -3036,6 +4238,7 @@
           const body = e < 5e-3 ? `<span class="dim">${esc(S.off[id] ? t("ui.stopped") : t("ui.starved"))}</span>` : flow(count * e) + note2;
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
         }
+        if (id === "injector" && count >= 1) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.captured"))}</span>${esc(t("ui.capturedTxt", { p: pct(ringCov(S)), w: power(holeL(S) * ringCov(S)) }))}</span>`;
         if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
         }
@@ -3072,6 +4275,7 @@
         el.querySelector("[data-res]").disabled = !affordable(S, R[id].cost);
       });
     } else if (tab === "star") updateStar();
+    else if (tab === "hole") updateHole();
     else if (tab === "map") {
       view.querySelectorAll("[data-go]").forEach((b) => {
         const id = b.dataset.go, item = b.closest("[data-l]");
@@ -3154,6 +4358,9 @@
     } else if (S.chapterDone >= 2 && !S.story.modal2 && snAge() > 7) {
       S.story.modal2 = true;
       showModal(t("ui.chapterDone2.title"), t("ui.chapterDone2.body"), t("ui.chapterDone2.ok"));
+    } else if (S.chapterDone >= 3 && !S.story.modal3) {
+      S.story.modal3 = true;
+      showModal(t("ui.chapterDone3.title"), t("ui.chapterDone3.body"), t("ui.chapterDone3.ok"));
     }
   }
   var snAt = -1;
@@ -3269,6 +4476,10 @@
       }
       if (d.rebuild) {
         onRebuild();
+        return;
+      }
+      if (d.phase) {
+        onPhase();
         return;
       }
       if (d.act) return settingsAction(d.act, b);
@@ -3466,7 +4677,9 @@
         saveAcc = 0;
         save();
       }
-      if (S.chapterDone >= 1) {
+      if (S.star.done && snAge() > 8) {
+        drawHole($("rockc"), holeView(), now / 1e3, S.b.station >= 1 ? t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }) + ` \xB7 a ${spinTxt(S.hole.a)}` : t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }));
+      } else if (S.chapterDone >= 1) {
         const n = Math.floor(S.b.dyson);
         drawStar($("rockc"), starView(), now / 1e3, { title: "", sub: S.star.done ? "" : `${n.toLocaleString("cs-CZ")} ${plural(n, "kolektor", "kolektory", "kolektor\u016F")}`, layers: "" }, false);
       } else drawRock($("rockc"), dt, S.b.drone);
@@ -3477,7 +4690,11 @@
       }
       if (tab === "map") {
         const m = document.getElementById("map");
-        if (m) drawMap(m, S, now / 1e3);
+        if (m) S.star.done ? drawHoleMap(m, S, holeView(), now / 1e3) : drawMap(m, S, now / 1e3);
+      }
+      if (tab === "hole") {
+        const c = document.getElementById("holec");
+        if (c) drawProfile(c, { ...holeView(), stationR: stationR(S) }, now / 1e3, t("ui.hole.profile"));
       }
       if (tab === "star") {
         const c = document.getElementById("starc");

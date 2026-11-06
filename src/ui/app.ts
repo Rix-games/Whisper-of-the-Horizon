@@ -1,9 +1,10 @@
 import { cs } from '../i18n/cs.js';
 import { t } from '../i18n/index.js';
-import { type BuildingId, type LocationId, type Res, type ResearchId, B, BUILDING_IDS, EVENTS, L, LOCATION_IDS, PRESTIGE, R, RESEARCH_IDS, RESOURCES, STAGES, STAR, stage } from '../core/defs.js';
-import { CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
+import { type BuildingId, type LocationId, type Res, type ResearchId, HOLE, PHASES, B, BUILDING_IDS, EVENTS, L, LOCATION_IDS, PRESTIGE, R, RESEARCH_IDS, RESOURCES, STAGES, STAR, stage } from '../core/defs.js';
+import { diskEta, feedRate, gamma, holeL, iscoR, jetCov, jetP, phaseDef, phaseReady, advancePhase, ringCov, spinEq, stationR, CONVERTERS, LAST_STAGE, advanceStage, affordable, buy, canRebuild, canTravel, checkJournal, claimEvent, clickPower, clockYears, consOf, cost, coverage, depart, doResearch, isUnlocked, kardashev, liftJ, locationOpen, luminosity, makesOf, mine, offlineGain, powerW, prestigeGain, prestigeMult, previewMax, prodOf, rateParts, rates, rebuild, redLoss, researchAvailable, sell, stageByMetal, stageDef, stageNeed, stageReady, tick, travelTime } from '../core/engine.js';
 import { decodeSave, encodeSave, migrate, newState } from '../core/state.js';
 import { bytes, duration, energy, kValue, mass, num, power, sci } from '../core/format.js';
+import { drawHole, drawHoleMap, drawProfile, type HoleView } from './hole.js';
 import { drawMap, drawRock, drawSection, drawStar, drawStars, hitRock, label, sizeStars } from './scene.js';
 import { boom, chime, setSound, setVolumes, vols } from './audio.js';
 
@@ -13,7 +14,7 @@ export const VOL_KEYS = ["noise", "melody", "game"];
 export const VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
 export const volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
 export const audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-export const VERSION = "0.2.2";
+export const VERSION = "0.3";
 export const KEY = "sepot-horizontu";
 type El = HTMLElement & Record<string, any>;
 export const $ = (id: string): El => document.getElementById(id) as El;
@@ -151,11 +152,15 @@ export function renderTop() {
     const two = k >= 2, Lw = luminosity(S), kL = (Math.log10(Lw) - 6) / 10;
     $("kprogLabel").innerHTML = esc(two ? t("ui.toFullStar", { n: times(Lw / powerW(S)) }) : t("ui.toTypeII", { n: times(1e26 / powerW(S)) }));
     $("kbar").style.width = (two ? Math.max(0, Math.min(100, (k - 2) / (kL - 2) * 100)) : Math.max(0, Math.min(100, (k - 1) * 100))).toFixed(1) + "%";
+  } else if (!S.hole.done) {
+    const d = phaseDef(S), kT = (Math.log10(d.needW) - 6) / 10, k0 = S.hole.phase ? (Math.log10(PHASES[S.hole.phase - 1].needW) - 6) / 10 : 0.3;
+    $("kprogLabel").innerHTML = esc(P >= d.needW ? t("ui.toPhaseDone") : t("ui.toPhase", { k: kValue(kT), n: times(d.needW / P) }));
+    $("kbar").style.width = Math.max(0, Math.min(100, (k - k0) / (kT - k0) * 100)).toFixed(1) + "%";
   } else {
     $("kprogLabel").textContent = t("ui.toNext");
     $("kbar").style.width = "100%";
   }
-  const shown = RESOURCES.filter((r) => r === "ore" || S.total[r] > 0);
+  const shown = RESOURCES.filter((r) => !(r === "ore" && S.chapterDone >= 1) && !(r === "metal" && S.star.done) && (r === "ore" || S.total[r] > 0));
   const key = shown.join();
   const bar = $("resbar");
   if (key !== chipKey) {
@@ -174,14 +179,17 @@ export function renderTop() {
     $("clockScale").textContent = t("ui.clockYears", { t: years(clockYears(S)) });
   } else {
     $("clockDay").innerHTML = esc(t("ui.day", { n: (Math.floor(S.time) + 1).toLocaleString("cs-CZ") }));
-    $("clockScale").textContent = t("ui.clockScale");
+    $("clockScale").textContent = S.star.done && S.b.station >= 1 ? t("ui.clockDil", { g: dec(gamma(S), gamma(S) >= 10 ? 0 : 1) }) : t("ui.clockScale");
   }
 }
+const HOLE_CONV: BuildingId[] = ["injector", "station", "hawking"];
+const CH3_LOCS: LocationId[] = ["cas", "lens", "tde", "pole", "ergo"];
 export const STAR_BUILDINGS2 = ["lifter", "separator", "seismo", "swarmfab"];
 export const starView = () => ({ stage: stageDef(S).id, dyson: S.b.dyson, lifters: S.b.lifter, coverage: coverage(S), collapse: S.star.collapse, done: S.star.done, snAge: snAge() });
 export function renderRig() {
   const ch2 = S.chapterDone >= 1;
-  $("rigTitle").textContent = ch2 ? t("ui.star.title") : t("ui.asteroid");
+  const ch3 = S.star.done;
+  $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch2 ? t("ui.star.title") : t("ui.asteroid");
   document.body.classList.toggle("ch2", ch2);
   const rock = $("rock");
   rock.disabled = ch2;
@@ -195,6 +203,10 @@ export function renderRig() {
   if (!ch2) {
     rows.push([t("ui.stats.drones"), num(Math.floor(S.b.drone))]);
     for (const id of CONVERTERS.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
+  } else if (ch3) {
+    rows.push([t("ui.stats.phase"), `${S.hole.phase + 1} / ${PHASES.length}`], [t("ui.stats.spin"), spinTxt(S.hole.a)]);
+    if (S.b.injector >= 1) rows.push([t("ui.stats.feed"), mass(feedRate(S)) + "/s"], [t("ui.stats.diskCov"), pct(ringCov(S))]);
+    for (const id of HOLE_CONV.filter((id2) => S.b[id2] >= 1)) rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
   } else if (!S.star.done) {
     rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
     for (const id of STAR_BUILDINGS2.filter((id2) => S.b[id2] >= 1)) {
@@ -229,15 +241,17 @@ export function tabsAvail() {
   const list = [["build", t("ui.tabs.build")]];
   if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
   if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
-  if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
+  if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
+  else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
   return list;
 }
 export function renderTabs() {
   const list = tabsAvail();
   if (!list.find(([id]) => id === tab)) tab = "build";
   const dot = RESEARCH_IDS.some((id) => researchAvailable(S, id) && affordable(S, R[id].cost));
+  const hdot = phaseReady(S).ok;
   const sdot = stageReady(S).ok || canRebuild(S) && prestigeGain(S) >= Math.max(4, S.p.pts * 0.5);
-  const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
+  const html = list.map(([id, n]) => `<button class="tab" role="tab" aria-selected="${id === tab}" data-tab="${id}">${esc(n)}${(id === "research" && dot || id === "star" && sdot || id === "hole" && hdot) && tab !== id ? '<span class="dot"></span>' : ""}</button>`).join("");
   const el = $("tabs");
   if (el.innerHTML !== html) el.innerHTML = html;
 }
@@ -246,6 +260,7 @@ export function computeKey() {
   if (tab === "research") return "r" + RESEARCH_IDS.map((id) => S.r[id] ? 2 : researchAvailable(S, id) ? 1 : 0).join("");
   if (tab === "map") return "m" + LOCATION_IDS.map((id) => S.visited[id] ? 1 : locationOpen(S, id) ? 0 : "-").join("") + (S.travel ? S.travel.to : "");
   if (tab === "star") return `s${S.star.stage}${S.star.done}${S.star.collapse >= 0}${!!S.r.redesign}`;
+  if (tab === "hole") return `h${S.hole.phase}${S.hole.dive >= 0}${S.hole.done}`;
   return "s";
 }
 export function buildView() {
@@ -255,7 +270,7 @@ export function buildView() {
     const order = BUILDING_IDS.slice().reverse();
     for (const id of order) {
       if (!isUnlocked(S, id)) continue;
-      const conv = !!B[id].cons || id === "swarmfab";
+      const conv = !!B[id].cons || id === "swarmfab" || id === "jet";
       h += `<div class="item" data-b="${id}"><h3>${esc(t(`b.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`b.${id}.desc`))}</p><div class="eff" data-f="eff"></div><div class="cost" data-f="cost"></div>
       <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
     }
@@ -272,17 +287,20 @@ export function buildView() {
     h += '<div class="mapbox"><canvas id="map"></canvas></div><div class="list">';
     for (const id of LOCATION_IDS.slice().reverse()) {
       if (!locationOpen(S, id)) continue;
+      if (S.star.done && !CH3_LOCS.includes(id)) continue;
       const done = !!S.visited[id];
       h += `<div class="item${done ? " visited" : ""}" data-l="${id}"><h3>${esc(t(`loc.${id}.name`))}</h3><p>${esc(t(`loc.${id}.${done ? "done" : "desc"}`))}</p>${done ? "" : '<div class="cost" data-f="cost"></div>'}<div class="act">${done ? `<span class="dim">${esc(t("ui.map.active"))}</span>` : `<button class="btn" data-go="${id}"></button>`}</div></div>`;
     }
     h += "</div>";
   } else if (tab === "star") h += starHTML();
+  else if (tab === "hole") h += holeHTML();
   $("view").innerHTML = h;
 }
 export const round2 = (v) => {
   const e = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.abs(v) || 1)) - 1));
   return (Math.round(v / e) * e).toLocaleString("cs-CZ");
 };
+export const spinTxt = (a: number) => dec(a, a >= 0.99 ? 3 : 2);
 export const pct = (f) => {
   const v = f * 100;
   return v === 0 ? "0 %" : v < 0.01 ? "< 0,01 %" : `${v.toLocaleString("cs-CZ", { maximumSignificantDigits: 2 })} %`;
@@ -385,6 +403,90 @@ export function onRebuild() {
     save();
   }, true);
 }
+// ---------- Kapitola 3: záložka Horizont ----------
+const phaseName = (i: number) => i < PHASES.length ? t(`ui.phases.${PHASES[i].id}.name`) : t("ui.hole.diveName");
+const lumOf = (w: number) => Math.max(0, Math.min(1, (Math.log10(Math.max(1, w)) - 20) / 13));
+export function holeView(): HoleView {
+  const jp = jetP(S);
+  return {
+    phase: PHASES[Math.min(S.hole.phase, PHASES.length - 1)].disk, a: S.hole.a, lum: lumOf(holeL(S)), cov: ringCov(S), rings: Math.floor(S.b.ring),
+    jets: jp > 0 ? Math.max(0.25, Math.min(1, (Math.log10(jp) - 28) / 7)) : 0, jetCov: jetCov(S), stations: Math.floor(S.b.station), gamma: gamma(S),
+    feed: Math.min(8, Math.ceil(Math.floor(S.b.injector) / 6)), dive: S.hole.dive, done: S.hole.done
+  };
+}
+function holeHTML() {
+  const ladder = PHASES.map((ph, i) => `<li data-ph="${i}"><span class="num">${i + 1}</span>${esc(t(`ui.phases.${ph.id}.name`))}</li>`).join("") + `<li data-ph="${PHASES.length}"><span class="num">✦</span>${esc(t("ui.hole.diveName"))}</li>`;
+  let h = `<div class="starbox"><canvas id="holec"></canvas></div><ol class="ladder">${ladder}</ol>`;
+  if (S.hole.done) return h + `<div class="stagecard"><p>${esc(t("ui.hole.done"))}</p><dl class="sgrid" data-f="grid"></dl></div>`;
+  h += `<div class="stagecard">
+  <div class="sc-head"><h3 data-f="name"></h3><span class="tag mono" data-f="of"></span></div>
+  <p class="burn" data-f="text"></p>
+  <dl class="sgrid" data-f="grid"></dl>
+  <div class="sprog"><div class="sp-head"><span class="dim">${esc(t("ui.power"))}</span><span class="mono" data-f="ptext"></span></div><div class="bar"><b data-f="prog"></b></div></div>
+  <div class="ready"><span class="dim">${esc(t("ui.hole.ready"))}</span><ul class="checks" data-f="checks"></ul></div>
+  <div class="row"><button class="btn" data-phase="1"></button><span class="dim" data-f="wait"></span></div>
+</div>`;
+  return h;
+}
+function holeGrid() {
+  const L0 = holeL(S), rows: [string, string][] = [
+    [t("ui.hole.mass"), t("ui.hole.msun", { v: HOLE.massSun })],
+    [t("ui.hole.rs"), `${dec(HOLE.rsKm, 1)} km`],
+    [t("ui.hole.spin"), `${spinTxt(S.hole.a)} · ${t("ui.hole.spinEq", { v: spinTxt(spinEq(S)) })}`],
+    [t("ui.hole.isco"), t("ui.hole.rsUnit", { v: dec(iscoR(S.hole.a) / 2, 2) })],
+    [t("ui.hole.eta"), pct(diskEta(S.hole.a))],
+    [t("ui.hole.L"), power(L0)],
+    [t("ui.hole.edd"), power(HOLE.eddW)],
+    [t("ui.hole.cov"), pct(ringCov(S))]
+  ];
+  if (S.r.mad) rows.push([t("ui.hole.jets"), power(jetP(S))], [t("ui.hole.jetCov"), pct(jetCov(S))]);
+  if (S.b.station >= 1) rows.push([t("ui.hole.gamma"), t("ui.hole.stationR", { r: dec(stationR(S), 2), g: dec(gamma(S), gamma(S) >= 10 ? 0 : 1) })]);
+  return rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("") + (L0 >= HOLE.eddW * 0.999 && !S.r.slim ? `<dt>&nbsp;</dt><dd class="warnc">${esc(t("ui.hole.eddCap"))}</dd>` : "");
+}
+function updateHole() {
+  const view = $("view");
+  view.querySelectorAll<El>(".ladder li").forEach((li) => {
+    const i = Number(li.dataset.ph), cur = S.hole.done ? PHASES.length + 1 : S.hole.dive >= 0 ? PHASES.length : S.hole.phase;
+    li.className = i < cur ? "done" : i === cur ? "cur" : "";
+  });
+  const set = (f: string, html: string) => {
+    const el = view.querySelector<El>(`[data-f=${f}]`);
+    if (el && el.innerHTML !== html) el.innerHTML = html;
+  };
+  set("grid", holeGrid());
+  if (S.hole.done) return;
+  const d = phaseDef(S), ph = S.hole.phase, P = powerW(S);
+  set("name", esc(phaseName(ph)));
+  set("of", esc(t("ui.hole.phase", { n: ph + 1, of: PHASES.length })));
+  set("text", esc(t(`ui.phases.${d.id}.text`)));
+  const w0 = ph ? PHASES[ph - 1].needW : 1e15, f = Math.max(0, Math.min(1, Math.log10(P / w0) / Math.log10(d.needW / w0)));
+  view.querySelector<El>("[data-f=prog]")?.style.setProperty("width", (f * 100).toFixed(1) + "%");
+  set("ptext", esc(`${power(P)} / ${power(d.needW)}`));
+  const rd = phaseReady(S), chk = (ok: boolean, txt: string) => `<li class="${ok ? "ok" : ""}">${ok ? "✓" : "·"} ${esc(txt)}</li>`;
+  let c = chk(rd.power, t("ui.hole.needPower", { w: power(d.needW) }));
+  if (ph === PHASES.length - 1) c += chk(rd.research, t("ui.hole.needResearch"));
+  set("checks", c);
+  const btn = view.querySelector<El>("[data-phase]");
+  if (btn) {
+    const diving = S.hole.dive >= 0;
+    btn.disabled = !rd.ok;
+    btn.textContent = diving ? t("ui.hole.diving", { t: duration(S.hole.dive) }) : ph === PHASES.length - 1 ? t("ui.hole.dive") : t("ui.hole.next", { n: phaseName(ph + 1) });
+    btn.classList.toggle("warn", diving);
+    set("wait", esc(diving ? t("ui.hole.diveNote") : rd.ok ? "" : t("ui.hole.waiting")));
+  }
+}
+function onPhase() {
+  if (!phaseReady(S).ok) return;
+  const go = () => {
+    if (advancePhase(S)) {
+      onJournal(checkJournal(S));
+      renderAll();
+      save();
+    }
+  };
+  if (S.hole.phase === PHASES.length - 1) confirmModal(t("ui.hole.diveWarn.title"), t("ui.hole.diveWarn.body", { t: duration(HOLE.diveSec) }), t("ui.hole.diveWarn.ok"), t("ui.hole.diveWarn.cancel"), go);
+  else go();
+}
 export function settingsHTML() {
   return `<div class="settings">
     <section><h3>${esc(t("ui.settings.sound"))}</h3><div class="row"><button class="btn ghost" data-act="sound"></button></div>
@@ -427,6 +529,10 @@ export function updateView() {
         const part = (r, v, sign) => `<span><span style="color:${COLOR[r]}">${esc(t("res." + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
         const ins = (Object.keys(d.cons ?? {}) as Res[]).map((r) => part(r, consOf(S, id, r) * k, "−"));
         const outs = (Object.keys(d.prod ?? {}) as Res[]).map((r) => part(r, prodOf(S, id, r) * k, "+"));
+        if (id === "injector") {
+          const perKg = feedRate(S) > 0 ? holeL(S) / feedRate(S) : diskEta(S.hole.a) * HOLE.c2;
+          outs.push(`<span><span style="color:${COLOR.energy}">${esc(t("ui.diskGlow"))}</span> +${esc(power(consOf(S, id, "plasma") * k * perKg))}</span>`);
+        }
         if (d.makes) outs.push(`<span>${esc(t(d.makes.building === "dyson" ? "ui.makesDyson" : "ui.makes", { n: num(makesOf(S, id) * k) }))}</span>`);
         return ins.length ? `${ins.join(" ")} <span class="arrow">→</span> ${outs.join(" ")}` : outs.join(" ");
       };
@@ -438,6 +544,7 @@ export function updateView() {
         const body = e < 5e-3 ? `<span class="dim">${esc(S.off[id] ? t("ui.stopped") : t("ui.starved"))}</span>` : flow(count * e) + note2;
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
       }
+      if (id === "injector" && count >= 1) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.captured"))}</span>${esc(t("ui.capturedTxt", { p: pct(ringCov(S)), w: power(holeL(S) * ringCov(S)) }))}</span>`;
       if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
       }
@@ -474,6 +581,7 @@ export function updateView() {
       el.querySelector<El>("[data-res]").disabled = !affordable(S, R[id].cost);
     });
   } else if (tab === "star") updateStar();
+  else if (tab === "hole") updateHole();
   else if (tab === "map") {
     view.querySelectorAll<El>("[data-go]").forEach((b) => {
       const id = b.dataset.go as LocationId, item = b.closest("[data-l]");
@@ -556,6 +664,9 @@ export function checkChapterModal() {
   } else if (S.chapterDone >= 2 && !S.story.modal2 && snAge() > 7) {
     S.story.modal2 = true;
     showModal(t("ui.chapterDone2.title"), t("ui.chapterDone2.body"), t("ui.chapterDone2.ok"));
+  } else if (S.chapterDone >= 3 && !S.story.modal3) {
+    S.story.modal3 = true;
+    showModal(t("ui.chapterDone3.title"), t("ui.chapterDone3.body"), t("ui.chapterDone3.ok"));
   }
 }
 export let snAt = -1;
@@ -671,6 +782,10 @@ export function bind() {
     }
     if (d.rebuild) {
       onRebuild();
+      return;
+    }
+    if (d.phase) {
+      onPhase();
       return;
     }
     if (d.act) return settingsAction(d.act, b);
@@ -868,7 +983,9 @@ export function start() {
       saveAcc = 0;
       save();
     }
-    if (S.chapterDone >= 1) {
+    if (S.star.done && snAge() > 8) {
+      drawHole($("rockc") as unknown as HTMLCanvasElement, holeView(), now / 1e3, S.b.station >= 1 ? t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }) + ` · a ${spinTxt(S.hole.a)}` : t("ui.hole.remnantSub", { r: dec(HOLE.rsKm, 1) }));
+    } else if (S.chapterDone >= 1) {
       const n = Math.floor(S.b.dyson);
       drawStar($("rockc"), starView(), now / 1e3, { title: "", sub: S.star.done ? "" : `${n.toLocaleString("cs-CZ")} ${plural(n, "kolektor", "kolektory", "kolektorů")}`, layers: "" }, false);
     } else drawRock($("rockc"), dt, S.b.drone);
@@ -879,7 +996,11 @@ export function start() {
     }
     if (tab === "map") {
       const m = (document.getElementById("map") as any);
-      if (m) drawMap(m, S, now / 1e3);
+      if (m) S.star.done ? drawHoleMap(m, S, holeView(), now / 1e3) : drawMap(m, S, now / 1e3);
+    }
+    if (tab === "hole") {
+      const c = document.getElementById("holec") as HTMLCanvasElement;
+      if (c) drawProfile(c, { ...holeView(), stationR: stationR(S) }, now / 1e3, t("ui.hole.profile"));
     }
     if (tab === "star") {
       const c = (document.getElementById("starc") as any);

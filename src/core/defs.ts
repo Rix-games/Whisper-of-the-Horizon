@@ -5,8 +5,11 @@ import type { State } from './state.js';
 export type Res = 'ore' | 'metal' | 'energy' | 'data' | 'plasma';
 export type Amounts = Partial<Record<Res, number>>;
 
-export type BuildingId = 'drone' | 'smelter' | 'solar' | 'lab' | 'drill' | 'mirror' | 'replicator' | 'forge' | 'catcher' | 'qcomp' | 'fusion' | 'dyson' | 'lifter' | 'separator' | 'seismo' | 'swarmfab';
-export type ResearchId = 'vib' | 'swarm' | 'deep' | 'arc' | 'scan' | 'thinfilm' | 'auto' | 'lab2' | 'mirror' | 'repl' | 'resonance' | 'forge' | 'cryo' | 'signal' | 'optics' | 'catcher' | 'swarm2' | 'fusion' | 'supercond' | 'plasma' | 'quantum' | 'vib2' | 'dyson' | 'nano' | 'statite' | 'induct' | 'beam' | 'lagrange' | 'lift' | 'sep' | 'seismo' | 'coil' | 'fab' | 'sail' | 'redesign' | 'highorbit' | 'census' | 'rotlift' | 'carbon' | 'seis2' | 'mg' | 'neon' | 'pulse2' | 'silicon' | 'magsail' | 'iron' | 'neutrino';
+export type BuildingId = 'drone' | 'smelter' | 'solar' | 'lab' | 'drill' | 'mirror' | 'replicator' | 'forge' | 'catcher' | 'qcomp' | 'fusion' | 'dyson' | 'lifter' | 'separator' | 'seismo' | 'swarmfab'
+  | 'scoop' | 'injector' | 'ring' | 'station' | 'jet' | 'hawking';
+export type ResearchId = 'vib' | 'swarm' | 'deep' | 'arc' | 'scan' | 'thinfilm' | 'auto' | 'lab2' | 'mirror' | 'repl' | 'resonance' | 'forge' | 'cryo' | 'signal' | 'optics' | 'catcher' | 'swarm2' | 'fusion' | 'supercond' | 'plasma' | 'quantum' | 'vib2' | 'dyson' | 'nano' | 'statite' | 'induct' | 'beam' | 'lagrange' | 'lift' | 'sep' | 'seismo' | 'coil' | 'fab' | 'sail' | 'redesign' | 'highorbit' | 'census' | 'rotlift' | 'carbon' | 'seis2' | 'mg' | 'neon' | 'pulse2' | 'silicon' | 'magsail' | 'iron' | 'neutrino'
+  | 'accrete' | 'dilate' | 'prograde' | 'magscoop' | 'wide' | 'mri' | 'lower' | 'pulse3' | 'thick' | 'slim' | 'mad' | 'edge'
+  | 'bz' | 'fermi' | 'kugel' | 'penrose' | 'evap' | 'dive';
 
 export interface BuildingDef {
   base: Amounts;          // cena prvního kusu
@@ -18,6 +21,7 @@ export interface BuildingDef {
 }
 export interface ResearchDef { cost: Amounts; req?: (s: State) => boolean; reqKey?: string }
 export interface LocationDef { cost: number; time: number; orbit: number; angle: number; speed: number; req?: (s: State) => boolean }
+export interface PhaseDef { id: string; needW: number; disk: number }
 export interface StageDef { id: string; age0: number; years: number; sec: number; L: number; T: number; R: number; z: number; needW: number; needM?: number }
 export interface EventDef { res: Res; seconds: number; min: number; unlock: (s: State) => boolean }
 export interface Trigger { id: string; when: (s: State, c?: { powerW: number }) => boolean }
@@ -42,10 +46,21 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   separator: { base: { metal: 5e6, plasma: 2e7 }, growth: 1.16, prod: { metal: 5e6 }, cons: { plasma: 5e6 }, unlock: (s) => !!s.r.sep && !s.star.done },
   seismo: { base: { metal: 1e8, energy: 5e17 }, growth: 1.2, prod: { data: 5e10 }, cons: { energy: 2e13 }, unlock: (s) => !!s.r.seismo && !s.star.done },
   // Loděnice staví kolektory sama z podílu přírůstku kovu a energie (engine: fabTick); zásoby nevyčerpá.
-  swarmfab: { base: { metal: 2e10, plasma: 5e9 }, growth: 1.3, makes: { building: "dyson", rate: 0.02 }, cons: { metal: 1, energy: 1 }, unlock: (s) => !!s.r.fab && !s.star.done }
+  swarmfab: { base: { metal: 2e10, plasma: 5e9 }, growth: 1.3, makes: { building: "dyson", rate: 0.02 }, cons: { metal: 1, energy: 1 }, unlock: (s) => !!s.r.fab && !s.star.done },
+  // Kapitola 3: černá díra. Plyn (plazma) z mlhoviny krmí akreční disk, kolektory chytají jeho záření.
+  // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
+  scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+  injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 5e4 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+  ring: { base: { plasma: 6e7 }, growth: 1.13, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+  station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 1e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
+  jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
+  hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
 };
 export const BUILDING_IDS = Object.keys(BUILDINGS) as BuildingId[];
 export const B: Record<BuildingId, BuildingDef> = BUILDINGS;
+/** Kapitola 3 běží: po supernově, před koncem kapitoly se díra pořád krmí. */
+export const hole3 = (s: State) => s.star.done;
+export const phase = (n: number) => (s: State) => s.star.done && (s.hole?.phase ?? 0) >= n;
 export const stage = (n: number) => (s: State) => s.chapterDone >= 1 && s.star.stage >= n && !s.star.done;
 export const has = (...ids: string[]) => (s: State) => ids.every((id) => (s.r as Record<string, true>)[id] || (s.visited as Record<string, true>)[id]);
 export const RESEARCH: Record<ResearchId, ResearchDef> = {
@@ -96,7 +111,26 @@ export const RESEARCH: Record<ResearchId, ResearchDef> = {
   silicon: { cost: { data: 1e29 }, req: stage(3), reqKey: "stage3" },
   magsail: { cost: { data: 5e29 }, req: stage(3), reqKey: "stage3" },
   iron: { cost: { data: 5e30 }, req: stage(4), reqKey: "stage4" },
-  neutrino: { cost: { data: 3e31 }, req: stage(4), reqKey: "stage4" }
+  neutrino: { cost: { data: 3e31 }, req: stage(4), reqKey: "stage4" },
+  // Kapitola 3: Horizont
+  accrete: { cost: { data: 1e30 }, req: (s) => s.star.done, reqKey: "nova" },
+  dilate: { cost: { data: 2e30 }, req: has("accrete") },
+  prograde: { cost: { data: 1e31 }, req: has("accrete") },
+  magscoop: { cost: { data: 4e31 }, req: has("accrete") },
+  wide: { cost: { data: 1.5e32 }, req: has("accrete") },
+  mri: { cost: { data: 2e33 }, req: phase(1), reqKey: "phase1" },
+  lower: { cost: { data: 8e33 }, req: phase(1), reqKey: "phase1" },
+  pulse3: { cost: { data: 4e34 }, req: phase(1), reqKey: "phase1" },
+  thick: { cost: { data: 2e35 }, req: phase(1), reqKey: "phase1" },
+  slim: { cost: { data: 1e36 }, req: phase(2), reqKey: "phase2" },
+  mad: { cost: { data: 4e36 }, req: phase(2), reqKey: "phase2" },
+  edge: { cost: { data: 2e37 }, req: phase(2), reqKey: "phase2" },
+  bz: { cost: { data: 1e38 }, req: phase(3), reqKey: "phase3" },
+  fermi: { cost: { data: 3e38 }, req: phase(3), reqKey: "phase3" },
+  kugel: { cost: { data: 1e39 }, req: phase(3), reqKey: "phase3" },
+  penrose: { cost: { data: 1e40 }, req: phase(4), reqKey: "phase4" },
+  evap: { cost: { data: 2e40 }, req: phase(4), reqKey: "phase4" },
+  dive: { cost: { data: 6e40 }, req: phase(4), reqKey: "phase4" }
 };
 export const RESEARCH_IDS = Object.keys(RESEARCH) as ResearchId[];
 export const R: Record<ResearchId, ResearchDef> = RESEARCH;
@@ -109,7 +143,13 @@ export const LOCATIONS = {
   ione: { cost: 5e20, time: 90, orbit: 0.25, angle: 5.3, speed: 0.03, req: (s) => s.chapterDone >= 1 && !s.star.done },
   kuiper: { cost: 3e24, time: 150, orbit: 0.93, angle: 0.9, speed: 4e-3, req: (s) => s.chapterDone >= 1 && s.star.stage >= 1 && !s.star.done },
   core: { cost: 1e28, time: 120, orbit: 0.72, angle: 4.1, speed: 9e-3, req: (s) => s.chapterDone >= 1 && s.star.stage >= 2 && !s.star.done },
-  dust: { cost: 3e29, time: 100, orbit: 0.42, angle: 2.9, speed: 0.012, req: (s) => s.chapterDone >= 1 && s.star.stage >= 3 && !s.star.done }
+  dust: { cost: 3e29, time: 100, orbit: 0.42, angle: 2.9, speed: 0.012, req: (s) => s.chapterDone >= 1 && s.star.stage >= 3 && !s.star.done },
+  // Kapitola 3: mise kolem černé díry za energii ze supernovy
+  cas: { cost: 1e41, time: 90, orbit: 0.82, angle: 0.6, speed: 3e-3, req: (s) => s.star.done && !!s.r.accrete },
+  lens: { cost: 3e41, time: 120, orbit: 0.95, angle: 3.6, speed: 2e-3, req: phase(1) },
+  tde: { cost: 1e42, time: 120, orbit: 0.62, angle: 2.2, speed: 6e-3, req: phase(2) },
+  pole: { cost: 2e42, time: 90, orbit: 0.3, angle: 4.9, speed: 0, req: phase(3) },
+  ergo: { cost: 4e42, time: 150, orbit: 0.16, angle: 1.4, speed: 0, req: phase(4) }
 } satisfies Record<string, LocationDef>;
 export type LocationId = keyof typeof LOCATIONS;
 export const LOCATION_IDS = Object.keys(LOCATIONS) as LocationId[];
@@ -138,6 +178,32 @@ export const STAR = {
   liftShare: 1e-4
   // podíl energie G·M/R, který platí civilizace; zbytek dodá hvězda sama (Criswell)
 };
+// Kapitola 3: černá díra po Aldře (8 Sluncí). Fáze končí, když výkon civilizace dosáhne needW.
+// disk = vzhled disku pro grafiku (0 slabý zpětný pád … 4 ergosféra).
+export const PHASES: PhaseDef[] = [
+  { id: "fallback", needW: 1e23, disk: 0 },
+  { id: "thin", needW: 1e27, disk: 1 },
+  { id: "edd", needW: 1.5e32, disk: 2 },
+  { id: "jets", needW: 4e33, disk: 3 },
+  { id: "ergo", needW: 2e34, disk: 4 }
+];
+export const HOLE = {
+  massSun: 8,
+  massKg: 8 * 1989e27,
+  c2: 8.98755e16,
+  rsKm: 23.6,             // Schwarzschildův poloměr 2GM/c²
+  eddW: 1.26e31 * 8,      // Eddingtonova svítivost
+  spin0: 0.2,             // rotace díry na začátku kapitoly
+  spinMax: 0.998,         // Thorneova mez
+  spinRate: 0.02,         // jak rychle se rotace blíží rovnováze (1/s)
+  ringF: 0.03,            // kolik disku zakryje jeden kolektor
+  jetF: 0.04,             // kolik trysek zachytí jeden lapač
+  dataFb: 0.4,            // stanice sílí s výkonem civilizace (P/1e20)^0.4
+  hawkData: 1e5,          // bajtů za každý joule Hawkingova záření (informace z vypařování)
+  fbBase: 1e20,
+  startPlasma: 2e8,       // plyn ze zpětného pádu na začátku kapitoly
+  diveSec: 30
+};
 export const PRESTIGE = { per: 0.25, metalUnit: 1e12, perOrder: 2 };
 export const EVENTS = {
   // v Kapitole 2 ruda ani zásoba energie nepomůžou: místo komet a erupcí kovový asteroid a protuberance
@@ -145,7 +211,9 @@ export const EVENTS = {
   flare: { res: "energy", seconds: 60, min: 5e4, unlock: (s) => s.b.solar >= 1 && !s.chapterDone },
   mtype: { res: "metal", seconds: 90, min: 1e9, unlock: (s) => s.chapterDone >= 1 && !s.star.done },
   echo: { res: "data", seconds: 60, min: 2e3, unlock: (s) => !!s.r.scan },
-  prominence: { res: "plasma", seconds: 90, min: 1e6, unlock: (s) => s.b.lifter >= 1 && !s.star.done }
+  prominence: { res: "plasma", seconds: 90, min: 1e6, unlock: (s) => s.b.lifter >= 1 && !s.star.done },
+  // Kapitola 3: shluk plynu z mlhoviny
+  clump: { res: "plasma", seconds: 90, min: 1e7, unlock: (s) => s.b.scoop >= 1 && s.star.done }
 } satisfies Record<string, EventDef>;
 export type EventId = keyof typeof EVENTS;
 export const EVENT_IDS = Object.keys(EVENTS) as EventId[];
@@ -179,7 +247,21 @@ export const STORY: Trigger[] = [
   { id: "neo", when: (s) => s.star.stage >= 3 },
   { id: "si", when: (s) => s.star.stage >= 4 },
   { id: "collapse", when: (s) => s.star.collapse >= 0 },
-  { id: "nova", when: (s) => s.star.done }
+  { id: "salvage", when: (s) => !!s.salvaged },
+  { id: "nova", when: (s) => s.star.done },
+  // Kapitola 3
+  { id: "hole", when: (s) => !!s.r.accrete },
+  { id: "disk", when: (s) => s.b.injector >= 1 && s.b.ring >= 1 },
+  { id: "station", when: (s) => s.b.station >= 1 },
+  { id: "thin", when: (s) => (s.hole?.phase ?? 0) >= 1 },
+  { id: "pulse3", when: (s) => !!s.r.pulse3 },
+  { id: "edd", when: (s) => (s.hole?.phase ?? 0) >= 2 },
+  { id: "lens", when: (s) => !!s.visited.lens },
+  { id: "jets", when: (s) => s.b.jet >= 1 },
+  { id: "fermi", when: (s) => !!s.r.fermi },
+  { id: "ergo", when: (s) => (s.hole?.phase ?? 0) >= 4 },
+  { id: "dive", when: (s) => (s.hole?.dive ?? -1) >= 0 },
+  { id: "horizon", when: (s) => !!s.hole?.done }
 ];
 export const FACTS: Trigger[] = [
   { id: "kardashev", when: (s) => s.time > 20 },
@@ -203,7 +285,19 @@ export const FACTS: Trigger[] = [
   { id: "carbon", when: (s) => s.star.stage >= 2 },
   { id: "iron", when: (s) => s.star.stage >= 4 },
   { id: "sn1987a", when: (s) => !!s.r.neutrino },
-  { id: "nova", when: (s) => s.star.done }
+  { id: "nova", when: (s) => s.star.done },
+  { id: "rs", when: (s) => !!s.r.accrete },
+  { id: "accretion", when: (s) => s.b.injector >= 1 },
+  { id: "gps", when: (s) => s.b.station >= 1 },
+  { id: "isco", when: (s) => !!s.r.prograde },
+  { id: "cas", when: (s) => !!s.visited.cas },
+  { id: "eddington", when: (s) => (s.hole?.phase ?? 0) >= 2 },
+  { id: "kerr", when: (s) => (s.hole?.a ?? 0) >= 0.9 },
+  { id: "tde", when: (s) => !!s.visited.tde },
+  { id: "bz", when: (s) => s.b.jet >= 1 },
+  { id: "fermi", when: (s) => !!s.r.fermi },
+  { id: "hawking", when: (s) => !!s.r.kugel },
+  { id: "penrose", when: (s) => !!s.r.penrose }
 ];
 export const RULES = {
   baseReactorW: 500,
