@@ -1,4 +1,3 @@
-"use strict";
 (() => {
   // src/i18n/cs.ts
   var cs = {
@@ -542,6 +541,7 @@
   };
 
   // src/core/engine.ts
+  var keys = (o) => Object.keys(o);
   var DYSON_BOOST = 1.1;
   var DYSON_CROWD = 1.03;
   var DYSON_CH1_CHEAP = 20;
@@ -722,13 +722,10 @@
     s.fab = { m: m / dt, e: en / dt, made: made / dt, lim, target: null, bank: prev.bank ?? { metal: 0, energy: 0, plasma: 0 }, built: prev.built ?? { lifter: 0, separator: 0 } };
     chainTick(s, dt, lim);
   }
-  // Loděnice dostavuje i těžební řetězec, když ji brzdí kov: chybí-li plazma, trychtýř, jinak separátor.
-  // Bere jen podíl čistého přírůstku, který zbyde po kolektorech, takže zásoby nevyčerpá.
   var CHAIN_SHARE = 0.3;
   function chainTarget(s) {
     if (!s.b.lifter || !s.b.separator || !isUnlocked(s, "lifter") || !isUnlocked(s, "separator")) return null;
     if (s.off.lifter || s.off.separator) return null;
-    // separátor jen když plazma přibývá (aspoň 10 % výroby trychtýřů), jinak trychtýř
     const { p, c } = rates(s);
     if (p.plasma - c.plasma > 0.1 * p.plasma) return "separator";
     return (s.eff.lifter ?? 1) < 0.97 ? null : "lifter";
@@ -746,13 +743,12 @@
     }
     for (let k = 0; k < 2; k++) {
       const cst = cost(s, target);
-      if (!Object.keys(cst).every((r) => f.bank[r] >= cst[r])) break;
-      for (const r of Object.keys(cst)) f.bank[r] -= cst[r];
+      if (!keys(cst).every((r) => f.bank[r] >= cst[r])) break;
+      for (const r of keys(cst)) f.bank[r] -= cst[r];
       s.b[target] += 1;
       s.bought[target] = (s.bought[target] ?? 0) + 1;
       f.built[target] += 1;
     }
-    // co se do řetězce nepoužije (jiné suroviny než cíl), se vrací do skladu
     const need = cost(s, target);
     for (const r of ["metal", "energy", "plasma"]) if (!(r in need) && f.bank[r] > 0) {
       s.res[r] += f.bank[r];
@@ -775,8 +771,8 @@
       const n = s.b[id];
       if (!n) continue;
       const e = effOf(s, id);
-      for (const r of Object.keys(B[id].prod ?? {})) p[r] += prodOf(s, id, r) * n * e;
-      for (const r of Object.keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
+      for (const r of keys(B[id].prod ?? {})) p[r] += prodOf(s, id, r) * n * e;
+      for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
     }
     if (s.r.auto) p.ore += clickPower(s) * RULES.autoClicksPerSec;
     return { p, c };
@@ -803,14 +799,14 @@
     const d = B[id], o = {};
     const extra = id === "dyson" && s.p.base >= 0 ? Math.pow(DYSON_CROWD, Math.max(0, n - s.p.base)) : 1;
     const ch1 = id === "dyson" && !s.chapterDone && n < DYSON_CH1_CHEAP ? DYSON_CH1_DISCOUNT : 1;
-    for (const r of Object.keys(d.base)) o[r] = d.base[r] * Math.pow(d.growth, n) * extra * (r === "metal" ? ch1 : 1);
+    for (const r of keys(d.base)) o[r] = d.base[r] * Math.pow(d.growth, n) * extra * (r === "metal" ? ch1 : 1);
     return o;
   }
   function affordable(s, c) {
-    return Object.keys(c).every((r) => s.res[r] >= c[r]);
+    return keys(c).every((r) => s.res[r] >= c[r]);
   }
   function pay(s, c) {
-    for (const r of Object.keys(c)) s.res[r] -= c[r];
+    for (const r of keys(c)) s.res[r] -= c[r];
   }
   function isUnlocked(s, id) {
     return B[id].unlock(s);
@@ -837,7 +833,7 @@
       s.b[id] -= 1;
       s.bought[id] = Math.max(0, (s.bought[id] ?? 1) - 1);
       const c = cost(s, id);
-      for (const r of Object.keys(c)) s.res[r] += c[r] * SELL_REFUND;
+      for (const r of keys(c)) s.res[r] += c[r] * SELL_REFUND;
       k++;
     }
     return k;
@@ -849,8 +845,8 @@
     const total = {};
     while (count < limit) {
       const c = cost(s, id, n);
-      if (!all && !Object.keys(c).every((r) => res[r] >= c[r])) break;
-      for (const r of Object.keys(c)) {
+      if (!all && !keys(c).every((r) => res[r] >= c[r])) break;
+      for (const r of keys(c)) {
         res[r] -= c[r];
         total[r] = (total[r] ?? 0) + c[r];
       }
@@ -907,7 +903,7 @@
     for (const id of BUILDING_IDS) {
       const d = B[id], n = s.b[id];
       if (!n || d.cons) continue;
-      for (const r of Object.keys(d.prod ?? {})) add(s, r, prodOf(s, id, r) * n * dt);
+      for (const r of keys(d.prod ?? {})) add(s, r, prodOf(s, id, r) * n * dt);
       if (d.makes && !d.cons) s.b[d.makes.building] += makesOf(s, id) * Math.floor(n) * dt;
     }
     if (s.r.auto) add(s, "ore", clickPower(s) * RULES.autoClicksPerSec * dt);
@@ -917,11 +913,11 @@
         s.eff[id] = n ? 0 : 1;
         continue;
       }
-      const need = Object.keys(d.cons).map((r) => [r, consOf(s, id, r) * n * dt]);
+      const need = keys(d.cons).map((r) => [r, consOf(s, id, r) * n * dt]);
       let e = 1;
       for (const [r, v] of need) if (v > 0) e = Math.min(e, s.res[r] / v);
       e = Math.max(0, Math.min(1, e));
-      const out = Object.keys(d.prod ?? {}).map((r) => [r, prodOf(s, id, r) * n * dt * e]);
+      const out = keys(d.prod ?? {}).map((r) => [r, prodOf(s, id, r) * n * dt * e]);
       const made = d.makes ? makesOf(s, id) * Math.floor(n) * dt * e : 0;
       for (const [r, v] of need) s.res[r] -= v * e;
       for (const [r, v] of out) add(s, r, v);
@@ -1080,7 +1076,7 @@
 
   // src/core/state.ts
   var SAVE_VERSION = 1;
-  var zero = (keys) => Object.fromEntries(keys.map((k) => [k, 0]));
+  var zero = (keys2) => Object.fromEntries(keys2.map((k) => [k, 0]));
   function newState(now = Date.now()) {
     return {
       v: SAVE_VERSION,
@@ -1634,7 +1630,7 @@
     beltPass("front");
     for (const id of ["moon", "giant"]) orbit(id, "front");
     x.font = '11px "JetBrains Mono", ui-monospace, monospace';
-    const label2 = (id, px, py, rad) => {
+    const label22 = (id, px, py, rad) => {
       const lx = px + rad + 10, ly = py - rad - 8;
       x.strokeStyle = "rgba(170,180,230,0.35)";
       x.lineWidth = 1;
@@ -1660,7 +1656,7 @@
         x.lineTo(px, py + rad * 0.3);
         x.lineTo(px + rad * 0.5, py - rad * 0.3);
         x.stroke();
-        label2("core", px, py, rad);
+        label22("core", px, py, rad);
       } else if (id === "giant") {
         const rad = 10;
         const ring = (h) => {
@@ -1703,7 +1699,7 @@
           litSphere(x, mx, my, 1.8, cx, cy, ["#ffffff", mc, "#1c1a24"]);
           x.globalAlpha = 1;
         }
-        label2(id, px, py, rad);
+        label22(id, px, py, rad);
       } else if (id === "moon") {
         const rad = 5.5;
         litSphere(x, px, py, rad, cx, cy, ["#f4fbff", "#a9d6e6", "#20323f"]);
@@ -1714,7 +1710,7 @@
         x.lineTo(px + rad * 0.2, py + rad * 0.3);
         x.lineTo(px + rad * 0.6, py - rad * 0.1);
         x.stroke();
-        label2(id, px, py, rad);
+        label22(id, px, py, rad);
       } else {
         const rad = 4;
         litSphere(x, px, py, rad, cx, cy, ["#d9b394", "#8a6a55", "#2a1f1d"]);
@@ -1723,7 +1719,7 @@
         x.beginPath();
         x.arc(px + 1.5, py - 1.5, on ? 1.4 : 0.9, 0, 7);
         x.fill();
-        label2(id, px, py, rad);
+        label22(id, px, py, rad);
       }
       x.globalAlpha = 1;
       if (s.loc === id && !s.travel) {
@@ -1746,7 +1742,7 @@
           x.fillRect(qx + Math.sin(i * 7.1) * 3, qy + Math.cos(i * 3.3) * 2, 1.4, 1.4);
         }
       } else litSphere(x, px, py, 3.2, cx, cy, ["#ffd9b8", "#b5603c", "#2a1410"]);
-      label2("ione", px, py, 3.2);
+      label22("ione", px, py, 3.2);
     }
     if (locOpen(s, "kuiper")) {
       for (let i = 0; i < 120; i++) {
@@ -1757,7 +1753,7 @@
       }
       const [px, py] = P(bodyPos("kuiper", time));
       litSphere(x, px, py, 2.4, cx, cy, ["#ffffff", "#bfe3f0", "#1d2d36"]);
-      label2("kuiper", px, py, 2.4);
+      label22("kuiper", px, py, 2.4);
     }
     if (locOpen(s, "dust")) {
       const rr = L.dust.orbit * sc;
@@ -1778,7 +1774,7 @@
       x.beginPath();
       x.arc(px, py, 1.6, 0, 7);
       x.fill();
-      label2("dust", px, py, 2);
+      label22("dust", px, py, 2);
     }
     if (!(s.chapterDone >= 1 && (s.star.stage >= 1 || s.star.done))) {
       const [px, py] = P(bodyPos("sun", time));
@@ -1951,8 +1947,8 @@
   }
   var starTex = null;
   var starTexKey = "";
-  function bakeStar(px, stage2) {
-    const p = PAL[stage2], out = [];
+  function bakeStar(px, stage22) {
+    const p = PAL[stage22], out = [];
     for (const off of [0, 37.7]) {
       const cv = document.createElement("canvas");
       cv.width = cv.height = px;
@@ -1964,7 +1960,7 @@
         const k = 1 / (0.35 + mu), su = u * k * p.freq + off, sv = v * k * p.freq + off * 0.6;
         const cell = 1 - Math.abs(2 * sfbm(su, sv) - 1);
         const big = sfbm(u * 1.6 + off + 9, v * 1.6 + 4, 3);
-        const limb = stage2 === "ms" ? 0.4 + 0.55 * Math.pow(mu, 0.5) : 0.22 + 0.74 * Math.pow(mu, 0.8);
+        const limb = stage22 === "ms" ? 0.4 + 0.55 * Math.pow(mu, 0.5) : 0.22 + 0.74 * Math.pow(mu, 0.8);
         let b = limb * (1 + p.contrast * (cell * 0.75 + big * 0.5 - 0.62));
         b = Math.max(0, Math.min(1.15, b));
         const t1 = Math.min(1, b), col = t1 < 0.55 ? p.edge.map((e, q) => lerp(e, p.mid[q], t1 / 0.55)) : p.mid.map((m, q) => lerp(m, p.core[q], (t1 - 0.55) / 0.45));
@@ -2175,8 +2171,8 @@
     x.fillStyle = "rgba(176,181,212,0.85)";
     x.fillText(sub, 14, 38);
   }
-  function drawOnion(x, W, H, m, stage2, title, tt) {
-    const L2 = LAYERS[stage2];
+  function drawOnion(x, W, H, m, stage22, title, tt) {
+    const L2 = LAYERS[stage22];
     if (!L2) return;
     const r = Math.min(m * 0.17, 74), ox = W - r - 18, oy = H - r - 22;
     x.save();
@@ -2269,7 +2265,7 @@
   var rgb = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
   var secTex = null;
   var secKey = "";
-  function drawSection(c, stage2, time, collapse, labels) {
+  function drawSection(c, stage22, time, collapse, labels) {
     const dpr = Math.min(2, devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight;
     if (!W || !H) return;
     if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) {
@@ -2284,9 +2280,9 @@
       starBgKey = key;
     }
     x.drawImage(starBg, 0, 0, W, H);
-    const Ls = LAYERS[stage2];
+    const Ls = LAYERS[stage22];
     if (!Ls) return;
-    const tt = reduce ? 0 : time, p = PAL[stage2] ?? PAL.si;
+    const tt = reduce ? 0 : time, p = PAL[stage22] ?? PAL.si;
     const k = collapse >= 0 ? 1 - collapse / 30 : 0;
     const r = Math.min(H * 0.36, W * 0.24);
     const ox = Math.max(r + 40, W * 0.36) + (k ? Math.sin(tt * 47) * k * 2 : 0), oy = H * 0.56;
@@ -2299,9 +2295,9 @@
     x.beginPath();
     x.arc(ox, oy, r * 1.9, 0, 7);
     x.fill();
-    const px = Math.min(720, Math.round(r * 2 * dpr)), sk = `${stage2}:${px}`;
+    const px = Math.min(720, Math.round(r * 2 * dpr)), sk = `${stage22}:${px}`;
     if (!secTex || secKey !== sk) {
-      secTex = bakeStar(px, stage2);
+      secTex = bakeStar(px, stage22);
       secKey = sk;
     }
     x.save();
@@ -2617,7 +2613,7 @@
   var KEY = "sepot-horizontu";
   var $ = (id) => document.getElementById(id);
   var SUP2 = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
-  var esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]).replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, (m) => `<sup>${[...m].map((ch) => SUP2[ch]).join("")}</sup>`).replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, (m) => `<span class="exp">${m}</span>`).replace(/(?<=\d)[ \u00A0\u202F](?=\d{3}(?!\d))/g, '<span class="ts"> </span>');
+  var esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]).replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, (m) => `<sup>${[...m].map((ch) => SUP2[ch]).join("")}</sup>`).replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, (m) => `<span class="exp">${m}</span>`).replace(/(?<=\d)[   ](?=\d{3}(?!\d))/g, '<span class="ts"> </span>');
   var S;
   var tab = "build";
   var buyMax = 1;
@@ -2797,7 +2793,10 @@
     } else if (!S.star.done) {
       rows.push([t("ui.stats.stage"), `${S.star.stage + 1} / ${STAGES.length}`], [t("ui.stats.cov"), pct(coverage(S))]);
       for (const id of STAR_BUILDINGS2.filter((id2) => S.b[id2] >= 1)) {
-        if (id === "swarmfab" && !S.off[id]) { rows.push([t(`b.${id}.name`), t("ui.fabRate", { n: num(S.fab?.made ?? 0) })]); continue; }
+        if (id === "swarmfab" && !S.off[id]) {
+          rows.push([t(`b.${id}.name`), t("ui.fabRate", { n: num(S.fab?.made ?? 0) })]);
+          continue;
+        }
         rows.push([t(`b.${id}.name`), S.off[id] ? t("ui.stopped") : t("ui.running", { n: Math.round((S.eff[id] ?? 1) * 100) })]);
       }
     }
@@ -2856,7 +2855,7 @@
         if (!isUnlocked(S, id)) continue;
         const conv = !!B[id].cons || id === "swarmfab";
         h += `<div class="item" data-b="${id}"><h3>${esc(t(`b.${id}.name`))} <span class="n" data-f="n"></span></h3><p>${esc(t(`b.${id}.desc`))}</p><div class="eff" data-f="eff"></div><div class="cost" data-f="cost"></div>
-        <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
+      <div class="act"><button class="btn" data-buy="${id}">${esc(t("ui.buy"))}</button>${conv ? `<button class="btn ghost" data-toggle="${id}"></button>` : ""}${id === "swarmfab" ? `<button class="btn ghost" data-sell="${id}"></button>` : ""}</div></div>`;
       }
       h += "</div>";
     } else if (tab === "research") {
@@ -2891,18 +2890,18 @@
     let h = `${S.star.done ? "" : '<div class="starbox"><canvas id="starc"></canvas></div>'}<ol class="ladder">${ladder}</ol>`;
     if (S.star.done) return h + `<div class="stagecard"><p>${esc(t("ui.star.remnant"))}</p></div>`;
     h += `<div class="stagecard">
-    <div class="sc-head"><h3 data-f="name"></h3><span class="tag mono" data-f="of"></span></div>
-    <p class="burn"><span class="dim">${esc(t("ui.star.burn"))}</span> <span data-f="burn"></span></p>
-    <dl class="sgrid" data-f="grid"></dl>
-    <div class="sprog"><div class="sp-head"><span class="dim">${esc(t("ui.star.progress"))}</span><span class="mono" data-f="ptext"></span></div><div class="bar"><b data-f="prog"></b></div></div>
-    <div class="ready"><span class="dim">${esc(t("ui.star.ready"))}</span><ul class="checks" data-f="checks"></ul></div>
-    <div class="row"><button class="btn" data-adv="1"></button><span class="dim" data-f="wait"></span></div>
-  </div>`;
+  <div class="sc-head"><h3 data-f="name"></h3><span class="tag mono" data-f="of"></span></div>
+  <p class="burn"><span class="dim">${esc(t("ui.star.burn"))}</span> <span data-f="burn"></span></p>
+  <dl class="sgrid" data-f="grid"></dl>
+  <div class="sprog"><div class="sp-head"><span class="dim">${esc(t("ui.star.progress"))}</span><span class="mono" data-f="ptext"></span></div><div class="bar"><b data-f="prog"></b></div></div>
+  <div class="ready"><span class="dim">${esc(t("ui.star.ready"))}</span><ul class="checks" data-f="checks"></ul></div>
+  <div class="row"><button class="btn" data-adv="1"></button><span class="dim" data-f="wait"></span></div>
+</div>`;
     if (S.r.redesign) h += `<div class="stagecard rebuild">
-    <div class="sc-head"><h3>${esc(t("ui.rebuild.title"))}</h3><span class="tag mono" data-f="pts"></span></div>
-    <p data-f="rb"></p><p class="dim" data-f="rbnext"></p>
-    <div class="row"><button class="btn ghost" data-rebuild="1">${esc(t("ui.rebuild.btn"))}</button></div>
-  </div>`;
+  <div class="sc-head"><h3>${esc(t("ui.rebuild.title"))}</h3><span class="tag mono" data-f="pts"></span></div>
+  <p data-f="rb"></p><p class="dim" data-f="rbnext"></p>
+  <div class="row"><button class="btn ghost" data-rebuild="1">${esc(t("ui.rebuild.btn"))}</button></div>
+</div>`;
     return h;
   }
   function updateStar() {
@@ -2986,14 +2985,14 @@
   }
   function settingsHTML() {
     return `<div class="settings">
-      <section><h3>${esc(t("ui.settings.sound"))}</h3><div class="row"><button class="btn ghost" data-act="sound"></button></div>
-        <div class="vols">${VOL_KEYS.map((k) => `<label class="vol" for="vol-${k}"><span>${esc(t("ui.settings.vol." + k))}</span><input type="range" id="vol-${k}" data-vol="${k}" min="0" max="100" step="5" value="${Math.round(volOf(k) * 100)}"><output class="mono" for="vol-${k}">${Math.round(volOf(k) * 100)} %</output></label>`).join("")}</div></section>
-      <section><h3>${esc(t("ui.settings.save"))}</h3><div class="row"><button class="btn ghost" data-act="save">${esc(t("ui.settings.saveNow"))}</button></div>
-        <p style="margin-top:8px">${esc(t("ui.settings.offlineRule"))}</p></section>
-      <section><h3>${esc(t("ui.settings.export"))}</h3><p>${esc(t("ui.settings.exportHint"))}</p><textarea id="exportText" readonly></textarea><div class="row"><button class="btn ghost" data-act="export">${esc(t("ui.settings.export"))}</button><button class="btn ghost" data-act="copy">${esc(t("ui.settings.copy"))}</button></div></section>
-      <section><h3>${esc(t("ui.settings.import"))}</h3><p>${esc(t("ui.settings.importHint"))}</p><textarea id="importText"></textarea><div class="row"><button class="btn ghost" data-act="import">${esc(t("ui.settings.import"))}</button></div></section>
-      <section><h3>${esc(t("ui.settings.about"))}</h3><p>${esc(t("ui.settings.aboutText"))}</p><p class="mono">${esc(t("ui.settings.version", { v: VERSION }))}</p><div class="row"><button class="btn ghost" data-act="reset">${esc(t("ui.settings.reset"))}</button></div></section>
-    </div>`;
+    <section><h3>${esc(t("ui.settings.sound"))}</h3><div class="row"><button class="btn ghost" data-act="sound"></button></div>
+      <div class="vols">${VOL_KEYS.map((k) => `<label class="vol" for="vol-${k}"><span>${esc(t("ui.settings.vol." + k))}</span><input type="range" id="vol-${k}" data-vol="${k}" min="0" max="100" step="5" value="${Math.round(volOf(k) * 100)}"><output class="mono" for="vol-${k}">${Math.round(volOf(k) * 100)} %</output></label>`).join("")}</div></section>
+    <section><h3>${esc(t("ui.settings.save"))}</h3><div class="row"><button class="btn ghost" data-act="save">${esc(t("ui.settings.saveNow"))}</button></div>
+      <p style="margin-top:8px">${esc(t("ui.settings.offlineRule"))}</p></section>
+    <section><h3>${esc(t("ui.settings.export"))}</h3><p>${esc(t("ui.settings.exportHint"))}</p><textarea id="exportText" readonly></textarea><div class="row"><button class="btn ghost" data-act="export">${esc(t("ui.settings.export"))}</button><button class="btn ghost" data-act="copy">${esc(t("ui.settings.copy"))}</button></div></section>
+    <section><h3>${esc(t("ui.settings.import"))}</h3><p>${esc(t("ui.settings.importHint"))}</p><textarea id="importText"></textarea><div class="row"><button class="btn ghost" data-act="import">${esc(t("ui.settings.import"))}</button></div></section>
+    <section><h3>${esc(t("ui.settings.about"))}</h3><p>${esc(t("ui.settings.aboutText"))}</p><p class="mono">${esc(t("ui.settings.version", { v: VERSION }))}</p><div class="row"><button class="btn ghost" data-act="reset">${esc(t("ui.settings.reset"))}</button></div></section>
+  </div>`;
   }
   function openSettings() {
     $("drawerTitle").textContent = t("ui.tabs.settings");
@@ -3098,12 +3097,12 @@
     $("logTitle").textContent = t("ui.journal");
     $("logCount").textContent = String(S.log.length);
     $("log").innerHTML = S.log.map((e, i) => {
-      const day = t("ui.day", { n: e.day.toLocaleString("cs-CZ") }), label2 = e.kind === "story" ? `${t("ui.report")} \xB7 ${day}` : day;
+      const day = t("ui.day", { n: e.day.toLocaleString("cs-CZ") }), label22 = e.kind === "story" ? `${t("ui.report")} \xB7 ${day}` : day;
       const body = e.key === "ui.offline" && e.vars?.list ? `${esc(t("ui.offlineHead", { t: String(e.vars.t) }))}<dl class="gains">${String(e.vars.list).split(/\n|, /).map((row) => {
         const [r, v] = row.split(" +");
         return `<dt>${esc(r)}</dt><dd>+${esc(v ?? "")}</dd>`;
       }).join("")}</dl>` : esc(t(e.key, e.vars));
-      return `<div class="entry ${e.kind}${fresh && i === 0 ? " new" : ""}"><span class="t">${esc(label2.toUpperCase())}</span>${body}</div>`;
+      return `<div class="entry ${e.kind}${fresh && i === 0 ? " new" : ""}"><span class="t">${esc(label22.toUpperCase())}</span>${body}</div>`;
     }).join("");
   }
   function renderChapters() {
@@ -3111,8 +3110,8 @@
     const cur = S.chapterDone;
     const html = `<ol>${names.map((n, i) => {
       const cls = i < cur ? "done" : i === cur ? "cur" : "";
-      const label2 = i <= cur ? t("ui.chapters." + n) : t("ui.chapters.locked");
-      return `<li class="${cls}"><span class="num">${i + 1}</span>${esc(label2)}</li>`;
+      const label22 = i <= cur ? t("ui.chapters." + n) : t("ui.chapters.locked");
+      return `<li class="${cls}"><span class="num">${i + 1}</span>${esc(label22)}</li>`;
     }).join("")}</ol>`;
     const el = $("chapters");
     if (el.innerHTML !== html) el.innerHTML = html;

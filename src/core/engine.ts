@@ -1,252 +1,541 @@
 // Čistá herní logika bez prohlížeče. Dá se spustit v Node (simulace) i na mobilu.
-import {
-  B, BUILDING_IDS, EVENTS, EVENT_IDS, FACTS, L, R, RESOURCES, RULES, STORY,
-  type Amounts, type BuildingId, type EventId, type LocationId, type Res, type ResearchId,
-} from './defs.js';
 import type { State } from './state.js';
+import { type Amounts, type BuildingId, type EventId, type LocationId, type Res, type ResearchId, B, BUILDING_IDS, EVENTS, EVENT_IDS, FACTS, L, PRESTIGE, R, RESOURCES, RULES, STAGES, STAR, STORY } from './defs.js';
 
-type Rates = Record<Res, number>;
+const keys = <T extends object>(o: T) => Object.keys(o) as (keyof T)[];
+
 export const DYSON_BOOST = 1.1;
-// převodníky; u taveb výzkum zvyšuje propustnost (vstup i výstup), u laboratoří účinnost
-export const CONVERTERS: BuildingId[] = ['smelter', 'forge', 'lab', 'qcomp', 'replicator'];
-const CONVERTER_SCALES: Partial<Record<BuildingId, boolean>> = { smelter: true, forge: true };
-const zeroRates = (): Rates => ({ ore: 0, metal: 0, energy: 0, data: 0 });
-
-/** Násobič výkonu budovy ze všech výzkumů, míst a roje. */
-export function mult(s: State, id: BuildingId): number {
+export const DYSON_CROWD = 1.03;
+export const DYSON_CH1_CHEAP = 20;
+export const DYSON_CH1_DISCOUNT = 0.4;
+export const CONVERTERS: BuildingId[] = ["smelter", "forge", "lab", "qcomp", "replicator", "lifter", "separator", "seismo"];
+export const CONVERTER_SCALES = { smelter: true, forge: true, lifter: true, separator: true, seismo: true };
+const zeroRates = (): Record<Res, number> => ({ ore: 0, metal: 0, energy: 0, data: 0, plasma: 0 });
+export function stageDef(s: State) {
+  return STAGES[Math.min(s.star.stage, STAGES.length - 1)];
+}
+export function luminosity(s: State) {
+  return s.star.done ? 0 : stageDef(s).L;
+}
+export function liftEff(s: State) {
+  return (s.r.rotlift ? 3 : 1) * (s.r.magsail ? 2 : 1) * (s.visited.kuiper ? 3 : 1);
+}
+export function liftJ(s: State) {
+  return STAR.G * STAR.massKg / (stageDef(s).R * STAR.rSun) * STAR.liftShare / liftEff(s);
+}
+export function metallicity(s: State) {
+  return stageDef(s).z;
+}
+export function dysonRaw(s: State) {
+  return s.b.dyson * B.dyson.prod.energy * mult(s, "dyson");
+}
+export function coverage(s: State) {
+  const Lw = luminosity(s);
+  return Lw ? 1 - Math.exp(-dysonRaw(s) / Lw) : 0;
+}
+export function dysonSat(s: State) {
+  const raw = dysonRaw(s);
+  return raw > 0 ? luminosity(s) * coverage(s) / raw : 1;
+}
+export function prestigeMult(s: State) {
+  return 1 + PRESTIGE.per * s.p.pts;
+}
+export function prestigeTarget(s: State) {
+  return s.p.run > PRESTIGE.metalUnit ? Math.floor(PRESTIGE.perOrder * Math.log10(s.p.run / PRESTIGE.metalUnit)) : 0;
+}
+export function prestigeGain(s: State) {
+  return Math.max(0, prestigeTarget(s) - s.p.pts);
+}
+export function mult(s: State, id: BuildingId) {
   const r = s.r, v = s.visited;
   let m = 1;
   switch (id) {
-    case 'drone': if (r.swarm) m *= 2; if (r.swarm2) m *= 3; if (r.nano) m *= 4; break;
-    case 'drill': if (r.swarm2) m *= 3; if (r.nano) m *= 4; break;
-    case 'catcher': if (r.nano) m *= 4; break;
-    case 'smelter': if (r.arc) m *= 2; if (r.induct) m *= 4; break;
-    case 'forge': if (r.plasma) m *= 3; if (r.nano) m *= 4; if (r.induct) m *= 4; break;
-    case 'lab': if (r.lab2) m *= 2; if (v.moon) m *= 1.5; if (r.cryo) m *= 3; if (r.supercond) m *= 2; if (r.quantum) m *= 4; break;
-    case 'replicator': if (r.nano) m *= 3; break;
+    case "drone":
+      if (r.swarm) m *= 2;
+      if (r.swarm2) m *= 3;
+      if (r.nano) m *= 4;
+      break;
+    case "drill":
+      if (r.swarm2) m *= 3;
+      if (r.nano) m *= 4;
+      break;
+    case "catcher":
+      if (r.nano) m *= 4;
+      break;
+    case "smelter":
+      if (r.arc) m *= 2;
+      if (r.induct) m *= 4;
+      break;
+    case "forge":
+      if (r.plasma) m *= 3;
+      if (r.nano) m *= 4;
+      if (r.induct) m *= 4;
+      break;
+    case "lab":
+      if (r.lab2) m *= 2;
+      if (v.moon) m *= 1.5;
+      if (r.cryo) m *= 3;
+      if (r.supercond) m *= 2;
+      if (r.quantum) m *= 4;
+      break;
+    case "replicator":
+      if (r.nano) m *= 3;
+      break;
+    case "seismo":
+      if (r.census) m *= 2;
+      if (r.seis2) m *= 10;
+      if (r.pulse2) m *= 3;
+      if (r.silicon) m *= 10;
+      break;
+    case "lifter":
+      if (r.coil) m *= 3;
+      if (r.rotlift) m *= 3;
+      if (r.magsail) m *= 2;
+      if (v.kuiper) m *= 3;
+      break;
+    case "separator":
+      if (r.mg) m *= 5;
+      if (r.iron) m *= 5;
+      if (v.ione) m *= 3;
+      if (v.core) m *= 4;
+      break;
+  }
+  if (id === "lab" || id === "qcomp") {
+    if (r.silicon) m *= 10;
+  }
+  if (id === "lifter" || id === "separator" || id === "seismo") {
+    m *= Math.pow(DYSON_BOOST, s.b.dyson) * prestigeMult(s);
+    if (id === "lifter" && s.star.collapse >= 0) m *= STAR.collapseLift;
   }
   if (B[id].prod?.energy) {
-    if (id === 'solar' && r.thinfilm) m *= 2;
-    if (id === 'mirror' && r.optics) m *= 3;
-    if (id === 'dyson' && r.statite) m *= 2;
-    if (id === 'dyson' && r.beam) m *= 2;
-    if (id === 'dyson' && r.lagrange) m *= 2;
+    if (id === "solar" && r.thinfilm) m *= 2;
+    if (id === "mirror" && r.optics) m *= 3;
+    if (id === "dyson" && r.statite) m *= 2;
+    if (id === "dyson" && r.beam) m *= 2;
+    if (id === "dyson" && r.lagrange) m *= 2;
+    if (id === "dyson" && r.sail) m *= 4;
+    if (id === "dyson" && r.highorbit) m *= 2;
+    if (id === "dyson" && r.carbon) m *= 5;
+    if (id === "dyson" && r.neon) m *= 3;
+    if (id === "dyson" && v.dust) m *= 3;
+    if (id === "dyson") m *= prestigeMult(s);
     if (v.giant) m *= 2;
     if (r.supercond) m *= 2;
     m *= Math.pow(DYSON_BOOST, s.b.dyson);
   }
   return m;
 }
-
-export function baseOreRate(s: State): number {
-  return (['drone', 'drill', 'catcher'] as BuildingId[]).reduce((a, id) => a + s.b[id] * B[id].prod!.ore! * mult(s, id), 0);
+export function baseOreRate(s: State) {
+  return (["drone", "drill", "catcher"] as BuildingId[]).reduce((a, id) => a + s.b[id] * B[id].prod.ore * mult(s, id), 0);
 }
-
-export function clickPower(s: State): number {
+export function clickPower(s: State) {
   let p = 1;
   if (s.r.vib) p *= 3;
   if (s.r.vib2) p *= 5;
   if (s.r.resonance) p += baseOreRate(s) * 0.05;
   return p;
 }
-
-export function reactorW(s: State): number {
+export function reactorW(s: State) {
   return RULES.baseReactorW * (s.r.supercond ? 2 : 1);
 }
-
-/** Hrubá výroba energie ve W – z ní se počítá Kardaševovo číslo. */
-export function powerW(s: State): number {
-  let w = reactorW(s);
-  for (const id of BUILDING_IDS) {
-    const e = B[id].prod?.energy;
-    if (e && s.b[id]) w += e * s.b[id] * mult(s, id);
+export function prodOf(s: State, id: BuildingId, r: Res) {
+  const base = B[id].prod?.[r];
+  if (!base) return 0;
+  let v = base * mult(s, id);
+  if (id === "separator") v *= metallicity(s);
+  if (id === "dyson") v *= dysonSat(s);
+  return v;
+}
+export function consOf(s: State, id: BuildingId, r: Res) {
+  if (id === "swarmfab") return r === "metal" || r === "energy" ? makesOf(s, id) * fabPriceFrac(s) * (cost(s, "dyson")[r] ?? 0) : 0;
+  const base = B[id].cons?.[r];
+  if (!base) return 0;
+  let v = base * (CONVERTER_SCALES[id] ? mult(s, id) : 1);
+  if (id === "lifter" && r === "energy") v *= liftJ(s);
+  return v;
+}
+export function makesOf(s: State, id: BuildingId) {
+  const mk = B[id].makes;
+  return mk ? mk.rate * mult(s, id) : 0;
+}
+export const FAB_MAX = 0.5;
+export const fabPriceFrac = (s: State) => s.r.mg ? 0.25 : 0.5;
+export function fabTick(s: State, dt: number) {
+  const n = Math.floor(s.b.swarmfab);
+  if (!n || s.off.swarmfab) {
+    s.eff.swarmfab = n ? 0 : 1;
+    s.fab = { ...s.fab ?? {}, m: 0, e: 0, made: 0, lim: null, target: null };
+    return;
   }
+  const { p, c } = rates(s);
+  const own = (r) => consOf(s, "swarmfab", r) * n * (s.eff.swarmfab ?? 1);
+  const netM = Math.max(0, p.metal - (c.metal - own("metal"))), netE = Math.max(0, p.energy - (c.energy - own("energy")));
+  const needM = consOf(s, "swarmfab", "metal") * n, needE = consOf(s, "swarmfab", "energy") * n;
+  const e = Math.max(0, Math.min(1, needM ? FAB_MAX * netM / needM : 1, needE ? FAB_MAX * netE / needE : 1));
+  const made = makesOf(s, "swarmfab") * n * e * dt, m = needM * e * dt, en = needE * e * dt;
+  s.res.metal = Math.max(0, s.res.metal - m);
+  s.res.energy = Math.max(0, s.res.energy - en);
+  s.b.dyson += made;
+  s.bought.dyson = (s.bought.dyson ?? 0) + made;
+  s.eff.swarmfab = e;
+  const rm = needM ? FAB_MAX * netM / needM : 1, re = needE ? FAB_MAX * netE / needE : 1;
+  const lim = e >= 0.995 ? null : rm <= re ? "metal" : "energy";
+  const prev: Partial<NonNullable<State["fab"]>> = s.fab ?? {};
+  s.fab = { m: m / dt, e: en / dt, made: made / dt, lim, target: null, bank: prev.bank ?? { metal: 0, energy: 0, plasma: 0 }, built: prev.built ?? { lifter: 0, separator: 0 } };
+  chainTick(s, dt, lim);
+}
+// Loděnice dostavuje i těžební řetězec, když ji brzdí kov: chybí-li plazma, trychtýř, jinak separátor.
+// Bere jen podíl čistého přírůstku, který zbyde po kolektorech, takže zásoby nevyčerpá.
+export const CHAIN_SHARE = 0.3;
+export function chainTarget(s: State) {
+  if (!s.b.lifter || !s.b.separator || !isUnlocked(s, "lifter") || !isUnlocked(s, "separator")) return null;
+  if (s.off.lifter || s.off.separator) return null;
+  // separátor jen když plazma přibývá (aspoň 10 % výroby trychtýřů), jinak trychtýř
+  const { p, c } = rates(s);
+  if (p.plasma - c.plasma > 0.1 * p.plasma) return "separator";
+  return (s.eff.lifter ?? 1) < 0.97 ? null : "lifter";
+}
+export function chainTick(s: State, dt, lim) {
+  const f = s.fab, target = lim === "metal" ? chainTarget(s) : null;
+  f.target = target;
+  if (!target) return;
+  const { p, c } = rates(s);
+  for (const r of ["metal", "energy", "plasma"]) {
+    const v = Math.max(0, p[r] - c[r]) * CHAIN_SHARE * dt;
+    const take = Math.min(v, s.res[r]);
+    s.res[r] -= take;
+    f.bank[r] += take;
+  }
+  for (let k = 0; k < 2; k++) {
+    const cst = cost(s, target);
+    if (!keys(cst).every((r) => f.bank[r] >= cst[r])) break;
+    for (const r of keys(cst)) (f.bank as Record<string, number>)[r] -= cst[r];
+    s.b[target] += 1;
+    s.bought[target] = (s.bought[target] ?? 0) + 1;
+    f.built[target] += 1;
+  }
+  // co se do řetězce nepoužije (jiné suroviny než cíl), se vrací do skladu
+  const need = cost(s, target);
+  for (const r of ["metal", "energy", "plasma"]) if (!(r in need) && f.bank[r] > 0) {
+    s.res[r] += f.bank[r];
+    f.bank[r] = 0;
+  }
+}
+export function powerW(s: State) {
+  let w = reactorW(s);
+  for (const id of BUILDING_IDS) if (s.b[id] && B[id].prod?.energy) w += prodOf(s, id, "energy") * s.b[id];
   return w;
 }
-
-export function kardashev(s: State): number {
+export function kardashev(s: State) {
   return (Math.log10(Math.max(1, powerW(s))) - 6) / 10;
 }
-
-/** Výroba a spotřeba za sekundu při poslední známé účinnosti převodníků. */
-export function rates(s: State): { p: Rates; c: Rates } {
+export const effOf = (s: State, id: BuildingId) => B[id].cons ? s.off[id] ? 0 : s.eff[id] ?? 1 : 1;
+export function rates(s: State) {
   const p = zeroRates(), c = zeroRates();
   p.energy += reactorW(s);
   for (const id of BUILDING_IDS) {
-    const d = B[id], n = s.b[id];
+    const n = s.b[id];
     if (!n) continue;
-    const e = d.cons ? (s.off[id] ? 0 : (s.eff[id] ?? 1)) : 1;
-    const m = mult(s, id);
-    for (const r of Object.keys(d.prod ?? {}) as Res[]) p[r] += d.prod![r]! * n * m * e;
-    // převodníky: výzkum zvyšuje propustnost, takže roste i spotřeba (zachování hmoty)
-    for (const r of Object.keys(d.cons ?? {}) as Res[]) c[r] += d.cons![r]! * n * (CONVERTER_SCALES[id] ? m : 1) * e;
+    const e = effOf(s, id);
+    for (const r of keys(B[id].prod ?? {})) p[r] += prodOf(s, id, r) * n * e;
+    for (const r of keys(B[id].cons ?? {})) c[r] += consOf(s, id, r) * n * e;
   }
   if (s.r.auto) p.ore += clickPower(s) * RULES.autoClicksPerSec;
   return { p, c };
 }
-
-/** Násobek spotřeby převodníku: tavírny s výzkumem zpracují víc rudy, laboratoře jen zlepšují účinnost. */
-export function consScale(s: State, id: BuildingId): number { return CONVERTER_SCALES[id] ? mult(s, id) : 1; }
-
-/** Rozpis jednoho zdroje: kdo kolik vyrábí a kdo kolik spotřebuje (za sekundu). Klíče jsou id budov, 'reactor' a 'auto'. */
-export function rateParts(s: State, r: Res): { prod: [string, number][]; cons: [string, number][] } {
-  const prod: [string, number][] = [], cons: [string, number][] = [];
-  if (r === 'energy') prod.push(['reactor', reactorW(s)]);
+export function rateParts(s: State, r) {
+  const prod = [], cons = [];
+  if (r === "energy") prod.push(["reactor", reactorW(s)]);
   for (const id of BUILDING_IDS) {
-    const d = B[id], n = s.b[id];
+    const n = s.b[id];
     if (!n) continue;
-    const e = d.cons ? (s.off[id] ? 0 : (s.eff[id] ?? 1)) : 1;
-    const m = mult(s, id);
-    const pv = d.prod?.[r], cv = d.cons?.[r];
-    if (pv) prod.push([id, pv * n * m * e]);
-    if (cv) cons.push([id, cv * n * (CONVERTER_SCALES[id] ? m : 1) * e]);
+    const e = effOf(s, id);
+    const pv = prodOf(s, id, r), cv = consOf(s, id, r);
+    if (pv) prod.push([id, pv * n * e]);
+    if (cv) cons.push([id, cv * n * e]);
   }
-  if (r === 'ore' && s.r.auto) prod.push(['auto', clickPower(s) * RULES.autoClicksPerSec]);
+  if (r === "ore" && s.r.auto) prod.push(["auto", clickPower(s) * RULES.autoClicksPerSec]);
   return { prod, cons };
 }
-
-function add(s: State, r: Res, v: number) { s.res[r] += v; s.total[r] += v; }
-
-export function cost(s: State, id: BuildingId, n = s.bought[id] ?? Math.floor(s.b[id])): Amounts {
+export function add(s: State, r: Res, v: number) {
+  s.res[r] += v;
+  s.total[r] += v;
+}
+export function cost(s: State, id: BuildingId, n = s.bought[id] ?? Math.floor(s.b[id])) {
   const d = B[id], o: Amounts = {};
-  for (const r of Object.keys(d.base) as Res[]) o[r] = d.base[r]! * Math.pow(d.growth, n);
+  const extra = id === "dyson" && s.p.base >= 0 ? Math.pow(DYSON_CROWD, Math.max(0, n - s.p.base)) : 1;
+  const ch1 = id === "dyson" && !s.chapterDone && n < DYSON_CH1_CHEAP ? DYSON_CH1_DISCOUNT : 1;
+  for (const r of keys(d.base)) o[r] = d.base[r] * Math.pow(d.growth, n) * extra * (r === "metal" ? ch1 : 1);
   return o;
 }
-export function affordable(s: State, c: Amounts): boolean {
-  return (Object.keys(c) as Res[]).every((r) => s.res[r] >= c[r]!);
+export function affordable(s: State, c: Amounts) {
+  return keys(c).every((r) => s.res[r] >= c[r]);
 }
-function pay(s: State, c: Amounts) { for (const r of Object.keys(c) as Res[]) s.res[r] -= c[r]!; }
-
-export function isUnlocked(s: State, id: BuildingId) { return B[id].unlock(s); }
-
-/** Postaví 1 kus, nebo co nejvíc (max). Vrací počet. */
-export function buy(s: State, id: BuildingId, max = false): number {
+export function pay(s: State, c: Amounts) {
+  for (const r of keys(c)) s.res[r] -= c[r];
+}
+export function isUnlocked(s: State, id: BuildingId) {
+  return B[id].unlock(s);
+}
+export function buy(s: State, id: BuildingId, max: boolean | number = false) {
   if (!isUnlocked(s, id)) return 0;
+  const limit = max === true ? 1e4 : typeof max === "number" ? max : 1;
+  if (limit > 1 && limit < 1e4 && previewMax(s, id, limit).count < limit) return 0;
   let k = 0;
-  while (k < (max ? 10000 : 1)) {
+  while (k < limit) {
     const c = cost(s, id);
     if (!affordable(s, c)) break;
-    pay(s, c); s.b[id] += 1; s.bought[id] = (s.bought[id] ?? 0) + 1; k++;
+    pay(s, c);
+    s.b[id] += 1;
+    s.bought[id] = (s.bought[id] ?? 0) + 1;
+    k++;
   }
   return k;
 }
-
-/** Cena a počet při nákupu "max" bez změny stavu. */
-export function previewMax(s: State, id: BuildingId): { count: number; total: Amounts } {
-  const res = { ...s.res }; let n = s.bought[id] ?? Math.floor(s.b[id]); let count = 0; const total: Amounts = {};
-  while (count < 10000) {
+export const SELL_REFUND = 0.5;
+export function sell(s: State, id: BuildingId, n = 1) {
+  let k = 0;
+  while (k < n && Math.floor(s.b[id]) >= 1) {
+    s.b[id] -= 1;
+    s.bought[id] = Math.max(0, (s.bought[id] ?? 1) - 1);
+    const c = cost(s, id);
+    for (const r of keys(c)) s.res[r] += c[r] * SELL_REFUND;
+    k++;
+  }
+  return k;
+}
+export function previewMax(s: State, id: BuildingId, limit = 1e4, all = false) {
+  const res = { ...s.res };
+  let n = s.bought[id] ?? Math.floor(s.b[id]);
+  let count = 0;
+  const total: Amounts = {};
+  while (count < limit) {
     const c = cost(s, id, n);
-    if (!(Object.keys(c) as Res[]).every((r) => res[r] >= c[r]!)) break;
-    for (const r of Object.keys(c) as Res[]) { res[r] -= c[r]!; total[r] = (total[r] ?? 0) + c[r]!; }
-    n++; count++;
+    if (!all && !keys(c).every((r) => res[r] >= c[r])) break;
+    for (const r of keys(c)) {
+      res[r] -= c[r];
+      total[r] = (total[r] ?? 0) + c[r];
+    }
+    n++;
+    count++;
   }
   return { count, total };
 }
-
-export function researchAvailable(s: State, id: ResearchId) { return !s.r[id] && (!R[id].req || R[id].req!(s)); }
-export function doResearch(s: State, id: ResearchId): boolean {
+export function researchAvailable(s: State, id: ResearchId) {
+  return !s.r[id] && (!R[id].req || R[id].req(s));
+}
+export function doResearch(s: State, id: ResearchId) {
   if (!researchAvailable(s, id) || !affordable(s, R[id].cost)) return false;
-  pay(s, R[id].cost); s.r[id] = true; return true;
-}
-
-export function travelTime(_s: State, id: LocationId) { return L[id].time; }
-export function canTravel(s: State, id: LocationId) {
-  return !!s.r.scan && !s.travel && id !== 'belt' && !s.visited[id] && s.res.energy >= L[id].cost;
-}
-export function depart(s: State, id: LocationId): boolean {
-  if (!canTravel(s, id)) return false;
-  s.res.energy -= L[id].cost;
-  s.travel = { from: s.loc, to: id, t: 0, total: id === 'belt' ? 8 : travelTime(s, id) };
+  pay(s, R[id].cost);
+  s.r[id] = true;
   return true;
 }
-
-export function eventReward(s: State, id: EventId): number {
+export function travelTime(_s: State, id) {
+  return L[id].time;
+}
+export function locationOpen(s: State, id: LocationId) {
+  return id !== "belt" && (!L[id].req || L[id].req(s) || !!s.visited[id]);
+}
+export function canTravel(s: State, id: LocationId) {
+  return !!s.r.scan && !s.travel && locationOpen(s, id) && !s.visited[id] && s.res.energy >= L[id].cost;
+}
+export function depart(s: State, id: LocationId) {
+  if (!canTravel(s, id)) return false;
+  s.res.energy -= L[id].cost;
+  s.travel = { from: s.loc, to: id, t: 0, total: id === "belt" ? 8 : travelTime(s, id) };
+  return true;
+}
+export function eventReward(s: State, id: EventId) {
   const ev = EVENTS[id];
   const { p } = rates(s);
   return Math.max(ev.min, p[ev.res] * ev.seconds);
 }
-export function claimEvent(s: State): { id: EventId; amount: number } | null {
+export function claimEvent(s: State) {
   if (!s.event) return null;
-  const id = s.event.id, amount = eventReward(s, id);
-  add(s, EVENTS[id].res, amount);
+  const id = s.event.id, amount2 = eventReward(s, id);
+  add(s, EVENTS[id].res, amount2);
   s.event = null;
   s.nextEvent = RULES.eventEverySec[0] + Math.random() * (RULES.eventEverySec[1] - RULES.eventEverySec[0]);
-  return { id, amount };
+  return { id, amount: amount2 };
 }
-
-export function mine(s: State): number {
-  const p = clickPower(s); add(s, 'ore', p); s.clicks++; return p;
+export function mine(s: State) {
+  const p = clickPower(s);
+  add(s, "ore", p);
+  s.clicks++;
+  return p;
 }
-
-/** Jeden krok simulace. Vrací nové záznamy deníku (klíče) pro zobrazení. */
-export function tick(s: State, dt: number, rng: () => number = Math.random): string[] {
-  // výrobci
-  add(s, 'energy', reactorW(s) * dt);
+export function tick(s: State, dt, rng = Math.random) {
+  add(s, "energy", reactorW(s) * dt);
   for (const id of BUILDING_IDS) {
     const d = B[id], n = s.b[id];
     if (!n || d.cons) continue;
-    const m = mult(s, id);
-    if (d.prod) for (const r of Object.keys(d.prod) as Res[]) add(s, r, d.prod[r]! * n * m * dt);
-    if (d.makes) s.b[d.makes.building] += d.makes.rate * Math.floor(n) * m * dt;
+    for (const r of keys(d.prod ?? {})) add(s, r, prodOf(s, id, r) * n * dt);
+    if (d.makes && !d.cons) s.b[d.makes.building] += makesOf(s, id) * Math.floor(n) * dt;
   }
-  if (s.r.auto) add(s, 'ore', clickPower(s) * RULES.autoClicksPerSec * dt);
-  // převodníky s účinností podle dostupnosti vstupu
+  if (s.r.auto) add(s, "ore", clickPower(s) * RULES.autoClicksPerSec * dt);
   for (const id of CONVERTERS) {
     const d = B[id], n = s.b[id];
-    if (!n || s.off[id]) { s.eff[id] = n ? 0 : 1; continue; }
-    const m = mult(s, id), throughput = CONVERTER_SCALES[id] ? m : 1;
-    let e = 1;
-    for (const r of Object.keys(d.cons!) as Res[]) {
-      const need = d.cons![r]! * n * throughput * dt;
-      if (need > 0) e = Math.min(e, s.res[r] / need);
+    if (!n || s.off[id]) {
+      s.eff[id] = n ? 0 : 1;
+      continue;
     }
+    const need = (keys(d.cons) as Res[]).map((r): [Res, number] => [r, consOf(s, id, r) * n * dt]);
+    let e = 1;
+    for (const [r, v] of need) if (v > 0) e = Math.min(e, s.res[r] / v);
     e = Math.max(0, Math.min(1, e));
-    for (const r of Object.keys(d.cons!) as Res[]) s.res[r] -= d.cons![r]! * n * throughput * dt * e;
-    for (const r of Object.keys(d.prod ?? {}) as Res[]) add(s, r, d.prod![r]! * n * m * dt * e);
-    if (d.makes) s.b[d.makes.building] += d.makes.rate * Math.floor(n) * m * dt * e; // replikátor staví podle dostupné energie
+    const out = (keys(d.prod ?? {}) as Res[]).map((r): [Res, number] => [r, prodOf(s, id, r) * n * dt * e]);
+    const made = d.makes ? makesOf(s, id) * Math.floor(n) * dt * e : 0;
+    for (const [r, v] of need) s.res[r] -= v * e;
+    for (const [r, v] of out) add(s, r, v);
+    if (id === "separator") {
+      const got = out.reduce((a, [, v]) => a + v, 0);
+      s.p.run += got;
+      s.p.total = (s.p.total ?? s.p.run - got) + got;
+    }
+    if (d.makes) s.b[d.makes.building] += made;
     s.eff[id] = e;
   }
-  // let
+  fabTick(s, dt);
   if (s.travel) {
     s.travel.t += dt;
-    // expedice: po příletu se bonus zapíše natrvalo a Vesper se vrátí k platformě
-    if (s.travel.t >= s.travel.total) { s.visited[s.travel.to] = true; s.loc = 'belt'; s.travel = null; }
+    if (s.travel.t >= s.travel.total) {
+      s.visited[s.travel.to] = true;
+      s.loc = "belt";
+      s.travel = null;
+    }
   }
-  // události
   if (s.event) {
     s.event.ttl -= dt;
-    if (s.event.ttl <= 0) { s.event = null; s.nextEvent = RULES.eventEverySec[0]; }
+    if (s.event.ttl <= 0) {
+      s.event = null;
+      s.nextEvent = RULES.eventEverySec[0];
+    }
   } else {
     s.nextEvent -= dt;
     if (s.nextEvent <= 0) {
       const ok = EVENT_IDS.filter((id) => EVENTS[id].unlock(s));
       if (ok.length) s.event = { id: ok[Math.floor(rng() * ok.length)], ttl: RULES.eventTtlSec };
-      else s.nextEvent = 90; // první událost přijde chvíli po odemčení
+      else s.nextEvent = 90;
+    }
+  }
+  if (s.chapterDone >= 1 && !s.star.done) {
+    const d = stageDef(s), lp = Math.log10(Math.max(1, stageValue(s))), ln = Math.log10(stageNeed(s));
+    if (s.star.p0 === void 0) s.star.p0 = Math.min(lp, ln - 1);
+    const pf = ln > s.star.p0 ? Math.max(0, Math.min(1, (lp - s.star.p0) / (ln - s.star.p0))) : 1;
+    const f0 = s.star.t / d.sec, speed = 1 + STAR.catchUp * Math.max(0, pf - f0);
+    s.star.t = Math.min(d.sec * Math.max(pf, f0), s.star.t + dt * speed, d.sec);
+    if (s.star.collapse >= 0) {
+      s.star.collapse -= dt;
+      if (s.star.collapse <= 0) supernova(s);
     }
   }
   s.time += dt;
-  if (!s.chapterDone && kardashev(s) >= RULES.chapter1K) s.chapterDone = 1;
+  const k = kardashev(s);
+  if (k > s.peakK) s.peakK = k;
+  if (!s.chapterDone && k >= RULES.chapter1K) s.chapterDone = 1;
+  if (s.chapterDone >= 1 && s.p.base < 0) s.p.base = Math.floor(s.b.dyson);
   return checkJournal(s);
 }
-
-export function checkJournal(s: State): string[] {
+export function clockYears(s: State) {
+  const d = stageDef(s);
+  return d.years / d.sec;
+}
+export const LAST_STAGE = STAGES.length - 1;
+export const stageByMetal = (s: State) => !!stageDef(s).needM;
+export const stageNeed = (s: State) => stageDef(s).needM ?? stageDef(s).needW;
+export const stageValue = (s: State) => stageByMetal(s) ? s.p.total ?? s.p.run : powerW(s);
+export function stageReady(s: State) {
+  const d = stageDef(s);
+  const time = s.star.t >= d.sec, power2 = stageValue(s) >= stageNeed(s);
+  const research = s.star.stage < LAST_STAGE || !!s.r.neutrino;
+  return { time, power: power2, research, ok: s.chapterDone >= 1 && !s.star.done && s.star.collapse < 0 && time && power2 && research };
+}
+export function redLoss(s: State) {
+  if (s.star.stage !== 0 || s.r.highorbit) return { dyson: 0, lifter: 0 };
+  return { dyson: Math.floor(s.b.dyson * STAR.redLoss), lifter: Math.floor(s.b.lifter) };
+}
+export function advanceStage(s: State) {
+  if (!stageReady(s).ok) return false;
+  if (s.star.stage >= LAST_STAGE) {
+    s.star.collapse = STAR.collapseSec;
+    return true;
+  }
+  const loss = redLoss(s);
+  if (loss.dyson || loss.lifter) {
+    s.b.dyson -= loss.dyson;
+    s.bought.dyson = Math.max(0, (s.bought.dyson ?? 0) - loss.dyson);
+    s.b.lifter -= loss.lifter;
+    s.bought.lifter = Math.max(0, (s.bought.lifter ?? 0) - loss.lifter);
+  }
+  s.star.stage++;
+  s.star.t = 0;
+  s.star.p0 = void 0;
+  return true;
+}
+export const STAR_BUILDINGS: BuildingId[] = ["dyson", "lifter", "separator", "seismo", "swarmfab"];
+export function supernova(s: State) {
+  const cov = coverage(s);
+  add(s, "energy", STAR.snEnergyJ * cov);
+  add(s, "metal", 2 * 1989e27 * cov);
+  for (const id of STAR_BUILDINGS) {
+    s.b[id] = 0;
+    s.bought[id] = 0;
+    s.off[id] = false;
+  }
+  s.res.plasma = 0;
+  s.star.collapse = -1;
+  s.star.done = true;
+  if (s.event?.id === "prominence" || s.event?.id === "flare") s.event = null;
+  if (s.chapterDone < 2) s.chapterDone = 2;
+}
+export function canRebuild(s: State) {
+  return !!s.r.redesign && !s.star.done && s.star.collapse < 0 && prestigeGain(s) >= 1;
+}
+export function rebuild(s: State) {
+  if (!canRebuild(s)) return 0;
+  const g = prestigeGain(s);
+  s.p.pts += g;
+  s.p.run = 0;
+  s.p.count++;
+  const keep = Math.max(0, s.p.base);
+  const left = { dyson: keep, lifter: 1, separator: 1 };
+  for (const id of STAR_BUILDINGS) {
+    s.b[id] = left[id] ?? 0;
+    s.bought[id] = left[id] ?? 0;
+  }
+  s.res.metal = 0;
+  s.res.energy = 0;
+  s.res.plasma = 0;
+  return g;
+}
+export function checkJournal(s: State) {
   const out: string[] = [];
   const day = Math.floor(s.time) + 1;
-  for (const st of STORY) if (!s.story[st.id] && st.when(s)) { s.story[st.id] = true; s.log.unshift({ key: 'story.' + st.id, kind: 'story', day }); out.push(st.id); }
-  const ctx = { powerW: powerW(s) };
-  for (const f of FACTS) if (!s.facts[f.id] && f.when(s, ctx)) { s.facts[f.id] = true; s.log.unshift({ key: 'fact.' + f.id, kind: 'fact', day }); out.push(f.id); }
+  for (const st of STORY) if (!s.story[st.id] && st.when(s)) {
+    s.story[st.id] = true;
+    s.log.unshift({ key: "story." + st.id, kind: "story", day });
+    out.push(st.id);
+  }
+  const ctx2 = { powerW: powerW(s) };
+  for (const f of FACTS) if (!s.facts[f.id] && f.when(s, ctx2)) {
+    s.facts[f.id] = true;
+    s.log.unshift({ key: "fact." + f.id, kind: "fact", day });
+    out.push(f.id);
+  }
   if (s.log.length > 120) s.log.length = 120;
   return out;
 }
-
-/** Offline: jen malé zásoby, žádné stavby, výzkum ani lety se nedokončí. */
-export function offlineGain(s: State, seconds: number): Partial<Record<Res, number>> {
+export function offlineGain(s: State, seconds: number) {
   const sec = Math.min(Math.max(0, seconds), RULES.offlineCapSec);
   const { p, c } = rates(s);
-  const got: Partial<Record<Res, number>> = {};
+  const got = {};
   for (const r of RESOURCES) {
     const net = p[r] - c[r];
-    if (net > 0) { const v = net * sec * RULES.offlineShare; add(s, r, v); got[r] = v; }
+    if (net > 0) {
+      const v = net * sec * RULES.offlineShare;
+      add(s, r, v);
+      got[r] = v;
+    }
   }
   return got;
 }

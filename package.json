@@ -5,13 +5,14 @@
   "description": "Šepot Horizontu – klidná inkrementální vesmírná hra postavená na skutečné fyzice.",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
+    "build": "tsc -p . && esbuild src/main.ts --bundle --format=iife --target=es2020 --outfile=web/hra.js",
+    "watch": "esbuild src/main.ts --bundle --format=iife --target=es2020 --outfile=web/hra.js --watch",
     "serve": "npx --yes serve web",
     "sim": "tsx sim/balance.ts"
   },
   "devDependencies": {
     "typescript": "6.0.3",
-    "tsx": "4.23.12"
+    "tsx": "4.23.12",
+    "esbuild": "0.28.2"
   }
 }
