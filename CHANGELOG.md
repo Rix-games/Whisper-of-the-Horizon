@@ -1,5 +1,12 @@
 # Novinky
 
+## 0.3.2 – Úpravy po Kapitole 3
+
+- Přestavba roje odstraněna, Lepší návrh roje je trvalý bonus
+- Štíhlý disk až po narážení na Eddingtonovu mez a silnější
+- Typy Kardaševovy škály v nápovědě podle kapitoly
+- Profil černé díry, jasnější popisky dilatačních výzkumů
+
 ## 0.3.1 – Automatický ventil
 
 - Akreční injektory vypouštějí chuchvalce z magnetické pasti

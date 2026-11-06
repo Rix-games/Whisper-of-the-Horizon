@@ -367,7 +367,7 @@
       coil: { name: "Supravodiv\xE9 c\xEDvky", desc: "Siln\u011Bj\u0161\xED magnetick\xE9 pole v trycht\xFD\u0159\xEDch. Trycht\xFD\u0159e \xD73." },
       fab: { name: "Automatick\xE1 v\xFDroba kolektor\u016F", desc: "Odemkne rojov\xE9 lod\u011Bnice." },
       sail: { name: "Tenk\xE9 plachty", desc: "Leh\u010D\xED kolektory pokryj\xED v\u011Bt\u0161\xED plochu. Kolektory \xD74." },
-      redesign: { name: "Lep\u0161\xED n\xE1vrh roje", desc: "Odemkne p\u0159estavbu roje: rozebrat ho a postavit znovu, tentokr\xE1t l\xE9pe." },
+      redesign: { name: "Lep\u0161\xED n\xE1vrh roje", desc: "Nov\xE1 generace kolektor\u016F, trycht\xFD\u0159\u016F a separ\xE1tor\u016F. Roj, trycht\xFD\u0159e a separ\xE1tory \xD71,5." },
       highorbit: { name: "Vysok\xE9 dr\xE1hy", desc: "Roj a trycht\xFD\u0159e se p\u0159esunou d\xE1l od hv\u011Bzdy. Kolektory \xD72." },
       census: { name: "S\u010D\xEDt\xE1n\xED sousedn\xEDch hv\u011Bzd", desc: "Kolik v\xE1\u017E\xED hv\u011Bzdy kolem n\xE1s? Seismick\xE9 stanice \xD72." },
       rotlift: { name: "Rota\u010Dn\xED ods\xE1v\xE1n\xED", desc: "Rozto\u010Den\xE1 hv\u011Bzda pou\u0161t\xED hmotu z rovn\xEDku sn\xE1z. Trycht\xFD\u0159e \xD73 za stejnou energii." },
@@ -864,7 +864,10 @@
     const raw = dysonRaw(s);
     return raw > 0 ? luminosity(s) * coverage(s) / raw : 1;
   }
+  var REBUILD_ON = false;
+  var REDESIGN_MULT = 1.5;
   function prestigeMult(s) {
+    if (!REBUILD_ON) return s.r.redesign ? REDESIGN_MULT : 1;
     return 1 + PRESTIGE.per * s.p.pts;
   }
   function prestigeTarget(s) {
@@ -1648,7 +1651,7 @@
     if (s.chapterDone < 2) s.chapterDone = 2;
   }
   function canRebuild(s) {
-    return !!s.r.redesign && !s.star.done && s.star.collapse < 0 && prestigeGain(s) >= 1;
+    return REBUILD_ON && !!s.r.redesign && !s.star.done && s.star.collapse < 0 && prestigeGain(s) >= 1;
   }
   function rebuild(s) {
     if (!canRebuild(s)) return 0;
@@ -4135,7 +4138,7 @@
   var VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
   var volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
   var audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-  var VERSION = "0.3.1";
+  var VERSION = "0.3.2";
   var KEY = "sepot-horizontu";
   var $ = (id) => document.getElementById(id);
   var SUP2 = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
@@ -4488,7 +4491,7 @@
   <div class="ready"><span class="dim">${esc(t("ui.star.ready"))}</span><ul class="checks" data-f="checks"></ul></div>
   <div class="row"><button class="btn" data-adv="1"></button><span class="dim" data-f="wait"></span></div>
 </div>`;
-    if (S.r.redesign) h += `<div class="stagecard rebuild">
+    if (REBUILD_ON && S.r.redesign) h += `<div class="stagecard rebuild">
   <div class="sc-head"><h3>${esc(t("ui.rebuild.title"))}</h3><span class="tag mono" data-f="pts"></span></div>
   <p data-f="rb"></p><p class="dim" data-f="rbnext"></p>
   <div class="row"><button class="btn ghost" data-rebuild="1">${esc(t("ui.rebuild.btn"))}</button></div>
@@ -4533,7 +4536,7 @@
       btn.classList.toggle("warn", coll);
       set("wait", esc(coll ? t("ui.star.lastLift") : rd.time && !rd.ok ? "" : t("ui.star.waiting")));
     }
-    if (S.r.redesign) {
+    if (REBUILD_ON && S.r.redesign) {
       const g = prestigeGain(S), m = prestigeMult(S);
       set("pts", esc(`${t("ui.rebuild.pts")} ${num(S.p.pts)}`));
       set("rb", esc(t("ui.rebuild.bonus", { m: num(m) }) + ". " + (g >= 1 ? t("ui.rebuild.gain", { n: ptsText(g) }) : t("ui.rebuild.none"))));

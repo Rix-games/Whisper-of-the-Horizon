@@ -39,7 +39,11 @@ export function dysonSat(s: State) {
   const raw = dysonRaw(s);
   return raw > 0 ? luminosity(s) * coverage(s) / raw : 1;
 }
+/** Lepší návrh roje: trvalý násobič roje, trychtýřů a separátorů. Přestavby (prestiž) jsou vypnuté, schované pro endgame. */
+export const REBUILD_ON = false;
+export const REDESIGN_MULT = 1.5;
 export function prestigeMult(s: State) {
+  if (!REBUILD_ON) return s.r.redesign ? REDESIGN_MULT : 1;
   return 1 + PRESTIGE.per * s.p.pts;
 }
 export function prestigeTarget(s: State) {
@@ -848,7 +852,7 @@ export function supernova(s: State) {
   if (s.chapterDone < 2) s.chapterDone = 2;
 }
 export function canRebuild(s: State) {
-  return !!s.r.redesign && !s.star.done && s.star.collapse < 0 && prestigeGain(s) >= 1;
+  return REBUILD_ON && !!s.r.redesign && !s.star.done && s.star.collapse < 0 && prestigeGain(s) >= 1;
 }
 export function rebuild(s: State) {
   if (!canRebuild(s)) return 0;

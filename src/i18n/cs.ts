@@ -367,7 +367,7 @@ export const cs = {
     coil: { name: "Supravodivé cívky", desc: "Silnější magnetické pole v trychtýřích. Trychtýře ×3." },
     fab: { name: "Automatická výroba kolektorů", desc: "Odemkne rojové loděnice." },
     sail: { name: "Tenké plachty", desc: "Lehčí kolektory pokryjí větší plochu. Kolektory ×4." },
-    redesign: { name: "Lepší návrh roje", desc: "Odemkne přestavbu roje: rozebrat ho a postavit znovu, tentokrát lépe." },
+    redesign: { name: "Lepší návrh roje", desc: "Nová generace kolektorů, trychtýřů a separátorů. Roj, trychtýře a separátory ×1,5." },
     highorbit: { name: "Vysoké dráhy", desc: "Roj a trychtýře se přesunou dál od hvězdy. Kolektory ×2." },
     census: { name: "Sčítání sousedních hvězd", desc: "Kolik váží hvězdy kolem nás? Seismické stanice ×2." },
     rotlift: { name: "Rotační odsávání", desc: "Roztočená hvězda pouští hmotu z rovníku snáz. Trychtýře ×3 za stejnou energii." },
