@@ -47,9 +47,7 @@ function botWants(st: typeof s, id: BuildingId) {
 function botWeight(_s: typeof s, _id: BuildingId) { return 1; }
 function botAct(st: typeof s) {
   if (VENTBOT && st.star.done) {
-    // hráč drží spotřebu plazmatu (past + injektory) pod 60 % přírůstku, aby zbylo na stavby
-    const { p } = E.rates(st), scoopP = st.b.scoop ? E.prodOf(st, 'scoop', 'plasma') * st.b.scoop : 0, inj = E.feedRate(st);
-    st.vent.share = Math.max(0.1, Math.min(0.8, Math.round(((0.6 * p.plasma - inj) / Math.max(1, scoopP)) * 10) / 10)); for (let k = 0; k < VENTBOT; k++) E.ventRelease(st, rng() * 6.28); if (E.ventCanBurst(st)) E.ventBurst(st); for (const id of E.VENT_IDS) if (E.ventUpCost(st, id) < 0.1 * st.res.plasma) E.ventUpgrade(st, id); }
+    for (let k = 0; k < VENTBOT; k++) E.ventRelease(st, rng() * 6.28); if (E.ventCanBurst(st)) E.ventBurst(st); for (const id of E.VENT_IDS) if (E.ventUpCost(st, id) < 0.1 * st.res.plasma) E.ventUpgrade(st, id); }
   if (st.star.done && E.phaseReady(st).ok) { E.advancePhase(st); marks.push([st.hole.dive >= 0 ? 'PONOR' : 'FÁZE ' + st.hole.phase, st.time, E.kardashev(st).toFixed(2)]); }
 }
 function botStatus(st: typeof s) {

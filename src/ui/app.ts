@@ -184,7 +184,7 @@ export function renderTop() {
   }
 }
 const HOLE_CONV: BuildingId[] = ["injector", "station", "hawking"];
-const CH3_LOCS: LocationId[] = ["cas", "lens", "tde", "pole", "ergo"];
+const CH3_LOCS: LocationId[] = ["cas", "oort", "lens", "pulsar", "tde", "cloud", "pole", "dwarf", "ergo", "stream"];
 export const STAR_BUILDINGS2 = ["sieve", "corono", "lifter", "separator", "seismo", "swarmfab"];
 export const starView = () => ({ stage: stageDef(S).id, dyson: S.b.dyson, lifters: S.b.lifter, coverage: coverage(S), collapse: S.star.collapse, done: S.star.done, snAge: snAge() });
 export function renderRig() {
@@ -225,7 +225,8 @@ export function renderRig() {
     if (ventOpen(S)) {
       const v = S.vent;
       rows.push([t("ui.vent.flow"), v.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v.over) }) : mass(ventFlow(S)) + "/s"]);
-      rows.push([t("ui.vent.share"), `${Math.round(ventShare(S) * 100)} % · ${mass(ventFill(S))}/s`]);
+      rows.push([t("ui.vent.share"), `${mass(ventFill(S))}/s · ${Math.round(ventShare(S) * 100)} %`]);
+      rows.push([t("ui.vent.disk"), `${mass(v.disk ?? 0)} · ${power(holeL(S))}`]);
       rows.push([t("ui.vent.tank"), `${mass(ventTankKg(S))} · ${Math.round(ventTank(S) * 100)} %`]);
       rows.push([t("ui.vent.chain"), v.chain ? `${v.chain} · ×${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v.best })]);
     }
@@ -503,14 +504,12 @@ function renderScene() {
   btn.classList.toggle("ghost", !full);
   btn.textContent = full ? t("ui.vent.burst") : t("ui.vent.burstWait", { p: Math.round(ventTank(S) * 100) });
   const hint = $("sceneHint");
-  hint.hidden = !open || S.vent.best >= 6 || !!sceneZoom;
-  hint.textContent = t("ui.vent.hint");
-  $("shareTxt").textContent = t("ui.vent.shareBtn", { p: Math.round(ventShare(S) * 100) });
-  document.querySelectorAll<El>("[data-share]").forEach((b) => { b.hidden = !open || !!sceneZoom; });
-  $("shareTxt").hidden = !open || !!sceneZoom;
+  hint.hidden = !open || !!sceneZoom || S.b.injector >= 1;
+  hint.innerHTML = t("ui.vent.flowHelp").split("|").map((x, i) => `<b>${i + 1}</b> ${esc(x)}`).join("<br>");
   document.querySelectorAll<El>("[data-zoom]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.zoom) === sceneZoom)));
 }
 const ventNow: Record<VentUp, (l: number) => string> = {
+  inlet: (l) => t("ui.vent.v.inlet", { p: Math.round(ventShare(S, l) * 100), f: mass(ventFill(S, l)) }),
   valve: (l) => t("ui.vent.v.valve", { kg: mass(Math.min(ventCap(S), ventKg(S, l))), s: dec(VENT.valveSec * Math.pow(1.5, l), 0) }),
   trap: (l) => t("ui.vent.v.trap", { kg: mass(ventCap(S, l)), f: mass(ventFill(S, l)) }),
   radius: (l) => t("ui.vent.v.radius", { r: dec(ventR(l), 2), s: dec(ventFlight(ventR(l)), 1) }),
@@ -677,6 +676,7 @@ export function updateView(which = tab, view = $("view")) {
         const body = e < 5e-3 ? `<span class="dim">${esc(S.off[id] ? t("ui.stopped") : t("ui.starved"))}</span>` : flow(count * e) + note2;
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
       }
+      if (id === "scoop" && ventOpen(S)) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.vent.toTrap"))}</span>${esc(t("ui.vent.toTrapTxt", { p: Math.round(ventShare(S) * 100), f: mass(ventFill(S)) }))}</span>`;
       if (id === "injector" && count >= 1) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.captured"))}</span>${esc(t("ui.capturedTxt", { p: pct(ringCov(S)), w: power(holeL(S) * ringCov(S)) }))}</span>`;
       if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
         eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
@@ -938,12 +938,6 @@ export function bind() {
     if (d.burst) {
       if (ventBurst(S) && S.settings.sound) boom();
       renderScene();
-      return;
-    }
-    if (d.share) {
-      S.vent.share = Math.max(0.1, Math.min(1, Math.round((ventShare(S) + Number(d.share) * 0.1) * 10) / 10));
-      renderScene();
-      renderRig();
       return;
     }
     if (d.zoom !== undefined) {

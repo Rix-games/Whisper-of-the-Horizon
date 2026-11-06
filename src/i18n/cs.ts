@@ -38,7 +38,11 @@ export const cs = {
     outsideTip: "Den je den Vesperova bdění. Mezi směnami Vesper spí a roj pracuje sám, takže venku plyne čas mnohem rychleji.",
     vent: {
       flow: "Z ventilu do díry",
-      share: "Do pasti",
+      share: "Plnění pasti",
+      disk: "Plyn v disku",
+      toTrap: "Do pasti",
+      toTrapTxt: "{p} % plynu, +{f}/s",
+      flowHelp: "Naběrače sbírají plazma, část plní past|Kliknutím do disku vypustíš chuchvalec|Chuchvalec se stočí k díře a vzplane: data|Plyn v disku pak 1,5 min září, kolektory z toho dělají výkon. Když nic nepošleš, disk vyhasne",
       shareBtn: "Do pasti {p} % plazmatu",
       heat: "Žár disku",
       overShort: "nad mezí {s} s",
@@ -61,6 +65,7 @@ export const cs = {
       level: "úroveň {n}",
       upgrade: "Vylepšit",
       v: {
+        inlet: "{p} % z naběračů, {f}/s",
         valve: "{kg} v chuchvalci",
         trap: "pojme {kg}",
         radius: "{r} disku, let {s} s",
@@ -69,6 +74,7 @@ export const cs = {
         autoOff: "vypnuto"
       },
       u: {
+        inlet: { name: "Sací kanály", desc: "Vedou plyn z naběračů rovnou do pasti. Čím víc kanálů, tím rychleji se past plní. Zbytek plazmatu jde do skladu na stavby." },
         valve: { name: "Ventil pasti", desc: "Širší hrdlo magnetické pasti, ze které vypouštíš plyn klikáním do disku. V jednom chuchvalci vypustí víc plynu, takže záblesk dá víc dat a disk víc září." },
         trap: { name: "Magnetická past", desc: "Silnější pole udrží víc plynu. Víc chuchvalců za sebou a větší výbuch disku." },
         radius: { name: "Poloměr vypouštění", desc: "Vypouští dál od díry. Chuchvalec letí déle, takže stihneš poslat další a řetěz se nepřetrhne." },
@@ -405,6 +411,11 @@ export const cs = {
     tde: { name: "Slapové roztržení", short: "Roztržená hvězda", desc: "Rudý trpaslík proletí příliš blízko a díra ho roztáhne do dlouhého proudu plynu. Vesper ho navede do mlhoviny. Trvalý bonus: naběrače ×4.", done: "Proud z roztržené hvězdy krmí mlhovinu. Naběrače ×4." },
     pole: { name: "Nad pólem", short: "Pól", desc: "Základna v ose trysky, kde se dá jejich energie chytat nejlépe. Trvalý bonus: tryskové lapače ×3.", done: "Lapače v ose trysek. Lapače ×3." },
     ergo: { name: "Ergosféra", short: "Ergosféra", desc: "Vesper se spustí do oblasti, kde se prostor točí s dírou, a ukotví tam Hawkingovy reaktory. Trvalý bonus: Hawkingovy reaktory ×3.", done: "Reaktory kotví v ergosféře. Hawkingovy reaktory ×3." },
+    oort: { name: "Kometární mrak", short: "Kometární mrak", desc: "Na okraji soustavy přežila supernovu ledová tělesa. Vesper je rozbije a led odpaří do mlhoviny. Trvalý bonus: naběrače ×1,5.", done: "Pára z komet plní mlhovinu. Naběrače ×1,5." },
+    pulsar: { name: "Pulsar v sousedství", short: "Pulsar", desc: "Neutronová hvězda dva světelné roky odtud tiká přesněji než atomové hodiny. Stanice podle ní srovnají měření. Trvalý bonus: stanice ×2.", done: "Stanice měří podle pulsaru. Stanice ×2." },
+    cloud: { name: "Molekulový oblak", short: "Molekulový oblak", desc: "Chladný oblak vodíku, který rázová vlna supernovy stlačila. Vesper do něj natáhne síť naběračů. Trvalý bonus: naběrače ×2.", done: "Naběrače čerpají z oblaku. Naběrače ×2." },
+    dwarf: { name: "Hnědý trpaslík", short: "Hnědý trpaslík", desc: "Nepovedená hvězda bez fúze. Vesper ji postrčí po dráze k díře a injektory z ní budou brát plyn. Trvalý bonus: injektory ×1,5.", done: "Trpaslík se rozpadá do disku. Injektory ×1,5." },
+    stream: { name: "Magnetický proud", short: "Magnetický proud", desc: "Tryska díry narazila do mezihvězdného plynu a stočila ho do proudu. Lapače z něj vezmou další energii. Trvalý bonus: tryskové lapače ×1,5.", done: "Lapače chytají i odražený proud. Lapače ×1,5." },
     dust: { name: "Prachová obálka", short: "Prachová obálka", desc: "Aldra ztrácí hmotu a v chladném větru kondenzují uhlíková zrna. Lehké a pevné, ideální na kolektory. Trvalý bonus: kolektory ×3.", done: "Kolektory z hvězdného prachu. Kolektory ×3." }
   },
   story: {

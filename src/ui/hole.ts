@@ -506,7 +506,7 @@ export function drawProfile(c: HTMLCanvasElement, v: ProfileView, time: number, 
 }
 
 // ---------- mapa okolí díry ----------
-const MAP_IDS: LocationId[] = ['cas', 'lens', 'tde', 'pole', 'ergo'];
+const MAP_IDS: LocationId[] = ['cas', 'oort', 'lens', 'pulsar', 'tde', 'cloud', 'pole', 'dwarf', 'ergo', 'stream'];
 const TILT = 0.42;
 const trail: [number, number][] = [];
 function pos(id: LocationId, tt: number): [number, number] {

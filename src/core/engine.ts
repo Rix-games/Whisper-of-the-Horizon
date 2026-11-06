@@ -154,8 +154,8 @@ export const VENT = {
   spin: 0.55,          // úhlová rychlost na okraji disku (Kepler: ω ∝ r^−3/2)
   capSec: 60,          // kapacita pasti v sekundách plnění
   valveSec: 6,         // kolik sekund plnění je v jednom chuchvalci
-  share: 0.5,          // jaký díl přírůstku plazmatu jde do pasti (hráč mění)
-  tau: 45,             // jak dlouho plyn v disku vydrží, než spadne do díry (viskózní čas)
+  share: 0.3,          // jaký díl plynu z naběračů jde do pasti (+10 % za úroveň Sacích kanálů)
+  tau: 90,             // jak dlouho plyn v disku září, než spadne do díry (viskózní čas)
   dataPerJ: 1e19,      // data ze záblesku: dataPerJ·√E
   heatPer: 0.035,      // žár za záblesk (×násobič řetězu)
   heatDecay: 0.02,     // chladnutí za sekundu
@@ -167,8 +167,9 @@ export const VENT = {
   overMult: 2,         // a kolikrát víc září
   burstN: 14
 };
-export type VentUp = "valve" | "trap" | "radius" | "coil";
+export type VentUp = "inlet" | "valve" | "trap" | "radius" | "coil";
 export const VENT_UPS: Record<VentUp, { base: number; g: number; max: number }> = {
+  inlet: { base: 1.5e8, g: 9, max: 5 },
   valve: { base: 3e8, g: 7, max: 12 },
   trap: { base: 5e8, g: 7, max: 12 },
   radius: { base: 2e9, g: 40, max: 5 },
@@ -178,13 +179,12 @@ export const VENT_IDS = Object.keys(VENT_UPS) as VentUp[];
 export const ventLv = (s: State, id: VentUp) => s.vent.lv[id] ?? 0;
 export const ventOpen = (s: State) => s.star.done && !!s.r.accrete;
 /** Past se plní z přírůstku plazmatu z naběračů: hráč volí, jaký díl do ní jde. */
-export const ventShare = (s: State) => s.vent.share ?? VENT.share;
-export function ventFill(s: State, l = ventLv(s, "trap")) {
+export const ventShare = (s: State, l = ventLv(s, "inlet")) => Math.min(0.8, VENT.share + 0.1 * l);
+export function ventFill(s: State, l = ventLv(s, "inlet")) {
   const scoops = s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0;
-  void l;
-  return Math.max(2e4, scoops) * ventShare(s);
+  return Math.max(2e4, scoops) * ventShare(s, l);
 }
-const ventUnit = (s: State) => Math.max(2e4, s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0) * Math.max(0.1, ventShare(s));
+const ventUnit = (s: State) => Math.max(2e4, s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0) * VENT.share;
 export const ventCap = (s: State, l = ventLv(s, "trap")) => ventUnit(s) * VENT.capSec * Math.pow(1.6, l);
 export const ventKg = (s: State, l = ventLv(s, "valve")) => Math.min(ventCap(s), ventUnit(s) * VENT.valveSec * Math.pow(1.5, l));
 /** Plyn z ventilu, který právě padá z disku do díry (kg/s). */
@@ -355,14 +355,18 @@ export function mult(s: State, id: BuildingId) {
       if (r.magscoop) m *= 3;
       if (v.cas) m *= 3;
       if (v.tde) m *= 4;
+      if (v.oort) m *= 1.5;
+      if (v.cloud) m *= 2;
       break;
     case "injector":
       if (r.mri) m *= 3;
+      if (v.dwarf) m *= 1.5;
       break;
     case "station":
       if (r.pulse3) m *= 3;
       if (v.lens) m *= 4;
       if (r.fermi) m *= 10;
+      if (v.pulsar) m *= 2;
       break;
     case "hawking":
       if (r.evap) m *= 4;
@@ -448,7 +452,7 @@ export function prodOf(s: State, id: BuildingId, r: Res) {
   if (id === "dyson") v *= dysonSat(s);
   if (id === "station") v *= gamma(s) * holeFb(s, HOLE.dataFb);
   if (id === "ring") return s.b.ring ? holeL(s) * ringCov(s) / s.b.ring : 0;
-  if (id === "jet") return s.b.jet ? jetP(s) * jetCov(s) * (s.visited.pole ? 3 : 1) / s.b.jet : 0;
+  if (id === "jet") return s.b.jet ? jetP(s) * jetCov(s) * (s.visited.pole ? 3 : 1) * (s.visited.stream ? 1.5 : 1) / s.b.jet : 0;
   if (id === "hawking") return consOf(s, "hawking", "plasma") * HOLE.c2 * (r === "data" ? HOLE.hawkData : 1);
   return v;
 }

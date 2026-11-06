@@ -55,7 +55,7 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
   scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
   injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
-  ring: { base: { plasma: 6e7 }, growth: 1.13, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+  ring: { base: { plasma: 6e7 }, growth: 1.135, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
   station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 1.5e27 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
   jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
   hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
@@ -154,7 +154,13 @@ export const LOCATIONS = {
   lens: { cost: 3e41, time: 120, orbit: 0.95, angle: 3.6, speed: 2e-3, req: phase(1) },
   tde: { cost: 1e42, time: 120, orbit: 0.62, angle: 2.2, speed: 6e-3, req: phase(2) },
   pole: { cost: 2e42, time: 90, orbit: 0.3, angle: 4.9, speed: 0, req: phase(3) },
-  ergo: { cost: 4e42, time: 150, orbit: 0.16, angle: 1.4, speed: 0, req: phase(4) }
+  ergo: { cost: 4e42, time: 150, orbit: 0.16, angle: 1.4, speed: 0, req: phase(4) },
+  // další cesty za energii ze supernovy (Kap. 3)
+  oort: { cost: 3e41, time: 100, orbit: 0.99, angle: 5.4, speed: 1.5e-3, req: (s) => s.star.done && !!s.r.accrete },
+  pulsar: { cost: 1.2e42, time: 110, orbit: 0.88, angle: 2.8, speed: 2.5e-3, req: phase(1) },
+  cloud: { cost: 4e42, time: 140, orbit: 0.97, angle: 4.3, speed: 1e-3, req: phase(2) },
+  dwarf: { cost: 1e43, time: 120, orbit: 0.5, angle: 0.2, speed: 8e-3, req: phase(3) },
+  stream: { cost: 2.5e43, time: 150, orbit: 0.72, angle: 3.2, speed: 4e-3, req: phase(4) }
 } satisfies Record<string, LocationDef>;
 export type LocationId = keyof typeof LOCATIONS;
 export const LOCATION_IDS = Object.keys(LOCATIONS) as LocationId[];

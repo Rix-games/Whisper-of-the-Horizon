@@ -240,7 +240,7 @@ body.ch3 #rockwrap { display: none; }
 .seg-row { position: absolute; top: 10px; left: 10px; display: flex; gap: 4px; }
 .zseg { background: rgba(17,20,42,.85); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--dim); }
 .zseg[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
-.scene-hint { position: absolute; top: 10px; right: 10px; max-width: 240px; margin: 0; text-align: right; font-size: 12.5px; color: var(--dim); background: rgba(10,12,24,.72); padding: 6px 9px; border-radius: 6px; }
+.scene-hint { position: absolute; top: 10px; right: 10px; max-width: 290px; margin: 0; text-align: left; line-height: 1.55; font-size: 12.5px; color: var(--dim); background: rgba(10,12,24,.72); padding: 6px 9px; border-radius: 6px; }
 .burst { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); }
 .burst.ready { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .vcard .eff2 { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 12.5px; }
@@ -261,9 +261,11 @@ body.ch3 #bview .item .act { grid-column: 1; grid-row: auto; flex-direction: row
 body.ch3 .rig { grid-area: rig; } body.ch3 .scene { grid-area: scene; } body.ch3 .log { grid-area: log; }
 @media (min-width: 1101px) {
   body.ch3 .grid { grid-template-columns: minmax(240px, 290px) minmax(0, 1fr) minmax(250px, 320px); grid-template-rows: auto minmax(240px, 0.9fr) minmax(0, 1.1fr); grid-template-areas: "rig tabs log" "rig scene log" "view view view"; }
+  body.ch3:not(.tabbuild) .grid { grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "rig tabs log" "rig scene log"; }
   body.ch3 #bview { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
   body.ch3 #scenec { height: 100%; }
 }
+body.ch3:not(.tabbuild) #bview { display: none; }
 @media (max-width: 1100px) {
   html:has(body.ch3), body.ch3 { height: auto; overflow: auto; }
   body.ch3 .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "tabs tabs" "scene scene" "view view" "rig log"; }
@@ -275,3 +277,6 @@ body.ch3 .tabs .tab { padding-inline: 9px; letter-spacing: .04em; }
 body.ch3:not(.tabbuild) #rockwrap { display: block; }
 .zgap { width: 10px; }
 .ztxt { cursor: default; color: var(--ink); }
+.scene-hint b { color: var(--accent); font-family: var(--f-mono); margin-right: 4px; }
+body.ch3 #view #map { height: clamp(320px, 50vh, 620px); }
+body.ch3 #view #holec { height: clamp(300px, 46vh, 560px); }

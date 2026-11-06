@@ -38,7 +38,11 @@
       outsideTip: "Den je den Vesperova bd\u011Bn\xED. Mezi sm\u011Bnami Vesper sp\xED a roj pracuje s\xE1m, tak\u017Ee venku plyne \u010Das mnohem rychleji.",
       vent: {
         flow: "Z ventilu do d\xEDry",
-        share: "Do pasti",
+        share: "Pln\u011Bn\xED pasti",
+        disk: "Plyn v disku",
+        toTrap: "Do pasti",
+        toTrapTxt: "{p} % plynu, +{f}/s",
+        flowHelp: "Nab\u011Bra\u010De sb\xEDraj\xED plazma, \u010D\xE1st pln\xED past|Kliknut\xEDm do disku vypust\xED\u0161 chuchvalec|Chuchvalec se sto\u010D\xED k d\xED\u0159e a vzplane: data|Plyn v disku pak 1,5 min z\xE1\u0159\xED, kolektory z toho d\u011Blaj\xED v\xFDkon. Kdy\u017E nic nepo\u0161le\u0161, disk vyhasne",
         shareBtn: "Do pasti {p} % plazmatu",
         heat: "\u017D\xE1r disku",
         overShort: "nad mez\xED {s} s",
@@ -61,6 +65,7 @@
         level: "\xFArove\u0148 {n}",
         upgrade: "Vylep\u0161it",
         v: {
+          inlet: "{p} % z nab\u011Bra\u010D\u016F, {f}/s",
           valve: "{kg} v chuchvalci",
           trap: "pojme {kg}",
           radius: "{r} disku, let {s} s",
@@ -69,6 +74,7 @@
           autoOff: "vypnuto"
         },
         u: {
+          inlet: { name: "Sac\xED kan\xE1ly", desc: "Vedou plyn z nab\u011Bra\u010D\u016F rovnou do pasti. \u010C\xEDm v\xEDc kan\xE1l\u016F, t\xEDm rychleji se past pln\xED. Zbytek plazmatu jde do skladu na stavby." },
           valve: { name: "Ventil pasti", desc: "\u0160ir\u0161\xED hrdlo magnetick\xE9 pasti, ze kter\xE9 vypou\u0161t\xED\u0161 plyn klik\xE1n\xEDm do disku. V jednom chuchvalci vypust\xED v\xEDc plynu, tak\u017Ee z\xE1blesk d\xE1 v\xEDc dat a disk v\xEDc z\xE1\u0159\xED." },
           trap: { name: "Magnetick\xE1 past", desc: "Siln\u011Bj\u0161\xED pole udr\u017E\xED v\xEDc plynu. V\xEDc chuchvalc\u016F za sebou a v\u011Bt\u0161\xED v\xFDbuch disku." },
           radius: { name: "Polom\u011Br vypou\u0161t\u011Bn\xED", desc: "Vypou\u0161t\xED d\xE1l od d\xEDry. Chuchvalec let\xED d\xE9le, tak\u017Ee stihne\u0161 poslat dal\u0161\xED a \u0159et\u011Bz se nep\u0159etrhne." },
@@ -405,6 +411,11 @@
       tde: { name: "Slapov\xE9 roztr\u017Een\xED", short: "Roztr\u017Een\xE1 hv\u011Bzda", desc: "Rud\xFD trpasl\xEDk prolet\xED p\u0159\xEDli\u0161 bl\xEDzko a d\xEDra ho rozt\xE1hne do dlouh\xE9ho proudu plynu. Vesper ho navede do mlhoviny. Trval\xFD bonus: nab\u011Bra\u010De \xD74.", done: "Proud z roztr\u017Een\xE9 hv\u011Bzdy krm\xED mlhovinu. Nab\u011Bra\u010De \xD74." },
       pole: { name: "Nad p\xF3lem", short: "P\xF3l", desc: "Z\xE1kladna v ose trysky, kde se d\xE1 jejich energie chytat nejl\xE9pe. Trval\xFD bonus: tryskov\xE9 lapa\u010De \xD73.", done: "Lapa\u010De v ose trysek. Lapa\u010De \xD73." },
       ergo: { name: "Ergosf\xE9ra", short: "Ergosf\xE9ra", desc: "Vesper se spust\xED do oblasti, kde se prostor to\u010D\xED s d\xEDrou, a ukotv\xED tam Hawkingovy reaktory. Trval\xFD bonus: Hawkingovy reaktory \xD73.", done: "Reaktory kotv\xED v ergosf\xE9\u0159e. Hawkingovy reaktory \xD73." },
+      oort: { name: "Komet\xE1rn\xED mrak", short: "Komet\xE1rn\xED mrak", desc: "Na okraji soustavy p\u0159e\u017Eila supernovu ledov\xE1 t\u011Blesa. Vesper je rozbije a led odpa\u0159\xED do mlhoviny. Trval\xFD bonus: nab\u011Bra\u010De \xD71,5.", done: "P\xE1ra z komet pln\xED mlhovinu. Nab\u011Bra\u010De \xD71,5." },
+      pulsar: { name: "Pulsar v sousedstv\xED", short: "Pulsar", desc: "Neutronov\xE1 hv\u011Bzda dva sv\u011Bteln\xE9 roky odtud tik\xE1 p\u0159esn\u011Bji ne\u017E atomov\xE9 hodiny. Stanice podle n\xED srovnaj\xED m\u011B\u0159en\xED. Trval\xFD bonus: stanice \xD72.", done: "Stanice m\u011B\u0159\xED podle pulsaru. Stanice \xD72." },
+      cloud: { name: "Molekulov\xFD oblak", short: "Molekulov\xFD oblak", desc: "Chladn\xFD oblak vod\xEDku, kter\xFD r\xE1zov\xE1 vlna supernovy stla\u010Dila. Vesper do n\u011Bj nat\xE1hne s\xED\u0165 nab\u011Bra\u010D\u016F. Trval\xFD bonus: nab\u011Bra\u010De \xD72.", done: "Nab\u011Bra\u010De \u010Derpaj\xED z oblaku. Nab\u011Bra\u010De \xD72." },
+      dwarf: { name: "Hn\u011Bd\xFD trpasl\xEDk", short: "Hn\u011Bd\xFD trpasl\xEDk", desc: "Nepoveden\xE1 hv\u011Bzda bez f\xFAze. Vesper ji postr\u010D\xED po dr\xE1ze k d\xED\u0159e a injektory z n\xED budou br\xE1t plyn. Trval\xFD bonus: injektory \xD71,5.", done: "Trpasl\xEDk se rozpad\xE1 do disku. Injektory \xD71,5." },
+      stream: { name: "Magnetick\xFD proud", short: "Magnetick\xFD proud", desc: "Tryska d\xEDry narazila do mezihv\u011Bzdn\xE9ho plynu a sto\u010Dila ho do proudu. Lapa\u010De z n\u011Bj vezmou dal\u0161\xED energii. Trval\xFD bonus: tryskov\xE9 lapa\u010De \xD71,5.", done: "Lapa\u010De chytaj\xED i odra\u017Een\xFD proud. Lapa\u010De \xD71,5." },
       dust: { name: "Prachov\xE1 ob\xE1lka", short: "Prachov\xE1 ob\xE1lka", desc: "Aldra ztr\xE1c\xED hmotu a v chladn\xE9m v\u011Btru kondenzuj\xED uhl\xEDkov\xE1 zrna. Lehk\xE9 a pevn\xE9, ide\xE1ln\xED na kolektory. Trval\xFD bonus: kolektory \xD73.", done: "Kolektory z hv\u011Bzdn\xE9ho prachu. Kolektory \xD73." }
     },
     story: {
@@ -538,7 +549,7 @@
     // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
     scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
-    ring: { base: { plasma: 6e7 }, growth: 1.13, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+    ring: { base: { plasma: 6e7 }, growth: 1.135, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 15e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
     jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
     hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
@@ -638,7 +649,13 @@
     lens: { cost: 3e41, time: 120, orbit: 0.95, angle: 3.6, speed: 2e-3, req: phase(1) },
     tde: { cost: 1e42, time: 120, orbit: 0.62, angle: 2.2, speed: 6e-3, req: phase(2) },
     pole: { cost: 2e42, time: 90, orbit: 0.3, angle: 4.9, speed: 0, req: phase(3) },
-    ergo: { cost: 4e42, time: 150, orbit: 0.16, angle: 1.4, speed: 0, req: phase(4) }
+    ergo: { cost: 4e42, time: 150, orbit: 0.16, angle: 1.4, speed: 0, req: phase(4) },
+    // další cesty za energii ze supernovy (Kap. 3)
+    oort: { cost: 3e41, time: 100, orbit: 0.99, angle: 5.4, speed: 15e-4, req: (s) => s.star.done && !!s.r.accrete },
+    pulsar: { cost: 12e41, time: 110, orbit: 0.88, angle: 2.8, speed: 25e-4, req: phase(1) },
+    cloud: { cost: 4e42, time: 140, orbit: 0.97, angle: 4.3, speed: 1e-3, req: phase(2) },
+    dwarf: { cost: 1e43, time: 120, orbit: 0.5, angle: 0.2, speed: 8e-3, req: phase(3) },
+    stream: { cost: 25e42, time: 150, orbit: 0.72, angle: 3.2, speed: 4e-3, req: phase(4) }
   };
   var LOCATION_IDS = Object.keys(LOCATIONS);
   var L = LOCATIONS;
@@ -952,10 +969,10 @@
     // kapacita pasti v sekundách plnění
     valveSec: 6,
     // kolik sekund plnění je v jednom chuchvalci
-    share: 0.5,
-    // jaký díl přírůstku plazmatu jde do pasti (hráč mění)
-    tau: 45,
-    // jak dlouho plyn v disku vydrží, než spadne do díry (viskózní čas)
+    share: 0.3,
+    // jaký díl plynu z naběračů jde do pasti (+10 % za úroveň Sacích kanálů)
+    tau: 90,
+    // jak dlouho plyn v disku září, než spadne do díry (viskózní čas)
     dataPerJ: 1e19,
     // data ze záblesku: dataPerJ·√E
     heatPer: 0.035,
@@ -977,6 +994,7 @@
     burstN: 14
   };
   var VENT_UPS = {
+    inlet: { base: 15e7, g: 9, max: 5 },
     valve: { base: 3e8, g: 7, max: 12 },
     trap: { base: 5e8, g: 7, max: 12 },
     radius: { base: 2e9, g: 40, max: 5 },
@@ -985,13 +1003,12 @@
   var VENT_IDS = Object.keys(VENT_UPS);
   var ventLv = (s, id) => s.vent.lv[id] ?? 0;
   var ventOpen = (s) => s.star.done && !!s.r.accrete;
-  var ventShare = (s) => s.vent.share ?? VENT.share;
-  function ventFill(s, l = ventLv(s, "trap")) {
+  var ventShare = (s, l = ventLv(s, "inlet")) => Math.min(0.8, VENT.share + 0.1 * l);
+  function ventFill(s, l = ventLv(s, "inlet")) {
     const scoops = s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0;
-    void l;
-    return Math.max(2e4, scoops) * ventShare(s);
+    return Math.max(2e4, scoops) * ventShare(s, l);
   }
-  var ventUnit = (s) => Math.max(2e4, s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0) * Math.max(0.1, ventShare(s));
+  var ventUnit = (s) => Math.max(2e4, s.b.scoop ? prodOf(s, "scoop", "plasma") * s.b.scoop : 0) * VENT.share;
   var ventCap = (s, l = ventLv(s, "trap")) => ventUnit(s) * VENT.capSec * Math.pow(1.6, l);
   var ventKg = (s, l = ventLv(s, "valve")) => Math.min(ventCap(s), ventUnit(s) * VENT.valveSec * Math.pow(1.5, l));
   var ventFlow = (s) => (s.vent.disk ?? 0) / VENT.tau;
@@ -1147,14 +1164,18 @@
         if (r.magscoop) m *= 3;
         if (v.cas) m *= 3;
         if (v.tde) m *= 4;
+        if (v.oort) m *= 1.5;
+        if (v.cloud) m *= 2;
         break;
       case "injector":
         if (r.mri) m *= 3;
+        if (v.dwarf) m *= 1.5;
         break;
       case "station":
         if (r.pulse3) m *= 3;
         if (v.lens) m *= 4;
         if (r.fermi) m *= 10;
+        if (v.pulsar) m *= 2;
         break;
       case "hawking":
         if (r.evap) m *= 4;
@@ -1237,7 +1258,7 @@
     if (id === "dyson") v *= dysonSat(s);
     if (id === "station") v *= gamma(s) * holeFb(s, HOLE.dataFb);
     if (id === "ring") return s.b.ring ? holeL(s) * ringCov(s) / s.b.ring : 0;
-    if (id === "jet") return s.b.jet ? jetP(s) * jetCov(s) * (s.visited.pole ? 3 : 1) / s.b.jet : 0;
+    if (id === "jet") return s.b.jet ? jetP(s) * jetCov(s) * (s.visited.pole ? 3 : 1) * (s.visited.stream ? 1.5 : 1) / s.b.jet : 0;
     if (id === "hawking") return consOf(s, "hawking", "plasma") * HOLE.c2 * (r === "data" ? HOLE.hawkData : 1);
     return v;
   }
@@ -3581,7 +3602,7 @@
     x.fillStyle = "rgba(176,181,212,0.7)";
     x.fillText(t("ui.hole.profileSub"), 14, 38);
   }
-  var MAP_IDS = ["cas", "lens", "tde", "pole", "ergo"];
+  var MAP_IDS = ["cas", "oort", "lens", "pulsar", "tde", "cloud", "pole", "dwarf", "ergo", "stream"];
   var TILT2 = 0.42;
   var trail2 = [];
   function pos(id, tt) {
@@ -4220,7 +4241,7 @@
     }
   }
   var HOLE_CONV = ["injector", "station", "hawking"];
-  var CH3_LOCS = ["cas", "lens", "tde", "pole", "ergo"];
+  var CH3_LOCS = ["cas", "oort", "lens", "pulsar", "tde", "cloud", "pole", "dwarf", "ergo", "stream"];
   var STAR_BUILDINGS2 = ["sieve", "corono", "lifter", "separator", "seismo", "swarmfab"];
   var starView = () => ({ stage: stageDef(S).id, dyson: S.b.dyson, lifters: S.b.lifter, coverage: coverage(S), collapse: S.star.collapse, done: S.star.done, snAge: snAge() });
   function renderRig() {
@@ -4279,7 +4300,8 @@
       if (ventOpen(S)) {
         const v2 = S.vent;
         rows.push([t("ui.vent.flow"), v2.over > 0 ? t("ui.vent.overShort", { s: Math.ceil(v2.over) }) : mass(ventFlow(S)) + "/s"]);
-        rows.push([t("ui.vent.share"), `${Math.round(ventShare(S) * 100)} % \xB7 ${mass(ventFill(S))}/s`]);
+        rows.push([t("ui.vent.share"), `${mass(ventFill(S))}/s \xB7 ${Math.round(ventShare(S) * 100)} %`]);
+        rows.push([t("ui.vent.disk"), `${mass(v2.disk ?? 0)} \xB7 ${power(holeL(S))}`]);
         rows.push([t("ui.vent.tank"), `${mass(ventTankKg(S))} \xB7 ${Math.round(ventTank(S) * 100)} %`]);
         rows.push([t("ui.vent.chain"), v2.chain ? `${v2.chain} \xB7 \xD7${dec(ventChainMult(S), 2)}` : t("ui.vent.best", { n: v2.best })]);
       }
@@ -4568,16 +4590,12 @@
     btn.classList.toggle("ghost", !full);
     btn.textContent = full ? t("ui.vent.burst") : t("ui.vent.burstWait", { p: Math.round(ventTank(S) * 100) });
     const hint = $("sceneHint");
-    hint.hidden = !open || S.vent.best >= 6 || !!sceneZoom;
-    hint.textContent = t("ui.vent.hint");
-    $("shareTxt").textContent = t("ui.vent.shareBtn", { p: Math.round(ventShare(S) * 100) });
-    document.querySelectorAll("[data-share]").forEach((b) => {
-      b.hidden = !open || !!sceneZoom;
-    });
-    $("shareTxt").hidden = !open || !!sceneZoom;
+    hint.hidden = !open || !!sceneZoom || S.b.injector >= 1;
+    hint.innerHTML = t("ui.vent.flowHelp").split("|").map((x, i) => `<b>${i + 1}</b> ${esc(x)}`).join("<br>");
     document.querySelectorAll("[data-zoom]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.zoom) === sceneZoom)));
   }
   var ventNow = {
+    inlet: (l) => t("ui.vent.v.inlet", { p: Math.round(ventShare(S, l) * 100), f: mass(ventFill(S, l)) }),
     valve: (l) => t("ui.vent.v.valve", { kg: mass(Math.min(ventCap(S), ventKg(S, l))), s: dec(VENT.valveSec * Math.pow(1.5, l), 0) }),
     trap: (l) => t("ui.vent.v.trap", { kg: mass(ventCap(S, l)), f: mass(ventFill(S, l)) }),
     radius: (l) => t("ui.vent.v.radius", { r: dec(ventR(l), 2), s: dec(ventFlight(ventR(l)), 1) }),
@@ -4755,6 +4773,7 @@
           const body = e < 5e-3 ? `<span class="dim">${esc(S.off[id] ? t("ui.stopped") : t("ui.starved"))}</span>` : flow(count * e) + note2;
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.all", { n: num(count) }))}</span>${body}</span>`;
         }
+        if (id === "scoop" && ventOpen(S)) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.vent.toTrap"))}</span>${esc(t("ui.vent.toTrapTxt", { p: Math.round(ventShare(S) * 100), f: mass(ventFill(S)) }))}</span>`;
         if (id === "injector" && count >= 1) eff += `<span class="effrow"><span class="lbl">${esc(t("ui.captured"))}</span>${esc(t("ui.capturedTxt", { p: pct(ringCov(S)), w: power(holeL(S) * ringCov(S)) }))}</span>`;
         if (id === "swarmfab" && S.fab?.built && S.fab.built.lifter + S.fab.built.separator > 0) {
           eff += `<span class="effrow"><span class="lbl">${esc(t("ui.fabBuilt"))}</span>${esc(t("ui.fabBuiltList", { l: num(S.fab.built.lifter), s: num(S.fab.built.separator) }))}</span>`;
@@ -5022,12 +5041,6 @@
       if (d.burst) {
         if (ventBurst(S) && S.settings.sound) boom();
         renderScene();
-        return;
-      }
-      if (d.share) {
-        S.vent.share = Math.max(0.1, Math.min(1, Math.round((ventShare(S) + Number(d.share) * 0.1) * 10) / 10));
-        renderScene();
-        renderRig();
         return;
       }
       if (d.zoom !== void 0) {
