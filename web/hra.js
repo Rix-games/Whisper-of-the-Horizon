@@ -117,7 +117,7 @@
         waiting: "Stadium se zm\u011Bn\xED, a\u017E ho spust\xED\u0161.",
         layers: "\u0158ez hv\u011Bzdou",
         progressOf: "{a} z {b}",
-        remnant: "Na m\xEDst\u011B Aldry je \u010Dern\xE1 d\xEDra o hmotnosti asi 8 Slunc\xED. Kolem se rozp\xEDn\xE1 mlhovina z vyvr\u017Een\xFDch prvk\u016F.",
+        remnant: "Na m\xEDst\u011B Aldry z\u016Fstala \u010Dern\xE1 d\xEDra o hmotnosti asi 8 Slunc\xED. Kolem n\xED se rozp\xEDn\xE1 mlhovina z prvk\u016F, kter\xE9 hv\u011Bzda za sv\u016Fj \u017Eivot vytvo\u0159ila. Kapitola 3: Horizont p\u0159ijde v dal\u0161\xED verzi.",
         years: "{n} let",
         yearsM: "{n} mil. let",
         day: "{n} dne",
@@ -2609,7 +2609,7 @@
   var VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
   var volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
   var audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-  var VERSION = "0.2.1";
+  var VERSION = "0.2.2";
   var KEY = "sepot-horizontu";
   var $ = (id) => document.getElementById(id);
   var SUP2 = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };

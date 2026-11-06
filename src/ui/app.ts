@@ -13,7 +13,7 @@ export const VOL_KEYS = ["noise", "melody", "game"];
 export const VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
 export const volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
 export const audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-export const VERSION = "0.2.1";
+export const VERSION = "0.2.2";
 export const KEY = "sepot-horizontu";
 type El = HTMLElement & Record<string, any>;
 export const $ = (id: string): El => document.getElementById(id) as El;

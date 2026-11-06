@@ -1,5 +1,10 @@
 # Novinky
 
+## 0.2.2 – Úpravy po supernově
+
+- Upravený text o černé díře po supernově
+- Zdrojáky znovu v TypeScriptu
+
 ## 0.2.1 – Chytřejší loděnice
 
 - Rojové loděnice samy dostavují trychtýře a separátory, když jim chybí kov

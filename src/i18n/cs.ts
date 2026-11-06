@@ -117,7 +117,7 @@ export const cs = {
       waiting: "Stadium se změní, až ho spustíš.",
       layers: "Řez hvězdou",
       progressOf: "{a} z {b}",
-      remnant: "Na místě Aldry je černá díra o hmotnosti asi 8 Sluncí. Kolem se rozpíná mlhovina z vyvržených prvků.",
+      remnant: "Na místě Aldry zůstala černá díra o hmotnosti asi 8 Sluncí. Kolem ní se rozpíná mlhovina z prvků, které hvězda za svůj život vytvořila. Kapitola 3: Horizont přijde v další verzi.",
       years: "{n} let",
       yearsM: "{n} mil. let",
       day: "{n} dne",
