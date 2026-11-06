@@ -51,6 +51,7 @@ Hru vydávám po kapitolách. Každá verze se dá hrát a uložená hra se pře
 | 0.3.1 | Automatický ventil: injektory vypouštějí z pasti | vydáno |
 | 0.3.2 | Bez přestavby roje, silnější Štíhlý disk, typy K podle kapitoly | vydáno |
 | 0.3.3 | Tryskové lapače posilují sběr, poctivější karta injektoru | vydáno |
+| 0.3.4 | Orbitální montovna, opravy karty injektoru | vydáno |
 | 0.4 | Kapitola 4: Most | v plánu |
 | 1.0 | Kapitola 5: Šepot, konce, anglická verze | v plánu |
 | později | nekonečný mód, verze pro mobil | v plánu |

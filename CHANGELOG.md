@@ -1,5 +1,12 @@
 # Novinky
 
+## 0.3.4 – Orbitální montovna
+
+- Orbitální montovna od fáze Magnetické trysky: sama staví kolektory a lapače
+- Využití injektorů podle skutečně chybějícího plynu
+- Karta injektoru bez problikávání, upozornění na vlastním řádku
+- Text na kartách staveb už nepřetéká
+
 ## 0.3.3 – Trysky a injektory
 
 - Tryskové lapače posilují naběrače, injektory a Hawkingovy reaktory

@@ -4204,7 +4204,7 @@
   var VOL_DEFAULT = { noise: 0.7, melody: 1, game: 1 };
   var volOf = (k) => S.settings.vol?.[k] ?? VOL_DEFAULT[k];
   var audioVols = () => ({ noise: volOf("noise"), drone: volOf("noise"), melody: volOf("melody"), pulse: volOf("game"), chime: volOf("game") });
-  var VERSION = "0.3.3";
+  var VERSION = "0.3.4";
   var KEY = "sepot-horizontu";
   var $ = (id) => document.getElementById(id);
   var SUP2 = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
