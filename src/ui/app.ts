@@ -193,6 +193,7 @@ export function renderRig() {
   $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch2 ? t("ui.star.title") : t("ui.asteroid");
   document.body.classList.toggle("ch2", ch2);
   document.body.classList.toggle("ch3", ch3);
+  document.body.classList.add("cv");
   const rock = $("rock");
   rock.disabled = ch2;
   rock.setAttribute("aria-label", ch2 ? t("ui.star.title") : t("ui.mineAria"));
@@ -723,10 +724,18 @@ export function updateView(which = tab, view = $("view")) {
   }
 }
 export let bviewKey = "";
+/** Kap. 1 a 2: asteroid / hvězda je uprostřed na záložce Stavby, jinak vlevo jako náhled. */
+function placeRock() {
+  const rw = $("rockwrap"), center = !S.star.done && tab === "build";
+  const target = center ? $("scene").querySelector<El>(".scene-wrap") : $("hint").parentElement;
+  if (rw.parentElement === target) return;
+  if (center) target.prepend(rw); else target.insertBefore(rw, $("hint"));
+}
 export function renderView(force = false) {
   // Kapitola 3: stavby jsou pořád dole přes celou šířku, ostatní záložky nahrazují díru uprostřed
-  const split = S.star.done;
+  const split = true;
   document.body.classList.toggle("tabbuild", tab === "build");
+  placeRock();
   if (split) {
     const bk = computeKey("build"), bv = $("bview");
     if (force || bk !== bviewKey) { bviewKey = bk; buildView("build", bv); }

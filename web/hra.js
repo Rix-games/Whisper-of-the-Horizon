@@ -4282,6 +4282,7 @@
     $("rigTitle").textContent = ch3 ? t("ui.hole.title") : ch22 ? t("ui.star.title") : t("ui.asteroid");
     document.body.classList.toggle("ch2", ch22);
     document.body.classList.toggle("ch3", ch3);
+    document.body.classList.add("cv");
     const rock = $("rock");
     rock.disabled = ch22;
     rock.setAttribute("aria-label", ch22 ? t("ui.star.title") : t("ui.mineAria"));
@@ -4835,9 +4836,17 @@
     }
   }
   var bviewKey = "";
+  function placeRock() {
+    const rw = $("rockwrap"), center = !S.star.done && tab === "build";
+    const target = center ? $("scene").querySelector(".scene-wrap") : $("hint").parentElement;
+    if (rw.parentElement === target) return;
+    if (center) target.prepend(rw);
+    else target.insertBefore(rw, $("hint"));
+  }
   function renderView(force = false) {
-    const split = S.star.done;
+    const split = true;
     document.body.classList.toggle("tabbuild", tab === "build");
+    placeRock();
     if (split) {
       const bk = computeKey("build"), bv = $("bview");
       if (force || bk !== bviewKey) {

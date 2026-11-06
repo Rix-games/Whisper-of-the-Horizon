@@ -233,7 +233,7 @@ body.ch2 #rock { cursor: default; }
 
 /* Kapitola 3: díra a soustava uprostřed, čísla vlevo, záložky vpravo, deník pod čísly */
 #scene { display: none; }
-body.ch3 #scene { display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #05060f; }
+body.cv #scene { display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #05060f; }
 body.ch3 #rockwrap { display: none; }
 .scene-wrap { position: relative; flex: 1; min-height: 0; display: flex; }
 #scenec { width: 100%; height: clamp(420px, 62vh, 760px); display: block; touch-action: none; cursor: crosshair; }
@@ -248,47 +248,53 @@ body.ch3 #rockwrap { display: none; }
 .vcard .eff2 .up { color: var(--good); }
 /* Kap. 3: záložky nahoře; Stavby = díra uprostřed, jiné záložky díru nahradí; stavby vždy dole přes celou šířku */
 .bview { display: none; }
-body.ch3 .ops { display: contents; }
-body.ch3 #tabs { grid-area: tabs; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
-body.ch3 #view { grid-area: scene; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
-body.ch3.tabbuild #view { display: none; }
-body.ch3:not(.tabbuild) #scene { display: none; }
-body.ch3 #bview { display: block; grid-area: view; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
-body.ch3 #bview .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px; align-items: stretch; }
-body.ch3 #bview .item { grid-template-columns: minmax(0, 1fr); align-content: start; }
-body.ch3 #bview .item p { font-size: 12.5px; }
-body.ch3 #bview .item .act { grid-column: 1; grid-row: auto; flex-direction: row; justify-content: flex-end; flex-wrap: wrap; align-self: end; }
-body.ch3 .rig { grid-area: rig; } body.ch3 .scene { grid-area: scene; } body.ch3 .log { grid-area: log; }
+body.cv .ops { display: contents; }
+body.cv #tabs { grid-area: tabs; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+body.cv #view { grid-area: scene; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+body.cv.tabbuild #view { display: none; }
+body.cv:not(.tabbuild) #scene { display: none; }
+body.cv #bview { display: block; grid-area: view; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+body.cv #bview .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px; align-items: stretch; }
+body.cv #bview .item { grid-template-columns: minmax(0, 1fr); align-content: start; }
+body.cv #bview .item p { font-size: 12.5px; }
+body.cv #bview .item .act { grid-column: 1; grid-row: auto; flex-direction: row; justify-content: flex-end; flex-wrap: wrap; align-self: end; }
+body.cv .rig { grid-area: rig; } body.cv .scene { grid-area: scene; } body.cv .log { grid-area: log; }
 @media (min-width: 1101px) {
-  body.ch3 .grid { grid-template-columns: minmax(240px, 290px) minmax(0, 1fr) minmax(250px, 320px); grid-template-rows: auto minmax(240px, 0.9fr) minmax(0, 1.1fr); grid-template-areas: "rig tabs log" "rig scene log" "view view view"; }
-  body.ch3:not(.tabbuild) .grid { grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "rig tabs log" "rig scene log"; }
-  body.ch3 #bview { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
-  body.ch3 #scenec { height: 100%; }
+  body.cv .grid { grid-template-columns: minmax(240px, 290px) minmax(0, 1fr) minmax(250px, 320px); grid-template-rows: auto minmax(240px, 0.9fr) minmax(0, 1.1fr); grid-template-areas: "rig tabs log" "rig scene log" "view view view"; }
+  body.cv:not(.tabbuild) .grid { grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "rig tabs log" "rig scene log"; }
+  body.cv #bview { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+  body.cv #scenec { height: 100%; }
 }
-body.ch3:not(.tabbuild) #bview { display: none; }
+body.cv:not(.tabbuild) #bview { display: none; }
 @media (max-width: 1100px) {
-  html:has(body.ch3), body.ch3 { height: auto; overflow: auto; }
-  body.ch3 .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "tabs tabs" "scene scene" "view view" "rig log"; }
+  html:has(body.cv), body.cv { height: auto; overflow: auto; }
+  body.cv .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "tabs tabs" "scene scene" "view view" "rig log"; }
 }
-@media (max-width: 760px) { body.ch3 .grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tabs" "scene" "view" "rig" "log"; } }
+@media (max-width: 760px) { body.cv .grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tabs" "scene" "view" "rig" "log"; } }
 .stats dt.sec { grid-column: 1 / -1; margin-top: 8px; font-family: var(--f-display); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
-body.ch3 .tabs .tab { padding-inline: 9px; letter-spacing: .04em; }
+body.cv .tabs .tab { padding-inline: 9px; letter-spacing: .04em; }
 
 body.ch3:not(.tabbuild) #rockwrap { display: block; }
 .zgap { width: 10px; }
 .ztxt { cursor: default; color: var(--ink); }
 .scene-hint b { color: var(--accent); font-family: var(--f-mono); margin-right: 4px; }
-body.ch3 #view #map { height: clamp(320px, 50vh, 620px); }
-body.ch3 #view #holec { height: clamp(300px, 46vh, 560px); }
+body.cv #view #map { height: clamp(320px, 50vh, 620px); }
+body.cv #view #holec { height: clamp(300px, 46vh, 560px); }
 /* Kap. 3: širší rozložení, aby se řádky nezalamovaly */
-body.ch3 .app { max-width: 1880px; }
+body.cv .app { max-width: 1880px; }
 @media (min-width: 1101px) {
-  body.ch3 .grid { grid-template-columns: minmax(300px, 340px) minmax(0, 1fr) minmax(270px, 330px); }
+  body.cv .grid { grid-template-columns: minmax(300px, 340px) minmax(0, 1fr) minmax(270px, 330px); }
 }
-body.ch3 .stats { font-size: 13px; gap: 4px 8px; }
-body.ch3 .stats dt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-body.ch3 .stats dd { white-space: nowrap; }
-body.ch3 #bview .list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); }
-body.ch3 #bview .effrow { flex-wrap: nowrap; white-space: nowrap; }
-body.ch3 #bview .eff2 span { white-space: nowrap; }
-body.ch3 #bview .cost { white-space: nowrap; }
+body.cv .stats { font-size: 13px; gap: 4px 8px; }
+body.cv .stats dt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.cv .stats dd { white-space: nowrap; }
+body.cv #bview .list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); }
+body.cv #bview .effrow { flex-wrap: nowrap; white-space: nowrap; }
+body.cv #bview .eff2 span { white-space: nowrap; }
+body.cv #bview .cost { white-space: nowrap; }
+
+/* Kap. 1 a 2 ve stejném rozložení: asteroid / hvězda uprostřed, na jiných záložkách vlevo jako náhled */
+body.cv:not(.ch3) #scenec, body.cv:not(.ch3) #burstBtn, body.cv:not(.ch3) #sceneHint { display: none; }
+body.cv:not(.ch3) #scene .rockwrap { position: relative; flex: 1; min-height: 0; min-width: 0; display: block; }
+body.cv:not(.ch3) #scene #rock { position: absolute; top: 14px; bottom: 14px; left: 50%; transform: translateX(-50%); width: auto; height: auto; max-width: calc(100% - 28px); aspect-ratio: 1; }
+@media (max-width: 1100px) { body.cv:not(.ch3) #scene .rockwrap { height: min(70vw, 460px); } }
