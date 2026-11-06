@@ -222,8 +222,7 @@ export function ventRelease(s: State, th: number, auto = false): Blob | null {
   s.vent.kg = Math.max(0, ventTankKg(s) - kg);
   if (!auto) {
     s.vent.man = (s.vent.man ?? 0) + kg / 3;
-    s.vent.chain = s.vent.fly.some((b) => !b.auto) ? s.vent.chain + 1 : 1;
-    s.vent.best = Math.max(s.vent.best, s.vent.chain);
+    chainUp(s);
   }
   const b: Blob = { t0: s.time, r0: ventR(ventLv(s, "radius")), th0: th, kg, mult: auto ? 1 : ventChainMult(s), gold: !auto && ventGoldNow(s), auto };
   s.vent.fly.push(b);
@@ -232,6 +231,12 @@ export function ventRelease(s: State, th: number, auto = false): Blob | null {
 /** Plyn v pasti (kg) a jak je plná (0–1). */
 export const ventTankKg = (s: State) => Math.min(s.vent.kg ?? 0, ventCap(s));
 export const ventTank = (s: State) => ventTankKg(s) / ventCap(s);
+/** Řetěz: chuchvalec (ruční i z injektoru) vypuštěný, když jiný ještě letí, řetěz prodlouží. */
+const chained = (b: Blob) => !b.auto || !!b.inj;
+function chainUp(s: State) {
+  s.vent.chain = s.vent.fly.some(chained) ? s.vent.chain + 1 : 1;
+  s.vent.best = Math.max(s.vent.best, s.vent.chain);
+}
 export function ventCanBurst(s: State) {
   return ventOpen(s) && ventTank(s) >= 0.999;
 }
@@ -282,7 +287,8 @@ function ventTick(s: State, dt: number) {
       const kg = Math.min(per, v.kg);
       v.injC -= per; v.kg -= kg; sent += kg;
       v.injK = ((v.injK ?? 0) + 1) % em.length;
-      s.vent.fly.push({ t0: s.time, r0: ventR(ventLv(s, "radius")), th0: em[v.injK], kg, mult: 1, gold: false, auto: true, inj: true });
+      chainUp(s);
+      s.vent.fly.push({ t0: s.time, r0: ventR(ventLv(s, "radius")), th0: em[v.injK], kg, mult: ventChainMult(s), gold: ventGoldNow(s), auto: true, inj: true });
     }
     v.inj = (v.inj ?? 0) * (1 - Math.min(1, dt / 3)) + sent / 3;   // průměr za posledních pár sekund
     s.eff.injector = dem > 0 ? Math.min(1, v.inj / dem) : 1;
@@ -298,7 +304,7 @@ function ventTick(s: State, dt: number) {
       if (flares.length > 40) flares.shift();
     }
   }
-  if (v.chain && !v.fly.some((b) => !b.auto)) v.chain = 0;
+  if (v.chain && !v.fly.some(chained)) v.chain = 0;
 }
 export function ventUpCost(s: State, id: VentUp) {
   const u = VENT_UPS[id];

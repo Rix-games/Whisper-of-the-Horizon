@@ -550,7 +550,7 @@
     // Výkon disku a trysek, pokrytí kolektory a dilataci počítá engine (holeL, jetP, ringCov, gamma).
     scoop: { base: { plasma: 1e7 }, growth: 1.22, prod: { plasma: 1e5 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     injector: { base: { plasma: 3e7 }, growth: 1.2, cons: { plasma: 2e5 }, unlock: (s) => !!s.r.mri && hole3(s) },
-    ring: { base: { plasma: 6e7 }, growth: 1.14, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
+    ring: { base: { plasma: 6e7 }, growth: 1.145, prod: { energy: 1 }, unlock: (s) => !!s.r.accrete && hole3(s) },
     station: { base: { plasma: 3e8 }, growth: 1.22, prod: { data: 15e26 }, cons: { energy: 1e17 }, unlock: (s) => !!s.r.dilate && hole3(s) },
     jet: { base: { plasma: 1e15 }, growth: 1.18, prod: { energy: 1 }, unlock: (s) => !!s.r.mad && hole3(s) },
     hawking: { base: { plasma: 1e17, energy: 1e39 }, growth: 1.2, prod: { energy: 1, data: 1 }, cons: { plasma: 1e4 }, unlock: (s) => !!s.r.kugel && hole3(s) }
@@ -1042,8 +1042,7 @@
     s.vent.kg = Math.max(0, ventTankKg(s) - kg);
     if (!auto) {
       s.vent.man = (s.vent.man ?? 0) + kg / 3;
-      s.vent.chain = s.vent.fly.some((b2) => !b2.auto) ? s.vent.chain + 1 : 1;
-      s.vent.best = Math.max(s.vent.best, s.vent.chain);
+      chainUp(s);
     }
     const b = { t0: s.time, r0: ventR(ventLv(s, "radius")), th0: th, kg, mult: auto ? 1 : ventChainMult(s), gold: !auto && ventGoldNow(s), auto };
     s.vent.fly.push(b);
@@ -1051,6 +1050,11 @@
   }
   var ventTankKg = (s) => Math.min(s.vent.kg ?? 0, ventCap(s));
   var ventTank = (s) => ventTankKg(s) / ventCap(s);
+  var chained = (b) => !b.auto || !!b.inj;
+  function chainUp(s) {
+    s.vent.chain = s.vent.fly.some(chained) ? s.vent.chain + 1 : 1;
+    s.vent.best = Math.max(s.vent.best, s.vent.chain);
+  }
   function ventCanBurst(s) {
     return ventOpen(s) && ventTank(s) >= 0.999;
   }
@@ -1091,7 +1095,8 @@
         v.kg -= kg;
         sent += kg;
         v.injK = ((v.injK ?? 0) + 1) % em.length;
-        s.vent.fly.push({ t0: s.time, r0: ventR(ventLv(s, "radius")), th0: em[v.injK], kg, mult: 1, gold: false, auto: true, inj: true });
+        chainUp(s);
+        s.vent.fly.push({ t0: s.time, r0: ventR(ventLv(s, "radius")), th0: em[v.injK], kg, mult: ventChainMult(s), gold: ventGoldNow(s), auto: true, inj: true });
       }
       v.inj = (v.inj ?? 0) * (1 - Math.min(1, dt / 3)) + sent / 3;
       s.eff.injector = dem > 0 ? Math.min(1, v.inj / dem) : 1;
@@ -1107,7 +1112,7 @@
         if (flares.length > 40) flares.shift();
       }
     }
-    if (v.chain && !v.fly.some((b) => !b.auto)) v.chain = 0;
+    if (v.chain && !v.fly.some(chained)) v.chain = 0;
   }
   function ventUpCost(s, id) {
     const u = VENT_UPS[id];
