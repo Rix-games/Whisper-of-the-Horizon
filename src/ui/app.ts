@@ -29,7 +29,7 @@ export let buyMax: number | true = 1;
 export let viewKey = "";
 export let lastActive = Date.now();
 export const COLOR = { ore: "var(--ore)", metal: "var(--metal)", energy: "var(--energy)", data: "var(--data)", plasma: "var(--plasma)", exotic: "var(--exotic)" };
-export const UNIT = { ore: "kg", metal: "kg", energy: "J", data: "B", plasma: "kg", exotic: "kg" };
+export const UNIT = { ore: "kg", metal: "kg", energy: "J", data: "B", plasma: "kg", exotic: "foam" };
 export function amount(r, v) {
   return r === "energy" ? energy(v) : r === "data" ? bytes(v) : mass(v);
 }
@@ -282,7 +282,8 @@ export function tabsAvail() {
   if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
   if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
   if (S.hole.done) list.push(["bridge", t("ui.tabs.bridge")]);
-  if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
+  if (S.hole.done) { /* Kap. 4: Hvězda ani Horizont už nejsou potřeba */ }
+  else if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
   else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
   return list;
 }
@@ -1262,7 +1263,7 @@ export function start() {
     }
     if (tab === "map") {
       const m = (document.getElementById("map") as any);
-      if (m) S.hole.done ? drawGalaxy(m, S, now / 1e3, (id) => id === ("home" as LocationId) ? t("ui.net.ourRegion") : t(`loc.${id}.short`), (id) => locationOpen(S, id) || !!S.visited[id]) : S.star.done ? drawHoleMap(m, S, holeView(), now / 1e3) : drawMap(m, S, now / 1e3);
+      if (m) S.hole.done ? drawGalaxy(m, S, now / 1e3, galName, (id) => locationOpen(S, id) || !!S.visited[id]) : S.star.done ? drawHoleMap(m, S, holeView(), now / 1e3) : drawMap(m, S, now / 1e3);
     }
     if (tab === "hole") {
       const c = document.getElementById("holec") as HTMLCanvasElement;
@@ -1306,6 +1307,8 @@ const nodeName = (n: NB.GNode) => n.type === "home" ? t("ui.net.home") : n.name;
 const linkName = (id: string) => `${nodeName(NB.NODE[S.bridge.links[id].p])} – ${nodeName(NB.NODE[id])}`;
 const kOf = (w: number) => (Math.log10(w) - 6) / 10;
 const ly = (d: number) => `${Math.round(d * NB.MAP.ly).toLocaleString("cs-CZ")} ly`;
+const galName = (id: string) => id === "home" ? t("ui.net.ourRegion") : id === "sun" ? t("ui.net.sunEarth") : id === "center" ? t("ui.net.center") : id.startsWith("arm.") ? t(`ui.net.arms.${id.slice(4)}`) : t(`loc.${id}.short`);
+const fillTxt = (r: number) => r > 1.001 ? t("ui.net.fullX", { m: dec(r, r >= 10 ? 0 : 1) }) : t("ui.net.fillPct", { p: Math.round(r * 100) });
 function renderTop4(k: number, P: number) {
   if (S.bridge.done) { $("kprogLabel").textContent = t("ui.toNext5"); $("kbar").style.width = "100%"; return; }
   const d = NB.bstageDef(S), st = S.bridge.stage, kT = kOf(d.needW), k0 = st ? kOf(NB.BSTAGES[st - 1].needW) : kOf(S.bridge.holeW || 2.5e34);
@@ -1320,29 +1323,24 @@ function trunk() {
   return best;
 }
 function rig4Rows(): [string, string][] {
-  const P = powerW(S), f = NB.netNow(S), st = S.bridge.stage, rows: [string, string][] = [];
+  const P = powerW(S), st = S.bridge.stage, rows: [string, string][] = [];
   rows.push(["§" + t("ui.net.sec"), ""]);
-  rows.push([t("ui.net.stage"), S.bridge.done ? t("ui.net.passDone") : `${st + 1} / ${NB.BSTAGES.length} · ${t(`ui.bstages.${NB.BSTAGES[st].id}.name`)}`]);
+  rows.push([t("ui.net.stage"), S.bridge.done ? t("ui.net.passDone") : `${st + 1}/${NB.BSTAGES.length} · ${t(`ui.bstages.${NB.BSTAGES[st].id}.name`)}`]);
   rows.push([t("ui.net.power"), power(P)], [t("ui.net.fromHole"), power(S.bridge.holeW)]);
   rows.push([t("ui.net.systems"), `${num(S.bridge.n)} / ${num(NB.revealed(S).length)}`]);
   rows.push([t("ui.net.capture"), pct(NB.capture(S))]);
   if (S.b.trap >= 1) rows.push([t("ui.net.trapCap"), pct(NB.trapCapture(S))]);
-  const lk = Object.values(S.bridge.links as Record<string, NB.Link>).filter((l) => l.lk > 0), man = lk.filter((l) => !l.la);
-  rows.push([t("ui.net.locked"), lk.length ? `${num(lk.length)}${man.length ? ` · ${t("ui.net.byHand", { n: num(man.length) })}` : ""}` : "0"]);
-  const tr = trunk();
-  if (tr) {
-    const l = S.bridge.links[tr], cap = NB.capOf(S, l), sup = f.supply[tr] ?? 0;
-    rows.push(["§" + t("ui.net.trunk", { n: linkName(tr) }), ""]);
-    rows.push([t("ui.net.carries"), power(f.flow[tr] ?? 0)]);
-    rows.push([t("ui.net.state"), sup > cap * 1.001 ? t("ui.net.full", { m: dec(Math.min(99, sup / cap), sup / cap >= 10 ? 0 : 1) }) : t("ui.net.free", { p: Math.round(sup / cap * 100) })]);
-  }
+  const lk = Object.values(S.bridge.links as Record<string, NB.Link>).filter((l) => l.lk > 0);
+  rows.push([t("ui.net.locked"), num(lk.length)]);
+  const w = NB.limiter(S);
+  rows.push([t("ui.net.worst"), w ? `${nodeName(NB.NODE[w])} · ${fillTxt(NB.fillOf(S, w))}` : t("ui.net.worstNone")]);
   const { p, c } = rates(S);
   rows.push(["§" + t("ui.prod.title"), ""]);
   rows.push([t("res.exotic"), `${p.exotic - c.exotic >= 0 ? "+" : "−"}${mass(Math.abs(p.exotic - c.exotic))}/s`]);
   rows.push([t("res.data"), `+${bytes(p.data - c.data)}/s`]);
   return rows;
 }
-// ---------- karty staveb Kapitoly 4 ----------
+// ---------- karty staveb Kapitoly 4: krátce, co stavba dá ----------
 const effRow = (lbl: string, body: string) => `<span class="effrow"><span class="lbl">${esc(lbl)}</span>${body}</span>`;
 const part = (r: Res, v: number, sign = "+") => `<span><span style="color:${COLOR[r]}">${esc(t("res." + r))}</span> ${sign}${esc(rate(r, v))}</span>`;
 function withOne<T>(id: BuildingId, f: () => T): T {
@@ -1354,17 +1352,17 @@ function eff4(id: BuildingId, count: number) {
   let h = "";
   if (d.prod) {
     const outs = (k: number) => (Object.keys(d.prod) as Res[]).map((r) => part(r, prodOf(S, id, r) * k)).join(" ");
-    h += effRow(t("ui.one"), outs(1));
-    if (count >= 2) h += effRow(t("ui.all", { n: num(count) }), outs(count));
+    h += effRow(t("ui.gives"), outs(1));
+    if (count >= 2) h += effRow(t("ui.total"), outs(count));
   }
   const you = t("ui.forYou");
   if (id === "bswarm") h += effRow(you, esc(t("ui.net.eff.swarm", { a: pct(NB.capture(S)), b: pct(withOne(id, () => NB.capture(S))) })));
   if (id === "trap") h += effRow(you, esc(t("ui.net.eff.trap", { a: pct(NB.trapCapture(S)), b: pct(withOne(id, () => NB.trapCapture(S))) })));
   if (id === "anchor") h += effRow(you, esc(t("ui.net.eff.anchor", { a: dec(NB.anchorMult(S), 2), b: dec(withOne(id, () => NB.anchorMult(S)), 2) })));
-  if (id === "plate" && S.b.anchor >= 1) h += effRow(you, esc(t("ui.net.eff.plateAnchor")));
+  if (id === "plate" && S.b.anchor >= 1) h += effRow(t("ui.net.eff.anchorsLbl"), esc(t("ui.net.eff.plateAnchor", { a: dec(NB.anchorMult(S), 2), b: dec(withOne(id, () => NB.anchorMult(S)), 2) })));
   if (id === "beacon") {
     const more = withOne(id, () => NB.revealCount(S)) - NB.revealCount(S), left = NB.NODES.filter((n) => n.rank < 100 && !NB.isRevealed(S, n)).length;
-    h += effRow(you, esc(left ? t("ui.net.eff.beacon", { n: Math.min(more, left) }) : t("ui.net.eff.beaconAll")));
+    h += effRow(you, esc(left ? more ? t("ui.net.eff.beacon", { n: Math.min(more, left) }) : t("ui.net.eff.beaconHalf") : t("ui.net.eff.beaconAll")));
   }
   if (id === "pair") h += effRow(you, esc(t("ui.net.eff.pair", { m: dec(S.r.pairs2 ? NB.NET.pairM2 : NB.NET.pairM, 2), t: times(exoMult(S)) })));
   if (id === "plock") {
@@ -1374,10 +1372,9 @@ function eff4(id: BuildingId, count: number) {
   if (id === "raider" || id === "router") {
     const r = S.bridge.rate?.[id] ?? 0, tg = S.bridge.target?.[id] ?? "";
     if (S.off[id]) h += effRow(t("ui.net.takes"), `<span class="dim">${esc(t("ui.stopped"))}</span>`);
-    else if (!count) h += "";
-    else if (!tg) h += effRow(t("ui.net.takes"), `<span class="dim">${esc(t(id === "raider" ? "ui.net.eff.raiderIdle" : "ui.net.eff.routerIdle"))}</span>`);
-    else {
-      const what = id === "raider" ? t("ui.net.eff.raider", { n: nodeName(NB.NODE[tg]) }) : t("ui.net.eff.router", { n: linkName(tg), a: S.bridge.links[tg].lv, b: S.bridge.links[tg].lv + 1 });
+    else if (count && !tg) h += effRow(t("ui.net.takes"), `<span class="dim">${esc(t(id === "raider" ? "ui.net.eff.raiderIdle" : "ui.net.eff.routerIdle"))}</span>`);
+    else if (count) {
+      const what = id === "raider" ? t("ui.net.eff.raider", { n: nodeName(NB.NODE[tg]) }) : t("ui.net.eff.router", { n: nodeName(NB.NODE[tg]), a: S.bridge.links[tg].lv, b: S.bridge.links[tg].lv + 1 });
       h += effRow(t("ui.net.takes"), `${part("exotic", r, "−")} <span class="arrow">→</span> <span style="color:var(--exotic)">${esc(what)}</span>`);
     }
     if (S.bridge.made[id]) h += effRow(t("ui.net.made"), esc(t(id === "raider" ? "ui.net.eff.raiderMade" : "ui.net.eff.routerMade", { n: num(S.bridge.made[id]) })));
@@ -1385,7 +1382,7 @@ function eff4(id: BuildingId, count: number) {
   return h;
 }
 const syncNow: Record<NB.SyncUp, (l: number) => string> = {
-  win: (l) => t("ui.net.sync.v.win", { s: dec(NB.syncWin(S, l), 2) }),
+  win: (l) => t("ui.net.sync.v.win", { s: dec(NB.syncWin(S, l), 1) }),
   len: (l) => t("ui.net.sync.v.len", { s: NB.lockLen(S, l) }),
   dbl: (l) => t(l ? "ui.net.sync.v.dbl2" : "ui.net.sync.v.dbl1")
 };
@@ -1405,15 +1402,16 @@ function updateSync(root: El) {
     el.querySelector<El>("[data-sup]").disabled = max || S.res.exotic < c;
   });
 }
-// ---------- záložka Most: stadia a detail mostu ----------
+// ---------- záložka Most: vybraný most, všechny mosty a stadia ----------
 function bridgeHTML() {
   const ladder = NB.BSTAGES.map((st, i) => `<li data-bs="${i}"><span class="num">${i + 1}</span>${esc(t(`ui.bstages.${st.id}.name`))}</li>`).join("") + `<li data-bs="${NB.BSTAGES.length}"><span class="num">✦</span>${esc(t("ui.net.passName"))}</li>`;
   return `<div class="starbox"><canvas id="throatc"></canvas></div>
   <div class="bridgegrid">
   <div class="stagecard"><div class="sc-head"><h3 data-f="bname"></h3><span class="tag mono" data-f="blv"></span></div>
-    <dl class="sgrid" data-f="bgrid"></dl><div class="bar"><b data-f="bfill"></b></div><p class="dim" data-f="bnote"></p>
-    <div class="row"><button class="btn" data-widen="" data-f="wbtn"></button><span class="dim" data-f="wnow"></span></div>
-    <div class="section-label">${esc(t("ui.net.allLinks"))}</div><div class="linklist" data-f="links"></div></div>
+    <dl class="bgrid2" data-f="bgrid"></dl><div class="bar"><b data-f="bfill"></b></div>
+    <p class="bnote" data-f="bnote"></p>
+    <div class="row"><button class="btn" data-widen="" data-f="wbtn"></button><button class="btn ghost" data-bsel="" data-f="lbtn" hidden></button><span class="dim" data-f="wnow"></span></div>
+    <div class="section-label">${esc(t("ui.net.allLinks"))} <span class="dim" data-f="lcount"></span></div><div class="linklist" data-f="links"></div></div>
   <div><ol class="ladder">${ladder}</ol>
   <div class="stagecard">
     <div class="sc-head"><h3 data-f="name"></h3><span class="tag mono" data-f="of"></span></div>
@@ -1427,6 +1425,7 @@ function selLink() {
   const sel = netSel ?? S.bridge.sel;
   return sel && S.bridge.links[sel] ? sel : trunk();
 }
+let linksKey = "";
 function updateBridge() {
   const view = $("view"), set = (f: string, html: string) => {
     const el = view.querySelector<El>(`[data-f=${f}]`);
@@ -1460,30 +1459,46 @@ function updateBridge() {
   // vybraný most
   const id = selLink(), f = NB.netNow(S);
   if (!id) { set("bname", esc(t("ui.net.noLink"))); set("bgrid", ""); set("links", ""); return; }
-  const l = S.bridge.links[id], cap = NB.capOf(S, l), sup = f.supply[id] ?? 0, fl = f.flow[id] ?? 0;
+  const l = S.bridge.links[id], cap = NB.capOf(S, l), sup = f.supply[id] ?? 0, fl = f.flow[id] ?? 0, full = sup > cap * 1.001;
   set("bname", esc(linkName(id)));
   set("blv", esc(t("ui.net.level", { n: l.lv })));
   const rows: [string, string][] = [
-    [t("ui.net.wants"), power(sup)], [t("ui.net.capacity"), power(NB.capBase(S, l.lv))],
-    [t("ui.net.lock"), l.lk > 0 ? t(l.la ? "ui.net.lockAuto" : "ui.net.lockHand", { m: dec(NB.lockMult(S, l), 2), s: Math.ceil(l.lk) }) : t("ui.net.lockNone", { s: dec(waveIn(S, id), 1) })],
-    [t("ui.net.flowHome"), power(fl)], [t("ui.net.length"), ly(NB.linkLen(id, l))], [t("ui.net.shift"), S.r.shifted ? t("ui.net.shiftOn") : "0 s"]
+    [t("ui.net.capacity"), power(cap)], [t("ui.net.wants"), power(sup)], [t("ui.net.flowHome"), power(fl)],
+    [t("ui.net.lock"), l.lk > 0 ? t(l.la ? "ui.net.lockAuto" : "ui.net.lockHand", { m: dec(NB.lockMult(S, l), 2), s: Math.ceil(l.lk) }) : t("ui.net.lockNone")],
+    [t("ui.net.length"), ly(NB.linkLen(id, l))]
   ];
   set("bgrid", rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join(""));
-  view.querySelector<El>("[data-f=bfill]")?.style.setProperty("width", (Math.min(1, fl / Math.max(1, sup)) * 100).toFixed(1) + "%");
-  set("bnote", esc(sup > cap * 1.001 ? t("ui.net.over", { m: dec(sup / cap, sup / cap >= 10 ? 0 : 1) }) : t("ui.net.under")));
+  const bf = view.querySelector<El>("[data-f=bfill]");
+  if (bf) { bf.style.width = (Math.min(1, sup / Math.max(1, cap)) * 100).toFixed(1) + "%"; bf.classList.toggle("full", full); }
+  // co brzdí: tenhle most, nebo jiný dál ve větvi?
+  const lim = full ? id : NB.limiter(S, id), lb = view.querySelector<El>("[data-f=lbtn]");
+  let note: string;
+  if (full) note = t("ui.net.noteFull", { m: dec(sup / cap, sup / cap >= 10 ? 0 : 1) });
+  else if (lim) note = t("ui.net.noteOther", { n: linkName(lim), m: fillTxt(NB.fillOf(S, lim)) });
+  else note = t("ui.net.noteFree");
+  set("bnote", esc(note));
+  view.querySelector<El>("[data-f=bnote]")?.classList.toggle("warnc", full);
+  if (lb) { lb.hidden = !lim || lim === id; if (lim && lim !== id) { lb.dataset.bsel = lim; lb.textContent = t("ui.net.showLink"); } }
   const wb = view.querySelector<El>("[data-f=wbtn]"), c = NB.upCost(S, l.lv);
   if (wb) {
     wb.dataset.widen = id;
     wb.disabled = S.res.exotic < c;
+    wb.classList.toggle("ghost", !full);
     wb.innerHTML = esc(t("ui.net.widenBtn", { c: mass(c) }));
   }
   const g = NB.widenGain(S, id);
-  set("wnow", esc(g > 0 ? t("ui.net.widenGain", { w: power(g) }) : t("ui.net.widenNoGain")));
-  const ids = Object.keys(S.bridge.links).sort((a, b) => (f.supply[b] ?? 0) - (f.supply[a] ?? 0)).slice(0, 14);
-  set("links", ids.map((k) => {
-    const lk = S.bridge.links[k], full = (f.supply[k] ?? 0) > NB.capOf(S, lk) * 1.001;
-    return `<button class="lnk${k === id ? " on" : ""}${full ? " full" : ""}" data-bsel="${k}"><span>${esc(linkName(k))}</span><span class="mono">${esc(t("ui.net.level", { n: lk.lv }))}${lk.lk > 0 ? " ·" + (lk.la ? " ◇" : " ◆") : ""}</span></button>`;
-  }).join(""));
+  set("wnow", esc(g > 0 ? t("ui.net.widenGain", { w: power(g) }) : ""));
+  // všechny mosty: nejplnější nahoře
+  const ids = Object.keys(S.bridge.links).sort((a, b) => NB.fillOf(S, b) - NB.fillOf(S, a));
+  set("lcount", esc(`(${ids.length})`));
+  const key = ids.map((k) => `${k}${S.bridge.links[k].lv}${Math.round(NB.fillOf(S, k) * 20)}${S.bridge.links[k].lk > 0 ? "z" : ""}`).join() + id;
+  if (key !== linksKey) {
+    linksKey = key;
+    set("links", ids.map((k) => {
+      const lk = S.bridge.links[k], r = NB.fillOf(S, k);
+      return `<button class="lnk${k === id ? " on" : ""}${r > 1.001 ? " full" : ""}" data-bsel="${k}"><span>${esc(linkName(k))}</span><span class="mono">${lk.lk > 0 ? (lk.la ? "◇ " : "◆ ") : ""}${esc(t("ui.net.lvShort", { n: lk.lv }))} · ${esc(fillTxt(r))}</span></button>`;
+    }).join(""));
+  }
 }
 function onAdvance4() {
   if (!bridgeReady(S).ok) return;
@@ -1491,10 +1506,11 @@ function onAdvance4() {
   if (S.bridge.stage === NB.BSTAGES.length - 1) confirmModal(t("ui.net.passWarn.title"), t("ui.net.passWarn.body", { t: duration(NB.NET.passSec) }), t("ui.net.passWarn.ok"), t("ui.net.passWarn.cancel"), go);
   else go();
 }
-// ---------- mapa sítě uprostřed: tah = most, ťuknutí = zámek, uzel = bublina ----------
+// ---------- mapa sítě uprostřed: tah = most, klik na most = zámek, klik na hvězdu = bublina ----------
 let netSel: string | null = null, netBubble: string | null = null, netHover: string | null = null, netHoverLink: string | null = null;
 let netDrag: NetUI["drag"] = null, dragStart: { x: number; y: number; id: string | null; link: string | null } | null = null;
-const netFx: { flashes: NetUI["flashes"]; burst: NetUI["burst"] } = { flashes: [], burst: [] };
+let netHelp: boolean | null = null;
+const netFx: { flashes: NetUI["flashes"]; burst: NetUI["burst"]; tips: NetUI["tips"] } = { flashes: [], burst: [], tips: [] };
 function netXY(e: PointerEvent) {
   const c = $("scenec"), r = c.getBoundingClientRect();
   return { x: e.clientX - r.left, y: e.clientY - r.top, W: r.width, H: r.height };
@@ -1510,7 +1526,7 @@ function onOpen(to: string) {
   const from = NB.bestFrom(S, to);
   if (from && NB.openLink(S, from, to)) {
     if (S.settings.sound) chime();
-    netBubble = to;
+    netBubble = to; bubKey = "";
     onJournal(checkJournal(S)); renderAll(); save();
   }
 }
@@ -1518,6 +1534,11 @@ function bindNet(sc: El) {
   const wrap = sc.parentElement as El, bub = document.createElement("div");
   bub.id = "netBubble"; bub.className = "netbubble"; bub.hidden = true;
   wrap.appendChild(bub);
+  const help = document.createElement("button");
+  help.id = "netHelpBtn"; help.className = "iconbtn nethelp"; help.textContent = "?"; help.hidden = true;
+  help.setAttribute("aria-label", t("ui.net.helpBtn"));
+  help.addEventListener("click", () => { netHelp = !(netHelp ?? true); renderScene4(); });
+  wrap.appendChild(help);
   sc.addEventListener("pointermove", (e: PointerEvent) => {
     if (!S.hole.done) return;
     const p = netXY(e), g = netGeo(p.W, p.H);
@@ -1537,11 +1558,12 @@ function bindNet(sc: El) {
     dragStart = { x: p.x, y: p.y, id: node, link };
     sc.setPointerCapture(e.pointerId);
     if (link) {
-      // ťuknutí na most: když jím prochází vlna, zamkne se; jinak se jen vybere
-      const ok = NB.tapLock(S, link);
-      netFx.flashes.push({ id: link, t: performance.now() / 1e3, ok });
+      // klik na most: když jím prochází vlna, zamkne se; jinak se jen vybere a ukáže, kdy vlna přijde
+      const ok = NB.tapLock(S, link), now = performance.now() / 1e3;
+      netFx.flashes.push({ id: link, t: now, ok });
+      netFx.tips.push({ x: p.x, y: p.y - 14, t: now, text: ok ? t("ui.net.lockedNow", { s: NB.lockLen(S) }) : S.bridge.links[link].lk > 0 ? t("ui.net.stillLocked", { s: Math.ceil(S.bridge.links[link].lk), w: dec(waveIn(S, link), 1) }) : t("ui.net.waveIn", { s: dec(waveIn(S, link), 1) }), ok });
       if (ok && S.settings.sound) chime();
-      netSel = link; S.bridge.sel = link; netBubble = link;
+      netSel = link; S.bridge.sel = link; netBubble = null;
       renderBubble(); renderRig();
       onJournal(checkJournal(S));
     }
@@ -1552,13 +1574,13 @@ function bindNet(sc: El) {
     if (netDrag) {
       if (netDrag.to && netDrag.ok && NB.openLink(S, netDrag.from, netDrag.to)) {
         if (S.settings.sound) chime();
-        netBubble = netDrag.to;
+        netBubble = netDrag.to; bubKey = "";
         onJournal(checkJournal(S)); renderAll(); save();
       }
     } else if (dragStart.id && Math.hypot(p.x - dragStart.x, p.y - dragStart.y) <= 6) {
       netBubble = dragStart.id === "home" ? null : dragStart.id;
       if (dragStart.id !== "home" && S.bridge.links[dragStart.id]) { netSel = dragStart.id; S.bridge.sel = dragStart.id; }
-    } else if (!dragStart.link) netBubble = null;
+    } else if (!dragStart.link && !dragStart.id) netBubble = null;
     netDrag = null; dragStart = null;
     renderBubble();
   };
@@ -1574,40 +1596,51 @@ function bindNet(sc: El) {
   });
 }
 const TYPE_KEY = (n: NB.GNode) => `ui.net.types.${n.type}`;
+/** Bublina u hvězdy: kostra se staví jen při změně hvězdy, pak se mění jen čísla a stav tlačítek (tlačítko se nesmí přestavět pod kurzorem). */
+let bubKey = "";
 function renderBubble() {
   const el = $("netBubble");
   if (!el) return;
   const id = netBubble;
-  if (!id || !S.hole.done || tab !== "build" || !NB.NODE[id] || !NB.isRevealed(S, NB.NODE[id])) { el.hidden = true; el.dataset.k = ""; return; }
-  const n = NB.NODE[id], l = S.bridge.links[id], f = NB.netNow(S);
-  let h = `<div class="bh"><b>${esc(nodeName(n))}</b><button class="iconbtn" data-bclose="1" aria-label="${esc(t("ui.close"))}">×</button></div><div class="dim">${esc(t(TYPE_KEY(n)))}</div>`;
-  const rows: [string, string][] = [[n.type === "dark" ? t("ui.net.darkL") : t("ui.net.L"), power(n.L)], [t("ui.net.fromHome"), ly(n.d)]];
-  if (l) {
-    rows.push([t("ui.net.sends"), power(NB.nodeOut(S, n))], [t("ui.net.bridge"), t("ui.net.level", { n: l.lv })], [t("ui.net.flowCap"), `${power(f.flow[id] ?? 0)} / ${power(NB.capOf(S, l))}`]);
+  if (!id || !S.hole.done || tab !== "build" || !NB.NODE[id] || !NB.isRevealed(S, NB.NODE[id])) { el.hidden = true; bubKey = ""; return; }
+  const n = NB.NODE[id], l = S.bridge.links[id], f = NB.netNow(S), from = l ? null : NB.bestFrom(S, id);
+  const key = `${id}|${!!l}|${from ?? "-"}`;
+  if (key !== bubKey) {
+    bubKey = key;
+    let h = `<div class="bh"><b>${esc(nodeName(n))}</b><button class="iconbtn" data-bclose="1" aria-label="${esc(t("ui.close"))}">×</button></div><div class="dim">${esc(t(TYPE_KEY(n)))}</div><dl data-f="rows"></dl><p class="dim" data-f="note"></p><div class="row">`;
+    if (l) h += `<button class="btn" data-widen="${id}" data-f="act"></button><button class="btn ghost" data-bsel="${id}">${esc(t("ui.net.detail"))}</button>`;
+    else if (from) h += `<button class="btn" data-open="${id}" data-f="act"></button>`;
+    el.innerHTML = h + "</div>";
   }
-  h += `<dl>${rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}</dl>`;
+  const set = (k: string, html: string) => { const e2 = el.querySelector<El>(`[data-f=${k}]`); if (e2 && e2.innerHTML !== html) e2.innerHTML = html; };
+  const rows: [string, string][] = [[n.type === "stream" ? t("ui.net.streamL") : t("ui.net.L"), power(n.L)], [t("ui.net.fromHome"), ly(n.d)]];
+  if (l) rows.push([t("ui.net.sends"), power(NB.nodeOut(S, n))], [t("ui.net.bridge"), `${t("ui.net.level", { n: l.lv })} · ${fillTxt(NB.fillOf(S, id))}`]);
+  set("rows", rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join(""));
+  const act = el.querySelector<El>("[data-f=act]");
   if (l) {
-    const c = NB.upCost(S, l.lv), g = NB.widenGain(S, id);
-    h += `<p class="dim">${esc(g > 0 ? t("ui.net.widenGain", { w: power(g) }) : t("ui.net.widenNoGain"))}</p><div class="row"><button class="btn" data-widen="${id}" ${S.res.exotic < c ? "disabled" : ""}>${esc(t("ui.net.widenBtn", { c: mass(c) }))}</button><button class="btn ghost" data-bsel="${id}">${esc(t("ui.net.detail"))}</button></div>`;
-  } else {
-    const from = NB.bestFrom(S, id);
-    if (from) {
-      const c = NB.openCost(S, from, id);
-      h += `<p class="dim">${esc(t("ui.net.openFrom", { n: nodeName(NB.NODE[from]), g: power(NB.openGain(S, from, id)) }))}</p><div class="row"><button class="btn" data-open="${id}" ${S.res.exotic < c ? "disabled" : ""}>${esc(t("ui.net.openBtn", { c: mass(c) }))}</button></div>`;
-    } else h += `<p class="dim">${esc(t("ui.net.outOfReach", { d: ly(NB.NET.reach) }))}</p>`;
-  }
-  if (el.innerHTML !== h) el.innerHTML = h;
+    const c = NB.upCost(S, l.lv), g = NB.widenGain(S, id), lim = NB.fillOf(S, id) > 1.001 ? null : NB.limiter(S, id);
+    set("note", esc(g > 0 ? t("ui.net.widenGain", { w: power(g) }) : lim ? t("ui.net.noteOther", { n: linkName(lim), m: fillTxt(NB.fillOf(S, lim)) }) : t("ui.net.noteFree")));
+    if (act) { act.disabled = S.res.exotic < c; const tx = esc(t("ui.net.widenBtn", { c: mass(c) })); if (act.innerHTML !== tx) act.innerHTML = tx; }
+  } else if (from) {
+    const c = NB.openCost(S, from, id);
+    set("note", esc(t("ui.net.openFrom", { n: nodeName(NB.NODE[from]), g: power(NB.openGain(S, from, id)) })));
+    if (act) { act.disabled = S.res.exotic < c; const tx = esc(t("ui.net.openBtn", { c: mass(c) })); if (act.innerHTML !== tx) act.innerHTML = tx; }
+  } else set("note", esc(t("ui.net.outOfReach", { d: ly(NB.NET.reach) })));
   el.hidden = false;
   const c = $("scenec"), r = c.getBoundingClientRect(), g = netGeo(r.width, r.height), [px, py] = toPx(g, n);
   const w = el.offsetWidth || 260, hh = el.offsetHeight || 160;
-  el.style.left = Math.max(8, Math.min(r.width - w - 8, px + 18)) + "px";
-  el.style.top = Math.max(8, Math.min(r.height - hh - 8, py - hh / 2)) + "px";
+  const left = Math.round(Math.max(8, Math.min(r.width - w - 8, px + 18 + w > r.width - 8 ? px - w - 18 : px + 18))), top = Math.round(Math.max(8, Math.min(r.height - hh - 8, py - hh / 2)));
+  if (el.style.left !== left + "px") el.style.left = left + "px";
+  if (el.style.top !== top + "px") el.style.top = top + "px";
 }
 function renderScene4() {
   $("burstBtn").hidden = true;
-  const hint = $("sceneHint");
-  hint.hidden = tab !== "build" || S.bridge.n >= 4 && S.bridge.locks >= 3;
-  const html = t("ui.net.help").split("|").map((x, i) => `<b>${i + 1}</b> ${esc(x)}`).join("<br>");
+  const hint = $("sceneHint"), hb = $("netHelpBtn");
+  const show = (netHelp ?? S.bridge.n < 3) && tab === "build";
+  hint.hidden = !show;
+  if (hb) { hb.hidden = tab !== "build"; hb.setAttribute("aria-pressed", String(show)); }
+  const steps = t("ui.net.help").split("|").map((x, i) => `<b>${i + 1}</b> ${esc(x)}`).join("<br>");
+  const html = `${steps}<span class="tipsh">${esc(t("ui.net.tipsTitle"))}</span>${t("ui.net.tips").split("|").map((x) => `· ${esc(x)}`).join("<br>")}`;
   if (hint.innerHTML !== html) hint.innerHTML = html;
   renderBubble();
 }
@@ -1620,11 +1653,11 @@ function frame4(time: number) {
       flow: f, hover: netHover, hoverLink: netHoverLink, sel: netSel, drag: netDrag,
       raider: S.off.raider ? "" : tg.raider, router: S.off.router ? "" : tg.router, raiderFrom: bo ?? "",
       raiderP: tg.raider ? S.bridge.bank.raider / Math.max(1, bo ? NB.openCost(S, bo, tg.raider) : 1) : 0,
-      pulseText: sel ? t("ui.net.pulseLine", { w: dec(wi, 1) }) : t("ui.net.pulseOnly"), flashes: netFx.flashes, burst: netFx.burst
+      pulseText: sel ? t("ui.net.pulseLine", { n: nodeName(NB.NODE[sel]), w: dec(wi, 1) }) : t("ui.net.pulseOnly"), flashes: netFx.flashes, burst: netFx.burst, tips: netFx.tips
     }, time, nodeName);
   } else {
     const sub = sel ? t("ui.net.mouthSub", { d: ly(n.d), n: S.bridge.links[sel].lv }) : t("ui.net.mouthNone");
-    drawMouth($("rockc") as unknown as HTMLCanvasElement, n, time, t("ui.net.mouth", { n: nodeName(n) }), sub);
+    drawMouth($("rockc") as unknown as HTMLCanvasElement, n, time, t("ui.net.mouth", { n: nodeName(n) }), sub, sel ? t(TYPE_KEY(n)) : "");
   }
   if (tab === "bridge" && sel) {
     const c = document.getElementById("throatc") as HTMLCanvasElement, l = S.bridge.links[sel], f = NB.netNow(S);

@@ -6,7 +6,7 @@ import type { Link, State } from './state.js';
 export type { Link };
 import { B, ch4 } from './defs.js';
 
-export type NodeType = 'home' | 'red' | 'sun' | 'binary' | 'neutron' | 'blue' | 'assoc' | 'cluster' | 'nebula' | 'arm' | 'kilo' | 'dark';
+export type NodeType = 'home' | 'red' | 'sun' | 'binary' | 'neutron' | 'blue' | 'assoc' | 'cluster' | 'nebula' | 'arm' | 'kilo' | 'stream';
 export interface GNode { id: string; name: string; type: NodeType; x: number; y: number; L: number; d: number; rank: number }
 
 /** Mapa oblasti galaxie: šířka 1,6, výška 1 (jednotky mapy, 1 ≈ 4 000 světelných let). */
@@ -23,7 +23,7 @@ export const NET = {
   capG: 1.35,          // propustnost za úroveň (plocha hrdla)
   swarmF: 0.05,        // kolik záření soustavy zachytí jeden roj
   trapF: 0.05,         // kolik temné hmoty zachytí jedna anihilační past
-  anchorK: 0.04,       // kotvy: propustnost až ×3, víc s každou deskou
+  anchorK: 0.02,       // kotvy: propustnost až ×3, víc s každou deskou
   wave: 0.55,          // rychlost vlny pulsu (jednotky mapy za s)
   pulse: 7.3,
   lockM: 1.5,          // ruční zámek
@@ -46,7 +46,7 @@ export const BSTAGES = [
 ];
 /** Zářivý výkon typů soustav (W) – řádově podle skutečných objektů. */
 const TYPE_L: Record<NodeType, number> = {
-  home: 0, red: 2e25, sun: 4e26, binary: 3e27, neutron: 1e27, blue: 3e32, assoc: 3e33, cluster: 6e33, nebula: 2e34, arm: 6e35, kilo: 2e33, dark: 1.3e36
+  home: 0, red: 2e25, sun: 4e26, binary: 3e27, neutron: 1e27, blue: 3e32, assoc: 3e33, cluster: 6e33, nebula: 2e34, arm: 6e35, kilo: 2e33, stream: 1.3e36
 };
 
 // ---------- generování mapy (deterministicky, stejná pro všechny hráče) ----------
@@ -60,7 +60,7 @@ function nameFor(type: NodeType, r: () => number, used: Set<string>) {
     const g = GREEK[Math.floor(r() * GREEK.length)];
     const nm = type === 'red' ? `GJ ${n}` : type === 'sun' ? g : type === 'binary' ? `${g} A/B` : type === 'neutron' ? `PSR J${n}` : type === 'blue' ? `HD ${n * 31 % 99999}` :
       type === 'assoc' ? `OB ${g} ${1 + n % 9}` : type === 'cluster' ? `NGC ${n}` : type === 'nebula' ? `${g} · mlhovina` : type === 'arm' ? `Rameno ${String.fromCharCode(65 + n % 8)}${n % 90 + 10}` :
-      type === 'kilo' ? `GW ${n}` : `Temný uzel ${n % 900 + 100}`;
+      type === 'kilo' ? `GW ${n}` : `Proud Sgr ${String.fromCharCode(65 + n % 6)}${n % 9 + 1}`;
     if (!used.has(nm)) { used.add(nm); return nm; }
   }
   return `X ${used.size}`;
@@ -92,7 +92,7 @@ function generate(seed: number) {
   });
   // kilonova: tři uzly bohaté na exotiku v polovině ramene; halo: temné uzly na okrajích mapy
   place(3, (x, y) => dist(x, y) > 0.7 && dist(x, y) < 1.05, 0.09).forEach((p, i) => nodes.push({ id: 'k' + i, name: nameFor('kilo', r, used), type: 'kilo', x: p.x, y: p.y, L: TYPE_L.kilo * (1 + i * 0.4), d: dist(p.x, p.y), rank: 100 + i }));
-  place(6, (x, y) => dist(x, y) > 0.95 && (y < 0.2 || y > 0.8 || x > 1.4), 0.09).forEach((p, i) => nodes.push({ id: 'd' + i, name: nameFor('dark', r, used), type: 'dark', x: p.x, y: p.y, L: TYPE_L.dark * Math.pow(10, r() * 0.4 - 0.2), d: dist(p.x, p.y), rank: 200 + i }));
+  place(6, (x, y) => dist(x, y) > 0.95 && (y < 0.2 || y > 0.8 || x > 1.4), 0.09).forEach((p, i) => nodes.push({ id: 'd' + i, name: nameFor('stream', r, used), type: 'stream', x: p.x, y: p.y, L: TYPE_L.stream * Math.pow(10, r() * 0.4 - 0.2), d: dist(p.x, p.y), rank: 200 + i }));
   return nodes;
 }
 /** Každá soustava musí jít dosáhnout mosty o délce nejvýš NET.reach. */
@@ -119,7 +119,7 @@ export function revealCount(s: State) {
 export function isRevealed(s: State, n: GNode) {
   if (n.type === 'home') return true;
   if (n.type === 'kilo') return !!s.visited.kilonova;
-  if (n.type === 'dark') return !!s.visited.rotation;
+  if (n.type === 'stream') return !!s.visited.rotation;
   return n.rank < revealCount(s) || !!s.bridge.links[n.id];
 }
 export const revealed = (s: State) => NODES.filter((n) => isRevealed(s, n));
@@ -143,7 +143,7 @@ export function countType(s: State, t: NodeType) {
 /** Kolik záření soustava pošle do svého mostu (bez omezení hrdel). */
 export function nodeOut(s: State, n: GNode, links = s.bridge.links) {
   if (n.type === 'home') return 0;
-  if (n.type === 'dark') return n.L * trapCapture(s);
+  if (n.type === 'stream') return n.L * trapCapture(s);
   let v = n.L * capture(s);
   if (s.r.spectral && (n.type === 'blue' || n.type === 'assoc')) v *= 2;
   if (n.type === 'cluster' && s.visited.globular) v *= 2;
@@ -153,8 +153,11 @@ export function nodeOut(s: State, n: GNode, links = s.bridge.links) {
   for (const id in links) if (links[id].p === n.id && NODE[id].type === 'cluster') { v *= 1.5; break; }
   return v;
 }
-export function anchorMult(s: State) {
-  return 1 + 2 * (1 - Math.exp(-NET.anchorK * Math.floor(s.b.anchor) * (1 + Math.floor(s.b.plate) / 40)));
+/** Síla jedné kotvy: roste s počtem Casimirových desek (každých 20 desek +100 %). */
+export const anchorPer = (s: State, plates = Math.floor(s.b.plate)) => NET.anchorK * (1 + plates / 20);
+/** Kotvy ústí: propustnost všech mostů, nasycení nejvýš ×3 (každá další kotva přidá o něco méně). */
+export function anchorMult(s: State, anchors = Math.floor(s.b.anchor), plates = Math.floor(s.b.plate)) {
+  return 1 + 2 * (1 - Math.exp(-anchors * anchorPer(s, plates)));
 }
 export function lockMult(s: State, l: Link) {
   if (l.lk <= 0) return 1;
@@ -219,6 +222,7 @@ export function bestFrom(s: State, to: string) {
 function addLink(s: State, from: string, to: string) {
   s.bridge.links[to] = { p: from, lv: 0, lk: 0, la: false, t: s.time };
   s.bridge.n++;
+  if (NODE[to]?.type === 'cluster') s.bridge.cluster = true;
 }
 export function openLink(s: State, from: string, to: string) {
   if (!canLink(s, from, to)) return false;
@@ -272,6 +276,21 @@ export function worstLink(s: State) {
   }
   return best;
 }
+/** Most v podstromu mostu `id` (i on sám), který brzdí nejvíc: větev za ním chce poslat nejvíc přes jeho propustnost. */
+export function limiter(s: State, id: string | null = null): string | null {
+  const f = netNow(s), L = s.bridge.links;
+  const kids: Record<string, string[]> = {};
+  for (const k in L) (kids[L[k].p] ??= []).push(k);
+  let best: string | null = null, bv = 1.001;
+  const walk = (k: string) => {
+    if (k !== 'home') { const r = (f.supply[k] ?? 0) / capOf(s, L[k]); if (r > bv) { bv = r; best = k; } }
+    for (const c of kids[k] ?? []) walk(c);
+  };
+  walk(id ?? 'home');
+  return best;
+}
+/** Jak plný most je (větev / propustnost). Nad 1 = hrdlo nestačí. */
+export const fillOf = (s: State, id: string) => (netNow(s).supply[id] ?? 0) / capOf(s, s.bridge.links[id]);
 /** Nejlepší rozšíření podle přínosu a ceny. */
 export function bestWiden(s: State) {
   let best: string | null = null, bv = 0;
@@ -290,7 +309,7 @@ export const SYNC_UPS = { win: { base: 2e19, g: 8, max: 4 }, len: { base: 3e19, 
 export type SyncUp = keyof typeof SYNC_UPS;
 export const SYNC_IDS = Object.keys(SYNC_UPS) as SyncUp[];
 export const syncLv = (s: State, id: SyncUp) => s.bridge.lv[id] ?? 0;
-export const syncWin = (s: State, l = syncLv(s, 'win')) => 0.8 + 0.25 * l;
+export const syncWin = (s: State, l = syncLv(s, 'win')) => 1.4 + 0.3 * l;
 export const lockLen = (s: State, l = syncLv(s, 'len')) => 90 + 30 * l;
 export const syncCost = (s: State, id: SyncUp) => SYNC_UPS[id].base * Math.pow(SYNC_UPS[id].g, syncLv(s, id));
 export function syncUpgrade(s: State, id: SyncUp) {
@@ -372,6 +391,7 @@ export function bridgeTick(s: State, dt: number, prod: number) {
       br.made[k]++;
     }
   }
+  if (!br.fullSeen && br.n >= 1 && limiter(s)) br.fullSeen = true;
   if (br.pass >= 0) {
     br.pass -= dt;
     if (br.pass <= 0) { br.pass = -1; br.done = true; if (s.chapterDone < 4) s.chapterDone = 4; }

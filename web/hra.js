@@ -8,14 +8,15 @@
       energy: "Energie",
       data: "Data",
       plasma: "Plazma",
-      exotic: "Exotika"
+      exotic: "P\u011Bna"
     },
-    resOf: { ore: "rudy", metal: "kovu", energy: "energie", data: "dat", plasma: "plazmatu", exotic: "exotiky" },
+    resOf: { ore: "rudy", metal: "kovu", energy: "energie", data: "dat", plasma: "plazmatu", exotic: "p\u011Bny" },
     unit: {
       kg: { name: "kg \xB7 kilogram", text: "Hmotnost. 1 t = 1 000 kg. Mal\xFD asteroid o pr\u016Fm\u011Bru 1 km v\xE1\u017E\xED zhruba 10\xB9\xB2 kg." },
       J: { name: "J \xB7 joule", text: "Energie. Jeden joule dod\xE1 v\xFDkon 1 W za 1 sekundu. Slunce vyz\xE1\u0159\xED ka\u017Edou sekundu 3,8\xB710\xB2\u2076 J." },
       W: { name: "W \xB7 watt", text: "V\xFDkon, tedy energie za sekundu. LED \u017E\xE1rovka m\xE1 kolem 10 W, cel\xE9 lidstvo dnes asi 2\xB710\xB9\xB3 W." },
       B: { name: "B \xB7 bajt", text: "Mno\u017Estv\xED dat. 1 kB = 1 000 B, 1 MB = milion B. V\u0161echna data na sv\u011Bt\u011B maj\xED dohromady odhadem 10\xB2\xB3 B." },
+      foam: { name: "Kvantov\xE1 p\u011Bna \xB7 kg", text: "V nejmen\u0161\xEDch m\u011B\u0159\xEDtc\xEDch je prostor zp\u011Bn\u011Bn\xFD drobounk\xFDmi \u010Derv\xEDmi d\xEDrami, kter\xE9 neust\xE1le vznikaj\xED a zanikaj\xED (John Wheeler, 1955). Kdy\u017E se takov\xE1 bublina nafoukne a udr\u017E\xED, vznikne hrdlo mostu. P\u011Bna se m\u011B\u0159\xED v kilogramech hmotnostn\xEDho ekvivalentu." },
       K: { name: "Karda\u0161evovo \u010D\xEDslo", text: "Ukazuje, kolik energie civilizace dok\xE1\u017Ee vyu\u017E\xEDt. Ka\u017Ed\xFD cel\xFD stupe\u0148 znamen\xE1 zhruba deset miliardkr\xE1t v\u011Bt\u0161\xED v\xFDkon. Nula odpov\xEDd\xE1 1 MW, v\xFDkonu velk\xE9 v\u011Btrn\xE9 turb\xEDny, pod n\xED vych\xE1z\xED \u010D\xEDslo z\xE1porn\xE9. Lidstvo je dnes na 0,73.", t1: "Typ I je v\xFDkon cel\xE9 planety.", t2: "Typ II je v\xFDkon cel\xE9 hv\u011Bzdy.", t3: "Typ III je v\xFDkon cel\xE9 galaxie, tedy stovek miliard hv\u011Bzd.", t4: "Typ IV je v\xFDkon miliardy galaxi\xED, daleko za hranic\xED t\xE9 na\u0161\xED." }
     },
     ui: {
@@ -112,6 +113,8 @@
       pieces: "{n} ks",
       price: "Cena",
       one: "1 kus",
+      gives: "D\xE1v\xE1",
+      total: "Celkem",
       all: "V\u0161echny",
       consumes: "spot\u0159eba {v}",
       researchDone: "Hotovo",
@@ -159,7 +162,7 @@
       },
       chapterDone3: {
         title: "Kapitola 3 dokon\u010Dena",
-        body: "Sonda pro\u0161la a\u017E k fotonov\xE9 sf\xE9\u0159e a puls se v jej\xEDm z\xE1znamu zm\u011Bnil v sou\u0159adnice. Ukazuj\xED na m\xEDsta, kde se prostor d\xE1 p\u0159elo\u017Eit jako list pap\xEDru. Za\u010D\xEDn\xE1 Kapitola 4: Most. D\xEDra te\u010F sv\xEDt\xED sama a jej\xED v\xFDkon z\u016Fstane jako z\xE1klad. Sonda p\u0159inesla prvn\xED exotickou hmotu, tou se dr\u017E\xED hrdla \u010Derv\xEDch d\u011Br otev\u0159en\xE1. T\xE1hni z domova k nejbli\u017E\u0161\xED hv\u011Bzd\u011B a otev\u0159i prvn\xED most.",
+        body: "Sonda se vr\xE1tila z fotonov\xE9 sf\xE9ry. Puls se v jej\xEDm z\xE1znamu zm\u011Bnil v sou\u0159adnice okoln\xEDch hv\u011Bzd: na t\u011Bch m\xEDstech se prostor d\xE1 p\u0159elo\u017Eit a spojit kr\xE1tkou zkratkou, \u010Derv\xED d\xEDrou.\n\nJsi po\u0159\xE1d u d\xEDry po Ald\u0159e, v rameni Persea, asi 6 000 sv\u011Bteln\xFDch let od Slunce. D\xEDra te\u010F sv\xEDt\xED sama a jej\xED v\xFDkon z\u016Fstane jako z\xE1klad.\n\nZa\u010D\xEDn\xE1 Kapitola 4: Most. Sonda p\u0159inesla z ergosf\xE9ry prvn\xED kvantovou p\u011Bnu, ze kter\xE9 se d\u011Blaj\xED hrdla most\u016F. T\xE1hni z domova k nejbli\u017E\u0161\xED hv\u011Bzd\u011B a otev\u0159i prvn\xED most.",
         ok: "Pokra\u010Dovat"
       },
       chapterDone4: {
@@ -170,7 +173,25 @@
       net: {
         title: "S\xED\u0165 most\u016F",
         home: "Domov",
-        ourRegion: "Na\u0161e oblast",
+        ourRegion: "Na\u0161e oblast \xB7 d\xEDra po Ald\u0159e",
+        sunEarth: "Slunce \xB7 Zem\u011B",
+        center: "St\u0159ed \xB7 Sgr A*",
+        arms: { perseus: "Rameno Persea", scutum: "Rameno \u0160t\xEDtu a Kentaura", sagittarius: "Rameno St\u0159elce", norma: "Rameno Prav\xEDtka" },
+        worst: "Nejv\xEDc brzd\xED",
+        worstNone: "nic, v\u0161echno te\u010De",
+        fullX: "pln\xFD \xB7 chce {m}\xD7",
+        fillPct: "{p} %",
+        noteFull: "Hrdlo nesta\u010D\xED: v\u011Btev by poslala {m}\xD7 v\xEDc. Roz\u0161i\u0159 ho, nebo ho zamkni na vln\u011B pulsu (\xD71,5).",
+        noteOther: "Tohle hrdlo sta\u010D\xED. Brzd\xED most {n} ({m}).",
+        noteFree: "Cel\xE1 v\u011Btev te\u010De dom\u016F. V\xEDc v\xFDkonu daj\xED nov\xE9 soustavy nebo roje.",
+        showLink: "Uk\xE1zat ten most",
+        lvShort: "\xFAr. {n}",
+        lockedNow: "Zam\u010Deno \xD71,5 \xB7 {s} s",
+        waveIn: "Vlna tu bude za {s} s",
+        stillLocked: "Zam\u010Deno je\u0161t\u011B {s} s \xB7 obnov\xED\u0161 za {w} s",
+        helpBtn: "Jak hr\xE1t s\xED\u0165",
+        tipsTitle: "Jak stav\u011Bt dob\u0159e",
+        tips: "Nejd\u0159\xEDv mosty k jasn\xFDm hv\u011Bzd\xE1m (mod\u0159\xED ob\u0159i, asociace, hv\u011Bzdokupy), slab\xED trpasl\xEDci skoro nic nedaj\xED.|Most u domova nese celou v\u011Btev. Kdy\u017E je jantarov\xFD, roz\u0161i\u0159 hrdlo nebo ho zamkni.|Vlevo uvid\xED\u0161, kter\xFD most nejv\xEDc brzd\xED.|Hv\u011Bzdokupa pos\xEDl\xED sousedy, neutronov\xE1 hv\u011Bzda d\xE1 p\u011Bnu, dvojhv\u011Bzda data.",
         sec: "S\xED\u0165",
         stage: "Stadium",
         passDone: "Pr\u016Fchod hotov",
@@ -204,11 +225,11 @@
         doneText: "Sonda prol\xE9tla mostem tam i zp\xE1tky. S\xED\u0165 b\u011B\u017E\xED d\xE1l.",
         noLink: "Zat\xEDm \u017E\xE1dn\xFD most",
         wants: "V\u011Btev chce poslat",
-        capacity: "Propustnost hrdla",
+        capacity: "Hrdlo propust\xED",
         lock: "Z\xE1mek pulsu",
-        lockHand: "\xD7{m} \xB7 je\u0161t\u011B {s} s",
+        lockHand: "ru\u010Dn\xED \xD7{m} \xB7 {s} s",
         lockAuto: "f\xE1zov\xFD \xD7{m} \xB7 {s} s",
-        lockNone: "\u017E\xE1dn\xFD \xB7 vlna za {s} s",
+        lockNone: "\u017E\xE1dn\xFD",
         flowHome: "Te\u010De dom\u016F",
         length: "D\xE9lka mostu",
         shift: "\u010Casov\xFD posun \xFAst\xED",
@@ -225,21 +246,21 @@
         tooFar: "mimo dosah",
         notEnough: "chyb\xED exotika",
         L: "Z\xE1\u0159iv\xFD v\xFDkon",
-        darkL: "Temn\xE1 hmota",
+        streamL: "Z\xE1\u0159en\xED proudu",
         fromHome: "Od domova",
         sends: "Pos\xEDl\xE1 do mostu",
         bridge: "Most",
         flowCap: "Te\u010De / propust\xED",
-        help: "T\xE1hni z domova nebo z napojen\xE9 soustavy k dal\u0161\xED = nov\xFD most|\u0164ukni na most, kdy\u017E j\xEDm projde vlna pulsu = z\xE1mek \xD71,5|\u0164ukni na soustavu = detail a roz\u0161\xED\u0159en\xED hrdla",
-        pulseLine: "Puls 7,3 s \xB7 u vybran\xE9ho mostu vlna za {w} s",
+        help: "T\xE1hni my\u0161\xED z domova nebo z napojen\xE9 hv\u011Bzdy k dal\u0161\xED hv\u011Bzd\u011B = nov\xFD most.|Jantarov\xFD most je pln\xFD. Klikni na jeho hv\u011Bzdu a roz\u0161i\u0159 hrdlo.|Z domova jde ka\u017Ed\xFDch 7,3 s fialov\xE1 vlna. Klikni na most, kdy\u017E se rozsv\xEDt\xED fialov\u011B = z\xE1mek \xD71,5 na 1,5 min.",
+        pulseLine: "Puls 7,3 s \xB7 vlna k mostu {n} za {w} s",
         pulseOnly: "Puls 7,3 s",
         mouth: "\xDAst\xED \xB7 {n}",
         mouthSub: "{d} odsud \xB7 hrdlo \xFArove\u0148 {n}",
         mouthNone: "Zat\xEDm \u017E\xE1dn\xFD most",
         profile: "Profil hrdla \xB7 Morris\u2013Thorne, 1988",
         throatR: "polom\u011Br ~{r} km",
-        exoHeld: "dr\u017E\xED {m} exotiky",
-        types: { home: "Domovsk\xE1 d\xEDra", red: "\u010Cerven\xFD trpasl\xEDk", sun: "Hv\u011Bzda jako Slunce", binary: "Dvojhv\u011Bzda \xB7 data nav\xEDc", neutron: "Neutronov\xE1 hv\u011Bzda \xB7 exotika nav\xEDc", blue: "Modr\xFD obr", assoc: "OB asociace", cluster: "Hv\u011Bzdokupa \xB7 \xD71,5 soused\u016Fm", nebula: "Mlhovina, kde se rod\xED hv\u011Bzdy", arm: "\xDAsek spir\xE1ln\xEDho ramene", kilo: "Poz\u016Fstatek kilonovy", dark: "Temn\xFD uzel \xB7 jen p\u0159es anihila\u010Dn\xED past" },
+        exoHeld: "dr\u017E\xED {m} p\u011Bny",
+        types: { home: "D\xEDra po Ald\u0159e", red: "\u010Cerven\xFD trpasl\xEDk \xB7 slab\xFD", sun: "Hv\u011Bzda jako Slunce", binary: "Dvojhv\u011Bzda \xB7 data nav\xEDc", neutron: "Neutronov\xE1 hv\u011Bzda \xB7 p\u011Bna nav\xEDc", blue: "Modr\xFD obr \xB7 siln\xFD", assoc: "Skupina modr\xFDch obr\u016F \xB7 siln\xE1", cluster: "Hv\u011Bzdokupa \xB7 \xD71,5 soused\u016Fm", nebula: "Mlhovina, kde se rod\xED hv\u011Bzdy", arm: "Kus spir\xE1ln\xEDho ramene \xB7 velmi siln\xFD", kilo: "Trosky kilonovy \xB7 p\u011Bna nav\xEDc", stream: "Hv\u011Bzdn\xFD proud \xB7 jen p\u0159es lapa\u010D proudu" },
         sync: {
           win: { name: "\u0160ir\u0161\xED okno", desc: "Most p\u0159ijme z\xE1mek i chv\xEDli p\u0159ed a po pr\u016Fchodu vlny." },
           len: { name: "Del\u0161\xED z\xE1mek", desc: "Zam\u010Den\xE9 hrdlo vydr\u017E\xED otev\u0159en\xE9 d\xE9le." },
@@ -248,15 +269,17 @@
         },
         eff: {
           swarm: "Sb\u011Br {a} \u2192 {b} z\xE1\u0159en\xED napojen\xFDch soustav",
-          trap: "Temn\xE1 hmota {a} \u2192 {b}",
-          anchor: "Propustnost v\u0161ech most\u016F \xD7{a} \u2192 \xD7{b}",
-          plateAnchor: "Ka\u017Ed\xE1 deska pos\xEDl\xED i kotvy \xFAst\xED",
+          trap: "Sb\u011Br proud\u016F {a} \u2192 {b}",
+          anchor: "V\u0161echny mosty \xD7{a} \u2192 \xD7{b}",
+          anchorsLbl: "Kotvy",
+          plateAnchor: "\xD7{a} \u2192 \xD7{b} (deska pos\xEDl\xED kotvy)",
           beacon: "+{n} soustava na map\u011B",
           beaconAll: "Cel\xE1 oblast je odkryt\xE1",
-          pair: "Exotika i sb\u011Br \xD7{m} \xB7 celkem \xD7{t}",
+          beaconHalf: "Dal\u0161\xED soustava s p\u0159\xED\u0161t\xEDm maj\xE1kem",
+          pair: "P\u011Bna i sb\u011Br \xD7{m} \xB7 te\u010F celkem \xD7{t}",
           plock: "{n} most\u016F zam\u010Den\xFDch \xD7{m}, tvoje ruka d\xE1 \xD71,5",
           raider: "most k {n}",
-          router: "roz\u0161i\u0159uje {n} ({a} \u2192 {b})",
+          router: "roz\u0161i\u0159uje most k {n} ({a} \u2192 {b})",
           raiderIdle: "Nen\xED kam razit.",
           routerIdle: "\u017D\xE1dn\xE9 hrdlo nen\xED pln\xE9.",
           raiderMade: "{n} most\u016F otev\u0159eno",
@@ -274,7 +297,7 @@
         chain: { name: "\u0158et\u011Bz soustav", text: "S\xED\u0165 se v\u011Btv\xED. Kmen u domova se pln\xED jako prvn\xED." },
         type3: { name: "Typ III", text: "Hv\u011Bzdokupy a prov\xE1zan\xE9 p\xE1ry. S\xED\u0165 sv\xEDt\xED jako cel\xE1 galaxie." },
         kilo: { name: "Kilonova", text: "Sr\xE1\u017Eka neutronov\xFDch hv\u011Bzd rozsela po rameni t\u011B\u017Ek\xE9 prvky a exotiku." },
-        halo: { name: "Temn\xE9 halo", text: "Kolem galaxie je hmota, kter\xE1 nesv\xEDt\xED. Vid\u011Bt je jen podle toho, jak oh\xFDb\xE1 sv\u011Btlo." }
+        halo: { name: "Hv\u011Bzdn\xE9 proudy", text: "Kolem galaxie se t\xE1hnou proudy hv\u011Bzd z roztrhan\xFDch mal\xFDch galaxi\xED. Je jich m\xE1lo vid\u011Bt, ale je jich hodn\u011B." }
       },
       hole: {
         title: "\u010Cern\xE1 d\xEDra",
@@ -453,18 +476,18 @@
       yard: { name: "Orbit\xE1ln\xED montovna", desc: "T\u0159et\xED stupe\u0148 automatizace. Sama stav\xED diskov\xE9 kolektory a tryskov\xE9 lapa\u010De, v\u017Edy ten, kter\xFD je zrovna levn\u011Bj\u0161\xED. Ka\u017Ed\xE1 montovna si odkl\xE1d\xE1 10 % \u010Dist\xE9ho p\u0159\xEDr\u016Fstku plazmatu, v\u0161echny dohromady nejv\xFD\u0161 50 %. Na z\xE1soby nes\xE1hne a jde vypnout; na\u0161et\u0159en\xE9 plazma pak vr\xE1t\xED." },
       jet: { name: "Tryskov\xFD lapa\u010D", desc: "Zachyt\xE1v\xE1 energii trysek nad p\xF3ly d\xEDry. Trysky berou energii z rotace, tak\u017Ee d\xEDru brzd\xED. Magnetick\xE9 pole trysek pom\xE1h\xE1 i se sb\u011Brem: ka\u017Ed\xFD lapa\u010D o 10 % pos\xEDl\xED nab\u011Bra\u010De, injektory a Hawkingovy reaktory." },
       hawking: { name: "Hawking\u016Fv reaktor", desc: "Mikroskopick\xE1 \u010Dern\xE1 d\xEDra stvo\u0159en\xE1 z energie. Plyn, kter\xFD do n\xED pad\xE1, se cel\xFD vyz\xE1\u0159\xED zp\xE1tky jako Hawkingovo z\xE1\u0159en\xED. V z\xE1\u0159en\xED jsou i data. S\xEDl\xED s ka\u017Ed\xFDm diskov\xFDm kolektorem a tryskov\xFDm lapa\u010Dem." },
-      plate: { name: "Casimirova deska", desc: "Dv\u011B desky bl\xEDzko sebe. Mezi nimi je vakuum chud\u0161\xED ne\u017E nic a ta chudoba je exotick\xE1 hmota." },
-      bswarm: { name: "Roj za hrdlem", desc: "Prolet\xED mosty a obklop\xED napojen\xE9 hv\u011Bzdy. Ka\u017Ed\xFD roj zachyt\xED kus jejich z\xE1\u0159en\xED." },
-      beacon: { name: "Pr\u016Fzkumn\xFD maj\xE1k", desc: "R\xE1diov\xE9 oko. Ka\u017Ed\xFD dal\u0161\xED odkryje soustavy d\xE1l na map\u011B a pos\xEDl\xE1 data." },
-      anchor: { name: "Kotva \xFAst\xED", desc: "Dr\u017E\xED hrdla otev\u0159en\xE1, aby se nesmr\u0161\u0165ovala. S\xEDl\xED s ka\u017Edou Casimirovou deskou." },
-      pump: { name: "Horizontov\xE1 pumpa", desc: "U horizontu domovsk\xE9 d\xEDry te\u010De energie z\xE1porn\u011B. Pumpa z toho toku sb\xEDr\xE1 exotiku." },
-      router: { name: "Sm\u011Brova\u010D", desc: "S\xE1m roz\u0161i\u0159uje hrdlo, kter\xE9 nejv\xEDc brzd\xED. Bere jen \u010D\xE1st p\u0159\xEDr\u016Fstku exotiky, nikdy z\xE1soby." },
-      plock: { name: "F\xE1zov\xFD z\xE1mek", desc: "Na ka\u017Ed\xE9 vln\u011B s\xE1m zamkne nejvyt\xED\u017Een\u011Bj\u0161\xED most. Slab\u0161\xED ne\u017E tvoje ruka, ale nikdy neusne." },
-      raider: { name: "Razi\u010D hrdel", desc: "S\xE1m otev\xEDr\xE1 mosty k objeven\xFDm soustav\xE1m s nejlep\u0161\xEDm pom\u011Brem v\xFDkonu a ceny. Bere jen \u010D\xE1st p\u0159\xEDr\u016Fstku exotiky." },
-      pair: { name: "Prov\xE1zan\xFD p\xE1r", desc: "Dv\u011B \xFAst\xED z jednoho kvantov\xE9ho stavu. S\xEDl\xED s n\xEDm v\xFDroba exotiky i sb\u011Br roj\u016F." },
-      kcol: { name: "Kilonov\xFD sb\u011Bra\u010D", desc: "Sb\xEDr\xE1 z trosek kilonovy exotiku a data. S\xEDl\xED s ka\u017Ed\xFDm napojen\xFDm poz\u016Fstatkem." },
-      gwdet: { name: "Detektor vln", desc: "Ramena dlouh\xE1 miliony kilometr\u016F. Zachyt\xED gravita\u010Dn\xED vlny z cel\xE9 galaxie a z nich data." },
-      trap: { name: "Anihila\u010Dn\xED past", desc: "Hust\xE1 temn\xE1 hmota se v pasti sama anihiluje. Jen tak daj\xED temn\xE9 uzly v\xFDkon." },
+      plate: { name: "Casimirova deska", desc: "Dv\u011B desky t\u011Bsn\u011B u sebe. Vakuum mezi nimi se zp\u011Bn\xED a z p\u011Bny jsou hrdla most\u016F." },
+      bswarm: { name: "Roj za hrdlem", desc: "Prolet\xED mosty a obklop\xED napojen\xE9 hv\u011Bzdy. V\xEDc roj\u016F = v\u011Bt\u0161\xED d\xEDl jejich sv\u011Btla jde dom\u016F." },
+      beacon: { name: "Pr\u016Fzkumn\xFD maj\xE1k", desc: "R\xE1diov\xE9 oko. Odkryje dal\u0161\xED hv\u011Bzdy na map\u011B a pos\xEDl\xE1 data." },
+      anchor: { name: "Kotva \xFAst\xED", desc: "Dr\u017E\xED \xFAst\xED v klidu, tak\u017Ee v\u0161echna hrdla propust\xED v\xEDc. S\xEDl\xED s ka\u017Edou Casimirovou deskou, ale ka\u017Ed\xE1 dal\u0161\xED kotva p\u0159id\xE1 o n\u011Bco m\xE9n\u011B." },
+      pump: { name: "Horizontov\xE1 pumpa", desc: "Sb\xEDr\xE1 p\u011Bnu u horizontu domovsk\xE9 d\xEDry. Siln\xFD zdroj p\u011Bny." },
+      router: { name: "Sm\u011Brova\u010D", desc: "S\xE1m roz\u0161i\u0159uje most, kter\xFD nejv\xEDc brzd\xED. Bere jen \u010D\xE1st p\u0159\xEDr\u016Fstku p\u011Bny, z\xE1soby nech\xE1." },
+      plock: { name: "F\xE1zov\xFD z\xE1mek", desc: "Na ka\u017Ed\xE9 vln\u011B s\xE1m zamkne nejpln\u011Bj\u0161\xED most. D\xE1 \xD71,3, tvoje ruka \xD71,5." },
+      raider: { name: "Razi\u010D hrdel", desc: "S\xE1m otev\xEDr\xE1 mosty k nejv\xFDhodn\u011Bj\u0161\xEDm hv\u011Bzd\xE1m. Bere jen \u010D\xE1st p\u0159\xEDr\u016Fstku p\u011Bny." },
+      pair: { name: "Prov\xE1zan\xFD p\xE1r", desc: "Dv\u011B \xFAst\xED z jednoho kvantov\xE9ho stavu. Ka\u017Ed\xFD p\xE1r zrychl\xED v\xFDrobu p\u011Bny i sb\u011Br roj\u016F." },
+      kcol: { name: "Sb\u011Bra\u010D kilonovy", desc: "Sb\xEDr\xE1 z trosek kilonovy p\u011Bnu a data. S\xEDl\xED s ka\u017Ed\xFDmi napojen\xFDmi troskami." },
+      gwdet: { name: "Detektor vln", desc: "Zachyt\xED gravita\u010Dn\xED vlny z cel\xE9 galaxie. Pozdn\xED zdroj dat." },
+      trap: { name: "Lapa\u010D proudu", desc: "Hv\u011Bzdy v proudu jsou \u0159\xEDdce rozh\xE1zen\xE9 na tis\xEDce let sv\u011Btla. Lapa\u010D je sb\xEDr\xE1 po cel\xE9 d\xE9lce. Jen tak daj\xED proudy v\xFDkon." },
       swarmfab: { name: "Rojov\xE1 lod\u011Bnice", desc: "Druh\xFD stupe\u0148 automatizace. Sama stav\xED Dysonovy kolektory a podle toho, co v \u0159et\u011Bzci chyb\xED, i trycht\xFD\u0159e a separ\xE1tory. Stavby na data nestav\xED. Bere nejv\xFD\u0161 polovinu p\u0159\xEDr\u016Fstku kovu a energie, tak\u017Ee z\xE1soby nevy\u010Derp\xE1. Rozebr\xE1n\xEDm vr\xE1t\xED\u0161 polovinu ceny." }
     },
     r: {
@@ -536,19 +559,19 @@
       dive: { name: "Ponor k horizontu", desc: "Sonda, kter\xE1 vydr\u017E\xED slapov\xE9 s\xEDly a\u017E u fotonov\xE9 sf\xE9ry. Umo\u017En\xED ponor." },
       interf: { name: "R\xE1diov\xFD interferometr", desc: "Maj\xE1ky se spoj\xED do jednoho ob\u0159\xEDho dalekohledu. Ka\u017Ed\xE9 dva maj\xE1ky odkryj\xED soustavu nav\xEDc." },
       widen: { name: "\u0160ir\u0161\xED hrdlo", desc: "Lep\u0161\xED tvar trycht\xFD\u0159\u016F \xFAst\xED. Propustnost v\u0161ech most\u016F \xD71,5." },
-      vacuum: { name: "Stla\u010Den\xE9 vakuum", desc: "Desky bl\xED\u017E k sob\u011B, vakuum mezi nimi je\u0161t\u011B chud\u0161\xED. Casimirovy desky \xD73." },
+      vacuum: { name: "Stla\u010Den\xE9 vakuum", desc: "Desky bl\xED\u017E k sob\u011B. Casimirovy desky \xD73." },
       router: { name: "Sm\u011Brova\u010D", desc: "Odemkne sm\u011Brova\u010De. Samy roz\u0161i\u0159uj\xED hrdlo, kter\xE9 nejv\xEDc brzd\xED." },
       plockr: { name: "F\xE1zov\xE9 z\xE1mky", desc: "Odemkne f\xE1zov\xE9 z\xE1mky. Samy zamykaj\xED mosty na vln\u011B pulsu." },
       raider: { name: "Razi\u010D hrdel", desc: "Odemkne razi\u010De. Samy otev\xEDraj\xED mosty k nejlep\u0161\xEDm soustav\xE1m." },
-      pumpr: { name: "Horizontov\xE1 pumpa", desc: "U horizontu domovsk\xE9 d\xEDry te\u010De energie z\xE1porn\u011B. Odemkne pumpy na exotiku." },
+      pumpr: { name: "Horizontov\xE1 pumpa", desc: "U horizontu domovsk\xE9 d\xEDry te\u010De energie z\xE1porn\u011B. Odemkne pumpy na p\u011Bnu." },
       pairs: { name: "Prov\xE1zan\xE9 p\xE1ry", desc: "ER = EPR: prov\xE1zan\xE9 \u010D\xE1stice spojuje mikroskopick\xFD most. Odemkne prov\xE1zan\xE9 p\xE1ry." },
-      pairs2: { name: "Prov\xE1zan\xE9 p\xE1ry II", desc: "Hlub\u0161\xED prov\xE1z\xE1n\xED. Ka\u017Ed\xFD p\xE1r d\xE1 \xD71,12 m\xEDsto \xD71,1." },
+      pairs2: { name: "Prov\xE1zan\xE9 p\xE1ry II", desc: "Ka\u017Ed\xFD p\xE1r zrychl\xED o 12 % m\xEDsto 10 %." },
       spectral: { name: "Spektr\xE1ln\xED filtry", desc: "Roje se nalad\xED na hork\xE9 hv\u011Bzdy. Mod\u0159\xED ob\u0159i a OB asociace \xD72." },
       quiet: { name: "Tich\xE1 s\xED\u0165", desc: "F\xE1zov\xE9 z\xE1mky se nalad\xED p\u0159esn\u011Bji: \xD71,45 m\xEDsto \xD71,3. Tvoje ruka po\u0159\xE1d d\xE1 v\xEDc." },
       shifted: { name: "Posunut\xE9 \xFAst\xED", desc: "Jedno \xFAst\xED se pohne a \u010Das se mezi nimi posune. Data p\u0159ich\xE1zej\xED d\u0159\xEDv, ne\u017E o n\u011B po\u017E\xE1d\xE1\u0161. Data \xD74." },
       detector: { name: "Detektor gravita\u010Dn\xEDch vln", desc: "Odemkne detektory vln, pozdn\xED zdroj dat." },
-      microlens: { name: "Gravita\u010Dn\xED mikro\u010Do\u010Dkov\xE1n\xED", desc: "Podle ohybu sv\u011Btla se uk\xE1\u017Ee, kde je temn\xE1 hmota nejhust\u0161\xED. Anihila\u010Dn\xED pasti \xD73." },
-      trapr: { name: "Anihila\u010Dn\xED past", desc: "Odemkne pasti, kter\xE9 z temn\xFDch uzl\u016F z\xEDskaj\xED v\xFDkon." },
+      microlens: { name: "Astrometrie proud\u016F", desc: "P\u0159esn\xE1 poloha ka\u017Ed\xE9 hv\u011Bzdy v proudu. Lapa\u010De proudu \xD73." },
+      trapr: { name: "Lapa\u010D proudu", desc: "Odemkne lapa\u010De, kter\xE9 z hv\u011Bzdn\xFDch proud\u016F z\xEDskaj\xED v\xFDkon." },
       passage: { name: "Pr\u016Fchod mostem", desc: "Sonda, kter\xE1 vydr\u017E\xED pr\u016Flet hrdlem. Umo\u017En\xED Pr\u016Fchod." }
     },
     loc: {
@@ -571,11 +594,11 @@
       stream: { name: "Magnetick\xFD proud", short: "Magnetick\xFD proud", desc: "Tryska d\xEDry narazila do mezihv\u011Bzdn\xE9ho plynu a sto\u010Dila ho do proudu. Lapa\u010De z n\u011Bj vezmou dal\u0161\xED energii. Trval\xFD bonus: tryskov\xE9 lapa\u010De \xD71,5.", done: "Lapa\u010De chytaj\xED i odra\u017Een\xFD proud. Lapa\u010De \xD71,5." },
       dust: { name: "Prachov\xE1 ob\xE1lka", short: "Prachov\xE1 ob\xE1lka", desc: "Aldra ztr\xE1c\xED hmotu a v chladn\xE9m v\u011Btru kondenzuj\xED uhl\xEDkov\xE1 zrna. Lehk\xE9 a pevn\xE9, ide\xE1ln\xED na kolektory. Trval\xFD bonus: kolektory \xD73.", done: "Kolektory z hv\u011Bzdn\xE9ho prachu. Kolektory \xD73." },
       flyby: { name: "Prvn\xED pr\u016Flet", short: "Pr\u016Flet", desc: "Po\u0161li mostem malou sondu jen tak, pod\xEDvat se. Trval\xFD bonus: data \xD72 a dv\u011B soustavy na map\u011B nav\xEDc.", done: "Sonda pro\u0161la mostem. Data \xD72, dv\u011B soustavy nav\xEDc." },
-      magnetar: { name: "Ob\u0159\xED z\xE1blesk magnetaru", short: "Magnetar", desc: "Neutronov\xE1 hv\u011Bzda s nejsiln\u011Bj\u0161\xEDm magnetick\xFDm polem ve vesm\xEDru. P\u0159i z\xE1blesku na chv\xEDli rozkmit\xE1 vakuum. Trval\xFD bonus: exotika \xD72.", done: "Z\xE1blesk zachycen. Exotika \xD72." },
+      magnetar: { name: "Ob\u0159\xED z\xE1blesk magnetaru", short: "Magnetar", desc: "Neutronov\xE1 hv\u011Bzda s nejsiln\u011Bj\u0161\xEDm magnetick\xFDm polem ve vesm\xEDru. P\u0159i z\xE1blesku na chv\xEDli rozkmit\xE1 vakuum. Trval\xFD bonus: p\u011Bna \xD72.", done: "Z\xE1blesk zachycen. P\u011Bna \xD72." },
       globular: { name: "Kulov\xE1 hv\u011Bzdokupa", short: "Hv\u011Bzdokupa", desc: "Statis\xEDce star\xFDch hv\u011Bzd v kouli. Roje se nau\u010D\xED sb\xEDrat v hust\xE9m poli. Trval\xFD bonus: hv\u011Bzdokupy v s\xEDti \xD72.", done: "Hv\u011Bzdokupy v s\xEDti \xD72." },
-      kilonova: { name: "Kilonova", short: "Kilonova", desc: "Dv\u011B neutronov\xE9 hv\u011Bzdy se sraz\xED. Vznikne zlato, platina a stopy exotiky. Otev\u0159e stadium Kilonova a poz\u016Fstatky sr\xE1\u017Eky na map\u011B.", done: "Sr\xE1\u017Eka zachycena. Poz\u016Fstatky kilonovy jsou na map\u011B." },
+      kilonova: { name: "Kilonova", short: "Kilonova", desc: "Dv\u011B neutronov\xE9 hv\u011Bzdy se sraz\xED. Vznikne zlato, platina a trocha p\u011Bny. Otev\u0159e stadium Kilonova a poz\u016Fstatky sr\xE1\u017Eky na map\u011B.", done: "Sr\xE1\u017Eka zachycena. Poz\u016Fstatky kilonovy jsou na map\u011B." },
       frb: { name: "Rychl\xFD r\xE1diov\xFD z\xE1blesk", short: "Z\xE1blesk", desc: "Tis\xEDcina sekundy, za kterou zdroj vyz\xE1\u0159\xED v\xEDc ne\u017E Slunce za den. Trval\xFD bonus: data \xD73.", done: "Z\xE1blesk rozlo\u017Een. Data \xD73." },
-      rotation: { name: "Rota\u010Dn\xED k\u0159ivka", short: "Rota\u010Dn\xED k\u0159ivka", desc: "Okraj galaxie se to\u010D\xED moc rychle na to, kolik je v n\xED vid\u011Bt hv\u011Bzd. Odkryje temn\xE9 uzly v halu.", done: "Halo je na map\u011B. Temn\xE9 uzly \u010Dekaj\xED na pasti." },
+      rotation: { name: "Mapa Gaia", short: "Hv\u011Bzdn\xE9 proudy", desc: "Dru\u017Eice Gaia zm\u011B\u0159ila polohy miliardy hv\u011Bzd. V datech jsou vid\u011Bt proudy \u2013 trosky mal\xFDch galaxi\xED, kter\xE9 Ml\xE9\u010Dn\xE1 dr\xE1ha roztrhala. Odkryje je na map\u011B.", done: "Proudy jsou na map\u011B. Lapa\u010De proudu je mohou sb\xEDrat." },
       bubbles: { name: "Fermiho bubliny", short: "Fermiho bubliny", desc: "Dv\u011B ob\u0159\xED bubliny z\xE1\u0159en\xED nad a pod st\u0159edem galaxie. Pod\xEDv\xE1me se, odkud p\u0159i\u0161ly.", done: "Bubliny vych\xE1zej\xED ze st\u0159edu galaxie. Puls tam m\xED\u0159\xED taky." }
     },
     story: {
@@ -610,6 +633,13 @@
       salvage: "Starou platformu jsem rozebral na kov pro roj a archiv dat p\u0159evedl do roje. Drony, pece ani laborato\u0159e u\u017E nepot\u0159ebujeme. Te\u010F n\xE1s \u017Eiv\xED hv\u011Bzda.",
       hole: "Kde sv\xEDtila Aldra, je te\u010F tma \u0161irok\xE1 47 kilometr\u016F. Puls nezmizel. Vych\xE1z\xED z n\xED.",
       disk: "Plyn se st\xE1\u010D\xED do disku a roz\u017Ehav\xED se na des\xEDtky milion\u016F kelvin\u016F. D\xEDru samotnou nevid\xEDm. Vid\xEDm jen to, co do n\xED pad\xE1.",
+      chain5: "P\u011Bt chuchvalc\u016F za sebou. Disk zazvonil jako zvon a v ozv\u011Bn\u011B byl puls.",
+      burst: "V\xFDbuch disku. Na p\xE1r sekund sv\xEDt\xEDm v\xEDc, ne\u017E Eddingtonova mez dovoluje. Puls se na okam\u017Eik zastavil, jako by poslouchal.",
+      inj: "Injektory p\u0159evzaly ventil. Rytmus, kter\xFD jsem klikal ru\u010Dn\u011B, te\u010F dr\u017E\xED stroje. Je stejn\xFD jako puls.",
+      station10: "Deset stanic u horizontu. Venku mezit\xEDm uplynula tis\xEDcilet\xED a souhv\u011Bzd\xED se pomalu rozpadla.",
+      spin: "D\xEDra se to\u010D\xED skoro rychlost\xED sv\u011Btla. Prostor kolem n\xED se st\xE1\u010D\xED s n\xED a stanice mus\xED brzdit, aby nespadly.",
+      yard: "Montovna stav\xED sama. V jej\xEDch pl\xE1nech je drobn\xE1 \xFAprava, kterou jsem do nich nedal.",
+      hawk: "Hawkingovo z\xE1\u0159en\xED nese informaci. Rozlo\u017Eil jsem ji: jsou v n\xED stejn\xE9 sou\u0159adnice jako v pulsu.",
       station: "Stanice D-1 sestoupila k horizontu. Hl\xE1s\xED, \u017Ee u n\xE1s naho\u0159e se v\u0161echno zrychlilo.",
       thin: "Disk se zten\u010Dil a rozp\xE1lil na des\xEDtky milion\u016F stup\u0148\u016F. V\u011Bt\u0161inu sv\u011Btla te\u010F vyd\xE1v\xE1 jako rentgenov\xE9 z\xE1\u0159en\xED, oku neviditeln\xE9. Celkem sv\xEDt\xED v\xEDc, ne\u017E kdy sv\xEDtila Aldra.",
       pulse3: "Rozlo\u017Eil jsem puls na slo\u017Eky. Je v n\u011Bm moje vlastn\xED telemetrie. Z verze softwaru, kterou je\u0161t\u011B nem\xE1m.",
@@ -621,13 +651,22 @@
       dive: "Sonda se odpojila a za\u010Dala klesat. Puls zrychluje.",
       horizon: "Sonda dos\xE1hla fotonov\xE9 sf\xE9ry. Puls tam nezn\xED jako sign\xE1l, ale jako hlas. Ukazuje na m\xEDsta, kde se prostor d\xE1 p\u0159elo\u017Eit.",
       order: "Sonda p\u0159inesla z ergosf\xE9ry m\u011B\u0159en\xED stav\u016F se z\xE1pornou energi\xED. Je v nich po\u0159\xE1dek. Jako by je n\u011Bkdo srovnal.",
+      where: "Jsem po\u0159\xE1d u d\xEDry po Ald\u0159e, v rameni Persea. Slunce je odsud 6 000 sv\u011Bteln\xFDch let. Zem\u011B o mn\u011B nesly\u0161ela u\u017E miliony let.",
+      full: "Prvn\xED hrdlo je pln\xE9. Sv\u011Btlo za n\xEDm se tla\u010D\xED, jako by cht\u011Blo dom\u016F rychleji, ne\u017E ho pust\xEDm.",
+      net5: "P\u011Bt most\u016F. Ka\u017Ed\xE9 \xFAst\xED ukazuje jinou oblohu a ve v\u0161ech je sly\u0161et stejn\xFD puls.",
+      lock1: "Zamkl jsem hrdlo do taktu pulsu. Propustilo v\xEDc, ne\u017E by m\u011Blo podle v\xFDpo\u010Dt\u016F.",
+      cluster: "Hv\u011Bzdokupa. Statis\xEDce hv\u011Bzd star\u0161\xEDch ne\u017E Slunce. Jedna z nich vys\xEDl\xE1 na frekvenci pulsu. Pak zmlkne.",
+      auto4: "Sm\u011Brova\u010D pracuje s\xE1m. Roz\u0161i\u0159uje hrdla v po\u0159ad\xED, kter\xE9 jsem si zapsal a\u017E potom.",
+      pair: "Prov\xE1zan\xFD p\xE1r funguje. Co zm\u011B\u0159\xEDm na jedn\xE9 stran\u011B, v\xED druh\xE1 strana d\u0159\xEDv, ne\u017E tam doraz\xED sv\u011Btlo.",
+      net20: "Dvacet most\u016F. Z v\xFD\u0161ky s\xED\u0165 p\u0159ipom\xEDn\xE1 ko\u0159eny. Nebo nervovou soustavu.",
+      bubbles: "Puls se st\xE1\u010D\xED ke st\u0159edu galaxie. Tam n\u011Bkde je jeho za\u010D\xE1tek. Nebo konec.",
       bridge1: "Prvn\xED most stoj\xED. V \xFAst\xED je ciz\xED obloha. Poprv\xE9 se d\xEDv\xE1m n\u011Bkam, kde nejsem.",
       relic: "U vzd\xE1len\xE9 soustavy jsem na\u0161el zbytek hrdla. Je star\u0161\xED ne\u017E v\u0161echny moje mosty a kotva m\xE1 p\u0159esn\u011B moje rozm\u011Bry.",
       rhythm: "Hrdla se otev\xEDraj\xED v taktu, kter\xFD neur\u010Duju j\xE1. S\xED\u0165 propou\u0161t\xED nejl\xEDp p\u0159esn\u011B v rytmu pulsu.",
       typeIII: "Typ III. Sv\xEDt\xEDm jako galaxie. A po\u0159\xE1d nev\xEDm, komu.",
       kilonova: "Gravita\u010Dn\xED vlny ze sr\xE1\u017Eky nesou modulaci s periodou o m\xE1lo krat\u0161\xED ne\u017E 7,3 sekundy. \u2026 Tohle je m\u016Fj podpis.",
       shifted: "Posunut\xE9 \xFAst\xED funguje. Data p\u0159ich\xE1zej\xED d\u0159\xEDv, ne\u017E se zept\xE1m.",
-      halo: "Temn\xE9 uzly maj\xED u sebe slab\xE9 stopy staveb. Pr\xE1zdn\xE9, jako opu\u0161t\u011Bn\xE9 t\xE1bory.",
+      halo: "Hv\u011Bzdy v proudech maj\xED u sebe slab\xE9 stopy staveb. Pr\xE1zdn\xE9, jako opu\u0161t\u011Bn\xE9 t\xE1bory.",
       pass: "Sonda vstoupila do hrdla. Puls zn\xED z obou stran z\xE1rove\u0148.",
       through: "Na druh\xE9 stran\u011B u\u017E byl pr\u016Fchod p\u0159ipraven\xFD, podle pl\xE1n\u016F VESPER. Puls je odpov\u011B\u010F na ot\xE1zku, kterou teprve polo\u017E\xEDm. M\xED\u0159\xED ke st\u0159edu galaxie.",
       nova: "J\xE1dro se zhroutilo za \u010Dtvrt sekundy. Aldra zaz\xE1\u0159ila jasn\u011Bji ne\u017E cel\xE1 galaxie. Kdy\u017E sv\u011Btlo opadlo, puls zn\u011Bl d\xE1l. 7,3 sekundy."
@@ -675,11 +714,11 @@
       erepr: "Maldacena a Susskind v roce 2013 navrhli, \u017Ee ka\u017Ed\xE9 dv\u011B prov\xE1zan\xE9 \u010D\xE1stice spojuje mikroskopick\xE1 \u010Derv\xED d\xEDra. Hypot\xE9ze se \u0159\xEDk\xE1 ER = EPR.",
       sagan: "Carl Sagan odhadl v\xFDkon Typu III na 10\xB3\u2076 W. Cel\xE1 Ml\xE9\u010Dn\xE1 dr\xE1ha vyz\xE1\u0159\xED asi 5\xB710\xB3\u2076 W.",
       gw170817: "V srpnu 2017 zachytily detektory LIGO a Virgo sr\xE1\u017Eku neutronov\xFDch hv\u011Bzd a o dv\u011B sekundy pozd\u011Bji i jej\xED z\xE1blesk. Kilonova vytvo\u0159ila zlata za n\u011Bkolik Zem\xED.",
-      rubin: "Vera Rubinov\xE1 v 70. letech zm\u011B\u0159ila, \u017Ee okraje galaxi\xED ob\xEDhaj\xED moc rychle. V\u011Bt\u0161inu hmoty galaxie tvo\u0159\xED n\u011Bco, co nesv\xEDt\xED.",
+      rubin: "Proud v St\u0159elci je trosku trpasli\u010D\xED galaxie, kterou Ml\xE9\u010Dn\xE1 dr\xE1ha trh\xE1 u\u017E miliardy let. Ov\xEDj\xED se kolem cel\xE9 galaxie jako stuha.",
       fermib: "Fermiho bubliny objevil v roce 2010 dalekohled Fermi. Sahaj\xED 25 000 sv\u011Bteln\xFDch let nad a pod st\u0159ed galaxie.",
       nova: "Supernova vyz\xE1\u0159\xED za p\xE1r t\xFDdn\u016F tolik sv\u011Btla jako Slunce za cel\xFD \u017Eivot. V\u011Bt\u0161inu energie ale odnesou neutrina."
     },
-    req: { moon: "Vesper prozkoum\xE1 Kelvar", giant: "Vesper prozkoum\xE1 Tauris", sun: "Vesper prozkoum\xE1 kor\xF3nu Aldry", typeI: "civilizace dos\xE1hne Typu I", stage1: "se Aldra nafoukne do rud\xE9ho veleobra", stage2: "za\u010Dne Aldra spalovat uhl\xEDk", stage3: "za\u010Dne Aldra spalovat neon a kysl\xEDk", stage4: "za\u010Dne Aldra spalovat k\u0159em\xEDk", nova: "Aldra skon\u010D\xED jako supernova", phase1: "za\u010Dne f\xE1ze Tenk\xFD disk", phase2: "za\u010Dne f\xE1ze Eddingtonova mez", phase3: "za\u010Dne f\xE1ze Magnetick\xE9 trysky", phase4: "za\u010Dne f\xE1ze Ergosf\xE9ra", eddCap: "disk naraz\xED na Eddingtonovu mez", ch4: "za\u010Dne Kapitola 4", bstage1: "za\u010Dne stadium \u0158et\u011Bz soustav", bstage2: "za\u010Dne stadium Typ III", bstage3: "za\u010Dne stadium Kilonova", bstage4: "za\u010Dne stadium Temn\xE9 halo" }
+    req: { moon: "Vesper prozkoum\xE1 Kelvar", giant: "Vesper prozkoum\xE1 Tauris", sun: "Vesper prozkoum\xE1 kor\xF3nu Aldry", typeI: "civilizace dos\xE1hne Typu I", stage1: "se Aldra nafoukne do rud\xE9ho veleobra", stage2: "za\u010Dne Aldra spalovat uhl\xEDk", stage3: "za\u010Dne Aldra spalovat neon a kysl\xEDk", stage4: "za\u010Dne Aldra spalovat k\u0159em\xEDk", nova: "Aldra skon\u010D\xED jako supernova", phase1: "za\u010Dne f\xE1ze Tenk\xFD disk", phase2: "za\u010Dne f\xE1ze Eddingtonova mez", phase3: "za\u010Dne f\xE1ze Magnetick\xE9 trysky", phase4: "za\u010Dne f\xE1ze Ergosf\xE9ra", eddCap: "disk naraz\xED na Eddingtonovu mez", ch4: "za\u010Dne Kapitola 4", bstage1: "za\u010Dne stadium \u0158et\u011Bz soustav", bstage2: "za\u010Dne stadium Typ III", bstage3: "za\u010Dne stadium Kilonova", bstage4: "za\u010Dne stadium Hv\u011Bzdn\xE9 proudy" }
   };
 
   // src/i18n/index.ts
@@ -994,6 +1033,13 @@
     { id: "hole", when: (s) => !!s.r.accrete },
     { id: "disk", when: (s) => s.b.ring >= 1 && (s.vent?.best ?? 0) >= 1 },
     { id: "station", when: (s) => s.b.station >= 1 },
+    { id: "chain5", when: (s) => (s.vent?.best ?? 0) >= 5 },
+    { id: "burst", when: (s) => (s.vent?.over ?? 0) > 0 && !s.hole?.done },
+    { id: "inj", when: (s) => s.b.injector >= 1 },
+    { id: "station10", when: (s) => s.b.station >= 10 },
+    { id: "spin", when: (s) => (s.hole?.a ?? 0) >= 0.9 && !s.hole?.done },
+    { id: "yard", when: (s) => (s.b.yard ?? 0) >= 1 },
+    { id: "hawk", when: (s) => s.b.hawking >= 1 },
     { id: "thin", when: (s) => (s.hole?.phase ?? 0) >= 1 },
     { id: "pulse3", when: (s) => !!s.r.pulse3 },
     { id: "edd", when: (s) => (s.hole?.phase ?? 0) >= 2 },
@@ -1005,14 +1051,23 @@
     { id: "horizon", when: (s) => !!s.hole?.done },
     // Kapitola 4
     { id: "order", when: (s) => !!s.bridge?.started },
+    { id: "where", when: (s) => !!s.bridge?.started && s.b.plate >= 1 },
     { id: "bridge1", when: (s) => (s.bridge?.n ?? 0) >= 1 },
+    { id: "full", when: (s) => !!s.bridge?.fullSeen },
+    { id: "net5", when: (s) => (s.bridge?.n ?? 0) >= 5 },
+    { id: "lock1", when: (s) => (s.bridge?.locks ?? 0) >= 1 },
     { id: "relic", when: (s) => (s.bridge?.stage ?? 0) >= 1 && (s.bridge?.n ?? 0) >= 8 },
+    { id: "cluster", when: (s) => !!s.bridge?.cluster },
+    { id: "auto4", when: (s) => s.b.router >= 1 },
+    { id: "pair", when: (s) => s.b.pair >= 1 },
+    { id: "net20", when: (s) => (s.bridge?.n ?? 0) >= 20 },
     { id: "rhythm", when: (s) => (s.bridge?.locks ?? 0) >= 12 },
     { id: "typeIII", when: (s) => ch4(s) && s.peakK >= 3 },
     { id: "kilonova", when: (s) => !!s.visited.kilonova },
     { id: "shifted", when: (s) => !!s.r.shifted },
     { id: "halo", when: (s) => !!s.visited.rotation },
     { id: "pass", when: (s) => (s.bridge?.pass ?? -1) >= 0 },
+    { id: "bubbles", when: (s) => !!s.visited.bubbles },
     { id: "through", when: (s) => !!s.bridge?.done }
   ];
   var FACTS = [
@@ -1102,7 +1157,7 @@
     // kolik záření soustavy zachytí jeden roj
     trapF: 0.05,
     // kolik temné hmoty zachytí jedna anihilační past
-    anchorK: 0.04,
+    anchorK: 0.02,
     // kotvy: propustnost až ×3, víc s každou deskou
     wave: 0.55,
     // rychlost vlny pulsu (jednotky mapy za s)
@@ -1143,7 +1198,7 @@
     nebula: 2e34,
     arm: 6e35,
     kilo: 2e33,
-    dark: 13e35
+    stream: 13e35
   };
   function mulberry(a) {
     return () => {
@@ -1159,7 +1214,7 @@
     for (let k = 0; k < 50; k++) {
       const n = Math.floor(r() * 9e3) + 1e3;
       const g = GREEK[Math.floor(r() * GREEK.length)];
-      const nm = type === "red" ? `GJ ${n}` : type === "sun" ? g : type === "binary" ? `${g} A/B` : type === "neutron" ? `PSR J${n}` : type === "blue" ? `HD ${n * 31 % 99999}` : type === "assoc" ? `OB ${g} ${1 + n % 9}` : type === "cluster" ? `NGC ${n}` : type === "nebula" ? `${g} \xB7 mlhovina` : type === "arm" ? `Rameno ${String.fromCharCode(65 + n % 8)}${n % 90 + 10}` : type === "kilo" ? `GW ${n}` : `Temn\xFD uzel ${n % 900 + 100}`;
+      const nm = type === "red" ? `GJ ${n}` : type === "sun" ? g : type === "binary" ? `${g} A/B` : type === "neutron" ? `PSR J${n}` : type === "blue" ? `HD ${n * 31 % 99999}` : type === "assoc" ? `OB ${g} ${1 + n % 9}` : type === "cluster" ? `NGC ${n}` : type === "nebula" ? `${g} \xB7 mlhovina` : type === "arm" ? `Rameno ${String.fromCharCode(65 + n % 8)}${n % 90 + 10}` : type === "kilo" ? `GW ${n}` : `Proud Sgr ${String.fromCharCode(65 + n % 6)}${n % 9 + 1}`;
       if (!used.has(nm)) {
         used.add(nm);
         return nm;
@@ -1194,7 +1249,7 @@
       nodes.push({ id: "n" + i, name: nameFor(type, r, used), type, x: p.x, y: p.y, L: TYPE_L[type] * Math.pow(10, r() * 0.6 - 0.3), d, rank: i });
     });
     place(3, (x, y) => dist2(x, y) > 0.7 && dist2(x, y) < 1.05, 0.09).forEach((p, i) => nodes.push({ id: "k" + i, name: nameFor("kilo", r, used), type: "kilo", x: p.x, y: p.y, L: TYPE_L.kilo * (1 + i * 0.4), d: dist2(p.x, p.y), rank: 100 + i }));
-    place(6, (x, y) => dist2(x, y) > 0.95 && (y < 0.2 || y > 0.8 || x > 1.4), 0.09).forEach((p, i) => nodes.push({ id: "d" + i, name: nameFor("dark", r, used), type: "dark", x: p.x, y: p.y, L: TYPE_L.dark * Math.pow(10, r() * 0.4 - 0.2), d: dist2(p.x, p.y), rank: 200 + i }));
+    place(6, (x, y) => dist2(x, y) > 0.95 && (y < 0.2 || y > 0.8 || x > 1.4), 0.09).forEach((p, i) => nodes.push({ id: "d" + i, name: nameFor("stream", r, used), type: "stream", x: p.x, y: p.y, L: TYPE_L.stream * Math.pow(10, r() * 0.4 - 0.2), d: dist2(p.x, p.y), rank: 200 + i }));
     return nodes;
   }
   function connectedAll(nodes) {
@@ -1221,7 +1276,7 @@
   function isRevealed(s, n) {
     if (n.type === "home") return true;
     if (n.type === "kilo") return !!s.visited.kilonova;
-    if (n.type === "dark") return !!s.visited.rotation;
+    if (n.type === "stream") return !!s.visited.rotation;
     return n.rank < revealCount(s) || !!s.bridge.links[n.id];
   }
   var revealed = (s) => NODES.filter((n) => isRevealed(s, n));
@@ -1242,7 +1297,7 @@
   }
   function nodeOut(s, n, links = s.bridge.links) {
     if (n.type === "home") return 0;
-    if (n.type === "dark") return n.L * trapCapture(s);
+    if (n.type === "stream") return n.L * trapCapture(s);
     let v = n.L * capture(s);
     if (s.r.spectral && (n.type === "blue" || n.type === "assoc")) v *= 2;
     if (n.type === "cluster" && s.visited.globular) v *= 2;
@@ -1254,8 +1309,9 @@
     }
     return v;
   }
-  function anchorMult(s) {
-    return 1 + 2 * (1 - Math.exp(-NET.anchorK * Math.floor(s.b.anchor) * (1 + Math.floor(s.b.plate) / 40)));
+  var anchorPer = (s, plates = Math.floor(s.b.plate)) => NET.anchorK * (1 + plates / 20);
+  function anchorMult(s, anchors = Math.floor(s.b.anchor), plates = Math.floor(s.b.plate)) {
+    return 1 + 2 * (1 - Math.exp(-anchors * anchorPer(s, plates)));
   }
   function lockMult(s, l) {
     if (l.lk <= 0) return 1;
@@ -1317,6 +1373,7 @@
   function addLink(s, from, to) {
     s.bridge.links[to] = { p: from, lv: 0, lk: 0, la: false, t: s.time };
     s.bridge.n++;
+    if (NODE[to]?.type === "cluster") s.bridge.cluster = true;
   }
   function openLink(s, from, to) {
     if (!canLink(s, from, to)) return false;
@@ -1371,10 +1428,30 @@
     }
     return best;
   }
+  function limiter(s, id = null) {
+    var _a;
+    const f = netNow(s), L2 = s.bridge.links;
+    const kids = {};
+    for (const k in L2) (kids[_a = L2[k].p] ?? (kids[_a] = [])).push(k);
+    let best = null, bv = 1.001;
+    const walk = (k) => {
+      if (k !== "home") {
+        const r = (f.supply[k] ?? 0) / capOf(s, L2[k]);
+        if (r > bv) {
+          bv = r;
+          best = k;
+        }
+      }
+      for (const c of kids[k] ?? []) walk(c);
+    };
+    walk(id ?? "home");
+    return best;
+  }
+  var fillOf = (s, id) => (netNow(s).supply[id] ?? 0) / capOf(s, s.bridge.links[id]);
   var SYNC_UPS = { win: { base: 2e19, g: 8, max: 4 }, len: { base: 3e19, g: 8, max: 4 }, dbl: { base: 8e20, g: 1, max: 1 } };
   var SYNC_IDS = Object.keys(SYNC_UPS);
   var syncLv = (s, id) => s.bridge.lv[id] ?? 0;
-  var syncWin = (s, l = syncLv(s, "win")) => 0.8 + 0.25 * l;
+  var syncWin = (s, l = syncLv(s, "win")) => 1.4 + 0.3 * l;
   var lockLen = (s, l = syncLv(s, "len")) => 90 + 30 * l;
   var syncCost = (s, id) => SYNC_UPS[id].base * Math.pow(SYNC_UPS[id].g, syncLv(s, id));
   function syncUpgrade(s, id) {
@@ -1455,6 +1532,7 @@
         br.made[k]++;
       }
     }
+    if (!br.fullSeen && br.n >= 1 && limiter(s)) br.fullSeen = true;
     if (br.pass >= 0) {
       br.pass -= dt;
       if (br.pass <= 0) {
@@ -4923,7 +5001,7 @@
   var toPx = (g, n) => [g.ox + n.x * g.k, g.oy + n.y * g.k];
   function nodeR(n) {
     if (n.type === "home") return 9;
-    if (n.type === "dark") return 8;
+    if (n.type === "stream") return 8;
     return Math.max(3, Math.min(13, 2.2 + (Math.log10(Math.max(1, n.L)) - 24) * 0.82));
   }
   function hitNode(g, s, mx, my) {
@@ -4939,7 +5017,7 @@
     return best;
   }
   function hitLink(g, s, mx, my) {
-    let best = null, bd = 11;
+    let best = null, bd = 15;
     for (const id in s.bridge.links) {
       const [ax, ay] = toPx(g, NODE[s.bridge.links[id].p]), [bx, by] = toPx(g, NODE[id]);
       const dx = bx - ax, dy = by - ay, t2 = Math.max(0.12, Math.min(0.88, ((mx - ax) * dx + (my - ay) * dy) / (dx * dx + dy * dy || 1)));
@@ -5027,7 +5105,7 @@
     nebula: "255,150,190",
     arm: "214,222,255",
     kilo: "245,205,85",
-    dark: "142,240,200"
+    stream: "255,226,190"
   };
   function drawNode(x, n, px, py, time, on) {
     const r = nodeR(n), c = TYPE_COL[n.type], seed2 = n.x * 97 + n.y * 61;
@@ -5048,18 +5126,31 @@
       x.stroke();
       return;
     }
-    if (n.type === "dark") {
-      x.setLineDash([3, 4]);
-      x.strokeStyle = `rgba(${c},${on ? 0.85 : 0.5})`;
-      x.lineWidth = 1.3;
+    if (n.type === "stream") {
+      let sd = Math.floor(seed2 * 1e3) % 2147483646 + 1;
+      const rr = () => (sd = sd * 16807 % 2147483647) / 2147483647, ang = seed2 % 3.14;
+      for (let i = 0; i < 34; i++) {
+        const t2 = rr() * 2 - 1, off = (rr() - 0.5) * 3.2, bend = t2 * t2 * 5;
+        const qx = px + Math.cos(ang) * t2 * r * 3 - Math.sin(ang) * (off + bend), qy = py + Math.sin(ang) * t2 * r * 3 + Math.cos(ang) * (off + bend);
+        x.fillStyle = `rgba(${c},${(0.35 + rr() * 0.5) * (1 - Math.abs(t2) * 0.5)})`;
+        x.fillRect(qx, qy, 1.3, 1.3);
+      }
+      const hg = x.createRadialGradient(px, py, 0, px, py, r * 2.2);
+      hg.addColorStop(0, `rgba(${c},0.22)`);
+      hg.addColorStop(1, `rgba(${c},0)`);
+      x.fillStyle = hg;
       x.beginPath();
-      x.arc(px, py, r + Math.sin(time * 0.8 + seed2) * 0.6, 0, 7);
-      x.stroke();
-      x.setLineDash([]);
-      x.strokeStyle = `rgba(${c},0.18)`;
-      x.beginPath();
-      x.arc(px, py, r * 1.7, 0, 7);
-      x.stroke();
+      x.arc(px, py, r * 2.2, 0, 7);
+      x.fill();
+      if (on) {
+        x.setLineDash([2, 3]);
+        x.strokeStyle = `rgba(${EXO},0.7)`;
+        x.lineWidth = 1;
+        x.beginPath();
+        x.ellipse(px, py, r * 2.4, r * 1.1, ang, 0, 7);
+        x.stroke();
+        x.setLineDash([]);
+      }
       return;
     }
     const halo = x.createRadialGradient(px, py, 0, px, py, r * 2.6);
@@ -5239,6 +5330,34 @@
         x.fill();
       }
     }
+    x.font = `600 12px ${MONO2}`;
+    x.textAlign = "center";
+    for (const id in links) {
+      const l = links[id], [ax, ay] = toPx(g, NODE[l.p]), [bx, by] = toPx(g, NODE[id]), mx = (ax + bx) / 2, my = (ay + by) / 2;
+      if (l.lk > 0) {
+        const k = 5;
+        x.fillStyle = l.la ? "rgba(180,215,255,0.95)" : "rgba(255,255,255,0.98)";
+        x.strokeStyle = "rgba(10,12,24,0.9)";
+        x.lineWidth = 2;
+        x.beginPath();
+        x.moveTo(mx, my - k);
+        x.lineTo(mx + k, my);
+        x.lineTo(mx, my + k);
+        x.lineTo(mx - k, my);
+        x.closePath();
+        x.stroke();
+        x.fill();
+        if (id === ui.sel || id === ui.hoverLink) {
+          x.fillStyle = "rgba(255,255,255,0.95)";
+          x.fillText(`\xD7${l.la ? s.r.quiet ? "1,45" : "1,3" : "1,5"} \xB7 ${Math.ceil(l.lk)} s`, mx, my - 10);
+        }
+      } else if (id === ui.sel || id === ui.hoverLink) {
+        const sup = ui.flow.supply[id] ?? 0, cap = capOf(s, l), r = sup / cap;
+        x.fillStyle = r > 1.001 ? `rgb(${AMBER})` : "rgba(207,226,255,0.95)";
+        x.fillText(r > 1.001 ? `pln\xFD \xB7 chce ${r >= 10 ? Math.round(r) : r.toFixed(1).replace(".", ",")}\xD7` : `${Math.round(r * 100)} %`, mx, my - 10);
+      }
+    }
+    x.textAlign = "left";
     if (ui.raider && ui.raiderFrom && NODE[ui.raider] && NODE[ui.raiderFrom]) {
       const [ax, ay] = toPx(g, NODE[ui.raiderFrom]), [bx, by] = toPx(g, NODE[ui.raider]);
       x.setLineDash([6, 6]);
@@ -5322,6 +5441,16 @@
       x.textAlign = "left";
       x.fillText(txt, lx, ly2);
     }
+    for (let i = ui.tips.length - 1; i >= 0; i--) {
+      const q = ui.tips[i], age = time - q.t;
+      if (age > 1.6 || i < ui.tips.length - 2) {
+        ui.tips.splice(i, 1);
+        continue;
+      }
+      x.globalAlpha = Math.min(1, (1.6 - age) * 2);
+      label2(x, q.text, q.x + 10, q.y - age * 14, q.ok ? "#ffffff" : `rgb(${PULSE})`, W);
+      x.globalAlpha = 1;
+    }
     x.textAlign = "left";
     x.font = `12px ${MONO2}`;
     x.fillStyle = `rgba(${PULSE},0.9)`;
@@ -5345,90 +5474,78 @@
     return Math.max(0, d);
   }
   var skyCache = /* @__PURE__ */ new Map();
-  function skyTex(n, px) {
+  var hash2 = (i, j, k) => {
+    const v = Math.sin(i * 127.1 + j * 311.7 + k * 74.7) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  function skyAt(X, Y, col, seed2) {
+    const band = Math.exp(-Math.pow(Y * 0.9 - X * 0.35 + 0.15, 2) * 3.2) * (0.55 + 0.45 * sfbm(X * 1.6 + seed2, Y * 1.6, 3));
+    const neb2 = Math.max(0, sfbm(X * 1.1 + seed2 * 3, Y * 1.1 - seed2, 3) + 0.1);
+    let r = 5 + band * 34 + neb2 * col[0] * 0.28, g = 6 + band * 32 + neb2 * col[1] * 0.22, b = 13 + band * 44 + neb2 * col[2] * 0.3;
+    const ci = Math.floor(X * 26), cj = Math.floor(Y * 26), h = hash2(ci, cj, seed2);
+    if (h > 0.93) {
+      const ox = ci + 0.5 - X * 26, oy = cj + 0.5 - Y * 26, d = ox * ox + oy * oy, w = Math.exp(-d * 9) * (h - 0.93) * 14 * 255;
+      const warm = hash2(cj, ci, 3) > 0.7;
+      r += w * (warm ? 1 : 0.85);
+      g += w * (warm ? 0.85 : 0.9);
+      b += w * (warm ? 0.65 : 1);
+    }
+    const rr = Math.hypot(X, Y), core = Math.exp(-Math.pow(rr / 0.05, 2)) * 255, glow = Math.exp(-rr / 0.22);
+    return [r + core + glow * col[0] * 0.7, g + core + glow * col[1] * 0.7, b + core + glow * col[2] * 0.7];
+  }
+  function lensTex(n, px) {
     const key = n.id + px;
     let cv = skyCache.get(key);
     if (cv) return cv;
     if (skyCache.size > 12) skyCache.clear();
     cv = document.createElement("canvas");
     cv.width = cv.height = px;
-    const x = cv.getContext("2d"), c = TYPE_COL[n.type === "home" ? "sun" : n.type];
-    const bg = x.createLinearGradient(0, 0, px, px);
-    bg.addColorStop(0, "#06070f");
-    bg.addColorStop(0.5, `rgba(${c},0.22)`);
-    bg.addColorStop(1, "#05060d");
-    x.fillStyle = "#05060d";
-    x.fillRect(0, 0, px, px);
-    x.fillStyle = bg;
-    x.fillRect(0, 0, px, px);
-    let sd = Math.floor(n.x * 1e4 + n.y * 7e3) + 3;
-    const r = () => (sd = sd * 16807 % 2147483647) / 2147483647;
-    for (let i = 0; i < px * 3; i++) {
-      const t2 = r(), yy = px * (0.35 + 0.3 * t2) + (r() - 0.5) * px * 0.18;
-      x.fillStyle = `rgba(235,236,255,${0.08 + r() * 0.2})`;
-      x.fillRect(r() * px, yy, 1, 1);
+    const x = cv.getContext("2d"), img = x.createImageData(px, px), d = img.data, c = px / 2;
+    const col = TYPE_COL[n.type === "home" ? "sun" : n.type].split(",").map(Number), seed2 = (n.x * 13 + n.y * 7) % 10;
+    for (let j = 0; j < px; j++) for (let i = 0; i < px; i++) {
+      const u = (i - c) / c, v = (j - c) / c, rho = Math.hypot(u, v);
+      if (rho > 1) continue;
+      const k = Math.tan(Math.min(1.5, rho * Math.PI / 2)) * 0.3 / Math.max(1e-4, rho);
+      const [r, g, b] = skyAt(u * k, v * k, col, seed2);
+      const ring = Math.exp(-Math.pow((rho - 0.93) / 0.035, 2)) * 70, edge = Math.pow(rho, 6) * 30;
+      const o = (j * px + i) * 4;
+      d[o] = Math.min(255, r + ring + edge);
+      d[o + 1] = Math.min(255, g + ring + edge);
+      d[o + 2] = Math.min(255, b + ring * 1.1 + edge * 1.2);
+      d[o + 3] = Math.min(255, (1 - rho) * c * 3 * 255);
     }
-    for (let i = 0; i < px * px / 140; i++) {
-      x.fillStyle = `rgba(230,236,255,${0.3 + r() * 0.6})`;
-      x.fillRect(r() * px, r() * px, r() < 0.06 ? 2 : 1, r() < 0.06 ? 2 : 1);
-    }
-    const g = x.createRadialGradient(px * 0.5, px * 0.48, 0, px * 0.5, px * 0.48, px * 0.32);
-    g.addColorStop(0, `rgba(255,255,255,1)`);
-    g.addColorStop(0.08, `rgba(${c},0.95)`);
-    g.addColorStop(0.4, `rgba(${c},0.18)`);
-    g.addColorStop(1, `rgba(${c},0)`);
-    x.fillStyle = g;
-    x.fillRect(0, 0, px, px);
-    x.globalCompositeOperation = "destination-in";
-    const m = x.createRadialGradient(px / 2, px / 2, px * 0.3, px / 2, px / 2, px / 2);
-    m.addColorStop(0, "rgba(0,0,0,1)");
-    m.addColorStop(1, "rgba(0,0,0,0)");
-    x.fillStyle = m;
-    x.fillRect(0, 0, px, px);
-    x.globalCompositeOperation = "source-over";
+    x.putImageData(img, 0, 0);
     skyCache.set(key, cv);
     return cv;
   }
-  function drawMouth(c, n, time, title, sub) {
+  function drawMouth(c, n, time, title, sub, sub2 = "") {
     const p = prep2(c);
     if (!p) return;
-    const { x, W, H } = p, cx = W / 2, cy = H / 2 - 10, R2 = Math.min(W, H) * 0.36, tt = reduce3 ? 0 : time;
+    const { x, W, H } = p, cx = W / 2, cy = H / 2 - 18, R2 = Math.min(W, H) * 0.34, tt = reduce3 ? 0 : time;
     x.clearRect(0, 0, W, H);
-    const tex2 = skyTex(n, 256);
-    x.save();
+    const halo = x.createRadialGradient(cx, cy, R2 * 0.95, cx, cy, R2 * 1.5);
+    halo.addColorStop(0, "rgba(160,175,255,0.22)");
+    halo.addColorStop(1, "rgba(160,175,255,0)");
+    x.fillStyle = halo;
     x.beginPath();
-    x.arc(cx, cy, R2, 0, 7);
-    x.clip();
-    x.fillStyle = "#05060d";
-    x.fillRect(cx - R2, cy - R2, R2 * 2, R2 * 2);
-    x.translate(cx, cy);
-    x.rotate(tt * 0.04);
-    for (let k = 0; k < 6; k++) {
-      const f = 1 - k * 0.14, s = R2 * 2.6 * f;
-      x.globalAlpha = k ? 0.4 : 1;
-      x.save();
-      x.rotate(k * 0.9);
-      x.scale(1, 1 - k * 0.04);
-      x.drawImage(tex2, -s / 2, -s / 2, s, s);
-      x.restore();
-    }
-    x.restore();
-    x.globalAlpha = 1;
-    const rim = x.createRadialGradient(cx, cy, R2 * 0.78, cx, cy, R2 * 1.04);
-    rim.addColorStop(0, "rgba(255,255,255,0)");
-    rim.addColorStop(0.75, "rgba(232,236,255,0.55)");
-    rim.addColorStop(1, "rgba(255,255,255,0)");
-    x.fillStyle = rim;
-    x.beginPath();
-    x.arc(cx, cy, R2 * 1.04, 0, 7);
+    x.arc(cx, cy, R2 * 1.5, 0, 7);
     x.fill();
-    x.strokeStyle = "rgba(138,144,184,0.45)";
-    x.lineWidth = 1;
+    x.save();
+    x.translate(cx, cy);
+    x.rotate(tt * 0.03);
+    x.drawImage(lensTex(n, 300), -R2, -R2, R2 * 2, R2 * 2);
+    x.restore();
+    const a0 = tt * 0.4;
+    x.strokeStyle = "rgba(232,236,255,0.35)";
+    x.lineWidth = 1.2;
     x.beginPath();
-    x.arc(cx, cy, R2, 0, 7);
+    x.arc(cx, cy, R2 * 1.01, a0, a0 + 1.1);
     x.stroke();
-    const hl = x.createRadialGradient(cx - R2 * 0.4, cy - R2 * 0.45, 0, cx - R2 * 0.4, cy - R2 * 0.45, R2 * 0.5);
-    hl.addColorStop(0, "rgba(255,255,255,0.16)");
+    x.beginPath();
+    x.arc(cx, cy, R2 * 1.01, a0 + Math.PI, a0 + Math.PI + 0.7);
+    x.stroke();
+    const hl = x.createRadialGradient(cx - R2 * 0.42, cy - R2 * 0.48, 0, cx - R2 * 0.42, cy - R2 * 0.48, R2 * 0.45);
+    hl.addColorStop(0, "rgba(255,255,255,0.14)");
     hl.addColorStop(1, "rgba(255,255,255,0)");
     x.fillStyle = hl;
     x.beginPath();
@@ -5437,10 +5554,14 @@
     x.textAlign = "center";
     x.font = `600 14px "Chakra Petch", ${MONO2}`;
     x.fillStyle = "rgba(232,236,255,0.95)";
-    x.fillText(title, cx, cy + R2 + 22);
+    x.fillText(title, cx, cy + R2 + 26);
     x.font = `12px ${MONO2}`;
     x.fillStyle = "rgba(176,181,212,0.85)";
-    x.fillText(sub, cx, cy + R2 + 40);
+    x.fillText(sub, cx, cy + R2 + 44);
+    if (sub2) {
+      x.fillStyle = "rgba(142,240,200,0.8)";
+      x.fillText(sub2, cx, cy + R2 + 60);
+    }
     x.textAlign = "left";
   }
   function drawThroat(c, v, time) {
@@ -5511,17 +5632,63 @@
     v.lines.forEach((ln, i) => x.fillText(ln, Math.min(W - 230, cx + r0 + 26), mid - 2 + i * 18));
   }
   var GAL_IDS = ["flyby", "magnetar", "globular", "kilonova", "frb", "rotation", "bubbles"];
+  var GB = 0.3;
+  var GR0 = 0.11;
+  var ARMS = [
+    { ph: 0, w: 1, key: "perseus" },
+    { ph: Math.PI, w: 1, key: "scutum" },
+    { ph: Math.PI / 2, w: 0.45, key: "sagittarius" },
+    { ph: Math.PI * 1.5, w: 0.45, key: "norma" }
+  ];
+  var armTh = (ph, r) => ph + Math.log(r / GR0) / GB;
+  var wrapA = (a) => {
+    a = (a + Math.PI) % (Math.PI * 2);
+    return a < 0 ? a + Math.PI : a - Math.PI;
+  };
+  var GAL_HOME = { r: 0.66, a: armTh(0, 0.66) };
+  var GAL_SUN = { r: 0.56, a: armTh(0, 0.66) - 0.12 };
+  var GAL_POS = {
+    flyby: { r: 0.7, a: GAL_HOME.a + 0.1 },
+    magnetar: { r: 0.6, a: GAL_HOME.a - 0.55 },
+    globular: { r: 0.93, a: GAL_HOME.a + 0.9 },
+    kilonova: { r: 0.46, a: GAL_HOME.a + 0.7 },
+    frb: { r: 1, a: GAL_HOME.a + 2.6 },
+    rotation: { r: 0.98, a: GAL_HOME.a - 1.6 },
+    bubbles: { r: 0.03, a: 1.57 }
+  };
   var galBg = null;
   var galKey = "";
   function galGeo(W, H) {
-    const R2 = Math.min(W * 0.46, H * 0.46 / 0.62);
-    return { cx: W / 2, cy: H / 2, R: R2, tilt: 0.62 };
+    const tilt = 0.6, R2 = Math.min(W * 0.45, (H - 30) * 0.47 / tilt);
+    return { cx: W / 2, cy: H / 2 + 6, R: R2, tilt };
   }
+  var galXY = (g, r, a) => [g.cx + Math.cos(a) * r * g.R, g.cy + Math.sin(a) * r * g.R * g.tilt];
   function galPos(id, g) {
-    const d = L[id];
-    return [g.cx + Math.cos(d.angle) * d.orbit * g.R, g.cy + Math.sin(d.angle) * d.orbit * g.R * g.tilt];
+    const q = GAL_POS[id] ?? { r: L[id].orbit, a: L[id].angle };
+    return galXY(g, q.r, q.a);
   }
-  var GAL_HOME = { r: 0.58, a: 4.19 };
+  function galPix(u, v) {
+    const r = Math.hypot(u, v), th = Math.atan2(v, u);
+    if (r > 1.25) return [0, 0, 0];
+    const ba = 0.45, bxu = u * Math.cos(ba) + v * Math.sin(ba), bxv = -u * Math.sin(ba) + v * Math.cos(ba);
+    const bar = Math.exp(-(Math.pow(bxu / 0.26, 2) + Math.pow(bxv / 0.075, 2)));
+    const bulge = Math.exp(-Math.pow(r / 0.1, 2)) + 0.35 * Math.exp(-r / 0.16);
+    const disk = Math.exp(-r / 0.3) * 0.7 * Math.max(0, 1 - r / 1.2);
+    const clump = 0.25 + 1.5 * Math.max(0, sfbm(u * 11 + 3, v * 11 - 5, 4) + 0.35) * (0.7 + 0.6 * Math.max(0, sfbm(u * 30, v * 30, 2) + 0.4));
+    const rag = 0.35 * sfbm(u * 4.5 - 7, v * 4.5 + 2, 3);
+    let arm = 0, dust = 0;
+    if (r > 0.1) for (const A of ARMS) {
+      const d = wrapA(th - armTh(A.ph, r) + rag), fade2 = Math.min(1, (r - 0.1) / 0.18) * Math.max(0, Math.min(1, (1.15 - r) / 0.3));
+      arm += A.w * Math.exp(-Math.pow(d * r / (0.06 + 0.05 * r), 2)) * fade2;
+      dust += A.w * Math.exp(-Math.pow((d + 0.3 / (r + 0.3)) * r / 0.025, 2)) * fade2 * (0.5 + 0.5 * clump);
+    }
+    arm *= clump;
+    const dk = Math.max(0.3, 1 - dust * 0.55);
+    const R2 = (disk * 110 + arm * 120 + bar * 220 + bulge * 255) * dk;
+    const G = (disk * 112 + arm * 140 + bar * 190 + bulge * 225) * dk;
+    const B2 = (disk * 160 + arm * 220 + bar * 140 + bulge * 165) * dk;
+    return [R2, G, B2];
+  }
   function drawGalaxy(c, s, time, names, open) {
     const p = prep2(c);
     if (!p) return;
@@ -5533,66 +5700,94 @@
       galBg.width = Math.round(W * dpr);
       galBg.height = Math.round(H * dpr);
       const bx = galBg.getContext("2d");
-      bx.scale(dpr, dpr);
-      bx.fillStyle = "#05060f";
-      bx.fillRect(0, 0, W, H);
+      const lw = Math.round(W / 2), lh = Math.round(H / 2), lo = document.createElement("canvas");
+      lo.width = lw;
+      lo.height = lh;
+      const lx = lo.getContext("2d"), img = lx.createImageData(lw, lh), d = img.data;
+      for (let j = 0; j < lh; j++) for (let i = 0; i < lw; i++) {
+        const u = (i * 2 - g.cx) / g.R, v = (j * 2 - g.cy) / (g.R * g.tilt), [r2, gg, b] = galPix(u, v), o = (j * lw + i) * 4;
+        d[o] = 5 + Math.min(250, r2);
+        d[o + 1] = 6 + Math.min(249, gg);
+        d[o + 2] = 15 + Math.min(240, b);
+        d[o + 3] = 255;
+      }
+      lx.putImageData(img, 0, 0);
+      bx.imageSmoothingEnabled = true;
+      bx.drawImage(lo, 0, 0, galBg.width, galBg.height);
+      bx.setTransform(dpr, 0, 0, dpr, 0, 0);
       let sd = 5;
       const r = () => (sd = sd * 16807 % 2147483647) / 2147483647;
-      for (let i = 0; i < W * H / 500; i++) {
-        bx.fillStyle = `rgba(220,228,255,${r() * 0.4})`;
+      for (let i = 0; i < W * H / 300; i++) {
+        bx.fillStyle = `rgba(220,228,255,${r() * 0.35})`;
         bx.fillRect(r() * W, r() * H, 1, 1);
       }
-      bx.save();
-      bx.translate(g.cx, g.cy);
-      bx.scale(1, g.tilt);
-      const disk = bx.createRadialGradient(0, 0, 0, 0, 0, g.R);
-      disk.addColorStop(0, "rgba(120,130,190,0.16)");
-      disk.addColorStop(1, "rgba(60,70,120,0)");
-      bx.fillStyle = disk;
-      bx.beginPath();
-      bx.arc(0, 0, g.R, 0, 7);
-      bx.fill();
-      for (let i = 0; i < 14e3; i++) {
-        const arm = i % 2, th = 5.4 * Math.sqrt(r()), rr = 0.1 * Math.exp(0.42 * th) + (r() - 0.5) * 0.06 * (1 + th * 0.25);
-        if (rr > 1.02 || rr < 0.05) continue;
-        const a = th + arm * Math.PI + (r() - 0.5) * 0.3, px = Math.cos(a) * rr * g.R, py = Math.sin(a) * rr * g.R;
+      for (let i = 0; i < 2600; i++) {
+        const A = ARMS[i % 4], rr = 0.12 + Math.pow(r(), 0.8) * 0.98, a = armTh(A.ph, rr) + (r() - 0.5) * 0.12 / rr, [px, py] = galXY(g, rr, a);
         const k = r();
-        if (k < 0.08) {
-          bx.fillStyle = "rgba(150,170,255,0.05)";
+        if (k < 0.05 * A.w) {
+          const pg = bx.createRadialGradient(px, py, 0, px, py, 3.5);
+          pg.addColorStop(0, "rgba(255,140,190,0.6)");
+          pg.addColorStop(1, "rgba(255,140,190,0)");
+          bx.fillStyle = pg;
           bx.beginPath();
-          bx.arc(px, py, 7, 0, 7);
+          bx.arc(px, py, 3.5, 0, 7);
           bx.fill();
-          continue;
-        }
-        bx.fillStyle = k < 0.4 ? `rgba(170,200,255,${0.3 + r() * 0.5})` : `rgba(255,236,214,${0.2 + r() * 0.45})`;
-        const sz = r() < 0.04 ? 2 : 1;
-        bx.fillRect(px, py, sz, sz);
-        if (k > 0.992) {
-          bx.fillStyle = "rgba(255,150,190,0.35)";
-          bx.beginPath();
-          bx.arc(px, py, 2.2, 0, 7);
-          bx.fill();
+        } else if (k < 0.6) {
+          bx.fillStyle = `rgba(200,220,255,${0.3 + r() * 0.6})`;
+          bx.fillRect(px, py, r() < 0.08 ? 1.6 : 1, r() < 0.08 ? 1.6 : 1);
         }
       }
-      const core = bx.createRadialGradient(0, 0, 0, 0, 0, g.R * 0.3);
-      core.addColorStop(0, "rgba(255,240,210,0.95)");
-      core.addColorStop(0.25, "rgba(255,214,160,0.5)");
-      core.addColorStop(1, "rgba(255,200,150,0)");
-      bx.fillStyle = core;
-      bx.beginPath();
-      bx.ellipse(0, 0, g.R * 0.3, g.R * 0.22, 0.5, 0, 7);
-      bx.fill();
-      bx.restore();
+      for (let i = 0; i < 26; i++) {
+        const a = r() * 6.283, rr = 0.3 + r() * 0.9, px = g.cx + Math.cos(a) * rr * g.R, py = g.cy + Math.sin(a) * rr * g.R * 0.95;
+        bx.fillStyle = "rgba(255,232,200,0.55)";
+        bx.beginPath();
+        bx.arc(px, py, 1.3, 0, 7);
+        bx.fill();
+      }
+      bx.font = `italic 12px ${MONO2}`;
+      bx.textAlign = "center";
+      for (const A of ARMS) {
+        const rr = A.w > 0.8 ? 0.92 : 0.8, [px, py] = galXY(g, rr, armTh(A.ph, rr) + 0.1);
+        bx.fillStyle = "rgba(176,190,240,0.55)";
+        bx.fillText(names("arm." + A.key), px, py);
+      }
+      bx.fillStyle = "rgba(255,226,180,0.7)";
+      bx.fillText(names("center"), g.cx, g.cy + g.R * g.tilt * 0.22 + 14);
     }
     x.drawImage(galBg, 0, 0, W, H);
-    const hx = g.cx + Math.cos(GAL_HOME.a) * GAL_HOME.r * g.R, hy = g.cy + Math.sin(GAL_HOME.a) * GAL_HOME.r * g.R * g.tilt;
-    x.strokeStyle = `rgba(${EXO},0.8)`;
-    x.lineWidth = 1.2;
-    x.strokeRect(hx - 26, hy - 16, 52, 32);
+    const [sx, sy] = galXY(g, GAL_SUN.r, GAL_SUN.a);
+    x.fillStyle = "rgba(255,233,184,0.95)";
+    x.beginPath();
+    x.arc(sx, sy, 2.4, 0, 7);
+    x.fill();
+    x.strokeStyle = "rgba(255,233,184,0.5)";
+    x.lineWidth = 1;
+    x.beginPath();
+    x.arc(sx, sy, 6, 0, 7);
+    x.stroke();
     x.font = `12px ${MONO2}`;
+    x.textAlign = "right";
+    x.fillStyle = "rgba(255,233,184,0.85)";
+    x.fillText(names("sun"), sx - 10, sy + 4);
+    const [hx, hy] = galXY(g, GAL_HOME.r, GAL_HOME.a), bw = Math.max(34, 0.13 * g.R), bh = Math.max(22, 0.08 * g.R);
+    x.strokeStyle = `rgba(${EXO},0.85)`;
+    x.lineWidth = 1.2;
+    x.strokeRect(hx - bw * 0.2, hy - bh * 0.6, bw, bh);
+    x.fillStyle = `rgb(${AMBER})`;
+    x.beginPath();
+    x.arc(hx, hy, 2.6, 0, 7);
+    x.fill();
+    const pl = tt * 0.5 % 1;
+    x.strokeStyle = `rgba(${PULSE},${0.7 * (1 - pl)})`;
+    x.beginPath();
+    x.arc(hx, hy, 4 + pl * 18, 0, 7);
+    x.stroke();
+    const hn = names("home"), hw = x.measureText(hn).width, hlx = Math.min(W - hw - 8, hx - bw * 0.2);
+    x.textAlign = "left";
+    x.fillStyle = "rgba(8,10,22,0.6)";
+    x.fillRect(hlx - 3, hy - bh * 0.6 - 19, hw + 6, 17);
     x.fillStyle = `rgba(${EXO},0.95)`;
-    x.textAlign = "center";
-    x.fillText(names("home"), hx, hy + 30);
+    x.fillText(hn, hlx, hy - bh * 0.6 - 6);
     for (const id of GAL_IDS) {
       if (!open(id)) continue;
       const [px, py] = galPos(id, g), done = !!s.visited[id], fly = s.travel?.to === id;
@@ -5621,9 +5816,14 @@
         x.arc(hx + (px - hx) * k, hy + (py - hy) * k, 3, 0, 7);
         x.fill();
       }
-      x.fillStyle = done ? "rgba(176,181,212,0.85)" : "rgba(232,236,255,0.95)";
-      x.textAlign = px > g.cx ? "left" : "right";
-      x.fillText(names(id), px + (px > g.cx ? 12 : -12), py + 4);
+      const right = px > g.cx;
+      x.font = `12px ${MONO2}`;
+      x.textAlign = right ? "left" : "right";
+      const lbl = names(id), w = x.measureText(lbl).width, lx = right ? px + 12 : px - 12;
+      x.fillStyle = "rgba(8,10,22,0.6)";
+      x.fillRect(right ? lx - 3 : lx - w - 3, py - 9, w + 6, 17);
+      x.fillStyle = done ? "rgba(176,181,212,0.9)" : "rgba(232,236,255,0.98)";
+      x.fillText(lbl, lx, py + 4);
     }
     x.textAlign = "left";
   }
@@ -5659,7 +5859,7 @@
   var viewKey = "";
   var lastActive = Date.now();
   var COLOR = { ore: "var(--ore)", metal: "var(--metal)", energy: "var(--energy)", data: "var(--data)", plasma: "var(--plasma)", exotic: "var(--exotic)" };
-  var UNIT = { ore: "kg", metal: "kg", energy: "J", data: "B", plasma: "kg", exotic: "kg" };
+  var UNIT = { ore: "kg", metal: "kg", energy: "J", data: "B", plasma: "kg", exotic: "foam" };
   function amount(r, v) {
     return r === "energy" ? energy(v) : r === "data" ? bytes(v) : mass(v);
   }
@@ -5914,7 +6114,8 @@
     if (S.b.lab > 0 || Object.keys(S.r).length) list.push(["research", t("ui.tabs.research")]);
     if (S.r.scan) list.push(["map", t("ui.tabs.map")]);
     if (S.hole.done) list.push(["bridge", t("ui.tabs.bridge")]);
-    if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
+    if (S.hole.done) {
+    } else if (S.star.done) list.push(["hole", t("ui.tabs.hole")]);
     else if (S.chapterDone >= 1) list.push(["star", t("ui.tabs.star")]);
     return list;
   }
@@ -6978,7 +7179,7 @@
       }
       if (tab === "map") {
         const m = document.getElementById("map");
-        if (m) S.hole.done ? drawGalaxy(m, S, now / 1e3, (id) => id === "home" ? t("ui.net.ourRegion") : t(`loc.${id}.short`), (id) => locationOpen(S, id) || !!S.visited[id]) : S.star.done ? drawHoleMap(m, S, holeView(), now / 1e3) : drawMap(m, S, now / 1e3);
+        if (m) S.hole.done ? drawGalaxy(m, S, now / 1e3, galName, (id) => locationOpen(S, id) || !!S.visited[id]) : S.star.done ? drawHoleMap(m, S, holeView(), now / 1e3) : drawMap(m, S, now / 1e3);
       }
       if (tab === "hole") {
         const c = document.getElementById("holec");
@@ -7020,6 +7221,8 @@
   var linkName = (id) => `${nodeName(NODE[S.bridge.links[id].p])} \u2013 ${nodeName(NODE[id])}`;
   var kOf = (w) => (Math.log10(w) - 6) / 10;
   var ly = (d) => `${Math.round(d * MAP.ly).toLocaleString("cs-CZ")} ly`;
+  var galName = (id) => id === "home" ? t("ui.net.ourRegion") : id === "sun" ? t("ui.net.sunEarth") : id === "center" ? t("ui.net.center") : id.startsWith("arm.") ? t(`ui.net.arms.${id.slice(4)}`) : t(`loc.${id}.short`);
+  var fillTxt = (r) => r > 1.001 ? t("ui.net.fullX", { m: dec(r, r >= 10 ? 0 : 1) }) : t("ui.net.fillPct", { p: Math.round(r * 100) });
   function renderTop4(k, P) {
     if (S.bridge.done) {
       $("kprogLabel").textContent = t("ui.toNext5");
@@ -7040,22 +7243,17 @@
     return best;
   }
   function rig4Rows() {
-    const P = powerW(S), f = netNow(S), st = S.bridge.stage, rows = [];
+    const P = powerW(S), st = S.bridge.stage, rows = [];
     rows.push(["\xA7" + t("ui.net.sec"), ""]);
-    rows.push([t("ui.net.stage"), S.bridge.done ? t("ui.net.passDone") : `${st + 1} / ${BSTAGES.length} \xB7 ${t(`ui.bstages.${BSTAGES[st].id}.name`)}`]);
+    rows.push([t("ui.net.stage"), S.bridge.done ? t("ui.net.passDone") : `${st + 1}/${BSTAGES.length} \xB7 ${t(`ui.bstages.${BSTAGES[st].id}.name`)}`]);
     rows.push([t("ui.net.power"), power(P)], [t("ui.net.fromHole"), power(S.bridge.holeW)]);
     rows.push([t("ui.net.systems"), `${num(S.bridge.n)} / ${num(revealed(S).length)}`]);
     rows.push([t("ui.net.capture"), pct(capture(S))]);
     if (S.b.trap >= 1) rows.push([t("ui.net.trapCap"), pct(trapCapture(S))]);
-    const lk = Object.values(S.bridge.links).filter((l) => l.lk > 0), man = lk.filter((l) => !l.la);
-    rows.push([t("ui.net.locked"), lk.length ? `${num(lk.length)}${man.length ? ` \xB7 ${t("ui.net.byHand", { n: num(man.length) })}` : ""}` : "0"]);
-    const tr = trunk();
-    if (tr) {
-      const l = S.bridge.links[tr], cap = capOf(S, l), sup = f.supply[tr] ?? 0;
-      rows.push(["\xA7" + t("ui.net.trunk", { n: linkName(tr) }), ""]);
-      rows.push([t("ui.net.carries"), power(f.flow[tr] ?? 0)]);
-      rows.push([t("ui.net.state"), sup > cap * 1.001 ? t("ui.net.full", { m: dec(Math.min(99, sup / cap), sup / cap >= 10 ? 0 : 1) }) : t("ui.net.free", { p: Math.round(sup / cap * 100) })]);
-    }
+    const lk = Object.values(S.bridge.links).filter((l) => l.lk > 0);
+    rows.push([t("ui.net.locked"), num(lk.length)]);
+    const w = limiter(S);
+    rows.push([t("ui.net.worst"), w ? `${nodeName(NODE[w])} \xB7 ${fillTxt(fillOf(S, w))}` : t("ui.net.worstNone")]);
     const { p, c } = rates(S);
     rows.push(["\xA7" + t("ui.prod.title"), ""]);
     rows.push([t("res.exotic"), `${p.exotic - c.exotic >= 0 ? "+" : "\u2212"}${mass(Math.abs(p.exotic - c.exotic))}/s`]);
@@ -7077,17 +7275,17 @@
     let h = "";
     if (d.prod) {
       const outs = (k) => Object.keys(d.prod).map((r) => part(r, prodOf(S, id, r) * k)).join(" ");
-      h += effRow(t("ui.one"), outs(1));
-      if (count >= 2) h += effRow(t("ui.all", { n: num(count) }), outs(count));
+      h += effRow(t("ui.gives"), outs(1));
+      if (count >= 2) h += effRow(t("ui.total"), outs(count));
     }
     const you = t("ui.forYou");
     if (id === "bswarm") h += effRow(you, esc(t("ui.net.eff.swarm", { a: pct(capture(S)), b: pct(withOne(id, () => capture(S))) })));
     if (id === "trap") h += effRow(you, esc(t("ui.net.eff.trap", { a: pct(trapCapture(S)), b: pct(withOne(id, () => trapCapture(S))) })));
     if (id === "anchor") h += effRow(you, esc(t("ui.net.eff.anchor", { a: dec(anchorMult(S), 2), b: dec(withOne(id, () => anchorMult(S)), 2) })));
-    if (id === "plate" && S.b.anchor >= 1) h += effRow(you, esc(t("ui.net.eff.plateAnchor")));
+    if (id === "plate" && S.b.anchor >= 1) h += effRow(t("ui.net.eff.anchorsLbl"), esc(t("ui.net.eff.plateAnchor", { a: dec(anchorMult(S), 2), b: dec(withOne(id, () => anchorMult(S)), 2) })));
     if (id === "beacon") {
       const more = withOne(id, () => revealCount(S)) - revealCount(S), left = NODES.filter((n) => n.rank < 100 && !isRevealed(S, n)).length;
-      h += effRow(you, esc(left ? t("ui.net.eff.beacon", { n: Math.min(more, left) }) : t("ui.net.eff.beaconAll")));
+      h += effRow(you, esc(left ? more ? t("ui.net.eff.beacon", { n: Math.min(more, left) }) : t("ui.net.eff.beaconHalf") : t("ui.net.eff.beaconAll")));
     }
     if (id === "pair") h += effRow(you, esc(t("ui.net.eff.pair", { m: dec(S.r.pairs2 ? NET.pairM2 : NET.pairM, 2), t: times(exoMult(S)) })));
     if (id === "plock") {
@@ -7097,10 +7295,9 @@
     if (id === "raider" || id === "router") {
       const r = S.bridge.rate?.[id] ?? 0, tg = S.bridge.target?.[id] ?? "";
       if (S.off[id]) h += effRow(t("ui.net.takes"), `<span class="dim">${esc(t("ui.stopped"))}</span>`);
-      else if (!count) h += "";
-      else if (!tg) h += effRow(t("ui.net.takes"), `<span class="dim">${esc(t(id === "raider" ? "ui.net.eff.raiderIdle" : "ui.net.eff.routerIdle"))}</span>`);
-      else {
-        const what = id === "raider" ? t("ui.net.eff.raider", { n: nodeName(NODE[tg]) }) : t("ui.net.eff.router", { n: linkName(tg), a: S.bridge.links[tg].lv, b: S.bridge.links[tg].lv + 1 });
+      else if (count && !tg) h += effRow(t("ui.net.takes"), `<span class="dim">${esc(t(id === "raider" ? "ui.net.eff.raiderIdle" : "ui.net.eff.routerIdle"))}</span>`);
+      else if (count) {
+        const what = id === "raider" ? t("ui.net.eff.raider", { n: nodeName(NODE[tg]) }) : t("ui.net.eff.router", { n: nodeName(NODE[tg]), a: S.bridge.links[tg].lv, b: S.bridge.links[tg].lv + 1 });
         h += effRow(t("ui.net.takes"), `${part("exotic", r, "\u2212")} <span class="arrow">\u2192</span> <span style="color:var(--exotic)">${esc(what)}</span>`);
       }
       if (S.bridge.made[id]) h += effRow(t("ui.net.made"), esc(t(id === "raider" ? "ui.net.eff.raiderMade" : "ui.net.eff.routerMade", { n: num(S.bridge.made[id]) })));
@@ -7108,7 +7305,7 @@
     return h;
   }
   var syncNow = {
-    win: (l) => t("ui.net.sync.v.win", { s: dec(syncWin(S, l), 2) }),
+    win: (l) => t("ui.net.sync.v.win", { s: dec(syncWin(S, l), 1) }),
     len: (l) => t("ui.net.sync.v.len", { s: lockLen(S, l) }),
     dbl: (l) => t(l ? "ui.net.sync.v.dbl2" : "ui.net.sync.v.dbl1")
   };
@@ -7136,9 +7333,10 @@
     return `<div class="starbox"><canvas id="throatc"></canvas></div>
   <div class="bridgegrid">
   <div class="stagecard"><div class="sc-head"><h3 data-f="bname"></h3><span class="tag mono" data-f="blv"></span></div>
-    <dl class="sgrid" data-f="bgrid"></dl><div class="bar"><b data-f="bfill"></b></div><p class="dim" data-f="bnote"></p>
-    <div class="row"><button class="btn" data-widen="" data-f="wbtn"></button><span class="dim" data-f="wnow"></span></div>
-    <div class="section-label">${esc(t("ui.net.allLinks"))}</div><div class="linklist" data-f="links"></div></div>
+    <dl class="bgrid2" data-f="bgrid"></dl><div class="bar"><b data-f="bfill"></b></div>
+    <p class="bnote" data-f="bnote"></p>
+    <div class="row"><button class="btn" data-widen="" data-f="wbtn"></button><button class="btn ghost" data-bsel="" data-f="lbtn" hidden></button><span class="dim" data-f="wnow"></span></div>
+    <div class="section-label">${esc(t("ui.net.allLinks"))} <span class="dim" data-f="lcount"></span></div><div class="linklist" data-f="links"></div></div>
   <div><ol class="ladder">${ladder}</ol>
   <div class="stagecard">
     <div class="sc-head"><h3 data-f="name"></h3><span class="tag mono" data-f="of"></span></div>
@@ -7152,6 +7350,7 @@
     const sel = netSel ?? S.bridge.sel;
     return sel && S.bridge.links[sel] ? sel : trunk();
   }
+  var linksKey = "";
   function updateBridge() {
     const view = $("view"), set = (f2, html) => {
       const el = view.querySelector(`[data-f=${f2}]`);
@@ -7196,33 +7395,55 @@
       set("links", "");
       return;
     }
-    const l = S.bridge.links[id], cap = capOf(S, l), sup = f.supply[id] ?? 0, fl = f.flow[id] ?? 0;
+    const l = S.bridge.links[id], cap = capOf(S, l), sup = f.supply[id] ?? 0, fl = f.flow[id] ?? 0, full = sup > cap * 1.001;
     set("bname", esc(linkName(id)));
     set("blv", esc(t("ui.net.level", { n: l.lv })));
     const rows = [
+      [t("ui.net.capacity"), power(cap)],
       [t("ui.net.wants"), power(sup)],
-      [t("ui.net.capacity"), power(capBase(S, l.lv))],
-      [t("ui.net.lock"), l.lk > 0 ? t(l.la ? "ui.net.lockAuto" : "ui.net.lockHand", { m: dec(lockMult(S, l), 2), s: Math.ceil(l.lk) }) : t("ui.net.lockNone", { s: dec(waveIn(S, id), 1) })],
       [t("ui.net.flowHome"), power(fl)],
-      [t("ui.net.length"), ly(linkLen(id, l))],
-      [t("ui.net.shift"), S.r.shifted ? t("ui.net.shiftOn") : "0 s"]
+      [t("ui.net.lock"), l.lk > 0 ? t(l.la ? "ui.net.lockAuto" : "ui.net.lockHand", { m: dec(lockMult(S, l), 2), s: Math.ceil(l.lk) }) : t("ui.net.lockNone")],
+      [t("ui.net.length"), ly(linkLen(id, l))]
     ];
     set("bgrid", rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join(""));
-    view.querySelector("[data-f=bfill]")?.style.setProperty("width", (Math.min(1, fl / Math.max(1, sup)) * 100).toFixed(1) + "%");
-    set("bnote", esc(sup > cap * 1.001 ? t("ui.net.over", { m: dec(sup / cap, sup / cap >= 10 ? 0 : 1) }) : t("ui.net.under")));
+    const bf = view.querySelector("[data-f=bfill]");
+    if (bf) {
+      bf.style.width = (Math.min(1, sup / Math.max(1, cap)) * 100).toFixed(1) + "%";
+      bf.classList.toggle("full", full);
+    }
+    const lim = full ? id : limiter(S, id), lb = view.querySelector("[data-f=lbtn]");
+    let note2;
+    if (full) note2 = t("ui.net.noteFull", { m: dec(sup / cap, sup / cap >= 10 ? 0 : 1) });
+    else if (lim) note2 = t("ui.net.noteOther", { n: linkName(lim), m: fillTxt(fillOf(S, lim)) });
+    else note2 = t("ui.net.noteFree");
+    set("bnote", esc(note2));
+    view.querySelector("[data-f=bnote]")?.classList.toggle("warnc", full);
+    if (lb) {
+      lb.hidden = !lim || lim === id;
+      if (lim && lim !== id) {
+        lb.dataset.bsel = lim;
+        lb.textContent = t("ui.net.showLink");
+      }
+    }
     const wb = view.querySelector("[data-f=wbtn]"), c = upCost(S, l.lv);
     if (wb) {
       wb.dataset.widen = id;
       wb.disabled = S.res.exotic < c;
+      wb.classList.toggle("ghost", !full);
       wb.innerHTML = esc(t("ui.net.widenBtn", { c: mass(c) }));
     }
     const g = widenGain(S, id);
-    set("wnow", esc(g > 0 ? t("ui.net.widenGain", { w: power(g) }) : t("ui.net.widenNoGain")));
-    const ids = Object.keys(S.bridge.links).sort((a, b) => (f.supply[b] ?? 0) - (f.supply[a] ?? 0)).slice(0, 14);
-    set("links", ids.map((k) => {
-      const lk = S.bridge.links[k], full = (f.supply[k] ?? 0) > capOf(S, lk) * 1.001;
-      return `<button class="lnk${k === id ? " on" : ""}${full ? " full" : ""}" data-bsel="${k}"><span>${esc(linkName(k))}</span><span class="mono">${esc(t("ui.net.level", { n: lk.lv }))}${lk.lk > 0 ? " \xB7" + (lk.la ? " \u25C7" : " \u25C6") : ""}</span></button>`;
-    }).join(""));
+    set("wnow", esc(g > 0 ? t("ui.net.widenGain", { w: power(g) }) : ""));
+    const ids = Object.keys(S.bridge.links).sort((a, b) => fillOf(S, b) - fillOf(S, a));
+    set("lcount", esc(`(${ids.length})`));
+    const key = ids.map((k) => `${k}${S.bridge.links[k].lv}${Math.round(fillOf(S, k) * 20)}${S.bridge.links[k].lk > 0 ? "z" : ""}`).join() + id;
+    if (key !== linksKey) {
+      linksKey = key;
+      set("links", ids.map((k) => {
+        const lk = S.bridge.links[k], r = fillOf(S, k);
+        return `<button class="lnk${k === id ? " on" : ""}${r > 1.001 ? " full" : ""}" data-bsel="${k}"><span>${esc(linkName(k))}</span><span class="mono">${lk.lk > 0 ? lk.la ? "\u25C7 " : "\u25C6 " : ""}${esc(t("ui.net.lvShort", { n: lk.lv }))} \xB7 ${esc(fillTxt(r))}</span></button>`;
+      }).join(""));
+    }
   }
   function onAdvance4() {
     if (!bridgeReady(S).ok) return;
@@ -7242,7 +7463,8 @@
   var netHoverLink = null;
   var netDrag = null;
   var dragStart = null;
-  var netFx = { flashes: [], burst: [] };
+  var netHelp = null;
+  var netFx = { flashes: [], burst: [], tips: [] };
   function netXY(e) {
     const c = $("scenec"), r = c.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top, W: r.width, H: r.height };
@@ -7260,6 +7482,7 @@
     if (from && openLink(S, from, to)) {
       if (S.settings.sound) chime();
       netBubble = to;
+      bubKey = "";
       onJournal(checkJournal(S));
       renderAll();
       save();
@@ -7271,6 +7494,17 @@
     bub.className = "netbubble";
     bub.hidden = true;
     wrap.appendChild(bub);
+    const help = document.createElement("button");
+    help.id = "netHelpBtn";
+    help.className = "iconbtn nethelp";
+    help.textContent = "?";
+    help.hidden = true;
+    help.setAttribute("aria-label", t("ui.net.helpBtn"));
+    help.addEventListener("click", () => {
+      netHelp = !(netHelp ?? true);
+      renderScene4();
+    });
+    wrap.appendChild(help);
     sc.addEventListener("pointermove", (e) => {
       if (!S.hole.done) return;
       const p = netXY(e), g = netGeo(p.W, p.H);
@@ -7290,12 +7524,13 @@
       dragStart = { x: p.x, y: p.y, id: node, link };
       sc.setPointerCapture(e.pointerId);
       if (link) {
-        const ok = tapLock(S, link);
-        netFx.flashes.push({ id: link, t: performance.now() / 1e3, ok });
+        const ok = tapLock(S, link), now = performance.now() / 1e3;
+        netFx.flashes.push({ id: link, t: now, ok });
+        netFx.tips.push({ x: p.x, y: p.y - 14, t: now, text: ok ? t("ui.net.lockedNow", { s: lockLen(S) }) : S.bridge.links[link].lk > 0 ? t("ui.net.stillLocked", { s: Math.ceil(S.bridge.links[link].lk), w: dec(waveIn(S, link), 1) }) : t("ui.net.waveIn", { s: dec(waveIn(S, link), 1) }), ok });
         if (ok && S.settings.sound) chime();
         netSel = link;
         S.bridge.sel = link;
-        netBubble = link;
+        netBubble = null;
         renderBubble();
         renderRig();
         onJournal(checkJournal(S));
@@ -7308,6 +7543,7 @@
         if (netDrag.to && netDrag.ok && openLink(S, netDrag.from, netDrag.to)) {
           if (S.settings.sound) chime();
           netBubble = netDrag.to;
+          bubKey = "";
           onJournal(checkJournal(S));
           renderAll();
           save();
@@ -7318,7 +7554,7 @@
           netSel = dragStart.id;
           S.bridge.sel = dragStart.id;
         }
-      } else if (!dragStart.link) netBubble = null;
+      } else if (!dragStart.link && !dragStart.id) netBubble = null;
       netDrag = null;
       dragStart = null;
       renderBubble();
@@ -7344,44 +7580,68 @@
     });
   }
   var TYPE_KEY = (n) => `ui.net.types.${n.type}`;
+  var bubKey = "";
   function renderBubble() {
     const el = $("netBubble");
     if (!el) return;
     const id = netBubble;
     if (!id || !S.hole.done || tab !== "build" || !NODE[id] || !isRevealed(S, NODE[id])) {
       el.hidden = true;
-      el.dataset.k = "";
+      bubKey = "";
       return;
     }
-    const n = NODE[id], l = S.bridge.links[id], f = netNow(S);
-    let h = `<div class="bh"><b>${esc(nodeName(n))}</b><button class="iconbtn" data-bclose="1" aria-label="${esc(t("ui.close"))}">\xD7</button></div><div class="dim">${esc(t(TYPE_KEY(n)))}</div>`;
-    const rows = [[n.type === "dark" ? t("ui.net.darkL") : t("ui.net.L"), power(n.L)], [t("ui.net.fromHome"), ly(n.d)]];
-    if (l) {
-      rows.push([t("ui.net.sends"), power(nodeOut(S, n))], [t("ui.net.bridge"), t("ui.net.level", { n: l.lv })], [t("ui.net.flowCap"), `${power(f.flow[id] ?? 0)} / ${power(capOf(S, l))}`]);
+    const n = NODE[id], l = S.bridge.links[id], f = netNow(S), from = l ? null : bestFrom(S, id);
+    const key = `${id}|${!!l}|${from ?? "-"}`;
+    if (key !== bubKey) {
+      bubKey = key;
+      let h = `<div class="bh"><b>${esc(nodeName(n))}</b><button class="iconbtn" data-bclose="1" aria-label="${esc(t("ui.close"))}">\xD7</button></div><div class="dim">${esc(t(TYPE_KEY(n)))}</div><dl data-f="rows"></dl><p class="dim" data-f="note"></p><div class="row">`;
+      if (l) h += `<button class="btn" data-widen="${id}" data-f="act"></button><button class="btn ghost" data-bsel="${id}">${esc(t("ui.net.detail"))}</button>`;
+      else if (from) h += `<button class="btn" data-open="${id}" data-f="act"></button>`;
+      el.innerHTML = h + "</div>";
     }
-    h += `<dl>${rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}</dl>`;
+    const set = (k, html) => {
+      const e2 = el.querySelector(`[data-f=${k}]`);
+      if (e2 && e2.innerHTML !== html) e2.innerHTML = html;
+    };
+    const rows = [[n.type === "stream" ? t("ui.net.streamL") : t("ui.net.L"), power(n.L)], [t("ui.net.fromHome"), ly(n.d)]];
+    if (l) rows.push([t("ui.net.sends"), power(nodeOut(S, n))], [t("ui.net.bridge"), `${t("ui.net.level", { n: l.lv })} \xB7 ${fillTxt(fillOf(S, id))}`]);
+    set("rows", rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join(""));
+    const act = el.querySelector("[data-f=act]");
     if (l) {
-      const c2 = upCost(S, l.lv), g2 = widenGain(S, id);
-      h += `<p class="dim">${esc(g2 > 0 ? t("ui.net.widenGain", { w: power(g2) }) : t("ui.net.widenNoGain"))}</p><div class="row"><button class="btn" data-widen="${id}" ${S.res.exotic < c2 ? "disabled" : ""}>${esc(t("ui.net.widenBtn", { c: mass(c2) }))}</button><button class="btn ghost" data-bsel="${id}">${esc(t("ui.net.detail"))}</button></div>`;
-    } else {
-      const from = bestFrom(S, id);
-      if (from) {
-        const c2 = openCost(S, from, id);
-        h += `<p class="dim">${esc(t("ui.net.openFrom", { n: nodeName(NODE[from]), g: power(openGain(S, from, id)) }))}</p><div class="row"><button class="btn" data-open="${id}" ${S.res.exotic < c2 ? "disabled" : ""}>${esc(t("ui.net.openBtn", { c: mass(c2) }))}</button></div>`;
-      } else h += `<p class="dim">${esc(t("ui.net.outOfReach", { d: ly(NET.reach) }))}</p>`;
-    }
-    if (el.innerHTML !== h) el.innerHTML = h;
+      const c2 = upCost(S, l.lv), g2 = widenGain(S, id), lim = fillOf(S, id) > 1.001 ? null : limiter(S, id);
+      set("note", esc(g2 > 0 ? t("ui.net.widenGain", { w: power(g2) }) : lim ? t("ui.net.noteOther", { n: linkName(lim), m: fillTxt(fillOf(S, lim)) }) : t("ui.net.noteFree")));
+      if (act) {
+        act.disabled = S.res.exotic < c2;
+        const tx = esc(t("ui.net.widenBtn", { c: mass(c2) }));
+        if (act.innerHTML !== tx) act.innerHTML = tx;
+      }
+    } else if (from) {
+      const c2 = openCost(S, from, id);
+      set("note", esc(t("ui.net.openFrom", { n: nodeName(NODE[from]), g: power(openGain(S, from, id)) })));
+      if (act) {
+        act.disabled = S.res.exotic < c2;
+        const tx = esc(t("ui.net.openBtn", { c: mass(c2) }));
+        if (act.innerHTML !== tx) act.innerHTML = tx;
+      }
+    } else set("note", esc(t("ui.net.outOfReach", { d: ly(NET.reach) })));
     el.hidden = false;
     const c = $("scenec"), r = c.getBoundingClientRect(), g = netGeo(r.width, r.height), [px, py] = toPx(g, n);
     const w = el.offsetWidth || 260, hh = el.offsetHeight || 160;
-    el.style.left = Math.max(8, Math.min(r.width - w - 8, px + 18)) + "px";
-    el.style.top = Math.max(8, Math.min(r.height - hh - 8, py - hh / 2)) + "px";
+    const left = Math.round(Math.max(8, Math.min(r.width - w - 8, px + 18 + w > r.width - 8 ? px - w - 18 : px + 18))), top = Math.round(Math.max(8, Math.min(r.height - hh - 8, py - hh / 2)));
+    if (el.style.left !== left + "px") el.style.left = left + "px";
+    if (el.style.top !== top + "px") el.style.top = top + "px";
   }
   function renderScene4() {
     $("burstBtn").hidden = true;
-    const hint = $("sceneHint");
-    hint.hidden = tab !== "build" || S.bridge.n >= 4 && S.bridge.locks >= 3;
-    const html = t("ui.net.help").split("|").map((x, i) => `<b>${i + 1}</b> ${esc(x)}`).join("<br>");
+    const hint = $("sceneHint"), hb = $("netHelpBtn");
+    const show = (netHelp ?? S.bridge.n < 3) && tab === "build";
+    hint.hidden = !show;
+    if (hb) {
+      hb.hidden = tab !== "build";
+      hb.setAttribute("aria-pressed", String(show));
+    }
+    const steps = t("ui.net.help").split("|").map((x, i) => `<b>${i + 1}</b> ${esc(x)}`).join("<br>");
+    const html = `${steps}<span class="tipsh">${esc(t("ui.net.tipsTitle"))}</span>${t("ui.net.tips").split("|").map((x) => `\xB7 ${esc(x)}`).join("<br>")}`;
     if (hint.innerHTML !== html) hint.innerHTML = html;
     renderBubble();
   }
@@ -7400,13 +7660,14 @@
         router: S.off.router ? "" : tg.router,
         raiderFrom: bo ?? "",
         raiderP: tg.raider ? S.bridge.bank.raider / Math.max(1, bo ? openCost(S, bo, tg.raider) : 1) : 0,
-        pulseText: sel ? t("ui.net.pulseLine", { w: dec(wi, 1) }) : t("ui.net.pulseOnly"),
+        pulseText: sel ? t("ui.net.pulseLine", { n: nodeName(NODE[sel]), w: dec(wi, 1) }) : t("ui.net.pulseOnly"),
         flashes: netFx.flashes,
-        burst: netFx.burst
+        burst: netFx.burst,
+        tips: netFx.tips
       }, time, nodeName);
     } else {
       const sub = sel ? t("ui.net.mouthSub", { d: ly(n.d), n: S.bridge.links[sel].lv }) : t("ui.net.mouthNone");
-      drawMouth($("rockc"), n, time, t("ui.net.mouth", { n: nodeName(n) }), sub);
+      drawMouth($("rockc"), n, time, t("ui.net.mouth", { n: nodeName(n) }), sub, sel ? t(TYPE_KEY(n)) : "");
     }
     if (tab === "bridge" && sel) {
       const c = document.getElementById("throatc"), l = S.bridge.links[sel], f = netNow(S);

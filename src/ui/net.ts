@@ -31,7 +31,7 @@ export const toPx = (g: Geo, n: { x: number; y: number }): [number, number] => [
 /** Velikost soustavy na mapě podle výkonu (px). */
 export function nodeR(n: GNode) {
   if (n.type === 'home') return 9;
-  if (n.type === 'dark') return 8;
+  if (n.type === 'stream') return 8;
   return Math.max(3, Math.min(13, 2.2 + (Math.log10(Math.max(1, n.L)) - 24) * 0.82));
 }
 export function hitNode(g: Geo, s: State, mx: number, my: number): string | null {
@@ -44,7 +44,7 @@ export function hitNode(g: Geo, s: State, mx: number, my: number): string | null
   return best;
 }
 export function hitLink(g: Geo, s: State, mx: number, my: number): string | null {
-  let best: string | null = null, bd = 11;
+  let best: string | null = null, bd = 15;
   for (const id in s.bridge.links) {
     const [ax, ay] = toPx(g, NODE[s.bridge.links[id].p]), [bx, by] = toPx(g, NODE[id]);
     const dx = bx - ax, dy = by - ay, t = Math.max(0.12, Math.min(0.88, ((mx - ax) * dx + (my - ay) * dy) / (dx * dx + dy * dy || 1)));
@@ -111,7 +111,7 @@ function armBg(W: number, H: number, dpr: number, g: Geo) {
 // ---------- soustavy ----------
 const TYPE_COL: Record<NodeType, string> = {
   home: '232,236,255', red: '255,138,106', sun: '255,233,184', binary: '255,243,214', neutron: '230,251,255', blue: '188,216,255',
-  assoc: '170,205,255', cluster: '255,242,220', nebula: '255,150,190', arm: '214,222,255', kilo: '245,205,85', dark: '142,240,200'
+  assoc: '170,205,255', cluster: '255,242,220', nebula: '255,150,190', arm: '214,222,255', kilo: '245,205,85', stream: '255,226,190'
 };
 function drawNode(x: CanvasRenderingContext2D, n: GNode, px: number, py: number, time: number, on: boolean) {
   const r = nodeR(n), c = TYPE_COL[n.type], seed = n.x * 97 + n.y * 61;
@@ -122,11 +122,19 @@ function drawNode(x: CanvasRenderingContext2D, n: GNode, px: number, py: number,
     x.strokeStyle = 'rgba(255,220,170,0.6)'; x.lineWidth = 1; x.beginPath(); x.arc(px, py, r * 0.95, 0, 7); x.stroke();
     return;
   }
-  if (n.type === 'dark') {
-    // temný uzel nesvítí: jen prstenec gravitační čočky
-    x.setLineDash([3, 4]); x.strokeStyle = `rgba(${c},${on ? 0.85 : 0.5})`; x.lineWidth = 1.3;
-    x.beginPath(); x.arc(px, py, r + Math.sin(time * 0.8 + seed) * 0.6, 0, 7); x.stroke(); x.setLineDash([]);
-    x.strokeStyle = `rgba(${c},0.18)`; x.beginPath(); x.arc(px, py, r * 1.7, 0, 7); x.stroke();
+  if (n.type === 'stream') {
+    // hvězdný proud: roztažený oblouk drobných starých hvězd z roztrhané trpasličí galaxie
+    let sd = Math.floor(seed * 1000) % 2147483646 + 1;
+    const rr = () => (sd = sd * 16807 % 2147483647) / 2147483647, ang = seed % 3.14;
+    for (let i = 0; i < 34; i++) {
+      const t = rr() * 2 - 1, off = (rr() - 0.5) * 3.2, bend = t * t * 5;
+      const qx = px + Math.cos(ang) * t * r * 3 - Math.sin(ang) * (off + bend), qy = py + Math.sin(ang) * t * r * 3 + Math.cos(ang) * (off + bend);
+      x.fillStyle = `rgba(${c},${(0.35 + rr() * 0.5) * (1 - Math.abs(t) * 0.5)})`; x.fillRect(qx, qy, 1.3, 1.3);
+    }
+    const hg = x.createRadialGradient(px, py, 0, px, py, r * 2.2);
+    hg.addColorStop(0, `rgba(${c},0.22)`); hg.addColorStop(1, `rgba(${c},0)`);
+    x.fillStyle = hg; x.beginPath(); x.arc(px, py, r * 2.2, 0, 7); x.fill();
+    if (on) { x.setLineDash([2, 3]); x.strokeStyle = `rgba(${EXO},0.7)`; x.lineWidth = 1; x.beginPath(); x.ellipse(px, py, r * 2.4, r * 1.1, ang, 0, 7); x.stroke(); x.setLineDash([]); }
     return;
   }
   const halo = x.createRadialGradient(px, py, 0, px, py, r * 2.6);
@@ -187,6 +195,7 @@ export interface NetUI {
   drag: { from: string; mx: number; my: number; to: string | null; ok: boolean; cost: string } | null;
   raider: string; router: string; raiderFrom: string; raiderP: number;
   pulseText: string; flashes: { id: string; t: number; ok: boolean }[]; burst: { id: string; t: number }[];
+  tips: { x: number; y: number; t: number; text: string; ok: boolean }[];
 }
 export function drawNet(c: HTMLCanvasElement, s: State, ui: NetUI, time: number, names: (n: GNode) => string) {
   const p = prep(c); if (!p) return;
@@ -235,6 +244,22 @@ export function drawNet(c: HTMLCanvasElement, s: State, ui: NetUI, time: number,
       x.fillStyle = gg; x.beginPath(); x.arc(bx, by, 32, 0, 7); x.fill();
     }
   }
+  // značky na mostech: zámek (◆ ruční, ◇ fázový) s odpočtem a plnost u vybraného/plného mostu pod myší
+  x.font = `600 12px ${MONO}`; x.textAlign = 'center';
+  for (const id in links) {
+    const l = links[id], [ax, ay] = toPx(g, NODE[l.p]), [bx, by] = toPx(g, NODE[id]), mx = (ax + bx) / 2, my = (ay + by) / 2;
+    if (l.lk > 0) {
+      const k = 5;
+      x.fillStyle = l.la ? 'rgba(180,215,255,0.95)' : 'rgba(255,255,255,0.98)'; x.strokeStyle = 'rgba(10,12,24,0.9)'; x.lineWidth = 2;
+      x.beginPath(); x.moveTo(mx, my - k); x.lineTo(mx + k, my); x.lineTo(mx, my + k); x.lineTo(mx - k, my); x.closePath(); x.stroke(); x.fill();
+      if (id === ui.sel || id === ui.hoverLink) { x.fillStyle = 'rgba(255,255,255,0.95)'; x.fillText(`×${l.la ? (s.r.quiet ? '1,45' : '1,3') : '1,5'} · ${Math.ceil(l.lk)} s`, mx, my - 10); }
+    } else if (id === ui.sel || id === ui.hoverLink) {
+      const sup = ui.flow.supply[id] ?? 0, cap = capOf(s, l), r = sup / cap;
+      x.fillStyle = r > 1.001 ? `rgb(${AMBER})` : 'rgba(207,226,255,0.95)';
+      x.fillText(r > 1.001 ? `plný · chce ${r >= 10 ? Math.round(r) : r.toFixed(1).replace('.', ',')}×` : `${Math.round(r * 100)} %`, mx, my - 10);
+    }
+  }
+  x.textAlign = 'left';
   // razič: most se teprve otevírá
   if (ui.raider && ui.raiderFrom && NODE[ui.raider] && NODE[ui.raiderFrom]) {
     const [ax, ay] = toPx(g, NODE[ui.raiderFrom]), [bx, by] = toPx(g, NODE[ui.raider]);
@@ -292,6 +317,14 @@ export function drawNet(c: HTMLCanvasElement, s: State, ui: NetUI, time: number,
     x.textAlign = 'left';
     x.fillText(txt, lx, ly);
   }
+  // krátké hlášky u kurzoru (zamčeno / vlna za X s)
+  for (let i = ui.tips.length - 1; i >= 0; i--) {
+    const q = ui.tips[i], age = time - q.t;
+    if (age > 1.6 || i < ui.tips.length - 2) { ui.tips.splice(i, 1); continue; }
+    x.globalAlpha = Math.min(1, (1.6 - age) * 2);
+    label(x, q.text, q.x + 10, q.y - age * 14, q.ok ? '#ffffff' : `rgb(${PULSE})`, W);
+    x.globalAlpha = 1;
+  }
   x.textAlign = 'left';
   // puls vlevo dole
   x.font = `12px ${MONO}`; x.fillStyle = `rgba(${PULSE},0.9)`; x.fillText(ui.pulseText, 14, H - 30);
@@ -314,63 +347,68 @@ export function waveIn(s: State, id: string) {
 
 // ---------- ústí: skleněná koule s ohnutým obrazem druhé strany (Ellisova červí díra) ----------
 const skyCache = new Map<string, HTMLCanvasElement>();
-function skyTex(n: GNode, px: number) {
+const hash2 = (i: number, j: number, k: number) => { const v = Math.sin(i * 127.1 + j * 311.7 + k * 74.7) * 43758.5453; return v - Math.floor(v); };
+/** Obloha druhé strany v bodě (X, Y): hvězdy, pás Mléčné dráhy, mlhovina v barvě cílové soustavy a cílová hvězda uprostřed. */
+function skyAt(X: number, Y: number, col: number[], seed: number): number[] {
+  const band = Math.exp(-Math.pow(Y * 0.9 - X * 0.35 + 0.15, 2) * 3.2) * (0.55 + 0.45 * sfbm(X * 1.6 + seed, Y * 1.6, 3));
+  const neb = Math.max(0, sfbm(X * 1.1 + seed * 3, Y * 1.1 - seed, 3) + 0.1);
+  let r = 5 + band * 34 + neb * col[0] * 0.28, g = 6 + band * 32 + neb * col[1] * 0.22, b = 13 + band * 44 + neb * col[2] * 0.3;
+  const ci = Math.floor(X * 26), cj = Math.floor(Y * 26), h = hash2(ci, cj, seed);
+  if (h > 0.93) {
+    const ox = ci + 0.5 - X * 26, oy = cj + 0.5 - Y * 26, d = ox * ox + oy * oy, w = Math.exp(-d * 9) * (h - 0.93) * 14 * 255;
+    const warm = hash2(cj, ci, 3) > 0.7;
+    r += w * (warm ? 1 : 0.85); g += w * (warm ? 0.85 : 0.9); b += w * (warm ? 0.65 : 1);
+  }
+  const rr = Math.hypot(X, Y), core = Math.exp(-Math.pow(rr / 0.05, 2)) * 255, glow = Math.exp(-rr / 0.22);
+  return [r + core + glow * col[0] * 0.7, g + core + glow * col[1] * 0.7, b + core + glow * col[2] * 0.7];
+}
+/** Ústí jako čočka (Ellisova červí díra): uvnitř je celá obloha druhé strany stlačená k okraji do Einsteinova prstence. */
+function lensTex(n: GNode, px: number) {
   const key = n.id + px;
   let cv = skyCache.get(key);
   if (cv) return cv;
   if (skyCache.size > 12) skyCache.clear();
   cv = document.createElement('canvas'); cv.width = cv.height = px;
-  const x = cv.getContext('2d')!, c = TYPE_COL[n.type === 'home' ? 'sun' : n.type];
-  const bg = x.createLinearGradient(0, 0, px, px);
-  bg.addColorStop(0, '#06070f'); bg.addColorStop(0.5, `rgba(${c},0.22)`); bg.addColorStop(1, '#05060d');
-  x.fillStyle = '#05060d'; x.fillRect(0, 0, px, px); x.fillStyle = bg; x.fillRect(0, 0, px, px);
-  let sd = Math.floor(n.x * 1e4 + n.y * 7e3) + 3;
-  const r = () => (sd = sd * 16807 % 2147483647) / 2147483647;
-  // pás Mléčné dráhy z druhé strany
-  for (let i = 0; i < px * 3; i++) {
-    const t = r(), yy = px * (0.35 + 0.3 * t) + (r() - 0.5) * px * 0.18;
-    x.fillStyle = `rgba(235,236,255,${0.08 + r() * 0.2})`; x.fillRect(r() * px, yy, 1, 1);
+  const x = cv.getContext('2d')!, img = x.createImageData(px, px), d = img.data, c = px / 2;
+  const col = TYPE_COL[n.type === 'home' ? 'sun' : n.type].split(',').map(Number), seed = (n.x * 13 + n.y * 7) % 10;
+  for (let j = 0; j < px; j++) for (let i = 0; i < px; i++) {
+    const u = (i - c) / c, v = (j - c) / c, rho = Math.hypot(u, v);
+    if (rho > 1) continue;
+    // čím blíž k okraji, tím větší kus oblohy druhé strany: β = tan(ρ·π/2)·0,3
+    const k = Math.tan(Math.min(1.5, rho * Math.PI / 2)) * 0.3 / Math.max(1e-4, rho);
+    const [r, g, b] = skyAt(u * k, v * k, col, seed);
+    const ring = Math.exp(-Math.pow((rho - 0.93) / 0.035, 2)) * 70, edge = Math.pow(rho, 6) * 30;
+    const o = (j * px + i) * 4;
+    d[o] = Math.min(255, r + ring + edge); d[o + 1] = Math.min(255, g + ring + edge); d[o + 2] = Math.min(255, b + ring * 1.1 + edge * 1.2);
+    d[o + 3] = Math.min(255, (1 - rho) * c * 3 * 255);
   }
-  for (let i = 0; i < px * px / 140; i++) { x.fillStyle = `rgba(230,236,255,${0.3 + r() * 0.6})`; x.fillRect(r() * px, r() * px, r() < 0.06 ? 2 : 1, r() < 0.06 ? 2 : 1); }
-  // cílová soustava jasně uprostřed
-  const g = x.createRadialGradient(px * 0.5, px * 0.48, 0, px * 0.5, px * 0.48, px * 0.32);
-  g.addColorStop(0, `rgba(255,255,255,1)`); g.addColorStop(0.08, `rgba(${c},0.95)`); g.addColorStop(0.4, `rgba(${c},0.18)`); g.addColorStop(1, `rgba(${c},0)`);
-  x.fillStyle = g; x.fillRect(0, 0, px, px);
-  // kruhová maska s měkkým okrajem: otočené kopie pak nevytvoří hranaté „desky“
-  x.globalCompositeOperation = 'destination-in';
-  const m = x.createRadialGradient(px / 2, px / 2, px * 0.3, px / 2, px / 2, px / 2);
-  m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(0,0,0,0)');
-  x.fillStyle = m; x.fillRect(0, 0, px, px);
-  x.globalCompositeOperation = 'source-over';
+  x.putImageData(img, 0, 0);
   skyCache.set(key, cv);
   return cv;
 }
-export function drawMouth(c: HTMLCanvasElement, n: GNode, time: number, title: string, sub: string) {
+export function drawMouth(c: HTMLCanvasElement, n: GNode, time: number, title: string, sub: string, sub2 = '') {
   const p = prep(c); if (!p) return;
-  const { x, W, H } = p, cx = W / 2, cy = H / 2 - 10, R = Math.min(W, H) * 0.36, tt = reduce ? 0 : time;
+  const { x, W, H } = p, cx = W / 2, cy = H / 2 - 18, R = Math.min(W, H) * 0.34, tt = reduce ? 0 : time;
   x.clearRect(0, 0, W, H);
-  const tex = skyTex(n, 256);
-  // obraz za koulí (vlastní obloha) a v kouli obloha druhé strany, ohnutá jako čočka
-  x.save(); x.beginPath(); x.arc(cx, cy, R, 0, 7); x.clip();
-  x.fillStyle = '#05060d'; x.fillRect(cx - R, cy - R, R * 2, R * 2);
-  x.translate(cx, cy); x.rotate(tt * 0.04);
-  for (let k = 0; k < 6; k++) {
-    const f = 1 - k * 0.14, s = R * 2.6 * f;
-    x.globalAlpha = k ? 0.4 : 1;
-    x.save(); x.rotate(k * 0.9); x.scale(1, 1 - k * 0.04); x.drawImage(tex, -s / 2, -s / 2, s, s); x.restore();
-  }
-  x.restore(); x.globalAlpha = 1;
-  // Einsteinův prstenec a okraj koule
-  const rim = x.createRadialGradient(cx, cy, R * 0.78, cx, cy, R * 1.04);
-  rim.addColorStop(0, 'rgba(255,255,255,0)'); rim.addColorStop(0.75, 'rgba(232,236,255,0.55)'); rim.addColorStop(1, 'rgba(255,255,255,0)');
-  x.fillStyle = rim; x.beginPath(); x.arc(cx, cy, R * 1.04, 0, 7); x.fill();
-  x.strokeStyle = 'rgba(138,144,184,0.45)'; x.lineWidth = 1; x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke();
-  const hl = x.createRadialGradient(cx - R * 0.4, cy - R * 0.45, 0, cx - R * 0.4, cy - R * 0.45, R * 0.5);
-  hl.addColorStop(0, 'rgba(255,255,255,0.16)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
+  // naše strana: slabé světlo ohnuté kolem koule
+  const halo = x.createRadialGradient(cx, cy, R * 0.95, cx, cy, R * 1.5);
+  halo.addColorStop(0, 'rgba(160,175,255,0.22)'); halo.addColorStop(1, 'rgba(160,175,255,0)');
+  x.fillStyle = halo; x.beginPath(); x.arc(cx, cy, R * 1.5, 0, 7); x.fill();
+  x.save(); x.translate(cx, cy); x.rotate(tt * 0.03);
+  x.drawImage(lensTex(n, 300), -R, -R, R * 2, R * 2);
+  x.restore();
+  // jemný třpyt okraje, který obíhá (světlo naší strany, které hrdlo stáčí kolem)
+  const a0 = tt * 0.4;
+  x.strokeStyle = 'rgba(232,236,255,0.35)'; x.lineWidth = 1.2;
+  x.beginPath(); x.arc(cx, cy, R * 1.01, a0, a0 + 1.1); x.stroke();
+  x.beginPath(); x.arc(cx, cy, R * 1.01, a0 + Math.PI, a0 + Math.PI + 0.7); x.stroke();
+  const hl = x.createRadialGradient(cx - R * 0.42, cy - R * 0.48, 0, cx - R * 0.42, cy - R * 0.48, R * 0.45);
+  hl.addColorStop(0, 'rgba(255,255,255,0.14)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
   x.fillStyle = hl; x.beginPath(); x.arc(cx, cy, R, 0, 7); x.fill();
   x.textAlign = 'center'; x.font = `600 14px "Chakra Petch", ${MONO}`; x.fillStyle = 'rgba(232,236,255,0.95)';
-  x.fillText(title, cx, cy + R + 22);
-  x.font = `12px ${MONO}`; x.fillStyle = 'rgba(176,181,212,0.85)'; x.fillText(sub, cx, cy + R + 40);
+  x.fillText(title, cx, cy + R + 26);
+  x.font = `12px ${MONO}`; x.fillStyle = 'rgba(176,181,212,0.85)'; x.fillText(sub, cx, cy + R + 44);
+  if (sub2) { x.fillStyle = 'rgba(142,240,200,0.8)'; x.fillText(sub2, cx, cy + R + 60); }
   x.textAlign = 'left';
 }
 
@@ -415,55 +453,116 @@ export function drawThroat(c: HTMLCanvasElement, v: ThroatView, time: number) {
 }
 
 // ---------- mapa galaxie s misemi ----------
+// Mléčná dráha jako příčková spirála: čtyři ramena (logaritmické spirály, sklon ~12°), prachové pásy na vnitřní straně
+// ramen, růžové oblasti tvorby hvězd, příčka a výduť. Domov (díra po Aldře) leží v rameni Persea, Slunce o kus blíž ke středu.
 const GAL_IDS: LocationId[] = ['flyby', 'magnetar', 'globular', 'kilonova', 'frb', 'rotation', 'bubbles'];
+const GB = 0.3, GR0 = 0.11;
+const ARMS = [
+  { ph: 0, w: 1, key: 'perseus' }, { ph: Math.PI, w: 1, key: 'scutum' },
+  { ph: Math.PI / 2, w: 0.45, key: 'sagittarius' }, { ph: Math.PI * 1.5, w: 0.45, key: 'norma' }
+];
+const armTh = (ph: number, r: number) => ph + Math.log(r / GR0) / GB;
+const wrapA = (a: number) => { a = (a + Math.PI) % (Math.PI * 2); return a < 0 ? a + Math.PI : a - Math.PI; };
+export const GAL_HOME = { r: 0.66, a: armTh(0, 0.66) };
+const GAL_SUN = { r: 0.56, a: armTh(0, 0.66) - 0.12 };
+/** Polohy misí v rovině galaxie (r 0–1, úhel). Vztažené k domovu, aby dávaly smysl na mapě. */
+const GAL_POS: Record<string, { r: number; a: number }> = {
+  flyby: { r: 0.7, a: GAL_HOME.a + 0.1 }, magnetar: { r: 0.6, a: GAL_HOME.a - 0.55 }, globular: { r: 0.93, a: GAL_HOME.a + 0.9 },
+  kilonova: { r: 0.46, a: GAL_HOME.a + 0.7 }, frb: { r: 1.0, a: GAL_HOME.a + 2.6 }, rotation: { r: 0.98, a: GAL_HOME.a - 1.6 }, bubbles: { r: 0.03, a: 1.57 }
+};
 let galBg: HTMLCanvasElement | null = null, galKey = '';
 function galGeo(W: number, H: number) {
-  const R = Math.min(W * 0.46, H * 0.46 / 0.62);
-  return { cx: W / 2, cy: H / 2, R, tilt: 0.62 };
+  const tilt = 0.6, R = Math.min(W * 0.45, (H - 30) * 0.47 / tilt);
+  return { cx: W / 2, cy: H / 2 + 6, R, tilt };
 }
-/** Poloha mise: orbit = vzdálenost od středu galaxie (0–1), angle = úhel. Domov je na 0,55 ve směru 3,6 rad. */
+const galXY = (g: ReturnType<typeof galGeo>, r: number, a: number): [number, number] => [g.cx + Math.cos(a) * r * g.R, g.cy + Math.sin(a) * r * g.R * g.tilt];
 function galPos(id: LocationId, g: ReturnType<typeof galGeo>): [number, number] {
-  const d = L[id] as { orbit: number; angle: number };
-  return [g.cx + Math.cos(d.angle) * d.orbit * g.R, g.cy + Math.sin(d.angle) * d.orbit * g.R * g.tilt];
+  const q = GAL_POS[id] ?? { r: (L[id] as { orbit: number }).orbit, a: (L[id] as { angle: number }).angle };
+  return galXY(g, q.r, q.a);
 }
-export const GAL_HOME = { r: 0.58, a: 4.19 };
-export function drawGalaxy(c: HTMLCanvasElement, s: State, time: number, names: (id: LocationId) => string, open: (id: LocationId) => boolean) {
+/** Jas a barva galaxie v bodě roviny (u, v): [r, g, b] 0–255. */
+function galPix(u: number, v: number): [number, number, number] {
+  const r = Math.hypot(u, v), th = Math.atan2(v, u);
+  if (r > 1.25) return [0, 0, 0];
+  const ba = 0.45, bxu = u * Math.cos(ba) + v * Math.sin(ba), bxv = -u * Math.sin(ba) + v * Math.cos(ba);
+  const bar = Math.exp(-(Math.pow(bxu / 0.26, 2) + Math.pow(bxv / 0.075, 2)));
+  const bulge = Math.exp(-Math.pow(r / 0.1, 2)) + 0.35 * Math.exp(-r / 0.16);
+  const disk = Math.exp(-r / 0.3) * 0.7 * Math.max(0, 1 - r / 1.2);
+  const clump = 0.25 + 1.5 * Math.max(0, sfbm(u * 11 + 3, v * 11 - 5, 4) + 0.35) * (0.7 + 0.6 * Math.max(0, sfbm(u * 30, v * 30, 2) + 0.4));
+  const rag = 0.35 * sfbm(u * 4.5 - 7, v * 4.5 + 2, 3);   // ramena nejsou dokonalé spirály: roztřepený okraj
+  let arm = 0, dust = 0;
+  if (r > 0.1) for (const A of ARMS) {
+    const d = wrapA(th - armTh(A.ph, r) + rag), fade = Math.min(1, (r - 0.1) / 0.18) * Math.max(0, Math.min(1, (1.15 - r) / 0.3));
+    arm += A.w * Math.exp(-Math.pow(d * r / (0.06 + 0.05 * r), 2)) * fade;
+    dust += A.w * Math.exp(-Math.pow((d + 0.3 / (r + 0.3)) * r / 0.025, 2)) * fade * (0.5 + 0.5 * clump);
+  }
+  arm *= clump;
+  const dk = Math.max(0.3, 1 - dust * 0.55);
+  const R = (disk * 110 + arm * 120 + bar * 220 + bulge * 255) * dk;
+  const G = (disk * 112 + arm * 140 + bar * 190 + bulge * 225) * dk;
+  const B = (disk * 160 + arm * 220 + bar * 140 + bulge * 165) * dk;
+  return [R, G, B];
+}
+export function drawGalaxy(c: HTMLCanvasElement, s: State, time: number, names: (id: string) => string, open: (id: LocationId) => boolean) {
   const p = prep(c); if (!p) return;
   const { x, W, H, dpr } = p, g = galGeo(W, H), tt = reduce ? 0 : time;
   const key = `${W}x${H}@${dpr}`;
   if (galKey !== key || !galBg) {
     galKey = key; galBg = document.createElement('canvas'); galBg.width = Math.round(W * dpr); galBg.height = Math.round(H * dpr);
-    const bx = galBg.getContext('2d')!; bx.scale(dpr, dpr);
-    bx.fillStyle = '#05060f'; bx.fillRect(0, 0, W, H);
+    const bx = galBg.getContext('2d')!;
+    // 1) hustota galaxie v polovičním rozlišení, roztažená (měkké)
+    const lw = Math.round(W / 2), lh = Math.round(H / 2), lo = document.createElement('canvas'); lo.width = lw; lo.height = lh;
+    const lx = lo.getContext('2d')!, img = lx.createImageData(lw, lh), d = img.data;
+    for (let j = 0; j < lh; j++) for (let i = 0; i < lw; i++) {
+      const u = (i * 2 - g.cx) / g.R, v = (j * 2 - g.cy) / (g.R * g.tilt), [r, gg, b] = galPix(u, v), o = (j * lw + i) * 4;
+      d[o] = 5 + Math.min(250, r); d[o + 1] = 6 + Math.min(249, gg); d[o + 2] = 15 + Math.min(240, b); d[o + 3] = 255;
+    }
+    lx.putImageData(img, 0, 0);
+    bx.imageSmoothingEnabled = true; bx.drawImage(lo, 0, 0, galBg.width, galBg.height);
+    bx.setTransform(dpr, 0, 0, dpr, 0, 0);
     let sd = 5;
     const r = () => (sd = sd * 16807 % 2147483647) / 2147483647;
-    for (let i = 0; i < W * H / 500; i++) { bx.fillStyle = `rgba(220,228,255,${r() * 0.4})`; bx.fillRect(r() * W, r() * H, 1, 1); }
-    // jádro (příčka) a dvě hlavní ramena jako logaritmické spirály, mezi nimi prach a mlhoviny
-    bx.save(); bx.translate(g.cx, g.cy); bx.scale(1, g.tilt);
-    const disk = bx.createRadialGradient(0, 0, 0, 0, 0, g.R);
-    disk.addColorStop(0, 'rgba(120,130,190,0.16)'); disk.addColorStop(1, 'rgba(60,70,120,0)');
-    bx.fillStyle = disk; bx.beginPath(); bx.arc(0, 0, g.R, 0, 7); bx.fill();
-    for (let i = 0; i < 14000; i++) {
-      const arm = i % 2, th = 5.4 * Math.sqrt(r()), rr = 0.1 * Math.exp(0.42 * th) + (r() - 0.5) * 0.06 * (1 + th * 0.25);
-      if (rr > 1.02 || rr < 0.05) continue;
-      const a = th + arm * Math.PI + (r() - 0.5) * 0.3, px = Math.cos(a) * rr * g.R, py = Math.sin(a) * rr * g.R;
+    // 2) hvězdy v popředí i pozadí
+    for (let i = 0; i < W * H / 300; i++) { bx.fillStyle = `rgba(220,228,255,${r() * 0.35})`; bx.fillRect(r() * W, r() * H, 1, 1); }
+    // 3) jasné hvězdy, oblasti tvorby hvězd a hvězdokupy podél ramen
+    for (let i = 0; i < 2600; i++) {
+      const A = ARMS[i % 4], rr = 0.12 + Math.pow(r(), 0.8) * 0.98, a = armTh(A.ph, rr) + (r() - 0.5) * 0.12 / rr, [px, py] = galXY(g, rr, a);
       const k = r();
-      if (k < 0.08) { bx.fillStyle = 'rgba(150,170,255,0.05)'; bx.beginPath(); bx.arc(px, py, 7, 0, 7); bx.fill(); continue; }
-      bx.fillStyle = k < 0.4 ? `rgba(170,200,255,${0.3 + r() * 0.5})` : `rgba(255,236,214,${0.2 + r() * 0.45})`;
-      const sz = r() < 0.04 ? 2 : 1;
-      bx.fillRect(px, py, sz, sz);
-      if (k > 0.992) { bx.fillStyle = 'rgba(255,150,190,0.35)'; bx.beginPath(); bx.arc(px, py, 2.2, 0, 7); bx.fill(); }
+      if (k < 0.05 * A.w) {
+        const pg = bx.createRadialGradient(px, py, 0, px, py, 3.5);
+        pg.addColorStop(0, 'rgba(255,140,190,0.6)'); pg.addColorStop(1, 'rgba(255,140,190,0)');
+        bx.fillStyle = pg; bx.beginPath(); bx.arc(px, py, 3.5, 0, 7); bx.fill();
+      } else if (k < 0.6) { bx.fillStyle = `rgba(200,220,255,${0.3 + r() * 0.6})`; bx.fillRect(px, py, r() < 0.08 ? 1.6 : 1, r() < 0.08 ? 1.6 : 1); }
     }
-    const core = bx.createRadialGradient(0, 0, 0, 0, 0, g.R * 0.3);
-    core.addColorStop(0, 'rgba(255,240,210,0.95)'); core.addColorStop(0.25, 'rgba(255,214,160,0.5)'); core.addColorStop(1, 'rgba(255,200,150,0)');
-    bx.fillStyle = core; bx.beginPath(); bx.ellipse(0, 0, g.R * 0.3, g.R * 0.22, 0.5, 0, 7); bx.fill();
-    bx.restore();
+    // kulové hvězdokupy v halu
+    for (let i = 0; i < 26; i++) {
+      const a = r() * 6.283, rr = 0.3 + r() * 0.9, px = g.cx + Math.cos(a) * rr * g.R, py = g.cy + Math.sin(a) * rr * g.R * 0.95;
+      bx.fillStyle = 'rgba(255,232,200,0.55)'; bx.beginPath(); bx.arc(px, py, 1.3, 0, 7); bx.fill();
+    }
+    // 4) jména ramen a střed
+    bx.font = `italic 12px ${MONO}`; bx.textAlign = 'center';
+    for (const A of ARMS) {
+      const rr = A.w > 0.8 ? 0.92 : 0.8, [px, py] = galXY(g, rr, armTh(A.ph, rr) + 0.1);
+      bx.fillStyle = 'rgba(176,190,240,0.55)'; bx.fillText(names('arm.' + A.key), px, py);
+    }
+    bx.fillStyle = 'rgba(255,226,180,0.7)'; bx.fillText(names('center'), g.cx, g.cy + g.R * g.tilt * 0.22 + 14);
   }
   x.drawImage(galBg, 0, 0, W, H);
-  // naše oblast (výřez sítě mostů)
-  const hx = g.cx + Math.cos(GAL_HOME.a) * GAL_HOME.r * g.R, hy = g.cy + Math.sin(GAL_HOME.a) * GAL_HOME.r * g.R * g.tilt;
-  x.strokeStyle = `rgba(${EXO},0.8)`; x.lineWidth = 1.2; x.strokeRect(hx - 26, hy - 16, 52, 32);
-  x.font = `12px ${MONO}`; x.fillStyle = `rgba(${EXO},0.95)`; x.textAlign = 'center'; x.fillText(names('home' as LocationId), hx, hy + 30);
+  // Slunce a Země: odkud Vesper kdysi přiletěl
+  const [sx, sy] = galXY(g, GAL_SUN.r, GAL_SUN.a);
+  x.fillStyle = 'rgba(255,233,184,0.95)'; x.beginPath(); x.arc(sx, sy, 2.4, 0, 7); x.fill();
+  x.strokeStyle = 'rgba(255,233,184,0.5)'; x.lineWidth = 1; x.beginPath(); x.arc(sx, sy, 6, 0, 7); x.stroke();
+  x.font = `12px ${MONO}`; x.textAlign = 'right'; x.fillStyle = 'rgba(255,233,184,0.85)'; x.fillText(names('sun'), sx - 10, sy + 4);
+  // naše oblast (výřez sítě mostů ~6 400 × 4 000 ly) a domov
+  const [hx, hy] = galXY(g, GAL_HOME.r, GAL_HOME.a), bw = Math.max(34, 0.13 * g.R), bh = Math.max(22, 0.08 * g.R);
+  x.strokeStyle = `rgba(${EXO},0.85)`; x.lineWidth = 1.2; x.strokeRect(hx - bw * 0.2, hy - bh * 0.6, bw, bh);
+  x.fillStyle = `rgb(${AMBER})`; x.beginPath(); x.arc(hx, hy, 2.6, 0, 7); x.fill();
+  const pl = (tt * 0.5) % 1;
+  x.strokeStyle = `rgba(${PULSE},${0.7 * (1 - pl)})`; x.beginPath(); x.arc(hx, hy, 4 + pl * 18, 0, 7); x.stroke();
+  const hn = names('home'), hw = x.measureText(hn).width, hlx = Math.min(W - hw - 8, hx - bw * 0.2);
+  x.textAlign = 'left'; x.fillStyle = 'rgba(8,10,22,0.6)'; x.fillRect(hlx - 3, hy - bh * 0.6 - 19, hw + 6, 17);
+  x.fillStyle = `rgba(${EXO},0.95)`; x.fillText(hn, hlx, hy - bh * 0.6 - 6);
+  // mise
   for (const id of GAL_IDS) {
     if (!open(id)) continue;
     const [px, py] = galPos(id, g), done = !!s.visited[id], fly = s.travel?.to === id;
@@ -475,8 +574,11 @@ export function drawGalaxy(c: HTMLCanvasElement, s: State, time: number, names: 
       x.setLineDash([3, 5]); x.strokeStyle = `rgba(${EXO},0.6)`; x.beginPath(); x.moveTo(hx, hy); x.lineTo(px, py); x.stroke(); x.setLineDash([]);
       x.fillStyle = `rgb(${EXO})`; x.beginPath(); x.arc(hx + (px - hx) * k, hy + (py - hy) * k, 3, 0, 7); x.fill();
     }
-    x.fillStyle = done ? 'rgba(176,181,212,0.85)' : 'rgba(232,236,255,0.95)'; x.textAlign = px > g.cx ? 'left' : 'right';
-    x.fillText(names(id), px + (px > g.cx ? 12 : -12), py + 4);
+    const right = px > g.cx;
+    x.font = `12px ${MONO}`; x.textAlign = right ? 'left' : 'right';
+    const lbl = names(id), w = x.measureText(lbl).width, lx = right ? px + 12 : px - 12;
+    x.fillStyle = 'rgba(8,10,22,0.6)'; x.fillRect(right ? lx - 3 : lx - w - 3, py - 9, w + 6, 17);
+    x.fillStyle = done ? 'rgba(176,181,212,0.9)' : 'rgba(232,236,255,0.98)'; x.fillText(lbl, lx, py + 4);
   }
   x.textAlign = 'left';
 }

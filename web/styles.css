@@ -332,3 +332,13 @@ body.cv #view #throatc { height: clamp(260px, 38vh, 440px); }
 @media (min-width: 1101px) {
   body.cv.ch4.tabbuild .grid { grid-template-rows: auto minmax(360px, 1.25fr) minmax(0, 0.95fr); }
 }
+.bgrid2 { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 10px 0 4px; font-size: 13px; }
+.bgrid2 dt { color: var(--dim); white-space: nowrap; }
+.bgrid2 dd { margin: 0; text-align: right; font-family: var(--f-mono); white-space: nowrap; }
+.bridgegrid .stagecard .bar b.full { background: #f2a541; }
+.bnote { margin: 6px 0 10px; font-size: 13px; line-height: 1.45; color: var(--dim); }
+.bnote.warnc { color: #f2a541; }
+.linklist { max-height: 300px; overflow-y: auto; padding-right: 4px; }
+.nethelp { position: absolute; top: 10px; right: 10px; z-index: 4; width: 30px; height: 30px; font-weight: 700; font-family: var(--f-mono); }
+body.ch4 .scene-hint { right: 48px; max-width: 360px; }
+.scene-hint .tipsh { display: block; margin-top: 8px; color: var(--exotic); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
