@@ -1283,6 +1283,11 @@
       let val = v.val * oreMult(s2);
       if (src === "hand") {
         const st = this.stroke;
+        if (!st) {
+          v.cut[i] = 0;
+          s2.stats.cuts--;
+          return;
+        }
         st.chain++;
         v.cs[i] = st.id;
         val *= handMult(s2) * (1 + Math.min(st.chain, 30) * 0.05);
@@ -1321,7 +1326,7 @@
         }
       } else this.heat = Math.max(0, this.heat - cr * dt);
       if (this.over && this.heat < 0.3) this.over = false;
-      if (laser2) {
+      if (laser2 && this.stroke) {
         const bw = 6 + lv(s2, "beam") * 3.5, dx = M4.x - M4.px, dy = M4.y - M4.py, steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 3));
         for (let k2 = 0; k2 <= steps; k2++) {
           const x = M4.px + dx * k2 / steps, y = M4.py + dy * k2 / steps;
@@ -4274,7 +4279,8 @@
       const dt = Math.min(0.05, (now - last) / 1e3);
       last = now;
       T += dt;
-      if (!document.hidden) {
+      requestAnimationFrame(loop);
+      if (!document.hidden) try {
         const interactive = view === chOf(s).view && trans <= 0;
         MECH[s.ch].update(s, dt, interactive ? inp : { ...inp, down: false });
         tick(s, dt);
@@ -4298,8 +4304,9 @@
           uiT = 0.25;
           updateUI();
         }
+      } catch (err) {
+        console.error(err);
       }
-      requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
   }

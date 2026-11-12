@@ -66,7 +66,8 @@ export const kamen: Mech & any = {
     const a = this.wp(v.pts[i]), b = this.wp(v.pts[i + 1]), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
     let val = v.val * oreMult(s);
     if (src === "hand") {
-      const st = this.stroke; st.chain++; v.cs[i] = st.id; val *= handMult(s) * (1 + Math.min(st.chain, 30) * 0.05);
+      const st = this.stroke; if (!st) { v.cut[i] = 0; s.stats.cuts--; return; }   // laser se právě přehřál
+      st.chain++; v.cs[i] = st.id; val *= handMult(s) * (1 + Math.min(st.chain, 30) * 0.05);
       if (v.cut.every((x) => x) && v.cs.every((x) => x === st.id)) {
         st.full++; s.stats.full++;
         if (st.full > s.best.chainHand) s.best.chainHand = st.full;
@@ -90,7 +91,7 @@ export const kamen: Mech & any = {
       if (this.heat >= 1) { this.heat = 1; this.over = true; this.stroke = null; ftxt(PX, PY - 40, "Přehřátí!", "#ff6b5a"); }
     } else this.heat = Math.max(0, this.heat - cr * dt);
     if (this.over && this.heat < 0.3) this.over = false;
-    if (laser) {
+    if (laser && this.stroke) {
       const bw = 6 + lv(s, "beam") * 3.5, dx = M.x - M.px, dy = M.y - M.py, steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 3));
       for (let k = 0; k <= steps; k++) {
         const x = M.px + (dx * k) / steps, y = M.py + (dy * k) / steps;

@@ -72,7 +72,8 @@ export function start() {
   let last = performance.now(), uiT = 0;
   const loop = (now: number) => {
     const dt = Math.min(0.05, (now - last) / 1000); last = now; T += dt;
-    if (!document.hidden) {
+    requestAnimationFrame(loop);   // další snímek naplánovat hned – chyba v jednom snímku nesmí zastavit hru
+    if (!document.hidden) try {
       const interactive = view === chOf(s).view && trans <= 0;
       MECH[s.ch].update(s, dt, interactive ? inp : { ...inp, down: false });
       E.tick(s, dt);
@@ -87,8 +88,7 @@ export function start() {
       render();
       uiT -= dt;
       if (uiT <= 0) { uiT = 0.25; updateUI(); }
-    }
-    requestAnimationFrame(loop);
+    } catch (err) { console.error(err); }
   };
   requestAnimationFrame(loop);
 }
