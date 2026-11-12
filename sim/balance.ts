@@ -92,3 +92,5 @@ if (process.env.EV) for (const [t, w] of ev) console.log(fmt(t), w);
 let prev = ev.length ? ev[0][0] : 0; const gaps: string[] = [];
 for (const [t, w] of ev) { if (t - prev > 480) gaps.push(`${fmt(prev)}→${fmt(t)} (${Math.round((t - prev) / 60)} min) před ${w}`); prev = t; }
 if (gaps.length) console.log("Mezery > 8 min:\n " + gaps.join("\n "));
+// DUMP=soubor.json – uloží stav na konci běhu (uloženou hru pro kontrolní snímky)
+if (process.env.DUMP) (await import("node:fs")).writeFileSync(process.env.DUMP, JSON.stringify(s));

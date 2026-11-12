@@ -156,12 +156,12 @@
   var B = (o) => ({ ch: 1, ...o });
   var BUILD1 = [
     B({ id: "panel", tier: 1, kind: "gen", cur: "ore", c0: 8, g: 1.12, w: 40, req: () => true }),
-    B({ id: "scan", tier: 1, kind: "data", cur: "ore", c0: 25, g: 1.22, d: 0.35, req: (s2) => s2.tot.ore >= 15 }),
-    B({ id: "beam", tier: 1, kind: "up", cur: "ore", c0: 20, g: 2.4, max: 5, req: (s2) => s2.tot.ore >= 10 }),
-    B({ id: "cool", tier: 1, kind: "up", cur: "ore", c0: 35, g: 2.4, max: 5, req: (s2) => s2.tot.ore >= 30 }),
-    B({ id: "magnet", tier: 1, kind: "up", cur: "ore", c0: 18, g: 2.2, max: 4, req: (s2) => s2.tot.ore >= 20 }),
-    B({ id: "find", tier: 1, kind: "up", cur: "ore", c0: 60, g: 2.6, max: 5, req: (s2) => s2.tot.ore >= 50 }),
-    B({ id: "refine", tier: 1, kind: "mult", cur: "ore", c0: 90, g: 1.3, req: (s2) => s2.tot.ore >= 70 }),
+    B({ id: "scan", tier: 1, kind: "data", cur: "ore", c0: 25, g: 1.22, d: 0.35, req: (s2) => n(s2, "panel") >= 2 && s2.tot.ore >= 25 }),
+    B({ id: "beam", tier: 1, kind: "up", cur: "ore", c0: 20, g: 2.4, max: 5, req: (s2) => n(s2, "panel") >= 1 && s2.tot.ore >= 14 }),
+    B({ id: "cool", tier: 1, kind: "up", cur: "ore", c0: 35, g: 2.4, max: 5, req: (s2) => s2.tot.ore >= 90 && n(s2, "beam") + n(s2, "magnet") >= 1 }),
+    B({ id: "magnet", tier: 1, kind: "up", cur: "ore", c0: 18, g: 2.2, max: 4, req: (s2) => s2.tot.ore >= 45 }),
+    B({ id: "find", tier: 1, kind: "up", cur: "ore", c0: 60, g: 2.6, max: 5, req: (s2) => s2.tot.ore >= 150 && n(s2, "scan") >= 1 }),
+    B({ id: "refine", tier: 1, kind: "mult", cur: "ore", c0: 90, g: 1.3, req: (s2) => s2.tot.ore >= 260 && n(s2, "panel") >= 6 }),
     B({ id: "field", tier: 1, kind: "gen", cur: "ore", c0: 1500, g: 1.12, w: 8e4, req: ST(1) }),
     B({ id: "focus", tier: 1, kind: "up", cur: "ore", c0: 600, g: 5, max: 8, req: (s2) => s2.tot.ore >= 1500 }),
     B({ id: "drone", tier: 2, kind: "unit", cur: "ore", c0: 2e5, g: 1.17, req: R("drones") }),
@@ -3134,6 +3134,9 @@
     perSec: "/s",
     stage: "Stadium",
     goal: "C\xEDl stadia",
+    kBelow: "K < 0",
+    toType: (k, x) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${x} v\xEDc v\xFDkonu`,
+    typeMax: "Typ III dosa\u017Een",
     needMore: (x) => `Pot\u0159ebuje\u0161 ${x} v\xEDc v\xFDkonu`,
     stageDone: "V\u0161echna stadia hotov\xE1",
     finalHint: (n2) => `Dokon\u010Di v\xFDzkum \u201E${n2}\u201C`,
@@ -3143,6 +3146,11 @@
     level: "\xFAr.",
     newer: "Nejnov\u011Bj\u0161\xED naho\u0159e",
     researchDone: "Hotov\xFD v\xFDzkum",
+    researchNote: "Data sb\xEDraj\xED skenery a v\xFDpo\u010Detn\xED j\xE1dra. Nov\xE9 sm\u011Bry v\xFDzkumu se objev\xED s postupem.",
+    researchNone: "Te\u010F nen\xED co zkoumat. Dal\u0161\xED sm\u011Br se objev\xED s postupem.",
+    researchReady: "P\u0159ipraveno",
+    researchIn: (t) => `za ~${t}`,
+    detailNote: { 1: "\u010C\xEDm hloub\u011Bji laser \u0159e\u017Ee, t\xEDm bohat\u0161\xED ruda.", 2: "Aldra proch\xE1z\xED \u017Eivotem hv\u011Bzdy. Ka\u017Ed\xE1 f\xE1ze d\xE1v\xE1 jin\xE9 sv\u011Btlo.", 3: "Kolonie se \u0161\xED\u0159\xED galaxi\xED. Hranice ukazuje dosah svazku." },
     missionsDone: "Spln\u011Bn\xE9 mise",
     send: "Vyslat Vesper",
     running: "Vesper let\xED",
@@ -3155,6 +3163,8 @@
     autoFact: "Tov\xE1rny vypou\u0161t\u011Bj\xED kolektory",
     journal: "Palubn\xED den\xEDk",
     report: "Hl\xE1\u0161en\xED",
+    diary: "Den\xEDk",
+    fact: "Zaj\xEDmavost",
     settings: "Nastaven\xED",
     sound: "Zvuk",
     effects: "Efekty",
@@ -3557,7 +3567,6 @@
   }
 
   // src/ui/detail.ts
-  var COLS = ["#6d655c", "#5c4a3e", "#8a7a55", "#9aa3ad", "#8a6fd0"];
   var PHASES = [
     { r: 20, c: "#b9d2ff" },
     { r: 21, c: "#b9d2ff" },
@@ -3581,34 +3590,8 @@
     c.font = `13px ${MONO}`;
     c.textAlign = "left";
     c.fillStyle = "#9aa6bd";
-    if (s2.ch === 1) {
-      const cx = w * 0.35, cy = hh / 2, R2 = Math.min(w * 0.3, hh * 0.42), li = layerIdx(s2);
-      for (let i = 0; i < 5; i++) {
-        const r = R2 * (1 - i * 0.18);
-        c.fillStyle = COLS[i];
-        c.beginPath();
-        c.arc(cx, cy, r, Math.PI * 0.5, Math.PI * 1.5);
-        c.fill();
-        if (i === li) {
-          c.strokeStyle = "#ffd27a";
-          c.lineWidth = 2.5;
-          c.beginPath();
-          c.arc(cx, cy, r, Math.PI * 0.5, Math.PI * 1.5);
-          c.stroke();
-        }
-      }
-      c.fillStyle = "#3a332d";
-      c.fillRect(cx, cy - R2, 3, R2 * 2);
-      for (let i = 0; i < 5; i++) {
-        const y = cy - R2 + 30 + i * ((R2 * 2 - 60) / 4);
-        c.fillStyle = i === li ? "#ffd27a" : i < li ? "#8ef0c8" : "#5d6678";
-        c.font = `${i === li ? 600 : 400} 14px ${SANS}`;
-        c.fillText(`${i < li ? "\u2713" : i === li ? "\u25B6" : "\xB7"} ${X.layer[i]}`, cx + 30, y);
-        c.font = `12px ${MONO}`;
-        c.fillStyle = "#7d879c";
-        c.fillText(`ruda \xD7${count(Math.pow(T1.layerMult, i))}`, cx + 30, y + 17);
-      }
-    } else if (s2.ch === 2) {
+    if (s2.ch === 1) cutaway(c, s2, T4, w, hh, X);
+    else if (s2.ch === 2) {
       const n2 = PHASES.length, y = hh * 0.45;
       for (let i = 0; i < n2; i++) {
         const x = w * (0.08 + 0.84 * i / (n2 - 1)), p = PHASES[i], on2 = i === Math.min(s2.stage, n2 - 1);
@@ -3652,6 +3635,170 @@
       c.font = `13px ${MONO}`;
       c.fillStyle = "#9aa6bd";
       c.fillText(`Kolonie ${colCount(s2)} \xB7 hv\u011Bzdy ${count(starsOn(s2).v)} \xB7 zachycen\xED ${pct(capture(s2))} \xB7 dosah ${zoneR(s2).toFixed(2).replace(".", ",")}`, 20, hh - 24);
+    }
+  }
+  var LAY = [
+    { a: "#8a7f74", b: "#5f574f", sp: "#b7aa98" },
+    // regolit
+    { a: "#4c4038", b: "#2f2722", sp: "#7a6a58" },
+    // uhlíkatý plášť
+    { a: "#8f7a4c", b: "#5a4a2c", sp: "#e6c46e" },
+    // kovová žíla
+    { a: "#8d96a2", b: "#555d68", sp: "#dfe8f2" },
+    // niklové jádro
+    { a: "#6f55b8", b: "#3a2a70", sp: "#cdb6ff" }
+    // izotopová žíla
+  ];
+  var edge = (i) => 1 - i * 0.19;
+  var jag = (a, k) => 1 + 0.035 * Math.sin(a * 5 + k) + 0.022 * Math.sin(a * 11 + k * 2.3) + 0.012 * Math.sin(a * 23 + k);
+  function rnd2(i) {
+    const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+    return x - Math.floor(x);
+  }
+  function cutaway(c, s2, T4, w, hh, X) {
+    const li = layerIdx(s2), R2 = Math.min(w * 0.2, hh * 0.34), cx = Math.min(w * 0.36, R2 * 1.3 + 70), cy = hh * 0.52;
+    const A0 = -Math.PI / 2, A1 = 0.12;
+    const halo = c.createRadialGradient(cx, cy, R2 * 0.6, cx, cy, R2 * 1.6);
+    halo.addColorStop(0, "rgba(120,140,190,.10)");
+    halo.addColorStop(1, "rgba(120,140,190,0)");
+    c.fillStyle = halo;
+    c.fillRect(0, 0, w, hh);
+    c.save();
+    c.beginPath();
+    c.moveTo(cx, cy);
+    c.arc(cx, cy, R2 * 1.6, A1, A0 + Math.PI * 2);
+    c.closePath();
+    c.clip();
+    const im = img("asteroid");
+    if (im) {
+      const k = R2 * 2.5 / Math.max(im.width, im.height);
+      c.drawImage(im, cx - im.width * k / 2, cy - im.height * k / 2, im.width * k, im.height * k);
+    } else {
+      const g = c.createRadialGradient(cx - R2 * 0.4, cy - R2 * 0.4, R2 * 0.1, cx, cy, R2 * 1.05);
+      g.addColorStop(0, "#9b9084");
+      g.addColorStop(1, "#2c2722");
+      c.fillStyle = g;
+      c.beginPath();
+      for (let k = 0; k <= 96; k++) {
+        const a = k / 96 * Math.PI * 2, r = R2 * jag(a, 0);
+        k ? c.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r) : c.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      }
+      c.fill();
+    }
+    c.restore();
+    for (let i = 0; i < 5; i++) {
+      const r0 = R2 * edge(i), L = LAY[i], open = i <= li;
+      const g = c.createRadialGradient(cx, cy, r0 * 0.75, cx, cy, r0);
+      g.addColorStop(0, L.b);
+      g.addColorStop(1, L.a);
+      c.fillStyle = g;
+      c.beginPath();
+      c.moveTo(cx, cy);
+      for (let k = 0; k <= 40; k++) {
+        const a = A0 + (A1 - A0) * k / 40, r = r0 * (i ? jag(a, i * 3) : 1);
+        c.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      }
+      c.closePath();
+      c.fill();
+      const r1 = R2 * edge(i + 1);
+      c.fillStyle = L.sp;
+      for (let k = 0; k < 26; k++) {
+        const a = A0 + (A1 - A0) * rnd2(i * 97 + k), r = r1 + (r0 - r1) * (0.15 + 0.7 * rnd2(i * 31 + k * 7));
+        const tw = open ? 0.55 + 0.45 * Math.sin(T4 * 2 + k) : 0.25;
+        c.globalAlpha = tw * (i === li ? 1 : 0.6);
+        c.beginPath();
+        c.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 1 + rnd2(k + i) * 1.6, 0, 7);
+        c.fill();
+      }
+      c.globalAlpha = 1;
+      if (!open) {
+        c.fillStyle = "rgba(4,5,10,.55)";
+        c.beginPath();
+        c.moveTo(cx, cy);
+        c.arc(cx, cy, r0 * 1.02, A0, A1);
+        c.closePath();
+        c.fill();
+      }
+    }
+    c.strokeStyle = "rgba(255,255,255,.18)";
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(cx + Math.cos(A0) * R2 * 1.04, cy + Math.sin(A0) * R2 * 1.04);
+    c.lineTo(cx, cy);
+    c.lineTo(cx + Math.cos(A1) * R2 * 1.04, cy + Math.sin(A1) * R2 * 1.04);
+    c.stroke();
+    const rc = R2 * edge(li), pulse = 0.6 + 0.4 * Math.sin(T4 * 3);
+    c.save();
+    c.shadowColor = "#ffb85a";
+    c.shadowBlur = 14 * pulse;
+    c.strokeStyle = `rgba(255,200,110,${0.55 + 0.45 * pulse})`;
+    c.lineWidth = 2.5;
+    c.beginPath();
+    c.arc(cx, cy, rc, A0 + 0.02, A1 - 0.02);
+    c.stroke();
+    c.restore();
+    const aL = A0 + (A1 - A0) * 0.42, tx0 = cx + Math.cos(aL) * R2 * 1.55, ty0 = cy + Math.sin(aL) * R2 * 1.55;
+    const tx1 = cx + Math.cos(aL) * rc, ty1 = cy + Math.sin(aL) * rc, fl = 0.75 + 0.25 * Math.sin(T4 * 37) * Math.sin(T4 * 13);
+    c.save();
+    c.globalCompositeOperation = "lighter";
+    c.strokeStyle = `rgba(255,120,60,${0.35 * fl})`;
+    c.lineWidth = 7;
+    c.beginPath();
+    c.moveTo(tx0, ty0);
+    c.lineTo(tx1, ty1);
+    c.stroke();
+    c.strokeStyle = `rgba(255,230,190,${0.9 * fl})`;
+    c.lineWidth = 1.6;
+    c.beginPath();
+    c.moveTo(tx0, ty0);
+    c.lineTo(tx1, ty1);
+    c.stroke();
+    const sg = c.createRadialGradient(tx1, ty1, 0, tx1, ty1, 18);
+    sg.addColorStop(0, "rgba(255,240,200,.95)");
+    sg.addColorStop(0.3, "rgba(255,150,70,.5)");
+    sg.addColorStop(1, "rgba(255,120,60,0)");
+    c.fillStyle = sg;
+    c.beginPath();
+    c.arc(tx1, ty1, 18, 0, 7);
+    c.fill();
+    for (let k = 0; k < 7; k++) {
+      const ph = (T4 * 1.7 + k / 7) % 1, a = aL + Math.PI + (rnd2(k) - 0.5) * 1.8, d = ph * 34;
+      c.fillStyle = `rgba(255,${180 + 60 * rnd2(k + 3)},120,${1 - ph})`;
+      c.beginPath();
+      c.arc(tx1 + Math.cos(a) * d, ty1 + Math.sin(a) * d, 1.4, 0, 7);
+      c.fill();
+    }
+    c.restore();
+    c.fillStyle = "#c9d3e6";
+    c.beginPath();
+    c.arc(tx0, ty0, 4, 0, 7);
+    c.fill();
+    c.font = `11px ${MONO}`;
+    c.fillStyle = "#7d879c";
+    c.textAlign = "center";
+    c.fillText("VESPER-7", tx0, ty0 - 10);
+    c.textAlign = "left";
+    const lx = Math.max(cx + R2 * 1.25, w * 0.58), step = Math.min(64, (hh - 70) / 5), y0 = cy - step * 2;
+    for (let i = 0; i < 5; i++) {
+      const rm = R2 * (edge(i) + edge(i + 1)) / 2, am = A0 + (A1 - A0) * 0.82, px = cx + Math.cos(am) * rm, py = cy + Math.sin(am) * rm;
+      const y = y0 + i * step, on2 = i === li, done = i < li;
+      c.strokeStyle = on2 ? "rgba(255,210,122,.7)" : "rgba(125,135,156,.35)";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(px, py);
+      c.lineTo(lx - 34, y - 4);
+      c.lineTo(lx - 10, y - 4);
+      c.stroke();
+      c.fillStyle = LAY[i].sp;
+      c.beginPath();
+      c.arc(px, py, 2.5, 0, 7);
+      c.fill();
+      c.font = `${on2 ? 600 : 500} 15px ${SANS}`;
+      c.fillStyle = on2 ? "#ffd27a" : done ? "#dfe4ef" : "#5d6678";
+      c.fillText(`${done ? "\u2713 " : on2 ? "\u25B6 " : ""}${X.layer[i]}`, lx, y);
+      c.font = `12px ${MONO}`;
+      c.fillStyle = on2 ? "#e3a970" : done ? "#8ef0c8" : "#4a5266";
+      c.fillText(i <= li ? `ruda za \u0159ez \xD7${count(Math.pow(T1.layerMult, i))}` : `hloubka ${i + 1} \xB7 ruda \xD7${count(Math.pow(T1.layerMult, i))}`, lx, y + 17);
     }
   }
 
@@ -4019,7 +4166,7 @@
     H = innerHeight;
     cv.width = Math.round(W * DPR);
     cv.height = Math.round(H * DPR);
-    const left = W > 900 ? 330 : 0, right = W > 900 ? dockOpen ? 400 : 44 : 0, top = 64, bottom = 58;
+    const left = W > 900 ? 330 : 0, right = W > 900 ? dockOpen ? 400 : 30 : 0, top = 64, bottom = 58;
     const aw = W - left - right, ah = H - top - bottom;
     const sx = Math.min(aw / VW, ah / VH) * 1.08;
     geo = { sx, ox: left + (aw - VW * sx) / 2, oy: top + (ah - VH * sx) / 2 };
@@ -4057,7 +4204,8 @@
     if (tab === "detail" && dc) drawDetail(dc, s, T);
   }
   function viewOpen(v) {
-    if (v === "body" || v === "system") return true;
+    if (v === "body") return true;
+    if (v === "system") return s.ch >= 3;
     if (v === "star") return s.ch >= 2;
     if (v === "near") return s.ch >= 3 || s.ch === 2 && s.stage >= 2;
     if (v === "galaxy") return s.ch >= 3;
@@ -4089,8 +4237,18 @@
   var listKey = "";
   function updateUI() {
     const C = chOf(s), X = tx(s.ch), P = power(s);
-    $("kval").textContent = `K ${fixed(K(P), 2)}`;
+    const kk = K(P);
+    $("kval").textContent = kk < 0 ? UI.kBelow : `K ${fixed(kk, 2)}`;
     $("kpow").textContent = si(P, "W");
+    const ti = KTYPES.findIndex((t) => P < t.w), nt = KTYPES[ti];
+    if (nt) {
+      const base = ti > 0 ? KTYPES[ti - 1].w : 500;
+      $("kbar").style.width = `${Math.max(0, Math.min(1, Math.log(P / base) / Math.log(nt.w / base))) * 100}%`;
+      $("kprog").textContent = UI.toType(nt.k, times(nt.w / P));
+    } else {
+      $("kbar").style.width = "100%";
+      $("kprog").textContent = UI.typeMax;
+    }
     const resList = [[C.cur, s.res[C.cur], RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, dataRate(s)]];
     $("res").innerHTML = resList.map(([k, v, r]) => `<div class="chip"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`).join("");
     const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
@@ -4116,7 +4274,7 @@
     document.querySelectorAll("#ladder button").forEach((b) => {
       const o = viewOpen(b.dataset.v);
       b.disabled = !o;
-      b.classList.toggle("on", b.dataset.v === view);
+      b.classList.toggle("on", o && b.dataset.v === view);
       b.title = o ? "" : UI.locked;
     });
     const newer = (pre) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + { b_: "build", r_: "research", m_: "map" }[pre]] ?? -1));
@@ -4158,14 +4316,29 @@
     for (const e of s.log.slice(-40).reverse()) {
       const t = find("jour", e.k);
       if (!t) continue;
-      const d = h("div", "entry " + e.kind + (first && s.t - e.t < 3 ? " new" : ""));
+      const kind = e.kind || "story";
+      const d = h("div", "entry " + kind + (first && s.t - e.t < 3 ? " new" : ""));
       first = false;
-      if (e.kind === "report") d.innerHTML = `<b>${UI.report}</b>${t}`;
-      else d.textContent = t;
+      const lab = kind === "fact" ? UI.fact : kind === "report" ? UI.report : UI.diary;
+      d.innerHTML = `<span class="t">${lab} \xB7 ${clock(e.t)}</span>`;
+      d.appendChild(document.createTextNode(t));
       box.appendChild(d);
     }
   }
+  function clock(t) {
+    const m = Math.floor(t / 60);
+    return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
+  }
   var rows = {};
+  function setHTML(el, html) {
+    if (el._h !== html) {
+      el._h = html;
+      el.innerHTML = html;
+    }
+  }
+  function setDis(el, d) {
+    if (el.disabled !== d) el.disabled = d;
+  }
   function effect(id) {
     const d = BMAP[id];
     if (d.kind === "gen" && s.ch === 1) return `+${si(genW(s, id), "W")} ka\u017Ed\xFD`;
@@ -4210,7 +4383,7 @@
       }
       for (const id of ids) {
         const d = BMAP[id], t = find("b", id);
-        const r = h("div", "row" + (d.tier === 2 ? " t2" : "") + (d.kind === "up" ? " up" : ""));
+        const r = h("div", "row" + (d.tier === 2 ? " t2" : "") + (s.t - (s.unl["b_" + id] ?? -99) < 6 ? " fresh" : ""));
         r.innerHTML = `<div class="nm"><b>${t.n}</b><small class="eff"></small></div><span class="cnt mono"></span>`;
         const b = h("button", "buy");
         b.onclick = () => {
@@ -4227,23 +4400,25 @@
     for (const [id] of autos) {
       const b = rows["auto_" + id];
       const on2 = s.auto[id] !== false;
-      b.textContent = on2 ? UI.autoOn : UI.autoOff;
+      setHTML(b, on2 ? UI.autoOn : UI.autoOff);
       b.classList.toggle("on", on2);
     }
     for (const id of ids) {
       const d = BMAP[id], R2 = rows[id];
       if (!R2) continue;
       const mx = maxed(s, id), lvl = n(s, id);
-      R2.cnt.textContent = d.kind === "swarm" ? count(s.n) : d.max != null ? `${lvl}/${d.max}` : count(lvl);
-      R2.eff.textContent = effect(id);
+      const ct = d.kind === "swarm" ? count(s.n) : d.max != null ? `${lvl}/${d.max}` : count(lvl);
+      if (R2.cnt.textContent !== ct) R2.cnt.textContent = ct;
+      const ef = effect(id);
+      if (R2.eff.textContent !== ef) R2.eff.textContent = ef;
       if (mx) {
-        R2.b.textContent = UI.maxed;
-        R2.b.disabled = true;
+        setHTML(R2.b, UI.maxed);
+        setDis(R2.b, true);
         continue;
       }
       const k = Math.max(1, buyN || maxAfford(s, id)), c = costN(s, id, k);
-      R2.b.innerHTML = `${k > 1 ? `\xD7${k} ` : ""}<span class="mono">${fmtCur(d.cur, c)}</span>`;
-      R2.b.disabled = s.res[d.cur] < c;
+      setHTML(R2.b, `${k > 1 ? `\xD7${k} ` : ""}<span class="mono">${fmtCur(d.cur, c)}</span>`);
+      setDis(R2.b, s.res[d.cur] < c);
     }
   }
   function researchList() {
@@ -4255,28 +4430,34 @@
     if (key !== listKey) {
       listKey = key;
       box.innerHTML = "";
+      const head = h("div", "rhead");
+      head.innerHTML = `<div><span class="ph">${UI.tabs.research}</span><b class="mono" id="rData"></b><small class="mono" id="rRate"></small></div><small class="dim">${UI.researchNote}</small>`;
+      box.appendChild(head);
       for (const r of open) {
-        const t = find("r", r.id), card = h("div", "card" + (r.final ? " final" : "") + (r.lvl2 ? " lvl2" : ""));
-        card.innerHTML = `<b>${t.n}</b><p>${t.d}</p>`;
+        const t = find("r", r.id), card = h("div", "card rc" + (r.final ? " final" : "") + (r.lvl2 ? " lvl2" : "") + (s.t - (s.unl["r_" + r.id] ?? -99) < 6 ? " fresh" : ""));
+        card.innerHTML = `<div class="rt"><i class="ri">${r.final ? "\u2605" : r.lvl2 ? "\u25C6" : "\u2726"}</i><b>${t.n}</b></div><p>${t.d}</p><div class="rp"><div class="pbar"><b></b></div><small class="mono eta"></small></div>`;
         const b = h("button", "buy");
         b.onclick = () => {
           if (doResearch(s, r.id)) chime();
           updateUI();
         };
         card.appendChild(b);
-        rows["r_" + r.id] = b;
+        rows["r_" + r.id] = { b, card, bar: card.querySelector(".pbar b"), eta: card.querySelector(".eta") };
         box.appendChild(card);
       }
-      if (done.length) {
-        const d = h("details", "done");
-        d.innerHTML = `<summary>${UI.researchDone} (${done.length})</summary>` + done.map((r) => `<div><b>${find("r", r.id).n}</b> \u2013 ${find("r", r.id).d}</div>`).join("");
-        box.appendChild(d);
-      }
+      if (!open.length) box.appendChild(h("div", "card rc empty", `<p>${UI.researchNone}</p>`));
+      if (done.length) box.appendChild(h("div", "rdone", `<span class="ph">${UI.researchDone} (${done.length})</span>` + done.map((r) => `<span class="tag" title="${find("r", r.id).d}">\u2713 ${find("r", r.id).n}</span>`).join("")));
     }
+    const rate = dataRate(s);
+    setHTML($("rData"), si(s.res.data, "B"));
+    setHTML($("rRate"), `+${si(rate, "B")}/s`);
     for (const r of open) {
-      const b = rows["r_" + r.id];
-      b.innerHTML = `<span class="mono">${si(r.cost, "B")}</span>`;
-      b.disabled = s.res.data < r.cost;
+      const R2 = rows["r_" + r.id], ok2 = s.res.data >= r.cost, f = Math.min(1, s.res.data / r.cost);
+      setHTML(R2.b, `<span class="mono">${si(r.cost, "B")}</span>`);
+      setDis(R2.b, !ok2);
+      R2.card.classList.toggle("ready", ok2);
+      R2.bar.style.width = `${f * 100}%`;
+      setHTML(R2.eta, ok2 ? UI.researchReady : rate > 0 ? `${pct(f)} \xB7 ${UI.researchIn(duration((r.cost - s.res.data) / rate))}` : pct(f));
     }
   }
   function missionList() {
@@ -4318,25 +4499,37 @@
       R2.bar.parentElement.hidden = !run;
       if (run) {
         R2.bar.style.width = `${(1 - s.run.left / s.run.dur) * 100}%`;
-        R2.b.textContent = `${UI.running} \xB7 ${duration(s.run.left)}`;
-        R2.b.disabled = true;
+        setHTML(R2.b, `${UI.running} \xB7 ${duration(s.run.left)}`);
+        setDis(R2.b, true);
         continue;
       }
-      R2.b.innerHTML = s.run ? UI.busy : `${UI.send} \xB7 <span class="mono">${si(m.cost, "J")}</span> \xB7 ${duration(m.dur)}`;
-      R2.b.disabled = !!s.run || s.res.energy < m.cost;
+      setHTML(R2.b, s.run ? UI.busy : `${UI.send} \xB7 <span class="mono">${si(m.cost, "J")}</span> \xB7 ${duration(m.dur)}`);
+      setDis(R2.b, !!s.run || s.res.energy < m.cost);
     }
   }
   function detailText() {
-    const key = "d" + s.ch + s.stage;
-    const box = $("dockBody");
-    if (key === listKey) return;
-    listKey = key;
-    box.innerHTML = "";
-    const X = tx(s.ch);
-    box.appendChild(h("canvas", "", "")).id = "detc";
-    const list = h("div", "card");
-    list.innerHTML = `<b>${UI.detail[s.ch]}</b><p>${X.stages.map((n2, i) => i === s.stage ? `<b>\u25B6 ${n2}</b>` : i < s.stage ? `<span class="dim">\u2713 ${n2}</span>` : `<span class="dim">\xB7 ${n2}</span>`).join("<br>")}</p>`;
-    box.appendChild(list);
+    const key = "d" + s.ch + s.stage + finalReady(s);
+    const box = $("dockBody"), X = tx(s.ch), N = stagesOf(s);
+    if (key !== listKey) {
+      listKey = key;
+      box.innerHTML = "";
+      const head = h("div", "rhead");
+      head.innerHTML = `<div><span class="ph">${X.title}</span><b>${UI.detail[s.ch]}</b></div><small class="dim">${UI.detailNote[s.ch] || ""}</small>`;
+      box.appendChild(head);
+      box.appendChild(h("canvas", "", "")).id = "detc";
+      const tl = h("div", "tl");
+      for (let i = 0; i < N; i++) {
+        const st = i < s.stage ? "done" : i === s.stage ? "now" : "next";
+        const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${X.layer[i]} \xB7 ruda \xD7${count(Math.pow(T1.layerMult, i))}</small>` : "";
+        tl.appendChild(h("div", "st " + st, `<i>${st === "done" ? "\u2713" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} \xB7 ${K(g) < 0 ? UI.kBelow : "K " + fixed(K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`));
+      }
+      box.appendChild(tl);
+    }
+    const bar = document.getElementById("tlBar");
+    if (bar && !finalReady(s)) {
+      const P = power(s), goal = stageGoal(s), prev = s.stage > 0 ? stageGoal(s, s.stage - 1) : s.ch === 1 ? 500 : s.base;
+      bar.style.width = `${Math.max(0, Math.min(1, Math.log(P / prev) / Math.log(goal / prev))) * 100}%`;
+    }
   }
   function flash(id) {
     setTimeout(() => {

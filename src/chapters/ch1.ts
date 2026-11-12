@@ -24,12 +24,12 @@ export const T1 = {
 const B = (o: Omit<BDef, "ch">): BDef => ({ ch: 1, ...o });
 export const BUILD1: BDef[] = [
   B({ id: "panel", tier: 1, kind: "gen", cur: "ore", c0: 8, g: 1.12, w: 40, req: () => true }),
-  B({ id: "scan", tier: 1, kind: "data", cur: "ore", c0: 25, g: 1.22, d: 0.35, req: (s) => s.tot.ore >= 15 }),
-  B({ id: "beam", tier: 1, kind: "up", cur: "ore", c0: 20, g: 2.4, max: 5, req: (s) => s.tot.ore >= 10 }),
-  B({ id: "cool", tier: 1, kind: "up", cur: "ore", c0: 35, g: 2.4, max: 5, req: (s) => s.tot.ore >= 30 }),
-  B({ id: "magnet", tier: 1, kind: "up", cur: "ore", c0: 18, g: 2.2, max: 4, req: (s) => s.tot.ore >= 20 }),
-  B({ id: "find", tier: 1, kind: "up", cur: "ore", c0: 60, g: 2.6, max: 5, req: (s) => s.tot.ore >= 50 }),
-  B({ id: "refine", tier: 1, kind: "mult", cur: "ore", c0: 90, g: 1.3, req: (s) => s.tot.ore >= 70 }),
+  B({ id: "scan", tier: 1, kind: "data", cur: "ore", c0: 25, g: 1.22, d: 0.35, req: (s) => n(s, "panel") >= 2 && s.tot.ore >= 25 }),
+  B({ id: "beam", tier: 1, kind: "up", cur: "ore", c0: 20, g: 2.4, max: 5, req: (s) => n(s, "panel") >= 1 && s.tot.ore >= 14 }),
+  B({ id: "cool", tier: 1, kind: "up", cur: "ore", c0: 35, g: 2.4, max: 5, req: (s) => s.tot.ore >= 90 && n(s, "beam") + n(s, "magnet") >= 1 }),
+  B({ id: "magnet", tier: 1, kind: "up", cur: "ore", c0: 18, g: 2.2, max: 4, req: (s) => s.tot.ore >= 45 }),
+  B({ id: "find", tier: 1, kind: "up", cur: "ore", c0: 60, g: 2.6, max: 5, req: (s) => s.tot.ore >= 150 && n(s, "scan") >= 1 }),
+  B({ id: "refine", tier: 1, kind: "mult", cur: "ore", c0: 90, g: 1.3, req: (s) => s.tot.ore >= 260 && n(s, "panel") >= 6 }),
   B({ id: "field", tier: 1, kind: "gen", cur: "ore", c0: 1.5e3, g: 1.12, w: 8e4, req: ST(1) }),
   B({ id: "focus", tier: 1, kind: "up", cur: "ore", c0: 600, g: 5, max: 8, req: (s) => s.tot.ore >= 1.5e3 }),
   B({ id: "drone", tier: 2, kind: "unit", cur: "ore", c0: 2e5, g: 1.17, req: R("drones") }),

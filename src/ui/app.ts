@@ -8,7 +8,7 @@ import { kamen } from "../mech/ch1";
 import { hvezda } from "../mech/ch2";
 import { galaxie } from "../mech/ch3";
 import { VW, VH, Input, fxUpdate, fxDraw, fxClear, setFx } from "../mech/fx";
-import { genW, layerIdx, oreMult, GEN1 } from "../chapters/ch1";
+import { genW, layerIdx, oreMult, GEN1, T1 } from "../chapters/ch1";
 import { coverage, prodRate, plasmaMult, colCost, salvo, L_ALDRA, colArea } from "../chapters/ch2";
 import { starsOn, capture, colCount } from "../chapters/ch3";
 import { setLabelScale, background, drawSystem, drawNear, drawRemnant, drawMissions, missionAt } from "./views";
@@ -117,7 +117,7 @@ function resize() {
   const cv = $("scene") as HTMLCanvasElement;
   DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  const left = W > 900 ? 330 : 0, right = W > 900 ? (dockOpen ? 400 : 44) : 0, top = 64, bottom = 58;
+  const left = W > 900 ? 330 : 0, right = W > 900 ? (dockOpen ? 400 : 30) : 0, top = 64, bottom = 58;
   const aw = W - left - right, ah = H - top - bottom;
   const sx = Math.min(aw / VW, ah / VH) * 1.08;
   geo = { sx, ox: left + (aw - VW * sx) / 2, oy: top + (ah - VH * sx) / 2 };
@@ -153,7 +153,8 @@ function render() {
 
 // ---------- pohledy ----------
 function viewOpen(v: string) {
-  if (v === "body" || v === "system") return true;
+  if (v === "body") return true;
+  if (v === "system") return s.ch >= 3;   // v Kap. 1–2 je soustava jen na záložce Mapa
   if (v === "star") return s.ch >= 2;
   if (v === "near") return s.ch >= 3 || (s.ch === 2 && s.stage >= 2);
   if (v === "galaxy") return s.ch >= 3;
@@ -184,8 +185,16 @@ let listKey = "";
 function updateUI() {
   const C = chOf(s), X = tx(s.ch), P = E.power(s);
   // horní lišta
-  $("kval").textContent = `K ${fixed(E.K(P), 2)}`;
+  const kk = E.K(P);
+  $("kval").textContent = kk < 0 ? UI.kBelow : `K ${fixed(kk, 2)}`;
   $("kpow").textContent = si(P, "W");
+  // postup k dalšímu typu Kardaševovy škály (oranžový bar)
+  const ti = KTYPES.findIndex((t) => P < t.w), nt = KTYPES[ti];
+  if (nt) {
+    const base = ti > 0 ? KTYPES[ti - 1].w : 500;
+    $("kbar").style.width = `${Math.max(0, Math.min(1, Math.log(P / base) / Math.log(nt.w / base))) * 100}%`;
+    $("kprog").textContent = UI.toType(nt.k, times(nt.w / P));
+  } else { $("kbar").style.width = "100%"; $("kprog").textContent = UI.typeMax; }
   const resList: [string, number, number][] = [[C.cur, s.res[C.cur], E.RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, E.dataRate(s)]];
   $("res").innerHTML = resList.map(([k, v, r]) => `<div class="chip"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`).join("");
   // levý panel
@@ -210,7 +219,7 @@ function updateUI() {
   $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
   journal();
   // žebřík
-  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v); b.disabled = !o; b.classList.toggle("on", b.dataset.v === view); b.title = o ? "" : UI.locked; });
+  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
   // tečky na záložkách
   const newer = (pre: string) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + ({ b_: "build", r_: "research", m_: "map" } as any)[pre]] ?? -1));
   const dots: Record<string, boolean> = { build: newer("b_"), research: newer("r_") || C.research.some((r) => E.rVisible(s, r.id) && !s.r[r.id] && s.res.data >= r.cost), map: newer("m_") };
@@ -250,14 +259,22 @@ function journal() {
   let first = true;
   for (const e of s.log.slice(-40).reverse()) {
     const t = find("jour", e.k); if (!t) continue;
-    const d = h("div", "entry " + e.kind + (first && s.t - e.t < 3 ? " new" : "")); first = false;
-    if (e.kind === "report") d.innerHTML = `<b>${UI.report}</b>${t}`; else d.textContent = t;
+    const kind = e.kind || "story";
+    const d = h("div", "entry " + kind + (first && s.t - e.t < 3 ? " new" : "")); first = false;
+    const lab = kind === "fact" ? UI.fact : kind === "report" ? UI.report : UI.diary;
+    d.innerHTML = `<span class="t">${lab} · ${clock(e.t)}</span>`;
+    d.appendChild(document.createTextNode(t));
     box.appendChild(d);
   }
 }
+/** Palubní čas záznamu (od začátku hry) h:mm. */
+function clock(t: number) { const m = Math.floor(t / 60); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`; }
 
 // ---------- karty staveb ----------
 const rows: Record<string, any> = {};
+/** Obsah tlačítka měnit jen při skutečné změně – přepsání innerHTML mezi stiskem a puštěním myši „sní“ klik. */
+function setHTML(el: HTMLElement, html: string) { if ((el as any)._h !== html) { (el as any)._h = html; el.innerHTML = html; } }
+function setDis(el: HTMLButtonElement, d: boolean) { if (el.disabled !== d) el.disabled = d; }
 function effect(id: string): string {
   const d = BMAP[id];
   if (d.kind === "gen" && s.ch === 1) return `+${si(genW(s, id), "W")} každý`;
@@ -287,7 +304,7 @@ function buildList() {
     }
     for (const id of ids) {
       const d = BMAP[id], t = find("b", id);
-      const r = h("div", "row" + (d.tier === 2 ? " t2" : "") + (d.kind === "up" ? " up" : ""));
+      const r = h("div", "row" + (d.tier === 2 ? " t2" : "") + (s.t - (s.unl["b_" + id] ?? -99) < 6 ? " fresh" : ""));
       r.innerHTML = `<div class="nm"><b>${t.n}</b><small class="eff"></small></div><span class="cnt mono"></span>`;
       const b = h("button", "buy"); b.onclick = () => {
         const k = d.kind === "swarm" ? Math.max(1, buyN || E.maxAfford(s, id)) : buyN || E.maxAfford(s, id);
@@ -298,16 +315,17 @@ function buildList() {
       box.appendChild(r);
     }
   }
-  for (const [id] of autos) { const b = rows["auto_" + id]; const on = s.auto[id] !== false; b.textContent = on ? UI.autoOn : UI.autoOff; b.classList.toggle("on", on); }
+  for (const [id] of autos) { const b = rows["auto_" + id]; const on = s.auto[id] !== false; setHTML(b, on ? UI.autoOn : UI.autoOff); b.classList.toggle("on", on); }
   for (const id of ids) {
     const d = BMAP[id], R = rows[id]; if (!R) continue;
     const mx = E.maxed(s, id), lvl = cnt(s, id);
-    R.cnt.textContent = d.kind === "swarm" ? count(s.n) : d.max != null ? `${lvl}/${d.max}` : count(lvl);
-    R.eff.textContent = effect(id);
-    if (mx) { R.b.textContent = UI.maxed; R.b.disabled = true; continue; }
+    const ct = d.kind === "swarm" ? count(s.n) : d.max != null ? `${lvl}/${d.max}` : count(lvl);
+    if (R.cnt.textContent !== ct) R.cnt.textContent = ct;
+    const ef = effect(id); if (R.eff.textContent !== ef) R.eff.textContent = ef;
+    if (mx) { setHTML(R.b, UI.maxed); setDis(R.b, true); continue; }
     const k = Math.max(1, buyN || E.maxAfford(s, id)), c = E.costN(s, id, k);
-    R.b.innerHTML = `${k > 1 ? `×${k} ` : ""}<span class="mono">${fmtCur(d.cur, c)}</span>`;
-    R.b.disabled = s.res[d.cur] < c;
+    setHTML(R.b, `${k > 1 ? `×${k} ` : ""}<span class="mono">${fmtCur(d.cur, c)}</span>`);
+    setDis(R.b, s.res[d.cur] < c);
   }
 }
 function researchList() {
@@ -318,18 +336,27 @@ function researchList() {
   const box = $("dockBody");
   if (key !== listKey) {
     listKey = key; box.innerHTML = "";
+    const head = h("div", "rhead");
+    head.innerHTML = `<div><span class="ph">${UI.tabs.research}</span><b class="mono" id="rData"></b><small class="mono" id="rRate"></small></div><small class="dim">${UI.researchNote}</small>`;
+    box.appendChild(head);
     for (const r of open) {
-      const t = find("r", r.id), card = h("div", "card" + (r.final ? " final" : "") + (r.lvl2 ? " lvl2" : ""));
-      card.innerHTML = `<b>${t.n}</b><p>${t.d}</p>`;
+      const t = find("r", r.id), card = h("div", "card rc" + (r.final ? " final" : "") + (r.lvl2 ? " lvl2" : "") + (s.t - (s.unl["r_" + r.id] ?? -99) < 6 ? " fresh" : ""));
+      card.innerHTML = `<div class="rt"><i class="ri">${r.final ? "★" : r.lvl2 ? "◆" : "✦"}</i><b>${t.n}</b></div><p>${t.d}</p><div class="rp"><div class="pbar"><b></b></div><small class="mono eta"></small></div>`;
       const b = h("button", "buy"); b.onclick = () => { if (E.doResearch(s, r.id)) Audio.chime(); updateUI(); };
-      card.appendChild(b); rows["r_" + r.id] = b; box.appendChild(card);
+      card.appendChild(b); rows["r_" + r.id] = { b, card, bar: card.querySelector(".pbar b"), eta: card.querySelector(".eta") }; box.appendChild(card);
     }
-    if (done.length) {
-      const d = h("details", "done"); d.innerHTML = `<summary>${UI.researchDone} (${done.length})</summary>` + done.map((r) => `<div><b>${find("r", r.id).n}</b> – ${find("r", r.id).d}</div>`).join("");
-      box.appendChild(d);
-    }
+    if (!open.length) box.appendChild(h("div", "card rc empty", `<p>${UI.researchNone}</p>`));
+    if (done.length) box.appendChild(h("div", "rdone", `<span class="ph">${UI.researchDone} (${done.length})</span>` + done.map((r) => `<span class="tag" title="${find("r", r.id).d}">✓ ${find("r", r.id).n}</span>`).join("")));
   }
-  for (const r of open) { const b = rows["r_" + r.id]; b.innerHTML = `<span class="mono">${si(r.cost, "B")}</span>`; b.disabled = s.res.data < r.cost; }
+  const rate = E.dataRate(s);
+  setHTML($("rData"), si(s.res.data, "B")); setHTML($("rRate"), `+${si(rate, "B")}/s`);
+  for (const r of open) {
+    const R = rows["r_" + r.id], ok = s.res.data >= r.cost, f = Math.min(1, s.res.data / r.cost);
+    setHTML(R.b, `<span class="mono">${si(r.cost, "B")}</span>`); setDis(R.b, !ok);
+    R.card.classList.toggle("ready", ok);
+    R.bar.style.width = `${f * 100}%`;
+    setHTML(R.eta, ok ? UI.researchReady : rate > 0 ? `${pct(f)} · ${UI.researchIn(duration((r.cost - s.res.data) / rate))}` : pct(f));
+  }
 }
 function missionList() {
   const C = chOf(s), vis = C.missions.filter((m) => E.mVisible(s, m.id));
@@ -354,21 +381,30 @@ function missionList() {
   for (const m of open) {
     const R = rows["m_" + m.id], run = s.run?.id === m.id;
     R.bar.parentElement.hidden = !run;
-    if (run) { R.bar.style.width = `${(1 - s.run!.left / s.run!.dur) * 100}%`; R.b.textContent = `${UI.running} · ${duration(s.run!.left)}`; R.b.disabled = true; continue; }
-    R.b.innerHTML = s.run ? UI.busy : `${UI.send} · <span class="mono">${si(m.cost, "J")}</span> · ${duration(m.dur)}`;
-    R.b.disabled = !!s.run || s.res.energy < m.cost;
+    if (run) { R.bar.style.width = `${(1 - s.run!.left / s.run!.dur) * 100}%`; setHTML(R.b, `${UI.running} · ${duration(s.run!.left)}`); setDis(R.b, true); continue; }
+    setHTML(R.b, s.run ? UI.busy : `${UI.send} · <span class="mono">${si(m.cost, "J")}</span> · ${duration(m.dur)}`);
+    setDis(R.b, !!s.run || s.res.energy < m.cost);
   }
 }
 function detailText() {
-  const key = "d" + s.ch + s.stage;
-  const box = $("dockBody");
-  if (key === listKey) return;
-  listKey = key; box.innerHTML = "";
-  const X = tx(s.ch);
-  box.appendChild(h("canvas", "", "")).id = "detc";
-  const list = h("div", "card");
-  list.innerHTML = `<b>${UI.detail[s.ch]}</b><p>${X.stages.map((n, i) => (i === s.stage ? `<b>▶ ${n}</b>` : i < s.stage ? `<span class="dim">✓ ${n}</span>` : `<span class="dim">· ${n}</span>`)).join("<br>")}</p>`;
-  box.appendChild(list);
+  const key = "d" + s.ch + s.stage + E.finalReady(s);
+  const box = $("dockBody"), X = tx(s.ch), N = stagesOf(s);
+  if (key !== listKey) {
+    listKey = key; box.innerHTML = "";
+    const head = h("div", "rhead");
+    head.innerHTML = `<div><span class="ph">${X.title}</span><b>${UI.detail[s.ch]}</b></div><small class="dim">${UI.detailNote[s.ch] || ""}</small>`;
+    box.appendChild(head);
+    box.appendChild(h("canvas", "", "")).id = "detc";
+    const tl = h("div", "tl");
+    for (let i = 0; i < N; i++) {
+      const st = i < s.stage ? "done" : i === s.stage ? "now" : "next";
+      const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${(X as any).layer[i]} · ruda ×${count(Math.pow(T1.layerMult, i))}</small>` : "";
+      tl.appendChild(h("div", "st " + st, `<i>${st === "done" ? "✓" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} · ${E.K(g) < 0 ? UI.kBelow : "K " + fixed(E.K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`));
+    }
+    box.appendChild(tl);
+  }
+  const bar = document.getElementById("tlBar");
+  if (bar && !E.finalReady(s)) { const P = E.power(s), goal = stageGoal(s), prev = s.stage > 0 ? stageGoal(s, s.stage - 1) : s.ch === 1 ? 500 : s.base; bar.style.width = `${Math.max(0, Math.min(1, Math.log(P / prev) / Math.log(goal / prev))) * 100}%`; }
 }
 function flash(id: string) { setTimeout(() => { const e = document.getElementById(id); if (e) { e.scrollIntoView({ block: "nearest" }); e.classList.add("flash"); setTimeout(() => e.classList.remove("flash"), 1200); } }, 50); }
 
