@@ -418,11 +418,11 @@
     // data ×2
     M2({ id: "light", cost: 5e23, dur: 150, req: ST(2), at: [560, 420], view: "near" }),
     // plocha ×2
-    M2({ id: "remnant", cost: 6e28, dur: 160, req: ST(4), at: [1130, 330], view: "near" }),
+    M2({ id: "remnant", cost: 6e28, dur: 160, req: ST(4), at: [1184, 276], view: "near" }),
     // plocha ×1,5
     M2({ id: "envelope", cost: 3e29, dur: 150, req: (s2) => s2.stage >= 4 && n(s2, "shell") >= 5, at: [700, 600], view: "near" }),
     // plazma ×1,5
-    M2({ id: "wind", cost: 3e31, dur: 160, req: ST(5), at: [800, 500], view: "near" })
+    M2({ id: "wind", cost: 3e31, dur: 160, req: ST(5), at: [800, 486], view: "near" })
     // plazma ×2
   ];
   var J2 = (id, when, kind) => ({ id, ch: 2, when, kind });
@@ -1165,7 +1165,14 @@
     drone: "kap1-dron.webp",
     platform: "kap1-plosina.webp",
     system: "kap1-soustava.webp",
-    intro1: "kap1-uvod.webp"
+    intro1: "kap1-uvod.webp",
+    starBlue: "kap2-aldra-modry.webp",
+    starRed: "kap2-aldra-rudy.webp",
+    starWR: "kap2-aldra-wolf-rayet.webp",
+    collector: "kap2-kolektor.webp",
+    factory: "kap2-tovarna.webp",
+    near: "kap2-okoli.webp",
+    intro2: "kap2-uvod.webp"
   };
   var cache3 = {};
   var ok = {};
@@ -1805,6 +1812,32 @@
     { R: 52, core: "#ffffff", mid: "#e2d8ff", edge: "#9a86f5", glow: [210, 195, 255] }
   ];
   var look = (s2) => LOOK[Math.min(s2.stage, LOOK.length - 1)];
+  var PIC = (st) => st >= 5 ? ["starWR", 0.14] : st === 4 ? ["starRed", 0.76] : ["starBlue", 0.76];
+  var sprC = {};
+  function sprite(k, px) {
+    const id = k + px;
+    if (sprC[id]) return sprC[id];
+    const I = img(k);
+    if (!I) return null;
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = px;
+    const g = cv.getContext("2d");
+    g.imageSmoothingQuality = "high";
+    g.drawImage(I, 0, 0, px, px);
+    return sprC[id] = cv;
+  }
+  function drawPic(c, st, cx, cy, Rs, T4, alpha) {
+    const [k, f] = PIC(st), I = img(k);
+    if (!I || alpha <= 0) return false;
+    const h2 = Rs / f * (st === 4 ? 1 + 0.012 * Math.sin(T4 * 0.45) : 1);
+    c.save();
+    c.globalAlpha = alpha;
+    c.translate(cx, cy);
+    c.rotate(T4 * (st >= 5 ? 0.02 : 6e-3));
+    c.drawImage(I, -h2, -h2, h2 * 2, h2 * 2);
+    c.restore();
+    return true;
+  }
   var gran = (() => {
     const r = mulberry(3);
     return Array.from({ length: 80 }, () => ({ a: r() * 6.28, d: Math.sqrt(r()) * 0.95, r: 0.04 + r() * 0.1, s: 0.5 + r() * 2, p: r() * 6 }));
@@ -1815,6 +1848,9 @@
     jets: [],
     cmes: [],
     fact: [],
+    picSt: -1,
+    picPrev: -1,
+    picT0: 0,
     spawnT: 2.5,
     launchT: 0,
     grab: null,
@@ -1832,6 +1868,8 @@
       this.grab = null;
       this.combo = 0;
       this.lastN = -1;
+      this.picSt = -1;
+      this.picPrev = -1;
     },
     geo(s2) {
       const L = look(s2), Rs = L.R, out = s2.r.outer ? 1.25 : 1, base = Math.max(Rs * 2.1, 150);
@@ -2211,19 +2249,39 @@
         c.fill();
       }
       c.restore();
-      gr = c.createRadialGradient(cx - Rs * 0.15, cy - Rs * 0.15, Rs * 0.1, cx, cy, Rs);
-      gr.addColorStop(0, Lk.core);
-      gr.addColorStop(0.55, Lk.mid);
-      gr.addColorStop(1, Lk.edge);
-      c.fillStyle = gr;
-      c.beginPath();
-      c.arc(cx, cy, Rs, 0, 7);
-      c.fill();
+      const ps = Math.min(s2.stage, 6), pk = PIC(ps)[0];
+      if (this.picSt < 0) this.picSt = ps;
+      if (PIC(this.picSt)[0] !== pk) {
+        this.picPrev = this.picSt;
+        this.picT0 = T4;
+      }
+      this.picSt = ps;
+      const fade = this.picPrev >= 0 ? Math.min(1, (T4 - this.picT0) / 3) : 1;
+      if (fade >= 1) this.picPrev = -1;
+      let pic = false;
+      if (img(pk)) {
+        if (this.picPrev >= 0) drawPic(c, this.picPrev, cx, cy, LOOK[this.picPrev].R, T4, 1 - fade);
+        pic = drawPic(c, ps, cx, cy, Rs, T4, fade);
+      }
+      if (!pic) {
+        gr = c.createRadialGradient(cx - Rs * 0.15, cy - Rs * 0.15, Rs * 0.1, cx, cy, Rs);
+        gr.addColorStop(0, Lk.core);
+        gr.addColorStop(0.55, Lk.mid);
+        gr.addColorStop(1, Lk.edge);
+        c.fillStyle = gr;
+        c.beginPath();
+        c.arc(cx, cy, Rs, 0, 7);
+        c.fill();
+      }
       c.save();
       c.beginPath();
       c.arc(cx, cy, Rs, 0, 7);
       c.clip();
-      for (const b of gran) {
+      if (pic && shell > 0.05) {
+        c.fillStyle = `rgba(4,5,10,${shell * 0.3})`;
+        c.fillRect(cx - Rs, cy - Rs, Rs * 2, Rs * 2);
+      }
+      if (!pic) for (const b of gran) {
         const a = b.a + T4 * 0.03, x = cx + Math.cos(a) * b.d * Rs, y = cy + Math.sin(a) * b.d * Rs;
         c.fillStyle = `rgba(255,255,255,${0.05 + 0.05 * Math.sin(T4 * b.s + b.p)})`;
         c.beginPath();
@@ -2276,10 +2334,10 @@
         c.fill();
       }
       for (const J4 of this.jets) {
-        const fade = J4.front >= g.rings[2] * 1.35 ? Math.max(0, 1 - (J4.t - 0.6) * 2) : 1, w = J4.w, big = J4.pw > 1.2;
+        const fade2 = J4.front >= g.rings[2] * 1.35 ? Math.max(0, 1 - (J4.t - 0.6) * 2) : 1, w = J4.w, big = J4.pw > 1.2;
         const jg = c.createRadialGradient(cx, cy, Rs, cx, cy, Math.max(Rs + 1, J4.front));
-        jg.addColorStop(0, big ? `rgba(230,255,245,${0.8 * fade})` : `rgba(255,235,190,${0.7 * fade})`);
-        jg.addColorStop(1, big ? `rgba(120,240,200,${0.25 * fade})` : `rgba(255,170,90,${0.2 * fade})`);
+        jg.addColorStop(0, big ? `rgba(230,255,245,${0.8 * fade2})` : `rgba(255,235,190,${0.7 * fade2})`);
+        jg.addColorStop(1, big ? `rgba(120,240,200,${0.25 * fade2})` : `rgba(255,170,90,${0.2 * fade2})`);
         c.fillStyle = jg;
         c.beginPath();
         c.arc(cx, cy, J4.front, J4.a - w, J4.a + w);
@@ -2383,6 +2441,7 @@
           c.stroke();
         }
       }
+      const CS = sprite("collector", 16), FS = sprite("factory", 64);
       for (const d of this.dots) {
         let p = this.pos(d, g);
         p = [p[0] + sh, p[1] + sh * 0.7];
@@ -2402,11 +2461,35 @@
           c.fillStyle = `rgba(255,107,90,${1 - k})`;
         } else if (d.glow) c.fillStyle = `rgba(${230 - 90 * d.glow | 0},255,${200 + 40 * d.glow | 0},1)`;
         else c.fillStyle = d.ring === 0 ? "#ffe3a3" : d.ring === 1 ? "#f8c97c" : "#e9b46a";
-        const sz = (d.glow ? 3.2 + d.glow * 2 : 3) * (s2.n > VIS ? 1 + Math.min(1.2, Math.log10(s2.n / VIS) * 0.25) : 1);
+        const big = s2.n > VIS ? 1 + Math.min(1.2, Math.log10(s2.n / VIS) * 0.25) : 1;
+        if (CS && !d.dying) {
+          const q = 6.5 * big;
+          c.drawImage(CS, p[0] - q / 2, p[1] - q / 2, q, q);
+          if (d.glow) {
+            c.globalAlpha = d.glow;
+            c.fillRect(p[0] - 1.6 - d.glow, p[1] - 1.6 - d.glow, 3.2 + d.glow * 2, 3.2 + d.glow * 2);
+            c.globalAlpha = 1;
+          }
+          continue;
+        }
+        const sz = (d.glow ? 3.2 + d.glow * 2 : 3) * big;
         c.fillRect(p[0] - sz / 2, p[1] - sz / 2, sz, sz);
       }
       for (const fa of this.fact) {
         const fr = g.rings[2] * 1.22, x = cx + Math.cos(fa.a) * fr, y = cy + Math.sin(fa.a) * fr;
+        if (FS) {
+          c.save();
+          c.translate(x, y);
+          c.rotate(fa.a + Math.PI * 0.75);
+          c.drawImage(FS, -17, -17, 34, 34);
+          c.globalCompositeOperation = "lighter";
+          c.fillStyle = `rgba(142,240,200,${0.08 + 0.22 * fa.t})`;
+          c.beginPath();
+          c.arc(-2, -2, 7, 0, 7);
+          c.fill();
+          c.restore();
+          continue;
+        }
         c.save();
         c.translate(x, y);
         c.rotate(fa.a + 0.785);
@@ -3440,7 +3523,33 @@
     c.restore();
     drawHole(c, 800, 500, 40, T4);
   }
+  var NEAR = { aldra: at(0.5, 0.485), remnant: at(0.74, 0.25) };
   function drawNear(c, s2, T4) {
+    const I = soft("near");
+    if (I) {
+      const [ax, ay] = NEAR.aldra;
+      c.drawImage(I, 0, IY, 1600, IH);
+      if (s2.ch >= 3) {
+        c.fillStyle = "rgba(4,5,10,.92)";
+        c.beginPath();
+        c.arc(ax, ay, 22, 0, 7);
+        c.fill();
+        drawHole(c, ax, ay, 8, T4);
+      } else if (s2.ch === 2 && s2.stage >= 4) {
+        const red = s2.stage === 4, col = red ? "255,130,70" : "200,180,255", R2 = red ? 26 : 12;
+        c.save();
+        c.globalCompositeOperation = red ? "source-over" : "lighter";
+        const g = c.createRadialGradient(ax, ay, 0, ax, ay, R2 * 2.2);
+        g.addColorStop(0, `rgba(${col},.95)`);
+        g.addColorStop(1, `rgba(${col},0)`);
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(ax, ay, R2 * 2.2, 0, 7);
+        c.fill();
+        c.restore();
+      }
+      return label(c, ax + 34, ay - 28, s2.ch <= 2 ? "Aldra" : "D\xEDra po Ald\u0159e");
+    }
     const r = mulberry(12);
     for (let i = 0; i < 46; i++) {
       const x = 120 + r() * 1360, y = 90 + r() * 820, sz = 1 + r() * 2.6, hue = r();
@@ -3490,7 +3599,7 @@
     }
     return m.at;
   }
-  var ORIGIN = { system: SYS.platform, near: [800, 500], galaxy: [0, 0] };
+  var ORIGIN = { system: SYS.platform, near: NEAR.aldra, galaxy: [0, 0] };
   function drawMissions(c, s2, view2, T4, sx, hover) {
     const fs = 13 / Math.max(sx, 0.3);
     for (const m of MISSIONS) {
@@ -4055,7 +4164,7 @@
     const away = (Date.now() - s.last) / 1e3;
     const off = s.t > 5 ? offline(s, away) : null;
     MECH[s.ch].reset();
-    if (!s.story["intro" + s.ch]) setTimeout(showIntro, img("intro1") ? 0 : 600);
+    if (!s.story["intro" + s.ch]) setTimeout(showIntro, img("intro" + s.ch) ? 0 : 600);
     else if (off) showOffline(off);
     resize();
     addEventListener("resize", resize);

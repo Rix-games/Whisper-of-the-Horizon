@@ -57,7 +57,7 @@ export function start() {
   const away = (Date.now() - s.last) / 1000;
   const off = s.t > 5 ? E.offline(s, away) : null;
   MECH[s.ch].reset();
-  if (!s.story["intro" + s.ch]) setTimeout(showIntro, img("intro1") ? 0 : 600);
+  if (!s.story["intro" + s.ch]) setTimeout(showIntro, img(("intro" + s.ch) as ImgKey) ? 0 : 600);
   else if (off) showOffline(off);
   resize(); addEventListener("resize", resize);
   setInterval(save, 10000); addEventListener("beforeunload", save);

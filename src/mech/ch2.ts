@@ -6,6 +6,7 @@ import { buy } from "../core/engine";
 import { colCost, salvo, flareGain, colArea, T2 } from "../chapters/ch2";
 import { mass, count } from "../core/format";
 import type { State } from "../core/state";
+import { img, ImgKey } from "../ui/img";
 
 const CX = 760, CY = 480, VIS = 700;
 const lv = (s: State, id: string) => s.b[id] || 0;
@@ -21,6 +22,24 @@ const LOOK = [
   { R: 52, core: "#ffffff", mid: "#e2d8ff", edge: "#9a86f5", glow: [210, 195, 255] },
 ];
 const look = (s: State) => LOOK[Math.min(s.stage, LOOK.length - 1)];
+// obrázek Aldry podle stadia: [klíč, poloměr disku v obrázku (podíl poloviny šířky)]
+const PIC = (st: number): [ImgKey, number] => st >= 5 ? ["starWR", 0.14] : st === 4 ? ["starRed", 0.76] : ["starBlue", 0.76];
+/** Zmenšený obrázek do malého plátna (kreslí se stokrát za snímek). */
+const sprC: Record<string, HTMLCanvasElement> = {};
+function sprite(k: ImgKey, px: number): HTMLCanvasElement | null {
+  const id = k + px; if (sprC[id]) return sprC[id];
+  const I = img(k); if (!I) return null;
+  const cv = document.createElement("canvas"); cv.width = cv.height = px;
+  const g = cv.getContext("2d")!; g.imageSmoothingQuality = "high"; g.drawImage(I, 0, 0, px, px);
+  return (sprC[id] = cv);
+}
+function drawPic(c: CanvasRenderingContext2D, st: number, cx: number, cy: number, Rs: number, T: number, alpha: number) {
+  const [k, f] = PIC(st), I = img(k); if (!I || alpha <= 0) return false;
+  const h = (Rs / f) * (st === 4 ? 1 + 0.012 * Math.sin(T * 0.45) : 1);
+  c.save(); c.globalAlpha = alpha; c.translate(cx, cy); c.rotate(T * (st >= 5 ? 0.02 : 0.006));
+  c.drawImage(I, -h, -h, h * 2, h * 2); c.restore();
+  return true;
+}
 
 interface Dot { ring: number; a: number; glow: number; fly: number; sx: number; sy: number; dying: number; jid?: number; }
 interface Loop { a: number; grow: number; life: number; ph: number; held: boolean; hx: number; hy: number; anc: number; dead?: boolean; autoDir?: number; }
@@ -29,8 +48,8 @@ const gran = (() => { const r = mulberry(3); return Array.from({ length: 80 }, (
 
 export const hvezda: Mech & any = {
   dots: [] as Dot[], loops: [] as Loop[], jets: [] as any[], cmes: [] as any[], fact: [] as any[],
-  spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
-  reset() { this.dots = []; this.loops = []; this.jets = []; this.cmes = []; this.fact = []; this.grab = null; this.combo = 0; this.lastN = -1; },
+  picSt: -1, picPrev: -1, picT0: 0, spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
+  reset() { this.dots = []; this.loops = []; this.jets = []; this.cmes = []; this.fact = []; this.grab = null; this.combo = 0; this.lastN = -1; this.picSt = -1; this.picPrev = -1; },
   geo(s: State) {
     const L = look(s), Rs = L.R, out = s.r.outer ? 1.25 : 1, base = Math.max(Rs * 2.1, 150);
     return { Rs, rings: [base * out, base * 1.42 * out, base * 1.9 * out] };
@@ -248,11 +267,26 @@ export const hvezda: Mech & any = {
       c.fillStyle = cg; c.beginPath(); c.arc(x, y, r2, 0, 7); c.fill();
     }
     c.restore();
-    gr = c.createRadialGradient(cx - Rs * 0.15, cy - Rs * 0.15, Rs * 0.1, cx, cy, Rs);
-    gr.addColorStop(0, Lk.core); gr.addColorStop(0.55, Lk.mid); gr.addColorStop(1, Lk.edge);
-    c.fillStyle = gr; c.beginPath(); c.arc(cx, cy, Rs, 0, 7); c.fill();
+    // obrázek Aldry (prolnutí při změně stadia), jinak kresba kódem
+    const ps = Math.min(s.stage, 6), pk = PIC(ps)[0];
+    if (this.picSt < 0) this.picSt = ps;
+    if (PIC(this.picSt)[0] !== pk) { this.picPrev = this.picSt; this.picT0 = T; }
+    this.picSt = ps;
+    const fade = this.picPrev >= 0 ? Math.min(1, (T - this.picT0) / 3) : 1;
+    if (fade >= 1) this.picPrev = -1;
+    let pic = false;
+    if (img(pk)) {
+      if (this.picPrev >= 0) drawPic(c, this.picPrev, cx, cy, LOOK[this.picPrev].R, T, 1 - fade);
+      pic = drawPic(c, ps, cx, cy, Rs, T, fade);
+    }
+    if (!pic) {
+      gr = c.createRadialGradient(cx - Rs * 0.15, cy - Rs * 0.15, Rs * 0.1, cx, cy, Rs);
+      gr.addColorStop(0, Lk.core); gr.addColorStop(0.55, Lk.mid); gr.addColorStop(1, Lk.edge);
+      c.fillStyle = gr; c.beginPath(); c.arc(cx, cy, Rs, 0, 7); c.fill();
+    }
     c.save(); c.beginPath(); c.arc(cx, cy, Rs, 0, 7); c.clip();
-    for (const b of gran) {
+    if (pic && shell > 0.05) { c.fillStyle = `rgba(4,5,10,${shell * 0.3})`; c.fillRect(cx - Rs, cy - Rs, Rs * 2, Rs * 2); }
+    if (!pic) for (const b of gran) {
       const a = b.a + T * 0.03, x = cx + Math.cos(a) * b.d * Rs, y = cy + Math.sin(a) * b.d * Rs;
       c.fillStyle = `rgba(255,255,255,${0.05 + 0.05 * Math.sin(T * b.s + b.p)})`; c.beginPath(); c.arc(x, y, b.r * Rs, 0, 7); c.fill();
       c.fillStyle = `rgba(20,30,90,${0.04 + 0.04 * Math.cos(T * b.s + b.p)})`; c.beginPath(); c.arc(x + b.r * Rs, y, b.r * Rs * 0.5, 0, 7); c.fill();
@@ -338,6 +372,7 @@ export const hvezda: Mech & any = {
       }
     }
     // roj
+    const CS = sprite("collector", 16), FS = sprite("factory", 64);
     for (const d of this.dots) {
       let p = this.pos(d, g); p = [p[0] + sh, p[1] + sh * 0.7];
       if (d.fly) {
@@ -349,11 +384,22 @@ export const hvezda: Mech & any = {
         p = [cx + Math.cos(d.a) * r, cy + Math.sin(d.a) * r]; c.fillStyle = `rgba(255,107,90,${1 - k})`;
       } else if (d.glow) c.fillStyle = `rgba(${(230 - 90 * d.glow) | 0},255,${(200 + 40 * d.glow) | 0},1)`;
       else c.fillStyle = d.ring === 0 ? "#ffe3a3" : d.ring === 1 ? "#f8c97c" : "#e9b46a";
-      const sz = (d.glow ? 3.2 + d.glow * 2 : 3) * (s.n > VIS ? 1 + Math.min(1.2, Math.log10(s.n / VIS) * 0.25) : 1);
+      const big = s.n > VIS ? 1 + Math.min(1.2, Math.log10(s.n / VIS) * 0.25) : 1;
+      if (CS && !d.dying) {   // zrcadlo z obrázku; nabité kolektory navíc září
+        const q = 6.5 * big; c.drawImage(CS, p[0] - q / 2, p[1] - q / 2, q, q);
+        if (d.glow) { c.globalAlpha = d.glow; c.fillRect(p[0] - 1.6 - d.glow, p[1] - 1.6 - d.glow, 3.2 + d.glow * 2, 3.2 + d.glow * 2); c.globalAlpha = 1; }
+        continue;
+      }
+      const sz = (d.glow ? 3.2 + d.glow * 2 : 3) * big;
       c.fillRect(p[0] - sz / 2, p[1] - sz / 2, sz, sz);
     }
     for (const fa of this.fact) {
       const fr = g.rings[2] * 1.22, x = cx + Math.cos(fa.a) * fr, y = cy + Math.sin(fa.a) * fr;
+      if (FS) {   // výrobní dok míří ke hvězdě, světlo automatiky pulzuje s výrobou
+        c.save(); c.translate(x, y); c.rotate(fa.a + Math.PI * 0.75); c.drawImage(FS, -17, -17, 34, 34);
+        c.globalCompositeOperation = "lighter"; c.fillStyle = `rgba(142,240,200,${0.08 + 0.22 * fa.t})`;
+        c.beginPath(); c.arc(-2, -2, 7, 0, 7); c.fill(); c.restore(); continue;
+      }
       c.save(); c.translate(x, y); c.rotate(fa.a + 0.785);
       c.fillStyle = "#1d2a33"; c.strokeStyle = "#8ef0c8"; c.lineWidth = 1.3; c.fillRect(-7, -7, 14, 14); c.strokeRect(-7, -7, 14, 14);
       c.fillStyle = `rgba(142,240,200,${0.3 + 0.7 * fa.t})`; c.fillRect(-3, -3, 6, 6); c.restore();

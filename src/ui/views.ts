@@ -55,7 +55,7 @@ export function background(c: CanvasRenderingContext2D, W: number, H: number, dp
 
 /** Obrázek s rozmazanými okraji (aby nebyl vidět obdélník), počítá se jednou. */
 const softC: Record<string, HTMLCanvasElement> = {};
-function soft(k: "system"): HTMLCanvasElement | null {
+function soft(k: "system" | "near"): HTMLCanvasElement | null {
   if (softC[k]) return softC[k];
   const I = img(k); if (!I) return null;
   const cv = document.createElement("canvas"); cv.width = I.width; cv.height = I.height;
@@ -152,7 +152,22 @@ export function drawRemnant(c: CanvasRenderingContext2D, T: number) {
 }
 
 // ---------- Okolí (desítky světelných let) ----------
+// Rozvržení odpovídá obrázku kap2-okoli (stejné vložení jako soustava): Aldra uprostřed, pozůstatek supernovy vpravo nahoře.
+export const NEAR = { aldra: at(0.5, 0.485), remnant: at(0.74, 0.25) };
 export function drawNear(c: CanvasRenderingContext2D, s: State, T: number) {
+  const I = soft("near");
+  if (I) {
+    const [ax, ay] = NEAR.aldra;
+    c.drawImage(I, 0, IY, 1600, IH);
+    if (s.ch >= 3) { c.fillStyle = "rgba(4,5,10,.92)"; c.beginPath(); c.arc(ax, ay, 22, 0, 7); c.fill(); drawHole(c, ax, ay, 8, T); }
+    else if (s.ch === 2 && s.stage >= 4) {   // rudý veleobr / Wolf-Rayet přebarví hvězdu i v okolí
+      const red = s.stage === 4, col = red ? "255,130,70" : "200,180,255", R = red ? 26 : 12;
+      c.save(); c.globalCompositeOperation = red ? "source-over" : "lighter";
+      const g = c.createRadialGradient(ax, ay, 0, ax, ay, R * 2.2); g.addColorStop(0, `rgba(${col},.95)`); g.addColorStop(1, `rgba(${col},0)`);
+      c.fillStyle = g; c.beginPath(); c.arc(ax, ay, R * 2.2, 0, 7); c.fill(); c.restore();
+    }
+    return label(c, ax + 34, ay - 28, s.ch <= 2 ? "Aldra" : "Díra po Aldře");
+  }
   const r = mulberry(12);
   for (let i = 0; i < 46; i++) {
     const x = 120 + r() * 1360, y = 90 + r() * 820, sz = 1 + r() * 2.6, hue = r();
@@ -182,7 +197,7 @@ export function missionPos(id: string): [number, number] {
   if (m.view === "galaxy") { const p = GAL_SITES[id]; const q = gsp({ x: p[0], y: p[1] }); return [q[0], q[1]]; }
   return m.at;
 }
-const ORIGIN: Record<string, [number, number]> = { system: SYS.platform, near: [800, 500], galaxy: [0, 0] };
+const ORIGIN: Record<string, [number, number]> = { system: SYS.platform, near: NEAR.aldra, galaxy: [0, 0] };
 export function drawMissions(c: CanvasRenderingContext2D, s: State, view: string, T: number, sx: number, hover: string | null) {
   const fs = 13 / Math.max(sx, 0.3);
   for (const m of MISSIONS) {

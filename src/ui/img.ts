@@ -6,6 +6,13 @@ const FILES = {
   platform: "kap1-plosina.webp",
   system: "kap1-soustava.webp",
   intro1: "kap1-uvod.webp",
+  starBlue: "kap2-aldra-modry.webp",
+  starRed: "kap2-aldra-rudy.webp",
+  starWR: "kap2-aldra-wolf-rayet.webp",
+  collector: "kap2-kolektor.webp",
+  factory: "kap2-tovarna.webp",
+  near: "kap2-okoli.webp",
+  intro2: "kap2-uvod.webp",
 };
 export type ImgKey = keyof typeof FILES;
 const cache: Partial<Record<ImgKey, HTMLImageElement>> = {};
