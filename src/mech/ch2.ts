@@ -42,7 +42,7 @@ function drawPic(c: CanvasRenderingContext2D, st: number, cx: number, cy: number
   return true;
 }
 
-interface Dot { ring: number; a: number; glow: number; fly: number; sx: number; sy: number; dying: number; jid?: number; }
+interface Dot { ring: number; a: number; glow: number; fly: number; sx: number; sy: number; dying: number; stun?: number; jid?: number; }
 interface Loop { a: number; grow: number; life: number; ph: number; held: boolean; hx: number; hy: number; anc: number; dead?: boolean; autoDir?: number; }
 
 const gran = (() => { const r = mulberry(3); return Array.from({ length: 80 }, () => ({ a: r() * 6.28, d: Math.sqrt(r()) * 0.95, r: 0.04 + r() * 0.1, s: 0.5 + r() * 2, p: r() * 6 })); })();
@@ -153,6 +153,7 @@ export const hvezda: Mech & any = {
       if (c.fly) c.fly = Math.max(0, c.fly - dt);
       if (c.dying) c.dying += dt;
       if (c.glow) c.glow = Math.max(0, c.glow - dt * 1.4);
+      if (c.stun) c.stun = Math.max(0, c.stun - dt);
     }
     this.dots = this.dots.filter((c) => !c.dying || c.dying < 0.9);
     // smyčky
@@ -199,18 +200,17 @@ export const hvezda: Mech & any = {
       }
     }
     this.jets = this.jets.filter((J) => J.t < 1.1);
-    // neřízené erupce poškodí roj
+    // neřízená erupce roj neničí: zasažená zrcadla jen na chvíli zhasnou, plazma z erupce přijde nazmar
     for (const C of this.cmes) {
       C.front += (maxR - g.Rs) * dt;
       for (const c of this.dots) {
-        if (c.dying || c.fly) continue;
-        if (g.rings[c.ring] <= C.front && Math.abs(angDiff(c.a, C.a)) < 0.22) { c.dying = 0.001; C.hit++; }
+        if (c.dying || c.fly || c.stun) continue;
+        if (g.rings[c.ring] <= C.front && Math.abs(angDiff(c.a, C.a)) < 0.22) { c.stun = 8; C.hit++; }
       }
       if (C.front >= maxR && !C.done) {
         C.done = true;
-        const lost = Math.min(s.n * 0.06, C.hit * Math.max(1, s.n / vis));
-        if (lost > 0) { s.n = Math.max(0, s.n - lost); this.lastN = s.n; s.stats.cme++; }
-        ftxt(CX + Math.cos(C.a) * maxR, CY + Math.sin(C.a) * maxR, lost ? `Erupce zasáhla roj −${count(Math.round(lost))}` : "Erupce bez škod", lost ? "#ff6b5a" : "#7d879c");
+        if (C.hit) s.stats.cme++;
+        ftxt(CX + Math.cos(C.a) * maxR, CY + Math.sin(C.a) * maxR, "Smyčka se utrhla – plazma uniklo", "#ff9a7a");
       }
     }
     this.cmes = this.cmes.filter((C) => !C.done);
@@ -386,10 +386,13 @@ export const hvezda: Mech & any = {
         const k = d.dying / 0.9, r = g.rings[d.ring] * (1 - k) + Rs * k;
         p = [cx + Math.cos(d.a) * r, cy + Math.sin(d.a) * r]; c.fillStyle = `rgba(255,107,90,${1 - k})`;
       } else if (d.glow) c.fillStyle = `rgba(${(230 - 90 * d.glow) | 0},255,${(200 + 40 * d.glow) | 0},1)`;
+      else if (d.stun) c.fillStyle = `rgba(150,140,150,${0.35 + 0.65 * (1 - Math.min(1, d.stun / 8))})`;
       else c.fillStyle = d.ring === 0 ? "#ffe3a3" : d.ring === 1 ? "#f8c97c" : "#e9b46a";
       const big = s.n > VIS ? 1 + Math.min(1.2, Math.log10(s.n / VIS) * 0.25) : 1;
       if (CS && !d.dying) {   // zrcadlo z obrázku; nabité kolektory navíc září
-        const q = 6.5 * big; c.drawImage(CS, p[0] - q / 2, p[1] - q / 2, q, q);
+        const q = 6.5 * big;
+        if (d.stun) c.globalAlpha = 0.25 + 0.75 * (1 - Math.min(1, d.stun / 8));   // zasažené erupcí: zhasne a pomalu se rozsvítí
+        c.drawImage(CS, p[0] - q / 2, p[1] - q / 2, q, q); c.globalAlpha = 1;
         if (d.glow) { c.globalAlpha = d.glow; c.fillRect(p[0] - 1.6 - d.glow, p[1] - 1.6 - d.glow, 3.2 + d.glow * 2, 3.2 + d.glow * 2); c.globalAlpha = 1; }
         continue;
       }

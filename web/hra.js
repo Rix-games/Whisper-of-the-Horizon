@@ -2121,6 +2121,7 @@
         if (c.fly) c.fly = Math.max(0, c.fly - dt);
         if (c.dying) c.dying += dt;
         if (c.glow) c.glow = Math.max(0, c.glow - dt * 1.4);
+        if (c.stun) c.stun = Math.max(0, c.stun - dt);
       }
       this.dots = this.dots.filter((c) => !c.dying || c.dying < 0.9);
       const maxLoops = 1 + (lv2(s2, "tame") >= 2 ? 1 : 0) + (s2.stage >= 2 ? 1 : 0);
@@ -2185,21 +2186,16 @@
       for (const C of this.cmes) {
         C.front += (maxR - g.Rs) * dt;
         for (const c of this.dots) {
-          if (c.dying || c.fly) continue;
+          if (c.dying || c.fly || c.stun) continue;
           if (g.rings[c.ring] <= C.front && Math.abs(angDiff(c.a, C.a)) < 0.22) {
-            c.dying = 1e-3;
+            c.stun = 8;
             C.hit++;
           }
         }
         if (C.front >= maxR && !C.done) {
           C.done = true;
-          const lost = Math.min(s2.n * 0.06, C.hit * Math.max(1, s2.n / vis));
-          if (lost > 0) {
-            s2.n = Math.max(0, s2.n - lost);
-            this.lastN = s2.n;
-            s2.stats.cme++;
-          }
-          ftxt(CX2 + Math.cos(C.a) * maxR, CY2 + Math.sin(C.a) * maxR, lost ? `Erupce zas\xE1hla roj \u2212${count(Math.round(lost))}` : "Erupce bez \u0161kod", lost ? "#ff6b5a" : "#7d879c");
+          if (C.hit) s2.stats.cme++;
+          ftxt(CX2 + Math.cos(C.a) * maxR, CY2 + Math.sin(C.a) * maxR, "Smy\u010Dka se utrhla \u2013 plazma uniklo", "#ff9a7a");
         }
       }
       this.cmes = this.cmes.filter((C) => !C.done);
@@ -2514,11 +2510,14 @@
           p = [cx + Math.cos(d.a) * r, cy + Math.sin(d.a) * r];
           c.fillStyle = `rgba(255,107,90,${1 - k})`;
         } else if (d.glow) c.fillStyle = `rgba(${230 - 90 * d.glow | 0},255,${200 + 40 * d.glow | 0},1)`;
+        else if (d.stun) c.fillStyle = `rgba(150,140,150,${0.35 + 0.65 * (1 - Math.min(1, d.stun / 8))})`;
         else c.fillStyle = d.ring === 0 ? "#ffe3a3" : d.ring === 1 ? "#f8c97c" : "#e9b46a";
         const big = s2.n > VIS ? 1 + Math.min(1.2, Math.log10(s2.n / VIS) * 0.25) : 1;
         if (CS && !d.dying) {
           const q = 6.5 * big;
+          if (d.stun) c.globalAlpha = 0.25 + 0.75 * (1 - Math.min(1, d.stun / 8));
           c.drawImage(CS, p[0] - q / 2, p[1] - q / 2, q, q);
+          c.globalAlpha = 1;
           if (d.glow) {
             c.globalAlpha = d.glow;
             c.fillRect(p[0] - 1.6 - d.glow, p[1] - 1.6 - d.glow, 3.2 + d.glow * 2, 3.2 + d.glow * 2);
@@ -3098,7 +3097,7 @@
         "Hmotov\xFD vrh dopravil VESPER-7 na ob\u011B\u017Enou dr\xE1hu Aldry a Vesper ji n\xE1sledoval. Tady je sv\u011Btla v\xEDc, ne\u017E kdy spot\u0159ebuje cel\xE1 Zem\u011B.",
         "Hv\u011Bzda se m\u011Bn\xED pomalu. Mezi sm\u011Bnami jsi v hibernaci a roj mezit\xEDm pracuje s\xE1m \u2013 ka\u017Ed\xE9 probuzen\xED uk\xE1\u017Ee Aldru o kus star\u0161\xED.",
         "Postav kolem Aldry roj kolektor\u016F. Dr\u017E my\u0161 na dr\xE1ze a vypou\u0161t\xED\u0161 je z plazmatu.",
-        "Nad skvrnami rostou magnetick\xE9 smy\u010Dky. Chy\u0165 vrchol, nat\xE1hni ho polem roje a pus\u0165 v zelen\xE9m p\xE1smu. Neuhl\xEDdan\xE1 smy\u010Dka se utrhne a roj po\u0161kod\xED."
+        "Nad skvrnami rostou magnetick\xE9 smy\u010Dky. Chy\u0165 vrchol, nat\xE1hni ho polem roje a pus\u0165 v zelen\xE9m p\xE1smu. Neuhl\xEDdan\xE1 smy\u010Dka se utrhne a jej\xED plazma ulet\xED nazmar."
       ]
     },
     stages: ["Modr\xFD obr", "Roj", "Vyt\u011B\u017Eov\xE1n\xED", "Pln\xFD roj", "Rud\xFD veleobr", "Wolf-Rayet", "Kolaps"],
@@ -3172,7 +3171,7 @@
       c2_start: "Aldra zab\xEDr\xE1 p\u016Flku oblohy. Vypou\u0161t\xEDm prvn\xED kolektory. Puls je tady siln\u011Bj\u0161\xED.",
       c2_first: "Dvacet zrcadel na dr\xE1ze. Ka\u017Ed\xE9 zachyt\xED jen zlomek sv\u011Btla. Dohromady chyt\xED v\xEDc energie, ne\u017E kdy spot\u0159ebovala cel\xE1 Zem\u011B.",
       c2_flare: "Smy\u010Dka se p\u0159epojila a v\xFDtrysk pro\u0161el rojem. Plazma se d\xE1 \u0159\xEDdit. Jen nesm\xEDm zav\xE1hat.",
-      c2_cme: "Neuhl\xEDdan\xE1 smy\u010Dka se utrhla. \u010C\xE1st roje sho\u0159ela. Aldra nezlob\xED, jen d\xFDch\xE1.",
+      c2_cme: "Neuhl\xEDdan\xE1 smy\u010Dka se utrhla. Erupce pro\u0161la rojem a zrcadla na chv\xEDli oslepla. Aldra nezlob\xED, jen d\xFDch\xE1.",
       f2_dyson: "Freeman Dyson v roce 1960 navrhl hledat civilizace podle infra\u010Derven\xE9ho z\xE1\u0159en\xED. Roj kolem hv\u011Bzdy by ji \u010D\xE1ste\u010Dn\u011B zakryl a s\xE1m h\u0159\xE1l.",
       c2_reson: "T\u0159i erupce za sebou v rezonanci. Mezi nimi p\u0159esn\u011B 7,3 sekundy. Nenastavil jsem to.",
       c2_dust: "V prachov\xE9m obalu jsou zrna slitiny. Stejn\xE9, jako maj\xED moje kolektory. Zrnitost se li\u0161\xED jen o p\xE1r atom\u016F.",
