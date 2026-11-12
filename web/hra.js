@@ -3010,7 +3010,7 @@
       dock: { n: "Mont\xE1\u017En\xED dok", d: "Odemkne dok, kter\xFD stav\xED drony s\xE1m." },
       regolith: { n: "Zrcadla z regolitu", d: "Zrcadlov\xE9 farmy d\xE1vaj\xED 3\xD7 v\xEDc." },
       driver: { n: "Hmotov\xFD vrh", d: "Vyn\xE1\u0161\xED rudu na ob\u011B\u017Enou dr\xE1hu. Odemkne sv\u011Bteln\xE9 plachty." },
-      assembly: { n: "Autonomn\xED mont\xE1\u017E", d: "Platforma sama stav\xED elektr\xE1rny (d\xE1 se vypnout)." },
+      assembly: { n: "Autonomn\xED mont\xE1\u017E", d: "Platforma sama stav\xED panely, sol\xE1rn\xED pole, zrcadlov\xE9 farmy a sv\u011Bteln\xE9 plachty. V\u017Edy to, co se pr\xE1v\u011B nejv\xEDc vyplat\xED. D\xE1 se vypnout." },
       deepdrill: { n: "Hlubinn\xFD vrt", d: "4\xD7 v\xEDc rudy." },
       statites: { n: "Leh\u010D\xED plachty", d: "Sv\u011Bteln\xE9 plachty d\xE1vaj\xED 3\xD7 v\xEDc." },
       calib: { n: "Kalibrace plachet", d: "Sv\u011Bteln\xE9 plachty d\xE1vaj\xED o 50 % v\xEDc." },
@@ -3270,7 +3270,7 @@
     duration: "Let",
     autoOn: "Zapnuto",
     autoOff: "Vypnuto",
-    autoAsm: "Autonomn\xED mont\xE1\u017E elektr\xE1ren",
+    autoAsm: (names) => `Autonomn\xED mont\xE1\u017E stav\xED: ${names.join(", ")}`,
     autoDock: "Mont\xE1\u017En\xED dok stav\xED drony",
     autoFact: "Tov\xE1rny vypou\u0161t\u011Bj\xED kolektory",
     journal: "Palubn\xED den\xEDk",
@@ -4483,6 +4483,7 @@
     journal();
     document.querySelectorAll("#ladder button").forEach((b) => {
       const o = viewOpen(b.dataset.v);
+      setHTML(b, o ? UI.ladder[VIEWS.indexOf(b.dataset.v)] : "???");
       b.disabled = !o;
       b.classList.toggle("on", o && b.dataset.v === view);
       b.title = o ? "" : UI.locked;
@@ -4575,9 +4576,9 @@
     const ids = C.build.filter((b) => unlocked(s, b.id)).sort((a, b) => (s.unl["b_" + b.id] ?? 0) - (s.unl["b_" + a.id] ?? 0) || C.build.indexOf(b) - C.build.indexOf(a)).map((b) => b.id);
     const autos = [];
     if (s.ch === 1 && n(s, "dock")) autos.push(["dock", UI.autoDock]);
-    if (s.ch === 1 && s.r.assembly) autos.push(["assembly", UI.autoAsm]);
+    if (s.ch === 1 && s.r.assembly) autos.push(["assembly", UI.autoAsm(GEN1.filter((g) => s.unl["b_" + g] != null).map((g) => find("b", g).n.toLowerCase()))]);
     if (s.ch === 2 && n(s, "fact")) autos.push(["fact", UI.autoFact]);
-    const key = "b" + s.ch + ids.join(",") + "|" + autos.map((a) => a[0]).join(",") + buyN;
+    const key = "b" + s.ch + ids.join(",") + "|" + autos.map((a) => a[1]).join(",") + buyN;
     const box = $("dockBody");
     if (key !== listKey) {
       listKey = key;

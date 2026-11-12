@@ -45,7 +45,7 @@ export const CS1 = {
     dock: { n: "Montážní dok", d: "Odemkne dok, který staví drony sám." },
     regolith: { n: "Zrcadla z regolitu", d: "Zrcadlové farmy dávají 3× víc." },
     driver: { n: "Hmotový vrh", d: "Vynáší rudu na oběžnou dráhu. Odemkne světelné plachty." },
-    assembly: { n: "Autonomní montáž", d: "Platforma sama staví elektrárny (dá se vypnout)." },
+    assembly: { n: "Autonomní montáž", d: "Platforma sama staví panely, solární pole, zrcadlové farmy a světelné plachty. Vždy to, co se právě nejvíc vyplatí. Dá se vypnout." },
     deepdrill: { n: "Hlubinný vrt", d: "4× víc rudy." },
     statites: { n: "Lehčí plachty", d: "Světelné plachty dávají 3× víc." },
     calib: { n: "Kalibrace plachet", d: "Světelné plachty dávají o 50 % víc." },

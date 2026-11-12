@@ -232,7 +232,7 @@ function updateUI() {
   $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
   journal();
   // žebřík
-  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
+  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v); setHTML(b, o ? UI.ladder[VIEWS.indexOf(b.dataset.v)] : "???"); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
   // tečky na záložkách
   const newer = (pre: string) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + ({ b_: "build", r_: "research", m_: "map" } as any)[pre]] ?? -1));
   const dots: Record<string, boolean> = {
@@ -315,9 +315,9 @@ function buildList() {
   const ids = C.build.filter((b) => E.unlocked(s, b.id)).sort((a, b) => (s.unl["b_" + b.id] ?? 0) - (s.unl["b_" + a.id] ?? 0) || C.build.indexOf(b) - C.build.indexOf(a)).map((b) => b.id);
   const autos: [string, string][] = [];
   if (s.ch === 1 && cnt(s, "dock")) autos.push(["dock", UI.autoDock]);
-  if (s.ch === 1 && s.r.assembly) autos.push(["assembly", UI.autoAsm]);
+  if (s.ch === 1 && s.r.assembly) autos.push(["assembly", UI.autoAsm(GEN1.filter((g) => s.unl["b_" + g] != null).map((g) => find("b", g).n.toLowerCase()))]);
   if (s.ch === 2 && cnt(s, "fact")) autos.push(["fact", UI.autoFact]);
-  const key = "b" + s.ch + ids.join(",") + "|" + autos.map((a) => a[0]).join(",") + buyN;
+  const key = "b" + s.ch + ids.join(",") + "|" + autos.map((a) => a[1]).join(",") + buyN;
   const box = $("dockBody");
   if (key !== listKey) {
     listKey = key; box.innerHTML = "";
@@ -498,4 +498,4 @@ function toast(t: string) {
   const el = $("toast"); el.textContent = t; el.hidden = false;
   clearTimeout(toastT); toastT = window.setTimeout(() => (el.hidden = true), 3200);
 }
-void GEN1; void colCost; void capture; void RMAP;
+void colCost; void capture; void RMAP;

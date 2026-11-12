@@ -40,7 +40,7 @@ export const UI = {
   send: "Vyslat Vesper", running: "Vesper letí", busy: "Vesper je na cestě",
   duration: "Let",
   autoOn: "Zapnuto", autoOff: "Vypnuto",
-  autoAsm: "Autonomní montáž elektráren",
+  autoAsm: (names: string[]) => `Autonomní montáž staví: ${names.join(", ")}`,
   autoDock: "Montážní dok staví drony",
   autoFact: "Továrny vypouštějí kolektory",
   journal: "Palubní deník",
