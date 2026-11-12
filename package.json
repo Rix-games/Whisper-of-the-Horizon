@@ -1,6 +1,6 @@
 {
   "name": "whisper-of-the-horizon",
-  "version": "1.0.0-dev",
+  "version": "1.0.0-alfa",
   "private": true,
   "description": "Šepot Horizontu – klidná inkrementální vesmírná hra postavená na skutečné fyzice.",
   "type": "module",

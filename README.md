@@ -36,7 +36,7 @@ Konců je víc a k dalšímu se dostaneš tím, že budeš hrát dál. Nemusíš
 
 ## Stav vývoje
 
-Hru vydávám po kapitolách. Každá verze se dá hrát a uložená hra se přenese do další.
+Hru vydávám po kapitolách. Od verze 1.0 jde o předělávku celé hry; uložené hry ze starších verzí se do ní nepřenesou.
 
 | Verze | Obsah | Stav |
 | --- | --- | --- |
@@ -52,8 +52,8 @@ Hru vydávám po kapitolách. Každá verze se dá hrát a uložená hra se pře
 | 0.3.2 | Bez přestavby roje, silnější Štíhlý disk, typy K podle kapitoly | vydáno |
 | 0.3.3 | Tryskové lapače posilují sběr, poctivější karta injektoru | vydáno |
 | 0.3.4 | Orbitální montovna, opravy karty injektoru | vydáno |
-| 0.4 | Kapitola 4: Most – síť červích děr, synchronizace s pulsem | ve vývoji |
-| 1.0 | Kapitola 5: Šepot, konce, anglická verze | v plánu |
+| 1.0.0-alfa | Předělávka: nové mechaniky, obrázky, Kapitoly 1–3 | vydáno |
+| 1.0 | Předělávka: Kapitoly 4–5, konce, anglická verze | ve vývoji |
 | později | nekonečný mód, verze pro mobil | v plánu |
 
 Co je nového v jednotlivých verzích, najdeš v [CHANGELOG.md](CHANGELOG.md).

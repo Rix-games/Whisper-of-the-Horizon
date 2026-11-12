@@ -4201,7 +4201,7 @@
   }
 
   // src/ui/app.ts
-  var VERSION = "1.0.0-dev";
+  var VERSION = "1.0.0-alfa";
   var $ = (id) => document.getElementById(id);
   var SUPM = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
   var sx = (t) => t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, (m) => `<sup>${[...m].map((c) => SUPM[c]).join("")}</sup>`);

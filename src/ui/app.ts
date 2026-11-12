@@ -17,7 +17,7 @@ import { tx, find, UI } from "../i18n";
 import * as Audio from "./audio";
 import { img, imgSrc, preload, ImgKey } from "./img";
 
-export const VERSION = "1.0.0-dev";
+export const VERSION = "1.0.0-alfa";
 const $ = (id: string) => document.getElementById(id)!;
 /** Mocniny (¹²) jako <sup>, aby byly čitelné. */
 const SUPM: Record<string, string> = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "−" };

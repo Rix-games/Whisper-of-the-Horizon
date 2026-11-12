@@ -1,6 +1,6 @@
 # Novinky
 
-## 1.0 (vývoj) – Předělávka
+## 1.0.0-alfa – Předělávka
 
 - Obrázky Kapitoly 2: Aldra ve třech fázích s prolnutím, zrcadla roje, továrny, Okolí, úvod
 - Kapitola 1: postupné odkrývání staveb, zvuk laseru při řezání
