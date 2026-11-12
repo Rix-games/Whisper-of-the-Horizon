@@ -202,19 +202,19 @@
   ];
   var M = (o) => ({ ch: 1, view: "system", ...o });
   var MISSIONS1 = [
-    M({ id: "belt", cost: 15e5, dur: 45, req: (s2) => s2.t > 60, at: [1010, 610] }),
+    M({ id: "belt", cost: 15e5, dur: 45, req: (s2) => s2.t > 60, at: [1088, 616] }),
     // ruda ×1,5
-    M({ id: "kelvar", cost: 5e8, dur: 90, req: ST(1), at: [1270, 300] }),
+    M({ id: "kelvar", cost: 5e8, dur: 90, req: ST(1), at: [1240, 449] }),
     // data ×2
-    M({ id: "tauris", cost: 2e11, dur: 120, req: ST(2), at: [1225, 330] }),
+    M({ id: "tauris", cost: 2e11, dur: 120, req: ST(2), at: [1283, 424] }),
     // výkon ×1,5
-    M({ id: "comet", cost: 3e14, dur: 140, req: ST(3), at: [330, 170] }),
+    M({ id: "comet", cost: 3e14, dur: 140, req: ST(3), at: [1048, 173] }),
     // ruda ×2
-    M({ id: "wreck", cost: 5e15, dur: 120, req: (s2) => s2.stage >= 3 && n(s2, "statite") >= 10, at: [560, 690] }),
+    M({ id: "wreck", cost: 5e15, dur: 120, req: (s2) => s2.stage >= 3 && n(s2, "statite") >= 10, at: [480, 374] }),
     // data ×1,5
-    M({ id: "echo", cost: 1e18, dur: 150, req: (s2) => s2.stage >= 4 && n(s2, "ring") >= 8, at: [760, 452] }),
+    M({ id: "echo", cost: 1e18, dur: 150, req: (s2) => s2.stage >= 4 && n(s2, "ring") >= 8, at: [752, 455] }),
     // prstenec ×1,5
-    M({ id: "chthon", cost: 2e17, dur: 150, req: ST(4), at: [880, 500] })
+    M({ id: "chthon", cost: 2e17, dur: 150, req: ST(4), at: [946, 492] })
     // prstenec ×2
   ];
   var J = (id, when, kind) => ({ id, ch: 1, when, kind });
@@ -412,9 +412,9 @@
   ];
   var M2 = (o) => ({ ch: 2, ...o });
   var MISSIONS2 = [
-    M2({ id: "dust", cost: 15e18, dur: 90, req: () => true, at: [640, 380], view: "system" }),
+    M2({ id: "dust", cost: 15e18, dur: 90, req: () => true, at: [704, 544], view: "system" }),
     // plazma ×2
-    M2({ id: "pulse", cost: 5e21, dur: 120, req: ST(1), at: [800, 500], view: "system" }),
+    M2({ id: "pulse", cost: 5e21, dur: 120, req: ST(1), at: [798, 483], view: "system" }),
     // data ×2
     M2({ id: "light", cost: 5e23, dur: 150, req: ST(2), at: [560, 420], view: "near" }),
     // plocha ×2
@@ -1056,8 +1056,8 @@
     const a = Math.abs(kg);
     if (a < 1e3) return `${fixed(kg, a < 10 && a % 1 ? 1 : 0)} kg`;
     if (a < 1e9) {
-      const t2 = kg / 1e3, at = Math.abs(t2);
-      if (at < 100) return `${fixed(t2, at < 10 ? 2 : 1)} t`;
+      const t2 = kg / 1e3, at2 = Math.abs(t2);
+      if (at2 < 100) return `${fixed(t2, at2 < 10 ? 2 : 1)} t`;
       return `${Math.floor(t2).toLocaleString("cs-CZ").replace(/\s/g, "\xA0")} t`;
     }
     return `${sci(kg)} kg`;
@@ -1158,6 +1158,33 @@
     txt.length = 0;
   }
 
+  // src/ui/img.ts
+  var FILES = {
+    bg: "pozadi-hvezdy.webp",
+    asteroid: "kap1-asteroid.webp",
+    drone: "kap1-dron.webp",
+    platform: "kap1-plosina.webp",
+    system: "kap1-soustava.webp",
+    intro1: "kap1-uvod.webp"
+  };
+  var cache3 = {};
+  var ok = {};
+  var imgSrc = (k) => "obrazky/" + FILES[k];
+  function img(k) {
+    if (typeof Image === "undefined") return null;
+    if (!cache3[k]) {
+      const im = new Image();
+      im.onload = () => ok[k] = true;
+      im.onerror = () => ok[k] = false;
+      im.src = imgSrc(k);
+      cache3[k] = im;
+    }
+    return ok[k] ? cache3[k] : null;
+  }
+  function preload() {
+    for (const k of Object.keys(FILES)) img(k);
+  }
+
   // src/mech/ch1.ts
   var LAYERS = [
     { c: [255, 160, 70], rich: [130, 235, 255] },
@@ -1213,7 +1240,7 @@
         dir += (rnd() - 0.5) * 1.1;
         const st = 0.09 + rnd() * 0.05;
         let nx = x + Math.cos(dir) * st, ny = y + Math.sin(dir) * st;
-        if (Math.hypot(nx, ny) > rr(Math.atan2(ny, nx)) * 0.8) {
+        if (Math.hypot(nx, ny) > rr(Math.atan2(ny, nx)) * 0.7) {
           dir += Math.PI * 0.75;
           nx = x + Math.cos(dir) * 0.08;
           ny = y + Math.sin(dir) * 0.08;
@@ -1470,24 +1497,36 @@
       c.beginPath();
       c.arc(CX, CY, RA * 1.6, 0, 7);
       c.fill();
-      c.save();
-      c.translate(CX, CY);
-      c.rotate(this.rot);
-      c.drawImage(tex, -1.2 * RA, -1.2 * RA, 2.4 * RA, 2.4 * RA);
-      c.restore();
+      const A = img("asteroid");
+      if (A) {
+        const w = RA * 2.18, h2 = w * A.height / A.width;
+        c.save();
+        c.translate(CX, CY);
+        c.rotate(this.rot);
+        c.drawImage(A, -w / 2, -h2 / 2, w, h2);
+        c.restore();
+      } else {
+        c.save();
+        c.translate(CX, CY);
+        c.rotate(this.rot);
+        c.drawImage(tex, -1.2 * RA, -1.2 * RA, 2.4 * RA, 2.4 * RA);
+        c.restore();
+      }
       c.save();
       path(c, this.rot);
       c.clip();
-      if (li > 0) {
+      if (li > 0 && !A) {
         c.fillStyle = `rgba(${lay.c[0]},${lay.c[1]},${lay.c[2]},${0.03 + li * 0.025})`;
         c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6);
       }
-      const lg = c.createLinearGradient(CX - RA * 0.9, CY - RA * 0.9, CX + RA * 0.8, CY + RA * 0.8);
-      lg.addColorStop(0, "rgba(200,220,255,.22)");
-      lg.addColorStop(0.45, "rgba(0,0,0,0)");
-      lg.addColorStop(1, "rgba(0,0,12,.82)");
-      c.fillStyle = lg;
-      c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6);
+      if (!A) {
+        const lg = c.createLinearGradient(CX - RA * 0.9, CY - RA * 0.9, CX + RA * 0.8, CY + RA * 0.8);
+        lg.addColorStop(0, "rgba(200,220,255,.22)");
+        lg.addColorStop(0.45, "rgba(0,0,0,0)");
+        lg.addColorStop(1, "rgba(0,0,12,.82)");
+        c.fillStyle = lg;
+        c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6);
+      }
       c.lineCap = "round";
       c.lineJoin = "round";
       for (const vn of this.veins) {
@@ -1515,12 +1554,14 @@
         }
       }
       c.restore();
-      c.save();
-      path(c, this.rot);
-      c.strokeStyle = "rgba(200,215,255,.14)";
-      c.lineWidth = 1.5;
-      c.stroke();
-      c.restore();
+      if (!A) {
+        c.save();
+        path(c, this.rot);
+        c.strokeStyle = "rgba(200,215,255,.14)";
+        c.lineWidth = 1.5;
+        c.stroke();
+        c.restore();
+      }
       for (const ch of this.chunks) {
         c.save();
         c.translate(ch.x, ch.y);
@@ -1541,6 +1582,15 @@
           c.beginPath();
           c.arc(d.aim[0], d.aim[1], 2 + rnd() * 1.5, 0, 7);
           c.fill();
+        }
+        const D = img("drone");
+        if (D) {
+          c.save();
+          c.translate(d.x, d.y);
+          c.rotate(d.ang);
+          c.drawImage(D, -16, -16, 32, 32);
+          c.restore();
+          continue;
         }
         c.save();
         c.translate(d.x, d.y);
@@ -1648,7 +1698,21 @@
   function drawPlat(c, s2, m) {
     c.save();
     c.translate(PX, PY);
-    for (const sd of [-1, 1]) {
+    const P = img("platform");
+    if (P) {
+      const w = 150, h2 = w * P.height / P.width;
+      c.drawImage(P, -w / 2, -h2 / 2 - 6, w, h2);
+      c.globalCompositeOperation = "lighter";
+      const g = c.createRadialGradient(0, -8, 0, 0, -8, 12 + m.pop * 40);
+      g.addColorStop(0, `rgba(255,220,160,${0.25 + m.pop * 3})`);
+      g.addColorStop(1, "rgba(255,200,140,0)");
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(0, -8, 12 + m.pop * 40, 0, 7);
+      c.fill();
+      c.globalCompositeOperation = "source-over";
+    }
+    for (const sd of P ? [] : [-1, 1]) {
       const x0 = sd > 0 ? 16 : -48;
       c.fillStyle = "#132a4a";
       c.fillRect(x0, -7, 32, 14);
@@ -1663,26 +1727,28 @@
       }
       c.stroke();
     }
-    c.fillStyle = "#222a3c";
-    c.strokeStyle = "#4a5a7a";
-    c.beginPath();
-    for (let k = 0; k < 6; k++) {
-      const a = k / 6 * 6.283 + 0.52;
-      c.lineTo(Math.cos(a) * 15, Math.sin(a) * 15);
+    if (!P) {
+      c.fillStyle = "#222a3c";
+      c.strokeStyle = "#4a5a7a";
+      c.beginPath();
+      for (let k = 0; k < 6; k++) {
+        const a = k / 6 * 6.283 + 0.52;
+        c.lineTo(Math.cos(a) * 15, Math.sin(a) * 15);
+      }
+      c.closePath();
+      c.fill();
+      c.stroke();
+      c.fillStyle = m.pop > 0 ? "#ffe2b0" : "#f2a65a";
+      c.beginPath();
+      c.arc(0, 0, 4 + m.pop * 14, 0, 7);
+      c.fill();
     }
-    c.closePath();
-    c.fill();
-    c.stroke();
-    c.fillStyle = m.pop > 0 ? "#ffe2b0" : "#f2a65a";
-    c.beginPath();
-    c.arc(0, 0, 4 + m.pop * 14, 0, 7);
-    c.fill();
     if (lv(s2, "dock")) {
       c.strokeStyle = "rgba(142,240,200,.5)";
       c.lineWidth = 2;
       const t = Math.min(1, (s2.bank.dockT || 0) / (6 / (1 + 0.6 * Math.max(0, lv(s2, "dock") - 1))));
       c.beginPath();
-      c.arc(0, 0, 26, -1.57, -1.57 + 6.283 * t);
+      c.arc(0, 0, P ? 58 : 26, -1.57, -1.57 + 6.283 * t);
       c.stroke();
     }
     c.restore();
@@ -1691,7 +1757,7 @@
     const p = Math.min(lv(s2, "panel"), 60);
     for (let i = 0; i < p; i++) {
       const row = Math.floor(i / 12), col = i % 12, side = col < 6 ? -1 : 1, k = col % 6;
-      const x = PX + side * (70 + k * 13), y = PY - 18 + row * 9;
+      const x = PX + side * (90 + k * 13), y = PY - 18 + row * 9;
       c.fillStyle = "#1a3866";
       c.fillRect(x - 5, y - 3, 10, 6);
       c.fillStyle = "rgba(140,190,255,.35)";
@@ -2431,11 +2497,11 @@
       if (M4.down) {
         const o = this.nearestOn(s2, M4.x, M4.y), op = gsp(o), pl = 1 + 0.6 * lv3(s2, "power");
         const len = Math.min(Math.hypot(M4.x - op[0], M4.y - op[1]), this.reachPx(s2));
-        const drain = T3.beamDrain * P * pl, ok = s2.res.energy > 0;
+        const drain = T3.beamDrain * P * pl, ok2 = s2.res.energy > 0;
         s2.res.energy = Math.max(0, s2.res.energy - drain * dt);
         const ang = Math.atan2(M4.y - op[1], M4.x - op[0]);
-        this.beamOn = { o, ang, len, weak: !ok };
-        this.beam(s2, o, ang, len, pl * (ok ? 1 : 0.15), dt, "beam");
+        this.beamOn = { o, ang, len, weak: !ok2 };
+        this.beam(s2, o, ang, len, pl * (ok2 ? 1 : 0.15), dt, "beam");
       }
       const pr = lv3(s2, "probe"), spreadR = RG * (0.1 + 0.03 * pr);
       const chance = (0.01 + 0.01 * lv3(s2, "spread")) * (1 + T3.probe[0] * pr) * spreadMult(s2);
@@ -3125,7 +3191,7 @@
   var bg = null;
   var bgKey = "";
   function background(c, W2, H2, dpr, ch) {
-    const key = `${W2}x${H2}x${dpr}x${ch}`;
+    const key = `${W2}x${H2}x${dpr}x${ch}x${img("bg") ? 1 : 0}`;
     if (bgKey !== key) {
       bgKey = key;
       bg = document.createElement("canvas");
@@ -3135,6 +3201,18 @@
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       g.fillStyle = "#04050a";
       g.fillRect(0, 0, W2, H2);
+      const I = img("bg");
+      if (I) {
+        const k = Math.max(W2 / I.width, H2 / I.height), w = I.width * k, h2 = I.height * k;
+        g.drawImage(I, (W2 - w) / 2, (H2 - h2) / 2, w, h2);
+        const tint2 = ch === 1 ? "60,90,170" : ch === 2 ? "70,60,150" : "110,60,130";
+        const gr2 = g.createRadialGradient(W2 * 0.72, H2 * 0.2, 0, W2 * 0.72, H2 * 0.2, Math.max(W2, H2) * 0.75);
+        gr2.addColorStop(0, `rgba(${tint2},.18)`);
+        gr2.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = gr2;
+        g.fillRect(0, 0, W2, H2);
+        return void c.drawImage(bg, 0, 0, W2, H2);
+      }
       const tint = ch === 1 ? "60,90,170" : ch === 2 ? "70,60,150" : "110,60,130";
       let gr = g.createRadialGradient(W2 * 0.72, H2 * 0.2, 0, W2 * 0.72, H2 * 0.2, Math.max(W2, H2) * 0.75);
       gr.addColorStop(0, `rgba(${tint},.28)`);
@@ -3170,71 +3248,126 @@
     }
     c.drawImage(bg, 0, 0, W2, H2);
   }
-  var SYS = { cx: 800, cy: 500 };
-  var orbit = (r, a, k = 0.42) => [SYS.cx + Math.cos(a) * r, SYS.cy + Math.sin(a) * r * k];
+  var softC = {};
+  function soft(k) {
+    if (softC[k]) return softC[k];
+    const I = img(k);
+    if (!I) return null;
+    const cv = document.createElement("canvas");
+    cv.width = I.width;
+    cv.height = I.height;
+    const g = cv.getContext("2d");
+    g.drawImage(I, 0, 0);
+    g.globalCompositeOperation = "destination-in";
+    const w = I.width, h2 = I.height, e = 0.12;
+    const gx = g.createLinearGradient(0, 0, w, 0);
+    gx.addColorStop(0, "rgba(0,0,0,0)");
+    gx.addColorStop(e, "#000");
+    gx.addColorStop(1 - e, "#000");
+    gx.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gx;
+    g.fillRect(0, 0, w, h2);
+    const gy = g.createLinearGradient(0, 0, 0, h2);
+    gy.addColorStop(0, "rgba(0,0,0,0)");
+    gy.addColorStop(e, "#000");
+    gy.addColorStop(1 - e, "#000");
+    gy.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gy;
+    g.fillRect(0, 0, w, h2);
+    return softC[k] = cv;
+  }
+  var IY = 53;
+  var IH = 893;
+  var at = (nx, ny) => [nx * 1600, IY + ny * IH];
+  var SYS = {
+    aldra: at(0.499, 0.482),
+    chthon: at(0.591, 0.492),
+    tauris: at(0.802, 0.415),
+    kelvar: at(0.775, 0.443),
+    platform: at(0.42, 0.66),
+    comet: at(0.655, 0.134),
+    beltR: 0.2
+  };
+  var orbit = (r, a, k = 0.42) => [SYS.aldra[0] + Math.cos(a) * r, SYS.aldra[1] + Math.sin(a) * r * k];
   function drawSystem(c, s2, T4) {
-    const { cx, cy } = SYS;
-    c.strokeStyle = "rgba(140,160,210,.13)";
-    c.lineWidth = 1;
-    for (const r of [120, 260, 470, 640]) {
-      c.beginPath();
-      c.ellipse(cx, cy, r, r * 0.42, 0, 0, 7);
-      c.stroke();
+    const [cx, cy] = SYS.aldra, I = soft("system");
+    if (I) {
+      c.drawImage(I, 0, IY, 1600, IH);
+      if (s2.ch >= 3) {
+        c.fillStyle = "rgba(4,5,10,.9)";
+        c.beginPath();
+        c.arc(cx, cy, 34, 0, 7);
+        c.fill();
+        drawHole(c, cx, cy, 12, T4);
+      } else if (s2.ch === 2 && s2.stage >= 4) {
+        const red = s2.stage === 4, col = red ? "255,130,70" : "200,180,255", R2 = red ? 40 : 18;
+        c.save();
+        c.globalCompositeOperation = red ? "source-over" : "lighter";
+        const g = c.createRadialGradient(cx, cy, 0, cx, cy, R2 * 2.2);
+        g.addColorStop(0, `rgba(${col},.95)`);
+        g.addColorStop(1, `rgba(${col},0)`);
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(cx, cy, R2 * 2.2, 0, 7);
+        c.fill();
+        c.restore();
+      }
+    } else {
+      c.strokeStyle = "rgba(140,160,210,.13)";
+      c.lineWidth = 1;
+      for (const r of [150, 330, 470, 640]) {
+        c.beginPath();
+        c.ellipse(cx, cy, r, r * 0.42, 0, 0, 7);
+        c.stroke();
+      }
+      const rr2 = mulberry(9);
+      for (let i = 0; i < 420; i++) {
+        const a = rr2() * 6.283 + T4 * 0.01, r = 330 + (rr2() - 0.5) * 40, p = orbit(r, a);
+        c.fillStyle = `rgba(200,190,175,${0.25 + rr2() * 0.4})`;
+        c.fillRect(p[0], p[1], 1.6, 1.6);
+      }
+      if (s2.ch <= 2) {
+        const g = c.createRadialGradient(cx, cy, 0, cx, cy, 110);
+        g.addColorStop(0, "rgba(160,195,255,.75)");
+        g.addColorStop(0.2, "rgba(160,195,255,.25)");
+        g.addColorStop(1, "rgba(160,195,255,0)");
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(cx, cy, 110, 0, 7);
+        c.fill();
+        c.fillStyle = "#f4f8ff";
+        c.beginPath();
+        c.arc(cx, cy, 22, 0, 7);
+        c.fill();
+      } else drawHole(c, cx, cy, 16, T4);
+      planet(c, SYS.chthon[0], SYS.chthon[1], 7, "#8a5a46");
+      planet(c, SYS.tauris[0], SYS.tauris[1], 26, "#c89a6a", true);
+      planet(c, SYS.kelvar[0], SYS.kelvar[1], 5, "#dfe8f0");
     }
-    const rr2 = mulberry(9);
-    for (let i = 0; i < 420; i++) {
-      const a = rr2() * 6.283 + T4 * 0.01, r = 260 + (rr2() - 0.5) * 34;
-      const p = orbit(r, a);
-      c.fillStyle = `rgba(200,190,175,${0.25 + rr2() * 0.4})`;
-      c.fillRect(p[0], p[1], 1.6, 1.6);
-    }
-    for (let i = 0; i < 160; i++) {
-      const a = rr2() * 6.283, r = 700 + rr2() * 140, p = orbit(r, a, 0.45);
-      c.fillStyle = "rgba(170,210,255,.18)";
-      c.fillRect(p[0], p[1], 1.2, 1.2);
-    }
-    if (s2.ch <= 2) {
-      const red = s2.ch === 2 && s2.stage === 4, wr = s2.ch === 2 && s2.stage >= 5;
-      const col = red ? "255,140,80" : wr ? "210,195,255" : "160,195,255", R2 = red ? 34 : wr ? 14 : 22;
-      const g = c.createRadialGradient(cx, cy, 0, cx, cy, R2 * 5);
-      g.addColorStop(0, `rgba(${col},.75)`);
-      g.addColorStop(0.2, `rgba(${col},.25)`);
-      g.addColorStop(1, `rgba(${col},0)`);
-      c.fillStyle = g;
-      c.beginPath();
-      c.arc(cx, cy, R2 * 5, 0, 7);
-      c.fill();
-      c.fillStyle = red ? "#ffd9b0" : "#f4f8ff";
-      c.beginPath();
-      c.arc(cx, cy, R2, 0, 7);
-      c.fill();
-    } else drawHole(c, cx, cy, 16, T4);
     if (s2.ch >= 2) {
       const cov = s2.ch === 2 ? coverage(s2) : 0.45, vis = Math.max(0.05, Math.min(1, (Math.log10(Math.max(cov, 1e-14)) + 14) / 14));
       c.save();
       c.globalCompositeOperation = "lighter";
       for (let i = 0; i < 260 * vis; i++) {
-        const a = i * 2.39996 + T4 * 0.05, r = 70 + i % 3 * 14, p = orbit(r, a, 0.5);
+        const a = i * 2.39996 + T4 * 0.05, r = 80 + i % 3 * 16, p = orbit(r, a, 0.5);
         c.fillStyle = "rgba(255,215,150,.7)";
-        c.fillRect(p[0], p[1], 1.6, 1.6);
+        c.fillRect(p[0], p[1], 1.8, 1.8);
       }
       c.restore();
     }
-    const pc = orbit(120, T4 * 0.12);
-    planet(c, pc[0], pc[1], 6, "#8a5a46");
-    const pt = orbit(470, 2.3 + T4 * 0.02);
-    planet(c, pt[0], pt[1], 17, "#c89a6a", true);
-    const pk = [pt[0] + Math.cos(T4 * 0.6) * 34, pt[1] + Math.sin(T4 * 0.6) * 14];
-    planet(c, pk[0], pk[1], 4, "#dfe8f0");
-    const pp = orbit(260, 0.55);
+    const [px, py] = SYS.platform;
     c.fillStyle = "#f2a65a";
     c.beginPath();
-    c.arc(pp[0], pp[1], 3.5, 0, 7);
+    c.arc(px, py, 4, 0, 7);
     c.fill();
-    label(c, pp[0] + 8, pp[1] + 16, "VESPER-7", "#f2a65a");
-    label(c, pt[0] + 22, pt[1] - 14, "Tauris");
-    label(c, pk[0] + 8, pk[1] + 12, "Kelvar");
-    label(c, cx - 70, cy + 44, s2.ch <= 2 ? "Aldra" : "D\xEDra po Ald\u0159e");
+    c.strokeStyle = "rgba(242,166,90,.5)";
+    c.beginPath();
+    c.arc(px, py, 9 + Math.sin(T4 * 2) * 1.5, 0, 7);
+    c.stroke();
+    label(c, px + 12, py + 16, "VESPER-7", "#f2a65a");
+    label(c, SYS.tauris[0] + 30, SYS.tauris[1] - 42, "Tauris");
+    label(c, SYS.kelvar[0] - 78, SYS.kelvar[1] + 30, "Kelvar");
+    label(c, cx - 30, cy + 58, s2.ch <= 2 ? "Aldra" : "D\xEDra po Ald\u0159e");
   }
   function planet(c, x, y, r, col, bands = false) {
     const g = c.createRadialGradient(x - r * 0.4, y - r * 0.4, r * 0.1, x, y, r);
@@ -3347,7 +3480,7 @@
     }
     return m.at;
   }
-  var ORIGIN = { system: [800 + Math.cos(0.55) * 260, 500 + Math.sin(0.55) * 260 * 0.42], near: [800, 500], galaxy: [0, 0] };
+  var ORIGIN = { system: SYS.platform, near: [800, 500], galaxy: [0, 0] };
   function drawMissions(c, s2, view2, T4, sx, hover) {
     const fs = 13 / Math.max(sx, 0.3);
     for (const m of MISSIONS) {
@@ -3365,7 +3498,7 @@
         c.arc(x, y, 3, 0, 7);
         c.fill();
       }
-      if (!done || hover === m.id) label(c, x + 14, y - 10, find("m", m.id).n, done ? "#8ef0c8" : "#f2c48a", fs);
+      if (!done || hover === m.id) label(c, x + 14, y + 26, find("m", m.id).n, done ? "#8ef0c8" : "#f2c48a", fs);
     }
     if (s2.run && MMAP[s2.run.id].view === view2) {
       const [tx2, ty] = missionPos(s2.run.id);
@@ -3764,6 +3897,7 @@
   }
   function start() {
     s = load();
+    preload();
     window.sepot = { get s() {
       return s;
     }, E: engine_exports, MECH, inp };
@@ -3774,7 +3908,7 @@
     const away = (Date.now() - s.last) / 1e3;
     const off = s.t > 5 ? offline(s, away) : null;
     MECH[s.ch].reset();
-    if (!s.story["intro" + s.ch]) showIntro();
+    if (!s.story["intro" + s.ch]) setTimeout(showIntro, img("intro1") ? 0 : 600);
     else if (off) showOffline(off);
     resize();
     addEventListener("resize", resize);
@@ -4257,15 +4391,16 @@
     $("modal").hidden = false;
     modalCb = cb || null;
   }
-  function closeModal(ok) {
+  function closeModal(ok2) {
     $("modal").hidden = true;
     const cb = modalCb;
     modalCb = null;
-    cb?.(ok);
+    cb?.(ok2);
   }
   function showIntro() {
     const X = tx(s.ch);
-    modal(X.intro.h, `<p class="chap">${X.title}</p>` + X.intro.p.map((p) => `<p>${p}</p>`).join(""), false, () => {
+    const pic = img("intro" + s.ch);
+    modal(X.intro.h, (pic ? `<img class="intro" src="${imgSrc("intro" + s.ch)}" alt="">` : "") + `<p class="chap">${X.title}</p>` + X.intro.p.map((p) => `<p>${p}</p>`).join(""), false, () => {
       s.story["intro" + s.ch] = 1;
       save();
     });

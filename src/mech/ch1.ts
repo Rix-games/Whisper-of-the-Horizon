@@ -14,6 +14,7 @@ const LAYERS = [
   { c: [190, 150, 255], rich: [140, 255, 240] },
 ];
 import { fmtOre } from "./util";
+import { img } from "../ui/img";
 import type { State } from "../core/state";
 
 const CX = 760, CY = 470, RA = 270;
@@ -44,7 +45,7 @@ export const kamen: Mech & any = {
     for (let i = 0; i < cnt; i++) {
       dir += (rnd() - 0.5) * 1.1; const st = 0.09 + rnd() * 0.05;
       let nx = x + Math.cos(dir) * st, ny = y + Math.sin(dir) * st;
-      if (Math.hypot(nx, ny) > rr(Math.atan2(ny, nx)) * 0.8) { dir += Math.PI * 0.75; nx = x + Math.cos(dir) * 0.08; ny = y + Math.sin(dir) * 0.08; }
+      if (Math.hypot(nx, ny) > rr(Math.atan2(ny, nx)) * 0.7) { dir += Math.PI * 0.75; nx = x + Math.cos(dir) * 0.08; ny = y + Math.sin(dir) * 0.08; }
       x = nx; y = ny; pts.push([x, y]);
     }
     const rich = rnd() < (s ? richChance(s) : 0.18), m = pts.length - 1;
@@ -193,13 +194,19 @@ export const kamen: Mech & any = {
     const halo = c.createRadialGradient(CX, CY, RA * 0.8, CX, CY, RA * 1.6);
     halo.addColorStop(0, `rgba(170,200,255,${0.05 + this.flash * 0.3})`); halo.addColorStop(1, "rgba(170,200,255,0)");
     c.fillStyle = halo; c.beginPath(); c.arc(CX, CY, RA * 1.6, 0, 7); c.fill();
-    c.save(); c.translate(CX, CY); c.rotate(this.rot); c.drawImage(tex, -1.2 * RA, -1.2 * RA, 2.4 * RA, 2.4 * RA); c.restore();
+    const A = img("asteroid");
+    if (A) {   // obrázek z Gemini: velikost podle šířky, mírně větší než herní obrys
+      const w = RA * 2.18, h = (w * A.height) / A.width;
+      c.save(); c.translate(CX, CY); c.rotate(this.rot); c.drawImage(A, -w / 2, -h / 2, w, h); c.restore();
+    } else { c.save(); c.translate(CX, CY); c.rotate(this.rot); c.drawImage(tex, -1.2 * RA, -1.2 * RA, 2.4 * RA, 2.4 * RA); c.restore(); }
     c.save(); path(c, this.rot); c.clip();
     // hlubší vrstvy – teplejší odstín horniny
-    if (li > 0) { c.fillStyle = `rgba(${lay.c[0]},${lay.c[1]},${lay.c[2]},${0.03 + li * 0.025})`; c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6); }
-    const lg = c.createLinearGradient(CX - RA * 0.9, CY - RA * 0.9, CX + RA * 0.8, CY + RA * 0.8);
-    lg.addColorStop(0, "rgba(200,220,255,.22)"); lg.addColorStop(0.45, "rgba(0,0,0,0)"); lg.addColorStop(1, "rgba(0,0,12,.82)");
-    c.fillStyle = lg; c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6);
+    if (li > 0 && !A) { c.fillStyle = `rgba(${lay.c[0]},${lay.c[1]},${lay.c[2]},${0.03 + li * 0.025})`; c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6); }
+    if (!A) {
+      const lg = c.createLinearGradient(CX - RA * 0.9, CY - RA * 0.9, CX + RA * 0.8, CY + RA * 0.8);
+      lg.addColorStop(0, "rgba(200,220,255,.22)"); lg.addColorStop(0.45, "rgba(0,0,0,0)"); lg.addColorStop(1, "rgba(0,0,12,.82)");
+      c.fillStyle = lg; c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6);
+    }
     c.lineCap = "round"; c.lineJoin = "round";
     for (const vn of this.veins) {
       const al = vn.fade * (1 - vn.dead / 0.9), pul = 0.75 + 0.25 * Math.sin(T * 3 + vn.ph), col = vn.rich ? lay.rich : lay.c;
@@ -213,7 +220,7 @@ export const kamen: Mech & any = {
       }
     }
     c.restore();
-    c.save(); path(c, this.rot); c.strokeStyle = "rgba(200,215,255,.14)"; c.lineWidth = 1.5; c.stroke(); c.restore();
+    if (!A) { c.save(); path(c, this.rot); c.strokeStyle = "rgba(200,215,255,.14)"; c.lineWidth = 1.5; c.stroke(); c.restore(); }
     for (const ch of this.chunks) {
       c.save(); c.translate(ch.x, ch.y); c.rotate(ch.r);
       c.fillStyle = ch.rich ? `rgb(${lay.rich.join(",")})` : "#c9a27a"; c.fillRect(-ch.s / 2, -ch.s / 2, ch.s, ch.s * 0.8); c.restore();
@@ -223,6 +230,8 @@ export const kamen: Mech & any = {
         c.strokeStyle = "rgba(142,240,200,.75)"; c.lineWidth = 1.3; c.beginPath(); c.moveTo(d.x, d.y); c.lineTo(d.aim[0], d.aim[1]); c.stroke();
         c.fillStyle = "rgba(200,255,235,.9)"; c.beginPath(); c.arc(d.aim[0], d.aim[1], 2 + rnd() * 1.5, 0, 7); c.fill();
       }
+      const D = img("drone");
+      if (D) { c.save(); c.translate(d.x, d.y); c.rotate(d.ang); c.drawImage(D, -16, -16, 32, 32); c.restore(); continue; }
       c.save(); c.translate(d.x, d.y); c.rotate(d.ang);
       c.fillStyle = "#cfd8ea"; c.beginPath(); c.moveTo(7, 0); c.lineTo(-5, -4); c.lineTo(-2.5, 0); c.lineTo(-5, 4); c.closePath(); c.fill();
       c.fillStyle = "#8ef0c8"; c.fillRect(-6.5, -1, 2.2, 2); c.restore();
@@ -277,19 +286,31 @@ function makeTex() {
 }
 function drawPlat(c: CanvasRenderingContext2D, s: State, m: any) {
   c.save(); c.translate(PX, PY);
-  for (const sd of [-1, 1]) {
+  const P = img("platform");
+  if (P) {
+    const w = 150, h = (w * P.height) / P.width;
+    c.drawImage(P, -w / 2, -h / 2 - 6, w, h);
+    c.globalCompositeOperation = "lighter";
+    const g = c.createRadialGradient(0, -8, 0, 0, -8, 12 + m.pop * 40);
+    g.addColorStop(0, `rgba(255,220,160,${0.25 + m.pop * 3})`); g.addColorStop(1, "rgba(255,200,140,0)");
+    c.fillStyle = g; c.beginPath(); c.arc(0, -8, 12 + m.pop * 40, 0, 7); c.fill();
+    c.globalCompositeOperation = "source-over";
+  }
+  for (const sd of P ? [] : [-1, 1]) {
     const x0 = sd > 0 ? 16 : -48;
     c.fillStyle = "#132a4a"; c.fillRect(x0, -7, 32, 14); c.strokeStyle = "#3d5578"; c.lineWidth = 1; c.strokeRect(x0, -7, 32, 14);
     c.strokeStyle = "rgba(120,170,255,.3)"; c.beginPath(); for (let k = 1; k < 5; k++) { c.moveTo(x0 + k * 6.4, -7); c.lineTo(x0 + k * 6.4, 7); } c.stroke();
   }
-  c.fillStyle = "#222a3c"; c.strokeStyle = "#4a5a7a"; c.beginPath();
-  for (let k = 0; k < 6; k++) { const a = (k / 6) * 6.283 + 0.52; c.lineTo(Math.cos(a) * 15, Math.sin(a) * 15); }
-  c.closePath(); c.fill(); c.stroke();
-  c.fillStyle = m.pop > 0 ? "#ffe2b0" : "#f2a65a"; c.beginPath(); c.arc(0, 0, 4 + m.pop * 14, 0, 7); c.fill();
+  if (!P) {
+    c.fillStyle = "#222a3c"; c.strokeStyle = "#4a5a7a"; c.beginPath();
+    for (let k = 0; k < 6; k++) { const a = (k / 6) * 6.283 + 0.52; c.lineTo(Math.cos(a) * 15, Math.sin(a) * 15); }
+    c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = m.pop > 0 ? "#ffe2b0" : "#f2a65a"; c.beginPath(); c.arc(0, 0, 4 + m.pop * 14, 0, 7); c.fill();
+  }
   if (lv(s, "dock")) {
     c.strokeStyle = "rgba(142,240,200,.5)"; c.lineWidth = 2;
     const t = Math.min(1, (s.bank.dockT || 0) / (6 / (1 + 0.6 * Math.max(0, lv(s, "dock") - 1))));
-    c.beginPath(); c.arc(0, 0, 26, -1.57, -1.57 + 6.283 * t); c.stroke();
+    c.beginPath(); c.arc(0, 0, P ? 58 : 26, -1.57, -1.57 + 6.283 * t); c.stroke();
   }
   c.restore();
 }
@@ -298,7 +319,7 @@ function drawGens(c: CanvasRenderingContext2D, s: State, T: number) {
   const p = Math.min(lv(s, "panel"), 60);
   for (let i = 0; i < p; i++) {
     const row = Math.floor(i / 12), col = i % 12, side = col < 6 ? -1 : 1, k = col % 6;
-    const x = PX + side * (70 + k * 13), y = PY - 18 + row * 9;
+    const x = PX + side * (90 + k * 13), y = PY - 18 + row * 9;
     c.fillStyle = "#1a3866"; c.fillRect(x - 5, y - 3, 10, 6); c.fillStyle = "rgba(140,190,255,.35)"; c.fillRect(x - 5, y - 3, 10, 1.2);
   }
   const f = Math.min(lv(s, "field"), 40);

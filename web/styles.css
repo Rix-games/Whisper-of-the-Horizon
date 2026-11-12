@@ -115,6 +115,7 @@ body.dockclosed #detail { right:56px; }
 #toast { position:fixed; top:66px; left:50%; transform:translateX(-50%); background:var(--pan2); border:1px solid var(--acc); color:var(--tx); padding:8px 16px; border-radius:10px; z-index:5; }
 #modal { position:fixed; inset:0; background:rgba(2,3,8,.66); display:grid; place-items:center; z-index:6; backdrop-filter:blur(3px); }
 .mcard { width:min(560px,92vw); background:var(--pan2); border:1px solid var(--line); border-radius:14px; padding:22px 24px; }
+.mcard img.intro { display:block; width:calc(100% + 48px); margin:4px -24px 14px; aspect-ratio:16/9; object-fit:cover; }
 .mcard h2 { margin:0 0 10px; font-family:"Chakra Petch",sans-serif; font-weight:600; letter-spacing:.04em; color:var(--acc); }
 .mcard p { color:#c9d0de; }
 .mcard .chap { font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--dim); }

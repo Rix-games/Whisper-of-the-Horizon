@@ -8,15 +8,25 @@ import { GAL_SITES } from "../chapters/ch3";
 import { gsp } from "../mech/ch3";
 import { MONO, SANS } from "../mech/fx";
 import { find } from "../i18n";
+import { img } from "./img";
 
 // ---------- pozadí (cache podle velikosti) ----------
 let bg: HTMLCanvasElement | null = null, bgKey = "";
 export function background(c: CanvasRenderingContext2D, W: number, H: number, dpr: number, ch: number) {
-  const key = `${W}x${H}x${dpr}x${ch}`;
+  const key = `${W}x${H}x${dpr}x${ch}x${img("bg") ? 1 : 0}`;
   if (bgKey !== key) {
     bgKey = key; bg = document.createElement("canvas"); bg.width = Math.round(W * dpr); bg.height = Math.round(H * dpr);
     const g = bg.getContext("2d")!; g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.fillStyle = "#04050a"; g.fillRect(0, 0, W, H);
+    const I = img("bg");
+    if (I) {   // obrázek pozadí přes celou obrazovku (cover), hvězdy z kódu se už nepřidávají
+      const k = Math.max(W / I.width, H / I.height), w = I.width * k, h = I.height * k;
+      g.drawImage(I, (W - w) / 2, (H - h) / 2, w, h);
+      const tint = ch === 1 ? "60,90,170" : ch === 2 ? "70,60,150" : "110,60,130";
+      const gr = g.createRadialGradient(W * 0.72, H * 0.2, 0, W * 0.72, H * 0.2, Math.max(W, H) * 0.75);
+      gr.addColorStop(0, `rgba(${tint},.18)`); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      return void c.drawImage(bg!, 0, 0, W, H);
+    }
     const tint = ch === 1 ? "60,90,170" : ch === 2 ? "70,60,150" : "110,60,130";
     let gr = g.createRadialGradient(W * 0.72, H * 0.2, 0, W * 0.72, H * 0.2, Math.max(W, H) * 0.75);
     gr.addColorStop(0, `rgba(${tint},.28)`); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
@@ -43,54 +53,71 @@ export function background(c: CanvasRenderingContext2D, W: number, H: number, dp
   c.drawImage(bg!, 0, 0, W, H);
 }
 
+/** Obrázek s rozmazanými okraji (aby nebyl vidět obdélník), počítá se jednou. */
+const softC: Record<string, HTMLCanvasElement> = {};
+function soft(k: "system"): HTMLCanvasElement | null {
+  if (softC[k]) return softC[k];
+  const I = img(k); if (!I) return null;
+  const cv = document.createElement("canvas"); cv.width = I.width; cv.height = I.height;
+  const g = cv.getContext("2d")!; g.drawImage(I, 0, 0);
+  g.globalCompositeOperation = "destination-in";
+  const w = I.width, h = I.height, e = 0.12;
+  const gx = g.createLinearGradient(0, 0, w, 0); gx.addColorStop(0, "rgba(0,0,0,0)"); gx.addColorStop(e, "#000"); gx.addColorStop(1 - e, "#000"); gx.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = gx; g.fillRect(0, 0, w, h);
+  const gy = g.createLinearGradient(0, 0, 0, h); gy.addColorStop(0, "rgba(0,0,0,0)"); gy.addColorStop(e, "#000"); gy.addColorStop(1 - e, "#000"); gy.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = gy; g.fillRect(0, 0, w, h);
+  return (softC[k] = cv);
+}
+
 // ---------- Soustava Aldry ----------
-const SYS = { cx: 800, cy: 500 };
-const orbit = (r: number, a: number, k = 0.42) => [SYS.cx + Math.cos(a) * r, SYS.cy + Math.sin(a) * r * k];
+// Rozvržení odpovídá obrázku kap1-soustava (16:9 vložené do 1600×1000, svisle od y = 53).
+const IY = 53, IH = 893;
+const at = (nx: number, ny: number): [number, number] => [nx * 1600, IY + ny * IH];
+export const SYS = {
+  aldra: at(0.499, 0.482), chthon: at(0.591, 0.492), tauris: at(0.802, 0.415), kelvar: at(0.775, 0.443),
+  platform: at(0.42, 0.66), comet: at(0.655, 0.134), beltR: 0.2,
+};
+const orbit = (r: number, a: number, k = 0.42) => [SYS.aldra[0] + Math.cos(a) * r, SYS.aldra[1] + Math.sin(a) * r * k];
 export function drawSystem(c: CanvasRenderingContext2D, s: State, T: number) {
-  const { cx, cy } = SYS;
-  // dráhy
-  c.strokeStyle = "rgba(140,160,210,.13)"; c.lineWidth = 1;
-  for (const r of [120, 260, 470, 640]) { c.beginPath(); c.ellipse(cx, cy, r, r * 0.42, 0, 0, 7); c.stroke(); }
-  // pás Ceres-IX
-  const rr = mulberry(9);
-  for (let i = 0; i < 420; i++) {
-    const a = rr() * 6.283 + T * 0.01, r = 260 + (rr() - 0.5) * 34;
-    const p = orbit(r, a);
-    c.fillStyle = `rgba(200,190,175,${0.25 + rr() * 0.4})`; c.fillRect(p[0], p[1], 1.6, 1.6);
+  const [cx, cy] = SYS.aldra, I = soft("system");
+  if (I) {
+    c.drawImage(I, 0, IY, 1600, IH);
+    if (s.ch >= 3) { c.fillStyle = "rgba(4,5,10,.9)"; c.beginPath(); c.arc(cx, cy, 34, 0, 7); c.fill(); drawHole(c, cx, cy, 12, T); }
+    else if (s.ch === 2 && s.stage >= 4) {   // rudý veleobr / Wolf-Rayet přebarví hvězdu
+      const red = s.stage === 4, col = red ? "255,130,70" : "200,180,255", R = red ? 40 : 18;
+      c.save(); c.globalCompositeOperation = red ? "source-over" : "lighter";
+      const g = c.createRadialGradient(cx, cy, 0, cx, cy, R * 2.2); g.addColorStop(0, `rgba(${col},.95)`); g.addColorStop(1, `rgba(${col},0)`);
+      c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * 2.2, 0, 7); c.fill(); c.restore();
+    }
+  } else {
+    c.strokeStyle = "rgba(140,160,210,.13)"; c.lineWidth = 1;
+    for (const r of [150, 330, 470, 640]) { c.beginPath(); c.ellipse(cx, cy, r, r * 0.42, 0, 0, 7); c.stroke(); }
+    const rr = mulberry(9);
+    for (let i = 0; i < 420; i++) { const a = rr() * 6.283 + T * 0.01, r = 330 + (rr() - 0.5) * 40, p = orbit(r, a); c.fillStyle = `rgba(200,190,175,${0.25 + rr() * 0.4})`; c.fillRect(p[0], p[1], 1.6, 1.6); }
+    if (s.ch <= 2) {
+      const g = c.createRadialGradient(cx, cy, 0, cx, cy, 110);
+      g.addColorStop(0, "rgba(160,195,255,.75)"); g.addColorStop(0.2, "rgba(160,195,255,.25)"); g.addColorStop(1, "rgba(160,195,255,0)");
+      c.fillStyle = g; c.beginPath(); c.arc(cx, cy, 110, 0, 7); c.fill();
+      c.fillStyle = "#f4f8ff"; c.beginPath(); c.arc(cx, cy, 22, 0, 7); c.fill();
+    } else drawHole(c, cx, cy, 16, T);
+    planet(c, SYS.chthon[0], SYS.chthon[1], 7, "#8a5a46");
+    planet(c, SYS.tauris[0], SYS.tauris[1], 26, "#c89a6a", true);
+    planet(c, SYS.kelvar[0], SYS.kelvar[1], 5, "#dfe8f0");
   }
-  // kometární oblak
-  for (let i = 0; i < 160; i++) {
-    const a = rr() * 6.283, r = 700 + rr() * 140, p = orbit(r, a, 0.45);
-    c.fillStyle = "rgba(170,210,255,.18)"; c.fillRect(p[0], p[1], 1.2, 1.2);
-  }
-  // hvězda / díra
-  if (s.ch <= 2) {
-    const red = s.ch === 2 && s.stage === 4, wr = s.ch === 2 && s.stage >= 5;
-    const col = red ? "255,140,80" : wr ? "210,195,255" : "160,195,255", R = red ? 34 : wr ? 14 : 22;
-    const g = c.createRadialGradient(cx, cy, 0, cx, cy, R * 5);
-    g.addColorStop(0, `rgba(${col},.75)`); g.addColorStop(0.2, `rgba(${col},.25)`); g.addColorStop(1, `rgba(${col},0)`);
-    c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * 5, 0, 7); c.fill();
-    c.fillStyle = red ? "#ffd9b0" : "#f4f8ff"; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill();
-  } else drawHole(c, cx, cy, 16, T);
   // roj (Kap. 2+)
   if (s.ch >= 2) {
     const cov = s.ch === 2 ? coverage(s) : 0.45, vis = Math.max(0.05, Math.min(1, (Math.log10(Math.max(cov, 1e-14)) + 14) / 14));
     c.save(); c.globalCompositeOperation = "lighter";
-    for (let i = 0; i < 260 * vis; i++) { const a = i * 2.39996 + T * 0.05, r = 70 + (i % 3) * 14, p = orbit(r, a, 0.5); c.fillStyle = "rgba(255,215,150,.7)"; c.fillRect(p[0], p[1], 1.6, 1.6); }
+    for (let i = 0; i < 260 * vis; i++) { const a = i * 2.39996 + T * 0.05, r = 80 + (i % 3) * 16, p = orbit(r, a, 0.5); c.fillStyle = "rgba(255,215,150,.7)"; c.fillRect(p[0], p[1], 1.8, 1.8); }
     c.restore();
   }
-  // vnitřní chtonická planeta
-  const pc = orbit(120, T * 0.12); planet(c, pc[0], pc[1], 6, "#8a5a46");
-  // Tauris a Kelvar
-  const pt = orbit(470, 2.3 + T * 0.02); planet(c, pt[0], pt[1], 17, "#c89a6a", true);
-  const pk = [pt[0] + Math.cos(T * 0.6) * 34, pt[1] + Math.sin(T * 0.6) * 14]; planet(c, pk[0], pk[1], 4, "#dfe8f0");
-  // platforma VESPER-7 v pásu
-  const pp = orbit(260, 0.55);
-  c.fillStyle = "#f2a65a"; c.beginPath(); c.arc(pp[0], pp[1], 3.5, 0, 7); c.fill();
-  label(c, pp[0] + 8, pp[1] + 16, "VESPER-7", "#f2a65a");
-  label(c, pt[0] + 22, pt[1] - 14, "Tauris");
-  label(c, pk[0] + 8, pk[1] + 12, "Kelvar");
-  label(c, cx - 70, cy + 44, s.ch <= 2 ? "Aldra" : "Díra po Aldře");
+  const [px, py] = SYS.platform;
+  c.fillStyle = "#f2a65a"; c.beginPath(); c.arc(px, py, 4, 0, 7); c.fill();
+  c.strokeStyle = "rgba(242,166,90,.5)"; c.beginPath(); c.arc(px, py, 9 + Math.sin(T * 2) * 1.5, 0, 7); c.stroke();
+  label(c, px + 12, py + 16, "VESPER-7", "#f2a65a");
+  label(c, SYS.tauris[0] + 30, SYS.tauris[1] - 42, "Tauris");
+  label(c, SYS.kelvar[0] - 78, SYS.kelvar[1] + 30, "Kelvar");
+  label(c, cx - 30, cy + 58, s.ch <= 2 ? "Aldra" : "Díra po Aldře");
 }
 function planet(c: CanvasRenderingContext2D, x: number, y: number, r: number, col: string, bands = false) {
   const g = c.createRadialGradient(x - r * 0.4, y - r * 0.4, r * 0.1, x, y, r);
@@ -155,7 +182,7 @@ export function missionPos(id: string): [number, number] {
   if (m.view === "galaxy") { const p = GAL_SITES[id]; const q = gsp({ x: p[0], y: p[1] }); return [q[0], q[1]]; }
   return m.at;
 }
-const ORIGIN: Record<string, [number, number]> = { system: [800 + Math.cos(0.55) * 260, 500 + Math.sin(0.55) * 260 * 0.42], near: [800, 500], galaxy: [0, 0] };
+const ORIGIN: Record<string, [number, number]> = { system: SYS.platform, near: [800, 500], galaxy: [0, 0] };
 export function drawMissions(c: CanvasRenderingContext2D, s: State, view: string, T: number, sx: number, hover: string | null) {
   const fs = 13 / Math.max(sx, 0.3);
   for (const m of MISSIONS) {
@@ -165,7 +192,7 @@ export function drawMissions(c: CanvasRenderingContext2D, s: State, view: string
     c.strokeStyle = done ? "rgba(142,240,200,.7)" : run ? "rgba(242,166,90,.9)" : `rgba(242,166,90,${0.45 + 0.4 * pul})`;
     c.lineWidth = 1.6; c.beginPath(); c.arc(x, y, 9 + (done ? 0 : pul * 3), 0, 7); c.stroke();
     if (done) { c.fillStyle = "rgba(142,240,200,.8)"; c.beginPath(); c.arc(x, y, 3, 0, 7); c.fill(); }
-    if (!done || hover === m.id) label(c, x + 14, y - 10, find("m", m.id).n, done ? "#8ef0c8" : "#f2c48a", fs);
+    if (!done || hover === m.id) label(c, x + 14, y + 26, find("m", m.id).n, done ? "#8ef0c8" : "#f2c48a", fs);
   }
   if (s.run && MMAP[s.run.id].view === view) {
     const [tx, ty] = missionPos(s.run.id);

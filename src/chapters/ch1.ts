@@ -58,13 +58,13 @@ export const RESEARCH1: RDef[] = [
 ];
 const M = (o: Omit<MDef, "ch" | "view">): MDef => ({ ch: 1, view: "system", ...o });
 export const MISSIONS1: MDef[] = [
-  M({ id: "belt", cost: 1.5e6, dur: 45, req: (s) => s.t > 60, at: [1010, 610] }),   // ruda ×1,5
-  M({ id: "kelvar", cost: 5e8, dur: 90, req: ST(1), at: [1270, 300] }),             // data ×2
-  M({ id: "tauris", cost: 2e11, dur: 120, req: ST(2), at: [1225, 330] }),           // výkon ×1,5
-  M({ id: "comet", cost: 3e14, dur: 140, req: ST(3), at: [330, 170] }),             // ruda ×2
-  M({ id: "wreck", cost: 5e15, dur: 120, req: (s) => s.stage >= 3 && n(s, "statite") >= 10, at: [560, 690] }), // data ×1,5
-  M({ id: "echo", cost: 1e18, dur: 150, req: (s) => s.stage >= 4 && n(s, "ring") >= 8, at: [760, 452] }),     // prstenec ×1,5
-  M({ id: "chthon", cost: 2e17, dur: 150, req: ST(4), at: [880, 500] }),            // prstenec ×2
+  M({ id: "belt", cost: 1.5e6, dur: 45, req: (s) => s.t > 60, at: [1088, 616] }),   // ruda ×1,5
+  M({ id: "kelvar", cost: 5e8, dur: 90, req: ST(1), at: [1240, 449] }),             // data ×2
+  M({ id: "tauris", cost: 2e11, dur: 120, req: ST(2), at: [1283, 424] }),           // výkon ×1,5
+  M({ id: "comet", cost: 3e14, dur: 140, req: ST(3), at: [1048, 173] }),             // ruda ×2
+  M({ id: "wreck", cost: 5e15, dur: 120, req: (s) => s.stage >= 3 && n(s, "statite") >= 10, at: [480, 374] }), // data ×1,5
+  M({ id: "echo", cost: 1e18, dur: 150, req: (s) => s.stage >= 4 && n(s, "ring") >= 8, at: [752, 455] }),     // prstenec ×1,5
+  M({ id: "chthon", cost: 2e17, dur: 150, req: ST(4), at: [946, 492] }),            // prstenec ×2
 ];
 const J = (id: string, when: (s: State) => boolean, kind?: "fact"): JDef => ({ id, ch: 1, when, kind });
 export const JOURNAL1: JDef[] = [

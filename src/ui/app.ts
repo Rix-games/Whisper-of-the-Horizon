@@ -15,6 +15,7 @@ import { setLabelScale, background, drawSystem, drawNear, drawRemnant, drawMissi
 import { drawDetail } from "./detail";
 import { tx, find, UI } from "../i18n";
 import * as Audio from "./audio";
+import { img, imgSrc, preload, ImgKey } from "./img";
 
 export const VERSION = "1.0.0-dev";
 const $ = (id: string) => document.getElementById(id)!;
@@ -47,6 +48,7 @@ function load(): State {
 // ---------- start ----------
 export function start() {
   s = load();
+  preload();
   (window as any).sepot = { get s() { return s; }, E, MECH, inp };   // ladicí přístup z konzole
   setFx(s.opt.fx !== 0);
   view = chOf(s).view;
@@ -55,7 +57,7 @@ export function start() {
   const away = (Date.now() - s.last) / 1000;
   const off = s.t > 5 ? E.offline(s, away) : null;
   MECH[s.ch].reset();
-  if (!s.story["intro" + s.ch]) showIntro();
+  if (!s.story["intro" + s.ch]) setTimeout(showIntro, img("intro1") ? 0 : 600);
   else if (off) showOffline(off);
   resize(); addEventListener("resize", resize);
   setInterval(save, 10000); addEventListener("beforeunload", save);
@@ -396,7 +398,8 @@ function modal(title: string, html: string, cancel: boolean, cb?: (ok: boolean) 
 function closeModal(ok: boolean) { $("modal").hidden = true; const cb = modalCb; modalCb = null; cb?.(ok); }
 function showIntro() {
   const X = tx(s.ch);
-  modal(X.intro.h, `<p class="chap">${X.title}</p>` + X.intro.p.map((p) => `<p>${p}</p>`).join(""), false, () => { s.story["intro" + s.ch] = 1; save(); });
+  const pic = img(("intro" + s.ch) as ImgKey);
+  modal(X.intro.h, (pic ? `<img class="intro" src="${imgSrc(("intro" + s.ch) as ImgKey)}" alt="">` : "") + `<p class="chap">${X.title}</p>` + X.intro.p.map((p) => `<p>${p}</p>`).join(""), false, () => { s.story["intro" + s.ch] = 1; save(); });
 }
 function showOffline(o: { sec: number; out: [string, number][] }) {
   modal(UI.offline, `<p>${duration(o.sec)} · ${UI.offlineNote}</p><table>${o.out.map(([k, v]) => `<tr><td>${curName(k)}</td><td class="mono">+${fmtCur(k, v)}</td></tr>`).join("")}</table>`, false);

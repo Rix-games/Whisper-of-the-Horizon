@@ -58,8 +58,8 @@ export const RESEARCH2: RDef[] = [
 ];
 const M = (o: Omit<MDef, "ch">): MDef => ({ ch: 2, ...o });
 export const MISSIONS2: MDef[] = [
-  M({ id: "dust", cost: 1.5e19, dur: 90, req: () => true, at: [640, 380], view: "system" }),   // plazma ×2
-  M({ id: "pulse", cost: 5e21, dur: 120, req: ST(1), at: [800, 500], view: "system" }),        // data ×2
+  M({ id: "dust", cost: 1.5e19, dur: 90, req: () => true, at: [704, 544], view: "system" }),   // plazma ×2
+  M({ id: "pulse", cost: 5e21, dur: 120, req: ST(1), at: [798, 483], view: "system" }),        // data ×2
   M({ id: "light", cost: 5e23, dur: 150, req: ST(2), at: [560, 420], view: "near" }),          // plocha ×2
   M({ id: "remnant", cost: 6e28, dur: 160, req: ST(4), at: [1130, 330], view: "near" }),       // plocha ×1,5
   M({ id: "envelope", cost: 3e29, dur: 150, req: (s) => s.stage >= 4 && n(s, "shell") >= 5, at: [700, 600], view: "near" }), // plazma ×1,5
