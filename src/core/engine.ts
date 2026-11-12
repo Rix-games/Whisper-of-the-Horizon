@@ -1,7 +1,7 @@
 // Obecné jádro hry: ceny, nákupy, výzkum, mise, stadia, kapitoly, tick.
 // Vzorce kapitol jsou v src/chapters/chN.ts (power, passive, autos…).
 import { State, newState, Cur } from "./state";
-import { BMAP, BUILD, RMAP, RESEARCH, MMAP, MISSIONS, JOURNAL, stagesOf, LAST_CH, stageGoal, chOf } from "./defs";
+import { CHAPTERS, BMAP, BUILD, RMAP, RESEARCH, MMAP, MISSIONS, JOURNAL, stagesOf, LAST_CH, stageGoal, chOf } from "./defs";
 import { on, emit, RT, n, gain, mile } from "./bus";
 import { colCost, salvo } from "../chapters/ch2";
 
@@ -17,15 +17,19 @@ export function dataRate(s: State) {
 }
 
 // ---------- ceny ----------
+/** Zdražení za kus a první cena s ladicími kolečky kapitoly (price.k, price.g). */
+export function gOf(id: string) { const d = BMAP[id], p = CHAPTERS[d.ch - 1].price; return d.kind === "up" || d.g === 1 || !p ? d.g : d.g + p.g; }
+export function c0Of(id: string) { const d = BMAP[id], p = CHAPTERS[d.ch - 1].price; return d.kind === "up" || !p ? d.c0 : d.c0 * p.k; }
 export function cost(s: State, id: string, k = 0): number {
   const d = BMAP[id];
   if (d.kind === "swarm") return colCost(s) * salvo(s);
-  return d.c0 * Math.pow(d.g, n(s, id) + k);
+  return c0Of(id) * Math.pow(gOf(id), n(s, id) + k);
 }
 export function costN(s: State, id: string, cnt: number) {
   const d = BMAP[id];
-  if (d.kind === "swarm" || d.g === 1) return cost(s, id) * cnt;
-  return (cost(s, id) * (Math.pow(d.g, cnt) - 1)) / (d.g - 1);   // geometrický součet
+  const g = gOf(id);
+  if (d.kind === "swarm" || g === 1) return cost(s, id) * cnt;
+  return (cost(s, id) * (Math.pow(g, cnt) - 1)) / (g - 1);   // geometrický součet
 }
 export function capOf(s: State, id: string) {
   const d = BMAP[id];
@@ -39,8 +43,9 @@ export function maxAfford(s: State, id: string) {
   if (maxed(s, id)) return 0;
   const c = cost(s, id);
   if (have < c) return 0;
-  if (d.g === 1 || d.kind === "swarm") return Math.floor(have / c);
-  let m = Math.floor(Math.log((have * (d.g - 1)) / c + 1) / Math.log(d.g));
+  const g = gOf(id);
+  if (g === 1 || d.kind === "swarm") return Math.floor(have / c);
+  let m = Math.floor(Math.log((have * (g - 1)) / c + 1) / Math.log(g));
   m = Math.min(m, capOf(s, id) - n(s, id));
   return Math.max(0, m);
 }

@@ -43,7 +43,7 @@ export const UI = {
   loaded: "Hra nahrána.",
   bad: "Text nejde přečíst jako uložená hra.",
   ok: "Pokračovat", cancel: "Zrušit", close: "Zavřít",
-  offline: "Zatímco jsi byl pryč",
+  offline: "Během tvé nepřítomnosti",
   offlineNote: "Bez tebe platforma jede jen na rezervy.",
   locked: "Zatím mimo dosah",
   passiveView: "Pohled – hraje se jinde",

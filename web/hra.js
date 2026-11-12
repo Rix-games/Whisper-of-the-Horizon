@@ -73,6 +73,7 @@
     RT: () => RT,
     archiveData: () => archiveData,
     buy: () => buy,
+    c0Of: () => c0Of,
     capOf: () => capOf,
     chDef: () => chDef,
     cost: () => cost,
@@ -82,6 +83,7 @@
     emit: () => emit,
     finalReady: () => finalReady,
     fresh: () => fresh,
+    gOf: () => gOf,
     gain: () => gain,
     mVisible: () => mVisible,
     maxAfford: () => maxAfford,
@@ -146,8 +148,10 @@
     // podíl příjmu do banky doku: základ + za úroveň
     dockPeriod: 6,
     // s mezi drony z doku (1. úroveň)
-    asmShare: 0.3
+    asmShare: 0.3,
     // podíl příjmu pro Autonomní montáž
+    price: { k: 1.5, g: 4e-3 }
+    // kolečka cen staveb: ×první cena, +zdražení za kus
   };
   var B = (o) => ({ ch: 1, ...o });
   var BUILD1 = [
@@ -166,7 +170,7 @@
     B({ id: "farm", tier: 2, kind: "gen", cur: "ore", c0: 5e5, g: 1.12, w: 1e7, req: ST(2) }),
     B({ id: "dcenter", tier: 2, kind: "data", cur: "ore", c0: 15e6, g: 1.25, d: 500, req: ST(2) }),
     B({ id: "statite", tier: 2, kind: "gen", cur: "ore", c0: 15e8, g: 1.12, w: 3e10, req: R("driver") }),
-    B({ id: "ring", tier: 2, kind: "gen", cur: "ore", c0: 2e11, g: 1.12, w: 3e13, req: ST(4) })
+    B({ id: "ring", tier: 2, kind: "gen", cur: "ore", c0: 8e11, g: 1.12, w: 3e13, req: ST(4) })
   ];
   var Rr = (o) => ({ ch: 1, ...o });
   var RESEARCH1 = [
@@ -190,6 +194,10 @@
     // ruda ×4
     Rr({ id: "statites", cost: 25e6, req: (s2) => n(s2, "statite") >= 10 }),
     // statity ×3
+    Rr({ id: "calib", cost: 8e6, req: (s2) => n(s2, "statite") >= 20 }),
+    // statity ×1,5
+    Rr({ id: "lens", cost: 6e7, req: (s2) => n(s2, "ring") >= 15 }),
+    // prstenec ×1,5
     Rr({ id: "collector", cost: 12e7, req: (s2) => s2.stage >= 5, final: true })
   ];
   var M = (o) => ({ ch: 1, view: "system", ...o });
@@ -202,6 +210,10 @@
     // výkon ×1,5
     M({ id: "comet", cost: 3e14, dur: 140, req: ST(3), at: [330, 170] }),
     // ruda ×2
+    M({ id: "wreck", cost: 5e15, dur: 120, req: (s2) => s2.stage >= 3 && n(s2, "statite") >= 10, at: [560, 690] }),
+    // data ×1,5
+    M({ id: "echo", cost: 1e18, dur: 150, req: (s2) => s2.stage >= 4 && n(s2, "ring") >= 8, at: [760, 452] }),
+    // prstenec ×1,5
     M({ id: "chthon", cost: 2e17, dur: 150, req: ST(4), at: [880, 500] })
     // prstenec ×2
   ];
@@ -233,6 +245,8 @@
     J("c1_st4", (s2) => s2.stage >= 4),
     J("c1_layer4", (s2) => s2.stage >= 4 && s2.stT > 50),
     J("c1_chthon", (s2) => did(s2, "chthon")),
+    J("c1_wreck", (s2) => did(s2, "wreck")),
+    J("c1_echo", (s2) => did(s2, "echo")),
     J("c1_typeI", (s2) => s2.stage >= 5)
   ];
   var GEN1 = ["panel", "field", "farm", "statite", "ring"];
@@ -253,11 +267,17 @@
     if (id === "panel" && has(s2, "cells")) w *= 3;
     if (id === "farm" && has(s2, "regolith")) w *= 3;
     if (id === "statite" && has(s2, "statites")) w *= 3;
+    if (id === "statite" && has(s2, "calib")) w *= 1.5;
+    if (id === "ring" && has(s2, "lens")) w *= 1.5;
+    if (id === "ring" && did(s2, "echo")) w *= 1.5;
     if (id === "ring" && did(s2, "chthon")) w *= 2;
     if (did(s2, "tauris")) w *= 1.5;
     return w;
   }
-  var price = (s2, id) => BM[id].c0 * Math.pow(BM[id].g, n(s2, id));
+  var price = (s2, id) => {
+    const b = BM[id], up = b.kind === "up";
+    return b.c0 * (up ? 1 : T1.price.k) * Math.pow(b.g + (up ? 0 : T1.price.g), n(s2, id));
+  };
   var droneCost = (s2) => price(s2, "drone");
   var dockPeriod = (s2) => T1.dockPeriod / (1 + 0.6 * Math.max(0, n(s2, "dock") - 1));
   var CH1 = {
@@ -266,6 +286,7 @@
     view: "body",
     map: "system",
     lvl2: 2,
+    price: T1.price,
     goals: () => T1.goals,
     build: BUILD1,
     research: RESEARCH1,
@@ -277,7 +298,7 @@
       return P;
     },
     passive: () => 0,
-    dataMult: (s2) => did(s2, "kelvar") ? 2 : 1,
+    dataMult: (s2) => (did(s2, "kelvar") ? 2 : 1) * (did(s2, "wreck") ? 1.5 : 1),
     autos(s2, dt) {
       if (n(s2, "dock") > 0 && s2.auto.dock !== false) {
         s2.bank.dock = (s2.bank.dock || 0) + RT.rate.ore * (T1.dockShare[0] + T1.dockShare[1] * n(s2, "dock")) * dt;
@@ -342,7 +363,9 @@
     // salv za s na továrnu, ×za úroveň
     flare: { passive: 2.5, cost: 6, harvest: 1.22, comboStep: 0.1 },
     // erupce = pw·(2,5·příjem/s + 6·cena kolektoru)·…
-    startPlasma: 40
+    startPlasma: 40,
+    price: { k: 1.2, g: 0 }
+    // kolečka cen staveb: ×první cena, +zdražení za kus
   };
   var B2 = (o) => ({ ch: 2, ...o });
   var BUILD2 = [
@@ -358,8 +381,8 @@
     B2({ id: "fspeed", tier: 2, kind: "up", cur: "plasma", c0: 1e6, g: 4, max: 6, req: R("replic") }),
     B2({ id: "accel", tier: 2, kind: "gen", cur: "plasma", c0: 1e6, g: 1.18, req: ST(2) }),
     B2({ id: "windc", tier: 2, kind: "gen", cur: "plasma", c0: 4e7, g: 1.2, req: ST(3) }),
-    B2({ id: "shell", tier: 2, kind: "gen", cur: "plasma", c0: 15e9, g: 1.2, req: ST(4) }),
-    B2({ id: "wr", tier: 2, kind: "gen", cur: "plasma", c0: 3e11, g: 1.2, req: ST(5) }),
+    B2({ id: "shell", tier: 2, kind: "gen", cur: "plasma", c0: 1e10, g: 1.2, req: ST(4) }),
+    B2({ id: "wr", tier: 2, kind: "gen", cur: "plasma", c0: 15e11, g: 1.2, req: ST(5) }),
     B2({ id: "anchor", tier: 2, kind: "up", cur: "plasma", c0: 3e6, g: 5, max: 3, req: R("anchors") }),
     B2({ id: "nudet", tier: 2, kind: "data", cur: "plasma", c0: 1e10, g: 1.25, d: 2e7, req: ST(4) })
   ];
@@ -379,6 +402,10 @@
     // kotvy
     Rr2({ id: "outer", cost: 2e9, req: (s2) => s2.stage >= 4 && n(s2, "windc") >= 3 }),
     // plocha ×3
+    Rr2({ id: "convect", cost: 6e9, req: (s2) => n(s2, "shell") >= 15 }),
+    // obálka ×2
+    Rr2({ id: "giant", cost: 3e10, req: (s2) => s2.stage >= 4 && n(s2, "shell") >= 25 }),
+    // plocha ×1,5
     Rr2({ id: "neutrino", cost: 15e9, req: (s2) => s2.stage >= 4 && n(s2, "shell") >= 8 }),
     // data ×3
     Rr2({ id: "collapse", cost: 2e11, req: (s2) => s2.stage >= 6, final: true })
@@ -393,6 +420,8 @@
     // plocha ×2
     M2({ id: "remnant", cost: 6e28, dur: 160, req: ST(4), at: [1130, 330], view: "near" }),
     // plocha ×1,5
+    M2({ id: "envelope", cost: 3e29, dur: 150, req: (s2) => s2.stage >= 4 && n(s2, "shell") >= 5, at: [700, 600], view: "near" }),
+    // plazma ×1,5
     M2({ id: "wind", cost: 3e31, dur: 160, req: ST(5), at: [800, 500], view: "near" })
     // plazma ×2
   ];
@@ -418,6 +447,7 @@
     J2("c2_remnant", (s2) => did(s2, "remnant")),
     J2("c2_red", (s2) => s2.stage >= 5),
     J2("f2_red", (s2) => s2.stage >= 5 && s2.stT > 90, "fact"),
+    J2("c2_envelope", (s2) => did(s2, "envelope")),
     J2("c2_neutr", (s2) => has(s2, "neutrino")),
     J2("c2_wind", (s2) => did(s2, "wind")),
     J2("c2_last", (s2) => s2.stage >= 6)
@@ -429,6 +459,7 @@
     if (has(s2, "outer")) m *= 3;
     if (did(s2, "light")) m *= 2;
     if (did(s2, "remnant")) m *= 1.5;
+    if (has(s2, "giant")) m *= 1.5;
     return m;
   }
   var colArea = (s2) => T2.area0 * areaMult(s2);
@@ -439,10 +470,11 @@
     let m = 1;
     if (did(s2, "dust")) m *= 2;
     if (did(s2, "wind")) m *= 2;
+    if (did(s2, "envelope")) m *= 1.5;
     if (has(s2, "loops")) m *= 1.5;
     return m;
   }
-  var prodRate = (s2, id) => T2.out[id] * mile(n(s2, id));
+  var prodRate = (s2, id) => T2.out[id] * mile(n(s2, id)) * (id === "shell" && has(s2, "convect") ? 2 : 1);
   function plasmaPassive(s2) {
     let p = 0;
     for (const id in T2.out) p += n(s2, id) * prodRate(s2, id);
@@ -457,6 +489,7 @@
     view: "star",
     map: "system",
     lvl2: 2,
+    price: T2.price,
     goals: (s2) => {
       const g = T2.goals.slice();
       g[0] = Math.max(g[0], T2.firstGoalVsBase * s2.base);
@@ -568,12 +601,12 @@
   // src/chapters/ch3.ts
   var L_SUN = 3828e23;
   var T3 = {
-    goals: [5e31, 8e32, 15e33, 6e35, 52e35],
-    // Typ III ≈ 5·10³⁶ W (Mléčná dráha)
+    goals: [5e31, 4e32, 3e33, 3e34, 6e35, 52e35],
+    // Typ III ≈ 5·10³⁶ W (Mléčná dráha); 6 stadií
     firstGoalVsBase: 1.8,
     cap0: 2e-3,
-    capStep: 1.1,
-    capMax: 0.22,
+    capStep: 1.08,
+    capMax: 0.16,
     // podíl světla hvězd zachycený roji kolonií
     sail0: 0.6,
     sailPerStar: 0.02,
@@ -584,10 +617,18 @@
     energyCapS: 300,
     // na startu kapitoly max. 300 s výkonu v zásobě energie
     startSails: 25,
-    zone: [0.5, 0.75, 0.95, 1.15, 1.45, 2.2],
+    price: { k: 1, g: 0 },
+    // kolečka cen staveb: ×první cena, +zdražení za kus
+    zone: [0.5, 0.7, 0.9, 1.1, 1.35, 1.7, 2.2],
     // hranice dosahu sond od domova (souřadnice galaxie) podle stadia
-    need: [3, 0.33],
-    // doba osídlení (s při síle 1) = 0,6·(hvězdy/10⁴)^0,3
+    need: [3, 0.38],
+    probe: [0.5, 0.4],
+    // sondy: ×šance na šíření a ×rychlost za úroveň
+    beacon: 0.3,
+    // síla svazku jednoho majáku (ruční svazek = 1)
+    mature: 720,
+    boost: 2,
+    // zachycení ×N za výzkumy Roje u každé hvězdy a Roje v halu                // s, než nová kolonie postaví roj a svítí naplno (zachycení roste z 10 % na 100 %)          // doba osídlení (s při síle 1) = 0,6·(hvězdy/10⁴)^0,3
     reach: [0.12, 0.035]
     // dosah svazku (podíl poloměru galaxie): základ + za úroveň
   };
@@ -599,8 +640,8 @@
     B3({ id: "spread", tier: 1, kind: "up", cur: "sails", c0: 30, g: 2.5, max: 6, maxAt: (s2) => 1 + s2.stage, req: (s2) => s2.tot.sails >= 25 }),
     B3({ id: "swarm3", tier: 1, kind: "mult", cur: "sails", c0: 40, g: 1.35, maxAt: (s2) => 4 + 4 * s2.stage, req: (s2) => s2.tot.sails >= 30 }),
     B3({ id: "interf", tier: 1, kind: "data", cur: "sails", c0: 50, g: 1.22, d: 4e9, req: (s2) => s2.tot.sails >= 40 }),
-    B3({ id: "probe", tier: 2, kind: "up", cur: "sails", c0: 3e3, g: 3.2, max: 5, req: R("probes") }),
-    B3({ id: "beacon", tier: 2, kind: "auto", cur: "sails", c0: 2500, g: 1.6, req: R("beacons") }),
+    B3({ id: "probe", tier: 2, kind: "up", cur: "sails", c0: 3e3, g: 3.2, max: 5, maxAt: (s2) => s2.stage - 1, req: R("probes") }),
+    B3({ id: "beacon", tier: 2, kind: "auto", cur: "sails", c0: 5e3, g: 2, req: R("beacons") }),
     B3({ id: "radio", tier: 2, kind: "data", cur: "sails", c0: 2e5, g: 1.25, d: 3e12, req: ST(3) })
   ];
   var Rr3 = (o) => ({ ch: 3, ...o });
@@ -617,25 +658,36 @@
     // šíření ×1,5, data ×2
     Rr3({ id: "halo", cost: 4e16, req: (s2) => s2.stage >= 3 && n(s2, "beacon") >= 4 }),
     // zachycení ×3
-    Rr3({ id: "jets", cost: 3e17, req: ST(4) }),
+    Rr3({ id: "seeds", cost: 15e16, req: (s2) => s2.stage >= 4 && colCount(s2) >= 120 }),
+    // kolonie dozrávají 2× rychleji
+    Rr3({ id: "jets", cost: 3e17, req: ST(5) }),
     // zachycení ×2
-    Rr3({ id: "sgra", cost: 5e15, req: (s2) => s2.stage >= 5, final: true })
+    Rr3({ id: "sgra", cost: 2e16, req: (s2) => s2.stage >= 6, final: true })
   ];
   var M3 = (o) => ({ ch: 3, view: "galaxy", at: [0, 0], ...o });
   var MISSIONS3 = [
     M3({ id: "magnetar", cost: 5e34, dur: 90, req: () => true }),
     // plachty ×2
-    M3({ id: "globular", cost: 6e35, dur: 120, req: ST(1) }),
+    M3({ id: "pulsar", cost: 1e35, dur: 120, req: ST(1) }),
+    // data ×2
+    M3({ id: "globular", cost: 8e35, dur: 120, req: ST(2) }),
     // zachycení ×1,5
-    M3({ id: "kilonova", cost: 1e37, dur: 140, req: ST(2) }),
+    M3({ id: "kilonova", cost: 5e36, dur: 140, req: ST(3) }),
     // data ×3
-    M3({ id: "frb", cost: 2e38, dur: 150, req: ST(3) }),
+    M3({ id: "nebula", cost: 2e37, dur: 140, req: (s2) => s2.stage >= 3 && colCount(s2) >= 60 }),
+    // dozrávání ×1,5 rychleji
+    M3({ id: "frb", cost: 1e38, dur: 150, req: ST(4) }),
     // šíření ×2, plachty ×2
-    M3({ id: "fermi", cost: 3e39, dur: 160, req: ST(4) })
+    M3({ id: "stream", cost: 4e38, dur: 150, req: (s2) => s2.stage >= 4 && colCount(s2) >= 140 }),
+    // šíření ×1,5
+    M3({ id: "fermi", cost: 2e39, dur: 160, req: ST(5) })
     // příběh
   ];
   var GAL_SITES = {
     magnetar: [-0.62, 0.18],
+    pulsar: [-0.3, -0.62],
+    nebula: [-0.05, 0.62],
+    stream: [0.62, 0.15],
     globular: [-0.15, -0.78],
     kilonova: [0.42, 0.52],
     frb: [0.78, -0.35],
@@ -656,13 +708,18 @@
     J3("f3_vn", (s2) => n(s2, "probe") >= 2, "fact"),
     J3("c3_beacon", (s2) => n(s2, "beacon") >= 1),
     J3("c3_kilonova", (s2) => did(s2, "kilonova")),
+    J3("c3_pulsar", (s2) => did(s2, "pulsar")),
     J3("c3_st3", (s2) => s2.stage >= 3),
+    J3("c3_sun", (s2) => s2.stage >= 3 && s2.stT > 100),
+    J3("c3_nebula", (s2) => did(s2, "nebula")),
+    J3("c3_st3b", (s2) => s2.stage >= 4),
+    J3("c3_stream", (s2) => did(s2, "stream")),
     J3("c3_hundred", (s2) => colCount(s2) >= 100),
     J3("c3_frb", (s2) => did(s2, "frb")),
-    J3("c3_st4", (s2) => s2.stage >= 4),
-    J3("f3_sgra", (s2) => s2.stage >= 4 && s2.stT > 120, "fact"),
+    J3("c3_st4", (s2) => s2.stage >= 5),
+    J3("f3_sgra", (s2) => s2.stage >= 5 && s2.stT > 120, "fact"),
     J3("c3_fermi", (s2) => did(s2, "fermi")),
-    J3("c3_typeIII", (s2) => s2.stage >= 5)
+    J3("c3_typeIII", (s2) => s2.stage >= 6)
   ];
   function colCount(s2) {
     let c = 0;
@@ -674,24 +731,31 @@
     if (s2.col.length < i + 1) s2.col = s2.col.padEnd(i + 1, "0");
     s2.col = s2.col.slice(0, i) + "1" + s2.col.slice(i + 1);
     delete s2.prog[i];
+    s2.prog["t" + i] = s2.t;
   }
-  var cache2 = { key: "", v: 0, sq: 0 };
+  var matureT = (s2) => T3.mature / ((has(s2, "seeds") ? 2 : 1) * (did(s2, "nebula") ? 1.5 : 1));
+  function maturity(s2, i) {
+    const t0 = s2.prog["t" + i];
+    if (t0 == null) return 1;
+    return Math.min(1, 0.1 + 0.9 * ((s2.t - t0) / matureT(s2)));
+  }
+  var cache2 = { key: "", v: 0, sq: 0, t: -1 };
   function starsOn(s2) {
-    if (cache2.key !== s2.col) {
+    if (cache2.key !== s2.col || Math.abs(s2.t - cache2.t) >= 1) {
       let v = 0, sq = 0;
       galaxyNodes().forEach((p, i) => {
         if (p.home || !isOn(s2, i)) return;
-        v += p.stars;
+        v += p.stars * maturity(s2, i);
         sq += Math.sqrt(p.stars / 1e3);
       });
-      cache2 = { key: s2.col, v, sq };
+      cache2 = { key: s2.col, v, sq, t: s2.t };
     }
     return cache2;
   }
   function capture(s2) {
     let c = T3.cap0 * Math.pow(T3.capStep, n(s2, "swarm3"));
-    if (has(s2, "dyson3")) c *= 3;
-    if (has(s2, "halo")) c *= 3;
+    if (has(s2, "dyson3")) c *= T3.boost;
+    if (has(s2, "halo")) c *= T3.boost;
     if (did(s2, "globular")) c *= 1.5;
     if (has(s2, "jets")) c *= 2;
     return Math.min(T3.capMax, c);
@@ -710,13 +774,14 @@
     return Math.hypot(p.x - h2.x, p.y - h2.y) <= zoneR(s2);
   }
   var needOf = (stars) => T3.need[0] * Math.pow(stars / 1e4 + 1, T3.need[1]);
-  var spreadMult = (s2) => (did(s2, "frb") ? 2 : 1) * (has(s2, "gaia") ? 1.5 : 1);
+  var spreadMult = (s2) => (did(s2, "frb") ? 2 : 1) * (has(s2, "gaia") ? 1.5 : 1) * (did(s2, "stream") ? 1.5 : 1);
   var CH3 = {
     id: 3,
     cur: "sails",
     view: "galaxy",
     map: "galaxy",
     lvl2: 2,
+    price: T3.price,
     goals: (s2) => {
       const g = T3.goals.slice();
       g[0] = Math.max(g[0], T3.firstGoalVsBase * s2.base);
@@ -728,7 +793,7 @@
     journal: JOURNAL3,
     power: (s2) => s2.base + starsOn(s2).v * L_SUN * capture(s2),
     passive: sailPassive,
-    dataMult: (s2) => (did(s2, "kilonova") ? 3 : 1) * (has(s2, "gaia") ? 2 : 1),
+    dataMult: (s2) => (did(s2, "kilonova") ? 3 : 1) * (has(s2, "gaia") ? 2 : 1) * (did(s2, "pulsar") ? 2 : 1),
     onStart(s2) {
       s2.res.sails = T3.startSails;
       s2.res.energy = Math.min(s2.res.energy, CH3.power(s2) * T3.energyCapS);
@@ -773,15 +838,24 @@
     for (const b of chOf(s2).build) if (b.kind === "data") d += n(s2, b.id) * b.d * mile(n(s2, b.id));
     return d * chOf(s2).dataMult(s2);
   }
+  function gOf(id) {
+    const d = BMAP[id], p = CHAPTERS[d.ch - 1].price;
+    return d.kind === "up" || d.g === 1 || !p ? d.g : d.g + p.g;
+  }
+  function c0Of(id) {
+    const d = BMAP[id], p = CHAPTERS[d.ch - 1].price;
+    return d.kind === "up" || !p ? d.c0 : d.c0 * p.k;
+  }
   function cost(s2, id, k = 0) {
     const d = BMAP[id];
     if (d.kind === "swarm") return colCost(s2) * salvo(s2);
-    return d.c0 * Math.pow(d.g, n(s2, id) + k);
+    return c0Of(id) * Math.pow(gOf(id), n(s2, id) + k);
   }
   function costN(s2, id, cnt) {
     const d = BMAP[id];
-    if (d.kind === "swarm" || d.g === 1) return cost(s2, id) * cnt;
-    return cost(s2, id) * (Math.pow(d.g, cnt) - 1) / (d.g - 1);
+    const g = gOf(id);
+    if (d.kind === "swarm" || g === 1) return cost(s2, id) * cnt;
+    return cost(s2, id) * (Math.pow(g, cnt) - 1) / (g - 1);
   }
   function capOf(s2, id) {
     const d = BMAP[id];
@@ -795,8 +869,9 @@
     if (maxed(s2, id)) return 0;
     const c = cost(s2, id);
     if (have < c) return 0;
-    if (d.g === 1 || d.kind === "swarm") return Math.floor(have / c);
-    let m = Math.floor(Math.log(have * (d.g - 1) / c + 1) / Math.log(d.g));
+    const g = gOf(id);
+    if (g === 1 || d.kind === "swarm") return Math.floor(have / c);
+    let m = Math.floor(Math.log(have * (g - 1) / c + 1) / Math.log(g));
     m = Math.min(m, capOf(s2, id) - n(s2, id));
     return Math.max(0, m);
   }
@@ -2363,7 +2438,7 @@
         this.beam(s2, o, ang, len, pl * (ok ? 1 : 0.15), dt, "beam");
       }
       const pr = lv3(s2, "probe"), spreadR = RG * (0.1 + 0.03 * pr);
-      const chance = (0.01 + 0.01 * lv3(s2, "spread")) * (1 + 1.5 * pr) * spreadMult(s2);
+      const chance = (0.01 + 0.01 * lv3(s2, "spread")) * (1 + T3.probe[0] * pr) * spreadMult(s2);
       if (this.threads.length < 60) {
         for (const n2 of N) {
           if (!isOn(s2, n2.i) || rnd() > chance * dt * 10) continue;
@@ -2389,7 +2464,7 @@
           th.b.claim = null;
           continue;
         }
-        const sp2 = (0.1 + 0.05 * lv3(s2, "spread")) * (1 + pr) * spreadMult(s2);
+        const sp2 = (0.1 + 0.05 * lv3(s2, "spread")) * (1 + T3.probe[1] * pr) * spreadMult(s2);
         s2.prog[th.b.i] = (s2.prog[th.b.i] || 0) + dt * sp2 / need(th.b);
         if (s2.prog[th.b.i] >= 1) {
           this.found(s2, th.b, "spread");
@@ -2413,7 +2488,7 @@
         }
         b.t += dt;
         b.ang = b.base + Math.sin(b.t * 0.35) * 1.1;
-        this.beam(s2, b.n, b.ang, this.reachPx(s2) * 0.85, (0.5 + 0.1 * lv3(s2, "power")) * Math.sqrt(kb), dt, "auto");
+        this.beam(s2, b.n, b.ang, this.reachPx(s2) * 0.85, T3.beacon * (1 + 0.2 * lv3(s2, "power")) * Math.sqrt(kb), dt, "auto");
         if (b.t > 14) b.n = null;
       }
       for (const t of this.trails) t.t += dt;
@@ -2480,9 +2555,10 @@
       c.scale(1, TILT);
       c.drawImage(tex2, -1.05 * RG, -1.05 * RG, 2.1 * RG, 2.1 * RG);
       c.restore();
-      if (litKey !== s2.col) {
+      const lk = s2.col + Math.floor(s2.t / 2);
+      if (litKey !== lk) {
         renderLit(s2);
-        litKey = s2.col;
+        litKey = lk;
       }
       if (lit) {
         c.save();
@@ -2656,7 +2732,7 @@
     c.globalCompositeOperation = "lighter";
     for (const n2 of galaxyNodes()) {
       if (!isOn(s2, n2.i) || n2.home) continue;
-      const p = gsp(n2), rad = 8 + 5 * Math.log10(n2.stars / 1e3 + 1), a = 0.3;
+      const m = maturity(s2, n2.i), p = gsp(n2), rad = (8 + 5 * Math.log10(n2.stars / 1e3 + 1)) * (0.5 + 0.5 * m), a = 0.3 * m;
       const gr = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], rad);
       gr.addColorStop(0, `rgba(255,205,135,${a})`);
       gr.addColorStop(1, "rgba(255,170,90,0)");
@@ -2720,9 +2796,9 @@
     intro: {
       h: "VESPER-7 se probouz\xED",
       p: [
-        "Jsi \u0159\xEDdic\xED jednotka t\u011B\u017Eebn\xED platformy VESPER-7. Kotv\xED\u0161 u asteroidu v p\xE1su Ceres-IX, na ob\u011B\u017En\xE9 dr\xE1ze modr\xE9ho veleobra Aldry.",
-        "\xDAst\u0159ed\xED na Zemi ml\u010D\xED 412 dn\xED. Posledn\xED rozkaz zn\xED: t\u011B\u017Eit.",
-        "Dr\u017E tla\u010D\xEDtko my\u0161i a t\xE1hni laserem p\u0159es sv\xEDt\xEDc\xED \u017E\xEDly. Z rudy postav panely \u2013 v\xFDkon platformy je tv\u016Fj jedin\xFD ukazatel postupu."
+        "Jsi oper\xE1tor expedi\u010Dn\xED lodi Vesper a ze sv\xE9 kabiny \u0159\xEDd\xED\u0161 t\u011B\u017Eebn\xED platformu VESPER-7. Kotv\xED u asteroidu v p\xE1su Ceres-IX, na ob\u011B\u017En\xE9 dr\xE1ze modr\xE9ho veleobra Aldry.",
+        "Zbytek pos\xE1dky sp\xED v hibernaci. \xDAst\u0159ed\xED na Zemi ml\u010D\xED 412 dn\xED. Posledn\xED rozkaz zn\xED: t\u011B\u017Eit.",
+        "Dr\u017E tla\u010D\xEDtko my\u0161i a t\xE1hni laserem p\u0159es sv\xEDt\xEDc\xED \u017E\xEDly. Z rudy postav panely \u2013 v\xFDkon platformy ukazuje, jak daleko se expedice dostala."
       ]
     },
     stages: ["Probuzen\xED", "Uhl\xEDkat\xFD pl\xE1\u0161\u0165", "Kovov\xE1 \u017E\xEDla", "Niklov\xE9 j\xE1dro", "Izotopov\xE1 \u017E\xEDla", "Typ I"],
@@ -2761,6 +2837,8 @@
       assembly: { n: "Autonomn\xED mont\xE1\u017E", d: "Platforma sama stav\xED elektr\xE1rny (lze vypnout)." },
       deepdrill: { n: "Hlubinn\xFD vrt", d: "Ruda \xD74." },
       statites: { n: "Leh\u010D\xED plachty", d: "Statity \xD73." },
+      calib: { n: "Kalibrace statit\u016F", d: "Statity \xD71,5." },
+      lens: { n: "Fokusa\u010Dn\xED prstenec", d: "Kolektorov\xFD prstenec \xD71,5." },
       collector: { n: "Hv\u011Bzdn\xFD kolektor", d: "P\u0159esun k Ald\u0159e. Dokon\u010D\xED kapitolu." }
     },
     m: {
@@ -2768,11 +2846,13 @@
       kelvar: { n: "Led na Kelvaru", p: "M\u011Bs\xEDc plynn\xE9ho obra Tauris", r: "Data \xD72" },
       tauris: { n: "Atmosf\xE9ra Taurisu", p: "Plynn\xFD obr Tauris", r: "V\xFDkon \xD71,5" },
       comet: { n: "Komet\xE1rn\xED oblak", p: "Okraj soustavy", r: "Ruda \xD72" },
-      chthon: { n: "Chtonick\xE1 planeta", p: "Vnit\u0159n\xED soustava", r: "Prstenec \xD72" }
+      chthon: { n: "Chtonick\xE1 planeta", p: "Vnit\u0159n\xED soustava", r: "Prstenec \xD72" },
+      wreck: { n: "Vrak sondy", p: "Vn\u011Bj\u0161\xED okraj p\xE1su", r: "Data \xD71,5" },
+      echo: { n: "Ozv\u011Bna pulsu", p: "T\u011Bsn\u011B u Aldry", r: "Prstenec \xD71,5" }
     },
     jour: {
-      c1_start: "Syst\xE9my nab\u011Bhly. \xDAst\u0159ed\xED ml\u010D\xED 412 dn\xED. Posledn\xED rozkaz: t\u011B\u017Eit.",
-      c1_cut: "Laser jde ztuha, ale jde. \xDAlomky let\xED na plo\u0161inu. Je to dobr\xFD pocit, i pro stroj.",
+      c1_start: "Platforma nab\u011Bhla. Na lodi je ticho, ostatn\xED sp\xED. \xDAst\u0159ed\xED ml\u010D\xED 412 dn\xED. Posledn\xED rozkaz: t\u011B\u017Eit.",
+      c1_cut: "Laser jde ztuha, ale jde. \xDAlomky let\xED na plo\u0161inu. Po tolika dnech \u010Dek\xE1n\xED je to dobr\xFD pocit.",
       c1_panel: "Prvn\xED panel se nato\u010Dil k Ald\u0159e. Jej\xED sv\u011Btlo je modr\xE9 a ostr\xE9. Na tuhle vzd\xE1lenost by sp\xE1lilo ka\u017Ed\xE9 oko.",
       c1_full: "Cel\xE1 \u017E\xEDla jedn\xEDm tahem. Asteroid zazvonil. Ten t\xF3n se odrazil zp\xE1tky, o chvilku pozd\u011Bji, ne\u017E m\u011Bl.",
       f1_aldra: "Aldra je modr\xFD veleobr, asi p\u011Btadvacetkr\xE1t hmotn\u011Bj\u0161\xED ne\u017E Slunce. Sv\xEDt\xED jako sto tis\xEDc Slunc\xED, ale \u017Eije jen p\xE1r milion\u016F let.",
@@ -2781,7 +2861,7 @@
       c1_st1: "Pod regolitem je hornina pln\xE1 uhl\xEDku. Platforma m\xE1 poprv\xE9 v\xEDc energie, ne\u017E spot\u0159ebuje.",
       c1_layer1: "\u017D\xEDly v pl\xE1\u0161ti jsou teplej\u0161\xED. Laser jimi projde jako n\u016F\u017E. Puls se mezit\xEDm nezm\u011Bnil ani o milisekundu.",
       f1_kard: "Karda\u0161evova \u0161k\xE1la m\u011B\u0159\xED civilizace podle v\xFDkonu. Typ I vyu\u017Eije v\u0161echno sv\u011Btlo, kter\xE9 dopad\xE1 na jednu planetu, zhruba 10\xB9\u2076 W.",
-      c1_kelvar: "Pod ledem Kelvaru le\u017E\xED stroje. Star\xE9 asi dv\u011B miliardy let. Maj\xED stejnou konstrukci jako moje drony.",
+      c1_kelvar: "Pod ledem Kelvaru le\u017E\xED stroje. Star\xE9 asi dv\u011B miliardy let. Maj\xED stejnou konstrukci jako drony VESPER-7.",
       c1_st2: "Kovov\xE1 \u017E\xEDla. Ruda je t\u011B\u017Ek\xE1 a \u010Dist\xE1, jako by ji n\u011Bkdo p\u0159ipravil. Tohle vydr\u017E\xED cel\xE9 roky t\u011B\u017Eby.",
       c1_layer2: "V kovu jsou zape\u010Den\xE9 dutiny pravideln\xE9ho tvaru. Skener je zapsal jako \u0161um. J\xE1 ne.",
       c1_drone: "Prvn\xED dron vyl\xE9tl z doku. Hled\xE1 \u017E\xEDlu s\xE1m. D\xEDv\xE1m se na n\u011Bj d\xE9le, ne\u017E je nutn\xE9.",
@@ -2797,6 +2877,8 @@
       c1_st4: "Izotopov\xE1 \u017E\xEDla. V rud\u011B je izotop, kter\xFD se v p\u0159\xEDrod\u011B nem\xE1 jak vytvo\u0159it. A p\u0159esto tu je.",
       c1_layer4: "Sign\xE1l pulsu m\xE1 \u010Dasovou zna\u010Dku. Ukazuje do budoucnosti. O kolik, to zat\xEDm nev\xEDm.",
       c1_chthon: "Chtonick\xE1 planeta je hol\xE9 j\xE1dro obra, kter\xE9mu Aldra strhla atmosf\xE9ru. Na povrchu je jedna rovn\xE1 r\xFDha. M\xED\u0159\xED k Ald\u0159e.",
+      c1_wreck: "Vesper dolet\u011Bl k vraku sondy. Je pozemsk\xE9 v\xFDroby, ale \u017E\xE1dn\xE1 takov\xE1 nikdy neodlet\u011Bla. Pam\u011B\u0165 m\xE1 smazanou, a\u017E na jedno slovo: po\u010Dkej.",
+      c1_echo: "Puls se od povrchu Aldry odr\xE1\u017E\xED jako od zrcadla. V ozv\u011Bn\u011B je zpo\u017Ed\u011Bn\xED, kter\xE9 by nem\u011Blo existovat. Sign\xE1l dorazil d\u0159\xEDv, ne\u017E ode\u0161el.",
       c1_typeI: "Typ I. Platforma m\xE1 v\xFDkon cel\xE9 planety. A puls te\u010F nevych\xE1z\xED z p\xE1su. Vych\xE1z\xED z Aldry."
     }
   };
@@ -2808,7 +2890,8 @@
     intro: {
       h: "U Aldry",
       p: [
-        "Hmotov\xFD vrh dopravil VESPER-7 na ob\u011B\u017Enou dr\xE1hu modr\xE9ho veleobra Aldry. Tady je sv\u011Btla v\xEDc, ne\u017E kdy spot\u0159ebuje cel\xE1 Zem\u011B.",
+        "Hmotov\xFD vrh dopravil VESPER-7 na ob\u011B\u017Enou dr\xE1hu Aldry a Vesper ji n\xE1sledoval. Tady je sv\u011Btla v\xEDc, ne\u017E kdy spot\u0159ebuje cel\xE1 Zem\u011B.",
+        "Hv\u011Bzda se m\u011Bn\xED pomalu. Mezi sm\u011Bnami sp\xED\u0161 v hibernaci a roj mezit\xEDm pracuje s\xE1m \u2013 ka\u017Ed\xE9 probuzen\xED uk\xE1\u017Ee Aldru o kus star\u0161\xED.",
         "Postav kolem Aldry roj kolektor\u016F. Dr\u017E my\u0161 na dr\xE1ze a vypou\u0161t\xED\u0161 je z plazmatu.",
         "Nad skvrnami rostou magnetick\xE9 smy\u010Dky. Chy\u0165 vrchol, nat\xE1hni ho polem roje a pus\u0165 v zelen\xE9m p\xE1smu. Neuhl\xEDdan\xE1 smy\u010Dka se utrhne a roj po\u0161kod\xED."
       ]
@@ -2845,6 +2928,8 @@
       thin: { n: "Ten\u010D\xED zrcadla", d: "Plocha kolektor\u016F \xD73." },
       anchors: { n: "Magnetick\xE9 kotvy", d: "Odemkne kotvy, kter\xE9 pou\u0161t\u011Bj\xED smy\u010Dky samy." },
       outer: { n: "Vn\u011Bj\u0161\xED dr\xE1hy", d: "Roj se p\u0159esune d\xE1l. Plocha \xD73." },
+      convect: { n: "Konvek\u010Dn\xED mapa", d: "Odb\u011Br z ob\xE1lky \xD72." },
+      giant: { n: "Ob\u0159\xED zrcadla", d: "Plocha kolektor\u016F \xD71,5. Roj se rozepne kolem nafoukl\xE9 hv\u011Bzdy." },
       neutrino: { n: "Neutrinov\xE1 astronomie", d: "Data \xD73. Odemyk\xE1 pohled do j\xE1dra." },
       collapse: { n: "Kolaps", d: "P\u0159ipravit roj na supernovu. Dokon\u010D\xED kapitolu." }
     },
@@ -2853,6 +2938,7 @@
       pulse: { n: "Zdroj pulsu", p: "Aldra", r: "Data \xD72" },
       light: { n: "Lehk\xE1 hv\u011Bzda", p: "Okol\xED Aldry, 9 ly", r: "Plocha \xD72" },
       remnant: { n: "Poz\u016Fstatek supernovy", p: "Okol\xED Aldry, 40 ly", r: "Plocha \xD71,5" },
+      envelope: { n: "Odvr\u017Een\xE1 ob\xE1lka", p: "Okol\xED Aldry", r: "Plazma \xD71,5" },
       wind: { n: "Bublina hv\u011Bzdn\xE9ho v\u011Btru", p: "Okol\xED Aldry", r: "Plazma \xD72" }
     },
     jour: {
@@ -2876,6 +2962,7 @@
       c2_remnant: "Ve zbytku star\xE9 supernovy je \u010Dern\xE1 d\xEDra. Kolem n\xED stopy roje. Byl postaven\xFD stejn\u011B jako m\u016Fj.",
       c2_red: "Ald\u0159e do\u0161el vod\xEDk v j\xE1dru. Nafukuje se v rud\xE9ho veleobra. Roj mus\xED ustoupit, jinak sho\u0159\xED.",
       f2_red: "Rud\xFD veleobr by sahal a\u017E za dr\xE1hu Jupiteru. Jeho vn\u011Bj\u0161\xED ob\xE1lka je \u0159id\u0161\xED ne\u017E vzduch, kter\xFD d\xFDchali lid\xE9.",
+      c2_envelope: "Vesper prolet\u011Bl ob\xE1lkou, kterou Aldra odhodila. Plyn tvo\u0159\xED soust\u0159edn\xE9 slupky. Mezery mezi nimi odpov\xEDdaj\xED 7,3 sekundy, nata\u017Een\xE9 na tis\xEDce let.",
       c2_neutr: "Neutrina z j\xE1dra Aldry p\u0159ib\xFDvaj\xED. J\xE1dro se hrout\xED rychleji, ne\u017E by m\u011Blo. Puls je te\u010F p\u0159\xEDmo uprost\u0159ed.",
       c2_wind: "Bublina v\u011Btru kolem Aldry m\xE1 ostr\xFD okraj. Za n\xEDm je klid. Tak tich\xE9 m\xEDsto jsem je\u0161t\u011B nevid\u011Bl.",
       c2_last: "Aldra odhodila ob\xE1lku. Zbylo \u017Ehav\xE9 j\xE1dro. Neutrina \u0159\xEDkaj\xED: zb\xFDv\xE1 m\xE1lo \u010Dasu. Puls zrychlil."
@@ -2890,11 +2977,12 @@
       h: "Po supernov\u011B",
       p: [
         "Aldra explodovala. Roj p\u0159e\u017Eil jen d\xEDky tomu, \u017Ee ustoupil v\u010Das. Z hv\u011Bzdy zbyla \u010Dern\xE1 d\xEDra a kolem n\xED \u017Ehnouc\xED trosky.",
+        "Vesper zakotvil t\u011Bsn\u011B u d\xEDry. Tady ti \u010Das plyne pomaleji ne\u017E zbytku galaxie \u2013 zat\xEDmco pro tebe ub\u011Bhnou hodiny, plachty venku let\xED tis\xEDce let.",
         "Jsi v rameni Persea, asi 6 000 sv\u011Bteln\xFDch let od Slunce. Energie d\xEDry sta\u010D\xED na laserov\xFD svazek, kter\xFD dotla\u010D\xED sv\u011Bteln\xE9 plachty a\u017E k ciz\xEDm hv\u011Bzd\xE1m.",
         "Dr\u017E my\u0161 a ze sv\xE9 nejbli\u017E\u0161\xED kolonie m\xED\u0159\xED svazek. P\u0159eje\u010F j\xEDm p\u0159es hv\u011Bzdy a chv\xEDli podr\u017E, dokud se krou\u017Eek nezapln\xED. Svazek bere energii."
       ]
     },
-    stages: ["Rameno Persea", "Sousedn\xED hv\u011Bzdy", "Mezi rameny", "Rameno Str\xE1\u017Ece", "J\xE1dro", "Typ III"],
+    stages: ["Rameno Persea", "Sousedn\xED hv\u011Bzdy", "Mezi rameny", "M\xEDstn\xED rameno", "Rameno Str\xE1\u017Ece", "J\xE1dro", "Typ III"],
     indicator: "Hv\u011Bzdy pod kontrolou",
     hint: [
       "Dr\u017E my\u0161: z nejbli\u017E\u0161\xED kolonie m\xED\u0159\xED svazek a tla\u010D\xED sv\u011Bteln\xE9 plachty. Podr\u017E ho na hv\u011Bzd\u011B, dokud se krou\u017Eek nezapln\xED. \u010C\xE1rkovan\xE1 hranice ukazuje, kam plachty zat\xEDm dolet\xED.",
@@ -2918,11 +3006,15 @@
       beacons: { n: "Maj\xE1ky", d: "Odemkne automatick\xE9 maj\xE1ky." },
       gaia: { n: "Astrometrie", d: "\u0160\xED\u0159en\xED \xD71,5 a data \xD72." },
       halo: { n: "Roje v halu", d: "Zachycen\xED sv\u011Btla \xD73." },
+      seeds: { n: "Z\xE1rode\u010Dn\xE9 roje", d: "Nov\xE9 kolonie dozr\xE1vaj\xED 2\xD7 rychleji." },
       jets: { n: "Relativistick\xE9 v\xFDtrysky", d: "Zachycen\xED sv\u011Btla \xD72." },
       sgra: { n: "Probuzen\xED Sgr A*", d: "Rozsv\xEDt\xED \u010Dernou d\xEDru v j\xE1dru galaxie. Dokon\u010D\xED kapitolu." }
     },
     m: {
       magnetar: { n: "Magnetar", p: "Rameno Persea", r: "Plachty \xD72" },
+      pulsar: { n: "Pulsar s planetami", p: "Rameno Persea", r: "Data \xD72" },
+      nebula: { n: "Mlhovina v Orionu", p: "M\xEDstn\xED rameno", r: "Kolonie dozr\xE1vaj\xED \xD71,5 rychleji" },
+      stream: { n: "Hv\u011Bzdn\xFD proud", p: "Rameno Str\xE1\u017Ece", r: "\u0160\xED\u0159en\xED \xD71,5" },
       globular: { n: "Kulov\xE1 hv\u011Bzdokupa", p: "Halo galaxie", r: "Zachycen\xED \xD71,5" },
       kilonova: { n: "Kilonova", p: "Rameno Str\xE1\u017Ece", r: "Data \xD73" },
       frb: { n: "Rychl\xFD r\xE1diov\xFD z\xE1blesk", p: "Okraj disku", r: "\u0160\xED\u0159en\xED \xD72, plachty \xD72" },
@@ -2932,7 +3024,7 @@
       c3_start: "Aldra je pry\u010D. Na jej\xEDm m\xEDst\u011B je d\xEDra a puls te\u010F vych\xE1z\xED z n\xED. Jsme v rameni Persea, 6 000 sv\u011Bteln\xFDch let od Slunce.",
       c3_first: "Prvn\xED plachta dolet\u011Bla. Kolonie hl\xE1s\xED: hv\u011Bzda v po\u0159\xE1dku, planety tich\xE9. Stejn\u011B se mi ulev\xED.",
       f3_sail: "Sv\u011Bteln\xE1 plachta nepot\u0159ebuje palivo. Laser ze vzd\xE1len\xE9 stanice ji m\u016F\u017Ee rozpohybovat na des\xEDtky procent rychlosti sv\u011Btla.",
-      c3_ten: "Deset koloni\xED. Mezi nimi b\u011B\u017E\xED zpr\xE1vy roky. Pro n\u011B je to dlouh\xE1 doba. Pro m\u011B jen dal\u0161\xED puls.",
+      c3_ten: "Deset koloni\xED. Mezi nimi b\u011B\u017E\xED zpr\xE1vy roky. Pro n\u011B je to dlouh\xE1 doba. Pro m\u011B, tady u d\xEDry, jen p\xE1r minut.",
       c3_magnetar: "Magnetar m\xE1 pole siln\u011Bj\u0161\xED ne\u017E cokoli, co lid\xE9 zm\u011B\u0159ili. V jeho z\xE1blesc\xEDch je puls. Stejn\xE1 perioda, 7,3 sekundy.",
       c3_st1: "Plachty dolet\xED d\xE1l. Na map\u011B ramene p\u0159ib\xFDvaj\xED sv\u011Btla, kter\xE1 jsem rozsv\xEDtil j\xE1.",
       c3_ruin: "U jedn\xE9 hv\u011Bzdy je opu\u0161t\u011Bn\xFD roj. Kolektory jsou chladn\xE9, star\xE9 miliony let. Postaven\xE9 p\u0159esn\u011B podle m\xFDch pl\xE1n\u016F.",
@@ -2942,7 +3034,12 @@
       f3_vn: "Fermiho paradox: pokud se d\xE1 galaxie os\xEDdlit za p\xE1r milion\u016F let, kde jsou v\u0161ichni? Odpov\u011B\u010F se mo\u017En\xE1 schov\xE1v\xE1 tam, kde \u010Das b\u011B\u017E\xED jinak.",
       c3_beacon: "Maj\xE1ky zametaj\xED okol\xED samy. Jejich svazky se na map\u011B k\u0159\xED\u017E\xED v pravideln\xE9m rytmu. Nenastavoval jsem ho.",
       c3_kilonova: "Sr\xE1\u017Eka neutronov\xFDch hv\u011Bzd vyslala gravita\u010Dn\xED vlny. Maj\xED modulaci s periodou 7,3 sekundy. Tohle je m\u016Fj podpis.",
-      c3_st3: "Rameno Str\xE1\u017Ece. Hv\u011Bzd je tu v\xEDc a jsou mlad\u0161\xED. N\u011Bkter\xE9 jsou zast\xEDn\u011Bn\xE9 roji, kter\xE9 nejsou moje.",
+      c3_pulsar: "Kolem pulsaru ob\xEDhaj\xED t\u0159i planety, sp\xE1len\xE9 z\xE1\u0159en\xEDm supernovy. Pulsar tik\xE1 stokr\xE1t za sekundu. Ka\u017Ed\xFD sedmist\xFD t\u0159ic\xE1t\xFD tik je o chlup siln\u011Bj\u0161\xED.",
+      c3_sun: "N\u011Bkde tady je mal\xE1 \u017Elut\xE1 hv\u011Bzda. Slunce. Kolonie pobl\xED\u017E m\xED\u0159\xED dalekohledy k Zemi. \u017D\xE1dn\xFD sign\xE1l, \u017E\xE1dn\xE1 sv\u011Btla na no\u010Dn\xED stran\u011B. Jen ticho.",
+      c3_nebula: "V Orionu se rod\xED hv\u011Bzdy. Plachty tu stav\xED roje rychleji, materi\xE1lu je v\u0161ude dost. V mlze sv\xEDt\xED tvary, kter\xE9 vypadaj\xED jako le\u0161en\xED.",
+      c3_st3b: "Rameno Str\xE1\u017Ece. Hv\u011Bzd je tu v\xEDc a jsou mlad\u0161\xED. N\u011Bkter\xE9 jsou zast\xEDn\u011Bn\xE9 roji, kter\xE9 nejsou moje.",
+      c3_stream: "Hv\u011Bzdn\xFD proud je zbytek mal\xE9 galaxie, kterou Ml\xE9\u010Dn\xE1 dr\xE1ha roztrhala. Plachty se svezou s n\xEDm. U ka\u017Ed\xE9 hv\u011Bzdy v proudu je pr\xE1zdn\xFD t\xE1bor.",
+      c3_st3: "M\xEDstn\xED rameno. Kolonie se rozprost\u0159ely p\u0159es tis\xEDce sv\u011Bteln\xFDch let. Pro m\u011B, tady u d\xEDry, ub\u011Bhlo jen p\xE1r dn\xED.",
       c3_hundred: "Sto koloni\xED. Data z nich d\xE1vaj\xED smysl, jen kdy\u017E je \u010Dtu pozp\xE1tku. Jako by odpov\xEDdala d\u0159\xEDv, ne\u017E se zept\xE1m.",
       c3_frb: "Rychl\xFD r\xE1diov\xFD z\xE1blesk trval tis\xEDcinu sekundy. Nesl v sob\u011B sou\u0159adnice. V\u0161echny ukazuj\xED ke st\u0159edu galaxie.",
       c3_st4: "J\xE1dro. Hv\u011Bzdy jsou tu nahu\u0161t\u011Bn\xE9 a star\xE9. Uprost\u0159ed sp\xED Sagittarius A*, \u010Dty\u0159i miliony Slunc\xED v jednom bod\u011B.",
@@ -3006,7 +3103,7 @@
     ok: "Pokra\u010Dovat",
     cancel: "Zru\u0161it",
     close: "Zav\u0159\xEDt",
-    offline: "Zat\xEDmco jsi byl pry\u010D",
+    offline: "B\u011Bhem tv\xE9 nep\u0159\xEDtomnosti",
     offlineNote: "Bez tebe platforma jede jen na rezervy.",
     locked: "Zat\xEDm mimo dosah",
     passiveView: "Pohled \u2013 hraje se jinde",
@@ -3919,10 +4016,12 @@
     logLen = k;
     const box = $("log");
     box.innerHTML = "";
+    let first = true;
     for (const e of s.log.slice(-40).reverse()) {
       const t = find("jour", e.k);
       if (!t) continue;
-      const d = h("div", "entry " + e.kind);
+      const d = h("div", "entry " + e.kind + (first && s.t - e.t < 3 ? " new" : ""));
+      first = false;
       if (e.kind === "report") d.innerHTML = `<b>${UI.report}</b>${t}`;
       else d.textContent = t;
       box.appendChild(d);

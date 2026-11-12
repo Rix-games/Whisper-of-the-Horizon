@@ -47,9 +47,11 @@ button { font:inherit; color:inherit; }
 .logp { flex:1; min-height:120px; display:flex; flex-direction:column; overflow:hidden; }
 .ph { font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
 #log { overflow-y:auto; flex:1; padding-right:4px; }
-.entry { font-size:13px; padding:6px 0; border-bottom:1px solid #1a2030; color:#c9d0de; animation:fadein .8s; }
-.entry:first-child { color:var(--tx); }
-.entry.fact { color:#c6a8ff; }
+.entry { font-size:13px; padding:6px 0; border-bottom:1px solid #1a2030; color:#e3a970; }
+.entry.new { animation:fadein .8s; }
+.entry:first-child { color:#f7bf86; }
+.entry.fact { color:#b99cf5; }
+.entry.fact:first-child { color:#cdb6ff; }
 .entry.report b { display:block; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--acc); }
 @keyframes fadein { from { opacity:0; transform:translateY(-4px); } }
 

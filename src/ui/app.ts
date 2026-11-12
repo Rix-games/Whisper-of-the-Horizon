@@ -243,9 +243,10 @@ function journal() {
   if (logLen === k) return;
   logLen = k;
   const box = $("log"); box.innerHTML = "";
+  let first = true;
   for (const e of s.log.slice(-40).reverse()) {
     const t = find("jour", e.k); if (!t) continue;
-    const d = h("div", "entry " + e.kind);
+    const d = h("div", "entry " + e.kind + (first && s.t - e.t < 3 ? " new" : "")); first = false;
     if (e.kind === "report") d.innerHTML = `<b>${UI.report}</b>${t}`; else d.textContent = t;
     box.appendChild(d);
   }

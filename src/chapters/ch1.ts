@@ -18,6 +18,7 @@ export const T1 = {
   dockShare: [0.2, 0.08],                 // podíl příjmu do banky doku: základ + za úroveň
   dockPeriod: 6,                          // s mezi drony z doku (1. úroveň)
   asmShare: 0.3,                          // podíl příjmu pro Autonomní montáž
+  price: { k: 1.5, g: 0.004 },            // kolečka cen staveb: ×první cena, +zdražení za kus
 };
 
 const B = (o: Omit<BDef, "ch">): BDef => ({ ch: 1, ...o });
@@ -37,7 +38,7 @@ export const BUILD1: BDef[] = [
   B({ id: "farm", tier: 2, kind: "gen", cur: "ore", c0: 5e5, g: 1.12, w: 1e7, req: ST(2) }),
   B({ id: "dcenter", tier: 2, kind: "data", cur: "ore", c0: 1.5e7, g: 1.25, d: 500, req: ST(2) }),
   B({ id: "statite", tier: 2, kind: "gen", cur: "ore", c0: 1.5e9, g: 1.12, w: 3e10, req: R("driver") }),
-  B({ id: "ring", tier: 2, kind: "gen", cur: "ore", c0: 2e11, g: 1.12, w: 3e13, req: ST(4) }),
+  B({ id: "ring", tier: 2, kind: "gen", cur: "ore", c0: 8e11, g: 1.12, w: 3e13, req: ST(4) }),
 ];
 const Rr = (o: Omit<RDef, "ch">): RDef => ({ ch: 1, ...o });
 export const RESEARCH1: RDef[] = [
@@ -51,6 +52,8 @@ export const RESEARCH1: RDef[] = [
   Rr({ id: "assembly", cost: 1.2e6, req: (s) => n(s, "statite") >= 1 }),   // autonomní montáž elektráren
   Rr({ id: "deepdrill", cost: 5e6, req: ST(4) }),                          // ruda ×4
   Rr({ id: "statites", cost: 2.5e7, req: (s) => n(s, "statite") >= 10 }),  // statity ×3
+  Rr({ id: "calib", cost: 8e6, req: (s) => n(s, "statite") >= 20 }),       // statity ×1,5
+  Rr({ id: "lens", cost: 6e7, req: (s) => n(s, "ring") >= 15 }),           // prstenec ×1,5
   Rr({ id: "collector", cost: 1.2e8, req: (s) => s.stage >= 5, final: true }),
 ];
 const M = (o: Omit<MDef, "ch" | "view">): MDef => ({ ch: 1, view: "system", ...o });
@@ -59,6 +62,8 @@ export const MISSIONS1: MDef[] = [
   M({ id: "kelvar", cost: 5e8, dur: 90, req: ST(1), at: [1270, 300] }),             // data ×2
   M({ id: "tauris", cost: 2e11, dur: 120, req: ST(2), at: [1225, 330] }),           // výkon ×1,5
   M({ id: "comet", cost: 3e14, dur: 140, req: ST(3), at: [330, 170] }),             // ruda ×2
+  M({ id: "wreck", cost: 5e15, dur: 120, req: (s) => s.stage >= 3 && n(s, "statite") >= 10, at: [560, 690] }), // data ×1,5
+  M({ id: "echo", cost: 1e18, dur: 150, req: (s) => s.stage >= 4 && n(s, "ring") >= 8, at: [760, 452] }),     // prstenec ×1,5
   M({ id: "chthon", cost: 2e17, dur: 150, req: ST(4), at: [880, 500] }),            // prstenec ×2
 ];
 const J = (id: string, when: (s: State) => boolean, kind?: "fact"): JDef => ({ id, ch: 1, when, kind });
@@ -89,6 +94,8 @@ export const JOURNAL1: JDef[] = [
   J("c1_st4", (s) => s.stage >= 4),
   J("c1_layer4", (s) => s.stage >= 4 && s.stT > 50),
   J("c1_chthon", (s) => did(s, "chthon")),
+  J("c1_wreck", (s) => did(s, "wreck")),
+  J("c1_echo", (s) => did(s, "echo")),
   J("c1_typeI", (s) => s.stage >= 5),
 ];
 
@@ -112,21 +119,27 @@ export function genW(s: State, id: string) {
   if (id === "panel" && has(s, "cells")) w *= 3;
   if (id === "farm" && has(s, "regolith")) w *= 3;
   if (id === "statite" && has(s, "statites")) w *= 3;
+  if (id === "statite" && has(s, "calib")) w *= 1.5;
+  if (id === "ring" && has(s, "lens")) w *= 1.5;
+  if (id === "ring" && did(s, "echo")) w *= 1.5;
   if (id === "ring" && did(s, "chthon")) w *= 2;
   if (did(s, "tauris")) w *= 1.5;
   return w;
 }
-const price = (s: State, id: string) => BM[id].c0 * Math.pow(BM[id].g, n(s, id));
+const price = (s: State, id: string) => {
+  const b = BM[id], up = b.kind === "up";
+  return b.c0 * (up ? 1 : T1.price.k) * Math.pow(b.g + (up ? 0 : T1.price.g), n(s, id));
+};
 export const droneCost = (s: State) => price(s, "drone");
 export const dockPeriod = (s: State) => T1.dockPeriod / (1 + 0.6 * Math.max(0, n(s, "dock") - 1));
 
 export const CH1: ChapterDef = {
-  id: 1, cur: "ore", view: "body", map: "system", lvl2: 2,
+  id: 1, cur: "ore", view: "body", map: "system", lvl2: 2, price: T1.price,
   goals: () => T1.goals,
   build: BUILD1, research: RESEARCH1, missions: MISSIONS1, journal: JOURNAL1,
   power(s) { let P = T1.rtg; for (const id of GEN1) P += n(s, id) * genW(s, id); return P; },
   passive: () => 0,
-  dataMult: (s) => (did(s, "kelvar") ? 2 : 1),
+  dataMult: (s) => (did(s, "kelvar") ? 2 : 1) * (did(s, "wreck") ? 1.5 : 1),
   autos(s, dt) {
     // Montážní dok: banka z podílu příjmu rudy, staví drony
     if (n(s, "dock") > 0 && s.auto.dock !== false) {

@@ -2,7 +2,7 @@
 import { Mech, Input, View, ftxt, sparks, MONO } from "./fx";
 import { rnd, mulberry, angDiff } from "../core/rng";
 import { power } from "../core/engine";
-import { isOn, setOn, spreadMult, needOf, inZone, zoneR, T3 } from "../chapters/ch3";
+import { isOn, setOn, spreadMult, needOf, inZone, zoneR, maturity, T3 } from "../chapters/ch3";
 import { galaxyNodes, GNode } from "../core/galaxy";
 import { count } from "../core/format";
 import type { State } from "../core/state";
@@ -60,7 +60,7 @@ export const galaxie: Mech & any = {
     }
     // přirozené šíření a sondy
     const pr = lv(s, "probe"), spreadR = RG * (0.1 + 0.03 * pr);
-    const chance = (0.01 + 0.01 * lv(s, "spread")) * (1 + 1.5 * pr) * spreadMult(s);
+    const chance = (0.01 + 0.01 * lv(s, "spread")) * (1 + T3.probe[0] * pr) * spreadMult(s);
     if (this.threads.length < 60) {
       for (const n of N) {
         if (!isOn(s, n.i) || rnd() > chance * dt * 10) continue;
@@ -75,7 +75,7 @@ export const galaxie: Mech & any = {
     }
     for (const th of this.threads) {
       if (isOn(s, th.b.i)) { th.done = true; th.b.claim = null; continue; }
-      const sp = (0.1 + 0.05 * lv(s, "spread")) * (1 + pr) * spreadMult(s);
+      const sp = (0.1 + 0.05 * lv(s, "spread")) * (1 + T3.probe[1] * pr) * spreadMult(s);
       s.prog[th.b.i] = (s.prog[th.b.i] || 0) + (dt * sp) / need(th.b);
       if (s.prog[th.b.i] >= 1) {
         this.found(s, th.b, "spread"); th.done = true; th.b.claim = null;
@@ -89,7 +89,7 @@ export const galaxie: Mech & any = {
     for (const b of this.beacons) {
       if (!b.n || !isOn(s, b.n.i)) { const on = N.filter((n) => isOn(s, n.i)); b.n = on[(rnd() * on.length) | 0]; b.base = rnd() * 6.28; b.t = 0; }
       b.t += dt; b.ang = b.base + Math.sin(b.t * 0.35) * 1.1;
-      this.beam(s, b.n, b.ang, this.reachPx(s) * 0.85, (0.5 + 0.1 * lv(s, "power")) * Math.sqrt(kb), dt, "auto");
+      this.beam(s, b.n, b.ang, this.reachPx(s) * 0.85, T3.beacon * (1 + 0.2 * lv(s, "power")) * Math.sqrt(kb), dt, "auto");
       if (b.t > 14) b.n = null;
     }
     for (const t of this.trails) t.t += dt;
@@ -124,7 +124,8 @@ export const galaxie: Mech & any = {
     if (!tex) tex = spiralTex(1400, 21);
     c.save(); c.globalAlpha = 0.6; c.translate(GCX, GCY); c.scale(1, TILT);
     c.drawImage(tex, -1.05 * RG, -1.05 * RG, 2.1 * RG, 2.1 * RG); c.restore();
-    if (litKey !== s.col) { renderLit(s); litKey = s.col; }
+    const lk = s.col + Math.floor(s.t / 2);   // kolonie dozrávají – záře roste
+    if (litKey !== lk) { renderLit(s); litKey = lk; }
     if (lit) { c.save(); c.globalCompositeOperation = "lighter"; c.drawImage(lit, 0, 0, 1600, 1000); c.restore(); }
     // Sgr A*
     const cp = [GCX, GCY];
@@ -211,7 +212,7 @@ function renderLit(s: State) {
   const c = lit.getContext("2d")!; c.clearRect(0, 0, 1600, 1000); c.globalCompositeOperation = "lighter";
   for (const n of galaxyNodes()) {
     if (!isOn(s, n.i) || n.home) continue;
-    const p = gsp(n), rad = 8 + 5 * Math.log10(n.stars / 1e3 + 1), a = 0.3;
+    const m = maturity(s, n.i), p = gsp(n), rad = (8 + 5 * Math.log10(n.stars / 1e3 + 1)) * (0.5 + 0.5 * m), a = 0.3 * m;
     const gr = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], rad);
     gr.addColorStop(0, `rgba(255,205,135,${a})`); gr.addColorStop(1, "rgba(255,170,90,0)");
     c.fillStyle = gr; c.beginPath(); c.arc(p[0], p[1], rad, 0, 7); c.fill();

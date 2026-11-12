@@ -20,6 +20,7 @@ export const T2 = {
   factRate: 0.5, fspeed: 1.5, // salv za s na továrnu, ×za úroveň
   flare: { passive: 2.5, cost: 6, harvest: 1.22, comboStep: 0.1 }, // erupce = pw·(2,5·příjem/s + 6·cena kolektoru)·…
   startPlasma: 40,
+  price: { k: 1.2, g: 0 },      // kolečka cen staveb: ×první cena, +zdražení za kus
 };
 
 const B = (o: Omit<BDef, "ch">): BDef => ({ ch: 2, ...o });
@@ -36,8 +37,8 @@ export const BUILD2: BDef[] = [
   B({ id: "fspeed", tier: 2, kind: "up", cur: "plasma", c0: 1e6, g: 4, max: 6, req: R("replic") }),
   B({ id: "accel", tier: 2, kind: "gen", cur: "plasma", c0: 1e6, g: 1.18, req: ST(2) }),
   B({ id: "windc", tier: 2, kind: "gen", cur: "plasma", c0: 4e7, g: 1.2, req: ST(3) }),
-  B({ id: "shell", tier: 2, kind: "gen", cur: "plasma", c0: 1.5e10, g: 1.2, req: ST(4) }),
-  B({ id: "wr", tier: 2, kind: "gen", cur: "plasma", c0: 3e11, g: 1.2, req: ST(5) }),
+  B({ id: "shell", tier: 2, kind: "gen", cur: "plasma", c0: 1e10, g: 1.2, req: ST(4) }),
+  B({ id: "wr", tier: 2, kind: "gen", cur: "plasma", c0: 1.5e12, g: 1.2, req: ST(5) }),
   B({ id: "anchor", tier: 2, kind: "up", cur: "plasma", c0: 3e6, g: 5, max: 3, req: R("anchors") }),
   B({ id: "nudet", tier: 2, kind: "data", cur: "plasma", c0: 1e10, g: 1.25, d: 2e7, req: ST(4) }),
 ];
@@ -50,6 +51,8 @@ export const RESEARCH2: RDef[] = [
   Rr({ id: "thin", cost: 2e7, req: (s) => s.stage >= 2 && n(s, "accel") >= 3 }),         // plocha ×3
   Rr({ id: "anchors", cost: 4e7, req: (s) => n(s, "fact") >= 5 }),                      // kotvy
   Rr({ id: "outer", cost: 2e9, req: (s) => s.stage >= 4 && n(s, "windc") >= 3 }),        // plocha ×3
+  Rr({ id: "convect", cost: 6e9, req: (s) => n(s, "shell") >= 15 }),                   // obálka ×2
+  Rr({ id: "giant", cost: 3e10, req: (s) => s.stage >= 4 && n(s, "shell") >= 25 }),     // plocha ×1,5
   Rr({ id: "neutrino", cost: 1.5e10, req: (s) => s.stage >= 4 && n(s, "shell") >= 8 }),                                     // data ×3
   Rr({ id: "collapse", cost: 2e11, req: (s) => s.stage >= 6, final: true }),
 ];
@@ -59,6 +62,7 @@ export const MISSIONS2: MDef[] = [
   M({ id: "pulse", cost: 5e21, dur: 120, req: ST(1), at: [800, 500], view: "system" }),        // data ×2
   M({ id: "light", cost: 5e23, dur: 150, req: ST(2), at: [560, 420], view: "near" }),          // plocha ×2
   M({ id: "remnant", cost: 6e28, dur: 160, req: ST(4), at: [1130, 330], view: "near" }),       // plocha ×1,5
+  M({ id: "envelope", cost: 3e29, dur: 150, req: (s) => s.stage >= 4 && n(s, "shell") >= 5, at: [700, 600], view: "near" }), // plazma ×1,5
   M({ id: "wind", cost: 3e31, dur: 160, req: ST(5), at: [800, 500], view: "near" }),           // plazma ×2
 ];
 const J = (id: string, when: (s: State) => boolean, kind?: "fact"): JDef => ({ id, ch: 2, when, kind });
@@ -83,6 +87,7 @@ export const JOURNAL2: JDef[] = [
   J("c2_remnant", (s) => did(s, "remnant")),
   J("c2_red", (s) => s.stage >= 5),
   J("f2_red", (s) => s.stage >= 5 && s.stT > 90, "fact"),
+  J("c2_envelope", (s) => did(s, "envelope")),
   J("c2_neutr", (s) => has(s, "neutrino")),
   J("c2_wind", (s) => did(s, "wind")),
   J("c2_last", (s) => s.stage >= 6),
@@ -96,6 +101,7 @@ export function areaMult(s: State) {
   if (has(s, "outer")) m *= 3;
   if (did(s, "light")) m *= 2;
   if (did(s, "remnant")) m *= 1.5;
+  if (has(s, "giant")) m *= 1.5;
   return m;
 }
 export const colArea = (s: State) => T2.area0 * areaMult(s);
@@ -106,10 +112,11 @@ export function plasmaMult(s: State) {
   let m = 1;
   if (did(s, "dust")) m *= 2;
   if (did(s, "wind")) m *= 2;
+  if (did(s, "envelope")) m *= 1.5;
   if (has(s, "loops")) m *= 1.5;
   return m;
 }
-export const prodRate = (s: State, id: string) => T2.out[id] * mile(n(s, id));
+export const prodRate = (s: State, id: string) => T2.out[id] * mile(n(s, id)) * (id === "shell" && has(s, "convect") ? 2 : 1);
 export function plasmaPassive(s: State) { let p = 0; for (const id in T2.out) p += n(s, id) * prodRate(s, id); return p * plasmaMult(s); }
 export const factRate = (s: State) => n(s, "fact") * T2.factRate * Math.pow(T2.fspeed, n(s, "fspeed")) * salvo(s);
 export const flareMult = (s: State) => Math.pow(T2.flare.harvest, n(s, "harvest"));
@@ -118,7 +125,7 @@ export const flareGain = (s: State, pw: number, share: number) =>
   pw * (T2.flare.passive * plasmaPassive(s) + T2.flare.cost * colCost(s)) * (1 + share) * flareMult(s);
 
 export const CH2: ChapterDef = {
-  id: 2, cur: "plasma", view: "star", map: "system", lvl2: 2,
+  id: 2, cur: "plasma", view: "star", map: "system", lvl2: 2, price: T2.price,
   goals: (s) => { const g = T2.goals.slice(); g[0] = Math.max(g[0], T2.firstGoalVsBase * s.base); return g; },
   build: BUILD2, research: RESEARCH2, missions: MISSIONS2, journal: JOURNAL2,
   power: (s) => s.base + L_ALDRA * coverage(s),

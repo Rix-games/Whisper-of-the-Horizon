@@ -5,7 +5,8 @@ export const CS2 = {
   intro: {
     h: "U Aldry",
     p: [
-      "Hmotový vrh dopravil VESPER-7 na oběžnou dráhu modrého veleobra Aldry. Tady je světla víc, než kdy spotřebuje celá Země.",
+      "Hmotový vrh dopravil VESPER-7 na oběžnou dráhu Aldry a Vesper ji následoval. Tady je světla víc, než kdy spotřebuje celá Země.",
+      "Hvězda se mění pomalu. Mezi směnami spíš v hibernaci a roj mezitím pracuje sám – každé probuzení ukáže Aldru o kus starší.",
       "Postav kolem Aldry roj kolektorů. Drž myš na dráze a vypouštíš je z plazmatu.",
       "Nad skvrnami rostou magnetické smyčky. Chyť vrchol, natáhni ho polem roje a pusť v zeleném pásmu. Neuhlídaná smyčka se utrhne a roj poškodí.",
     ],
@@ -42,6 +43,8 @@ export const CS2 = {
     thin: { n: "Tenčí zrcadla", d: "Plocha kolektorů ×3." },
     anchors: { n: "Magnetické kotvy", d: "Odemkne kotvy, které pouštějí smyčky samy." },
     outer: { n: "Vnější dráhy", d: "Roj se přesune dál. Plocha ×3." },
+    convect: { n: "Konvekční mapa", d: "Odběr z obálky ×2." },
+    giant: { n: "Obří zrcadla", d: "Plocha kolektorů ×1,5. Roj se rozepne kolem nafouklé hvězdy." },
     neutrino: { n: "Neutrinová astronomie", d: "Data ×3. Odemyká pohled do jádra." },
     collapse: { n: "Kolaps", d: "Připravit roj na supernovu. Dokončí kapitolu." },
   } as Record<string, { n: string; d: string }>,
@@ -50,6 +53,7 @@ export const CS2 = {
     pulse: { n: "Zdroj pulsu", p: "Aldra", r: "Data ×2" },
     light: { n: "Lehká hvězda", p: "Okolí Aldry, 9 ly", r: "Plocha ×2" },
     remnant: { n: "Pozůstatek supernovy", p: "Okolí Aldry, 40 ly", r: "Plocha ×1,5" },
+    envelope: { n: "Odvržená obálka", p: "Okolí Aldry", r: "Plazma ×1,5" },
     wind: { n: "Bublina hvězdného větru", p: "Okolí Aldry", r: "Plazma ×2" },
   } as Record<string, { n: string; p: string; r: string }>,
   jour: {
@@ -73,6 +77,7 @@ export const CS2 = {
     c2_remnant: "Ve zbytku staré supernovy je černá díra. Kolem ní stopy roje. Byl postavený stejně jako můj.",
     c2_red: "Aldře došel vodík v jádru. Nafukuje se v rudého veleobra. Roj musí ustoupit, jinak shoří.",
     f2_red: "Rudý veleobr by sahal až za dráhu Jupiteru. Jeho vnější obálka je řidší než vzduch, který dýchali lidé.",
+    c2_envelope: "Vesper proletěl obálkou, kterou Aldra odhodila. Plyn tvoří soustředné slupky. Mezery mezi nimi odpovídají 7,3 sekundy, natažené na tisíce let.",
     c2_neutr: "Neutrina z jádra Aldry přibývají. Jádro se hroutí rychleji, než by mělo. Puls je teď přímo uprostřed.",
     c2_wind: "Bublina větru kolem Aldry má ostrý okraj. Za ním je klid. Tak tiché místo jsem ještě neviděl.",
     c2_last: "Aldra odhodila obálku. Zbylo žhavé jádro. Neutrina říkají: zbývá málo času. Puls zrychlil.",

@@ -21,6 +21,8 @@ export interface ChapterDef {
   /** Cíle stadií (W) – podmínka ODCHODU ze stadia i. */
   goals: (s: State) => number[];
   lvl2: number;                       // stadium, od kterého běží 2. úroveň
+  /** Ladicí kolečka cen: násobek první ceny a přídavek ke zdražení za kus (jen stavby, ne vylepšení). */
+  price?: { k: number; g: number };
   build: BDef[]; research: RDef[]; missions: MDef[]; journal: JDef[];
   power(s: State): number;            // výkon W
   passive(s: State): number;          // pasivní příjem suroviny kapitoly /s
