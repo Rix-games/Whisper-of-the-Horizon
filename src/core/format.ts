@@ -16,7 +16,7 @@ export function num(n) {
   if (a === 0) return "0";
   if (a < 1) return fixed(n, 2);
   if (a < 10) return fixed(n, a % 1 ? 1 : 0);
-  if (a < 1e4) return Math.floor(n).toLocaleString("cs-CZ").replace(/\s/g, " ");
+  if (a < 1e4) return Math.floor(n).toLocaleString("cs-CZ").replace(/\s/g, "\u202F");
   if (a < 1e15) {
     const u = ["", "tis.", "mil.", "mld.", "bil."];
     const e = Math.min(4, Math.floor(Math.log10(a) / 3));
@@ -39,7 +39,7 @@ export function mass(kg) {
   if (a < 1e9) {
     const t2 = kg / 1e3, at = Math.abs(t2);
     if (at < 100) return `${fixed(t2, at < 10 ? 2 : 1)} t`;
-    return `${Math.floor(t2).toLocaleString("cs-CZ").replace(/\s/g, " ")} t`;
+    return `${Math.floor(t2).toLocaleString("cs-CZ").replace(/\s/g, "\u202F")} t`;
   }
   return `${sci(kg)} kg`;
 }
@@ -81,7 +81,7 @@ export function pct(f) {
 /** Násobek pro "potřebuješ N× víc". */
 export function times(x) {
   if (x < 10) return `${fixed(x, 1)}×`;
-  if (x < 1e4) return `${Math.round(x).toLocaleString("cs-CZ").replace(/\s/g, " ")}×`;
+  if (x < 1e4) return `${Math.round(x).toLocaleString("cs-CZ").replace(/\s/g, "\u202F")}×`;
   return `${sci(x, 1)}×`;
 }
 export function mult(x) {

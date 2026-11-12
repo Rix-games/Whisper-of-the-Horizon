@@ -1079,7 +1079,7 @@
     if (a < 1e9) {
       const t2 = kg / 1e3, at2 = Math.abs(t2);
       if (at2 < 100) return `${fixed(t2, at2 < 10 ? 2 : 1)} t`;
-      return `${Math.floor(t2).toLocaleString("cs-CZ").replace(/\s/g, "\xA0")} t`;
+      return `${Math.floor(t2).toLocaleString("cs-CZ").replace(/\s/g, "\u202F")} t`;
     }
     return `${sci(kg)} kg`;
   }
@@ -1106,7 +1106,7 @@
   }
   function times(x) {
     if (x < 10) return `${fixed(x, 1)}\xD7`;
-    if (x < 1e4) return `${Math.round(x).toLocaleString("cs-CZ").replace(/\s/g, " ")}\xD7`;
+    if (x < 1e4) return `${Math.round(x).toLocaleString("cs-CZ").replace(/\s/g, "\u202F")}\xD7`;
     return `${sci(x, 1)}\xD7`;
   }
 
@@ -4411,7 +4411,7 @@
   var VERSION = "1.0.0-alfa";
   var $ = (id) => document.getElementById(id);
   var SUPM = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
-  var sx = (t) => t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, (m) => `<sup>${[...m].map((c) => SUPM[c]).join("")}</sup>`);
+  var sx = (t) => t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, (m) => `<sup>${[...m].map((c) => SUPM[c]).join("")}</sup>`).replace(/\u202F/g, '<i class="th"></i>');
   var h = (tag, cls = "", html = "") => {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
