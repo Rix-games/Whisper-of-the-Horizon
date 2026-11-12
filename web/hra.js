@@ -1222,6 +1222,7 @@
     chunks: [],
     drones: [],
     rot: 0,
+    rt: 0,
     heat: 0,
     over: false,
     stroke: null,
@@ -1306,9 +1307,8 @@
       this.stroke = null;
     },
     update(s2, dt, M4) {
-      this.rot += dt * 0.05;
-      this.pop = Math.max(0, this.pop - dt);
-      this.flash = Math.max(0, this.flash - dt);
+      this.rt += dt;
+      this.rot = 0.07 * Math.sin(this.rt * 0.05);
       const laser2 = M4.down && !this.over && this.stroke;
       const L = lv(s2, "cool"), hr = 0.3 * Math.pow(0.8, L), cr = 0.42 * Math.pow(1.25, L);
       if (laser2) {
@@ -1619,7 +1619,7 @@
       drawPlat(c, s2, this);
       if (v.passive) return;
       if (M4.down && !this.over && this.stroke) {
-        const bw = 6 + lv(s2, "beam") * 3.5, fl = 0.8 + rnd() * 0.2;
+        const bw = 6 + lv(s2, "beam") * 3.5, fl = 0.93 + 0.07 * Math.sin(v.T * 47);
         c.save();
         c.globalCompositeOperation = "lighter";
         c.lineCap = "round";
@@ -3239,7 +3239,7 @@
     game: "\u0160epot Horizontu",
     res: { ore: "Ruda", plasma: "Plazma", sails: "Plachty", energy: "Energie", data: "Data" },
     tabs: { build: "Stavby", research: "V\xFDzkum", map: "Mapa", detail: "Detail" },
-    ladder: ["T\u011Bleso", "Hv\u011Bzda", "Soustava", "Okol\xED", "Galaxie", "M\xEDstn\xED skupina", "Laniakea"],
+    ladder: ["Asteroid", "Hv\u011Bzda", "Soustava", "Okol\xED", "Galaxie", "M\xEDstn\xED skupina", "Laniakea"],
     power: "V\xFDkon",
     perSec: "/s",
     stage: "Stadium",
@@ -3248,9 +3248,11 @@
     unitsTip: "Energie se ukl\xE1d\xE1 v joulech (J) a plat\xED se j\xED mise. P\u0159\xEDr\u016Fstek je v\xFDkon ve wattech (W): 1 W = 1 J ka\u017Edou sekundu.",
     noiseVol: "\u0160um vesm\xEDru",
     kBelow: "K < 0",
-    toType: (k, x) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${x} v\xEDc v\xFDkonu`,
+    toType: (k, n2) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${n2.big ? `pot\u0159eba ${n2.v} v\u011Bt\u0161\xED v\xFDkon` : `chyb\xED ${n2.v} v\xFDkonu`}`,
     typeMax: "Typ III dosa\u017Een",
-    needMore: (x) => `Pot\u0159ebuje\u0161 ${x} v\xEDc v\xFDkonu`,
+    needMore: (n2) => n2.big ? `Pot\u0159ebuje\u0161 ${n2.v} v\u011Bt\u0161\xED v\xFDkon` : `Do c\xEDle chyb\xED ${n2.v} v\xFDkonu`,
+    perPiece: "za kus",
+    mileHint: (n2) => `p\u0159i ${n2} ks \xD72`,
     stageDone: "V\u0161echna stadia hotov\xE1",
     finalHint: (n2) => `Dokon\u010Di v\xFDzkum \u201E${n2}\u201C`,
     buy: "Koupit",
@@ -4455,7 +4457,7 @@
     if (nt) {
       const base = ti > 0 ? KTYPES[ti - 1].w : 500;
       $("kbar").style.width = `${Math.max(0, Math.min(1, Math.log(P / base) / Math.log(nt.w / base))) * 100}%`;
-      setHTML($("kprog"), sx(UI.toType(nt.k, times(nt.w / P))));
+      setHTML($("kprog"), sx(UI.toType(nt.k, need2(nt.w / P))));
     } else {
       $("kbar").style.width = "100%";
       $("kprog").textContent = UI.typeMax;
@@ -4470,7 +4472,7 @@
       const f = Math.max(0, Math.min(1, Math.log(P / prev) / Math.log(goal / prev)));
       $("goalBar").style.width = `${f * 100}%`;
       $("goalTxt").innerHTML = sx(`${UI.goal}: ${si(goal, "W")}`);
-      $("goalNeed").innerHTML = sx(UI.needMore(times(goal / P)));
+      $("goalNeed").innerHTML = sx(UI.needMore(need2(goal / P)));
     } else {
       const fin = C.research.find((r) => r.final);
       $("goalBar").style.width = "100%";
@@ -4546,6 +4548,9 @@
     const m = Math.floor(t / 60);
     return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
   }
+  function need2(r) {
+    return r >= 2 ? { big: true, v: times(r) } : { big: false, v: pct(Math.max(0, r - 1)) };
+  }
   function bCat(id) {
     const d = BMAP[id];
     if (d.kind === "data") return "data";
@@ -4565,9 +4570,10 @@
   }
   function effect(id) {
     const d = BMAP[id];
-    if (d.kind === "gen" && s.ch === 1) return `+${si(genW(s, id), "W")} ka\u017Ed\xFD`;
-    if (d.kind === "gen") return `+${mass(prodRate(s, id) * plasmaMult(s))}/s ka\u017Ed\xFD`;
-    if (d.kind === "data") return `+${si(d.d * mile(n(s, id)) * chOf(s).dataMult(s), "B")}/s ka\u017Ed\xFD`;
+    const ms = d.kind === "gen" || d.kind === "data" ? ` \xB7 ${UI.mileHint(Math.floor(n(s, id) / 25) * 25 + 25)}` : "";
+    if (d.kind === "gen" && s.ch === 1) return `+${si(genW(s, id), "W")} ${UI.perPiece}${ms}`;
+    if (d.kind === "gen") return `+${mass(prodRate(s, id) * plasmaMult(s))}/s ${UI.perPiece}${ms}`;
+    if (d.kind === "data") return `+${si(d.d * mile(n(s, id)) * chOf(s).dataMult(s), "B")}/s ${UI.perPiece}${ms}`;
     if (d.kind === "swarm") return `+${si(L_ALDRA * colArea(s) * salvo(s), "W")} za salvu ${count(salvo(s))}`;
     if (d.kind === "unit") return `${count(n(s, id))} pracuje`;
     return find("b", id)?.d || "";

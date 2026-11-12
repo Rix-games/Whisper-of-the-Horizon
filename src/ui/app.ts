@@ -206,7 +206,7 @@ function updateUI() {
   if (nt) {
     const base = ti > 0 ? KTYPES[ti - 1].w : 500;
     $("kbar").style.width = `${Math.max(0, Math.min(1, Math.log(P / base) / Math.log(nt.w / base))) * 100}%`;
-    setHTML($("kprog"), sx(UI.toType(nt.k, times(nt.w / P))));
+    setHTML($("kprog"), sx(UI.toType(nt.k, need(nt.w / P))));
   } else { $("kbar").style.width = "100%"; $("kprog").textContent = UI.typeMax; }
   const resList: [string, number, number][] = [[C.cur, s.res[C.cur], E.RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, E.dataRate(s)]];
   $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"${k === "energy" ? ` title="${UI.unitsTip}"` : ""}><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${k === "energy" ? si(r, "W") : fmtCur(k, r) + "/s"}</span></div>`)).join("");
@@ -219,7 +219,7 @@ function updateUI() {
     const f = Math.max(0, Math.min(1, Math.log(P / prev) / Math.log(goal / prev)));
     $("goalBar").style.width = `${f * 100}%`;
     $("goalTxt").innerHTML = sx(`${UI.goal}: ${si(goal, "W")}`);
-    $("goalNeed").innerHTML = sx(UI.needMore(times(goal / P)));
+    $("goalNeed").innerHTML = sx(UI.needMore(need(goal / P)));
   } else {
     const fin = C.research.find((r) => r.final)!;
     $("goalBar").style.width = "100%";
@@ -288,6 +288,8 @@ function journal() {
 /** Palubní čas záznamu (od začátku hry) h:mm. */
 function clock(t: number) { const m = Math.floor(t / 60); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`; }
 
+/** Kolik výkonu chybí: velký rozdíl jako násobek, malý v procentech. */
+function need(r: number) { return r >= 2 ? { big: true, v: times(r) } : { big: false, v: pct(Math.max(0, r - 1)) }; }
 // ---------- karty staveb ----------
 /** Co stavba dává: energie (výkon), data, nebo hlavní surovina kapitoly – podle toho barva karty. */
 function bCat(id: string): "energy" | "data" | "cur" {
@@ -303,9 +305,10 @@ function setHTML(el: HTMLElement, html: string) { if ((el as any)._h !== html) {
 function setDis(el: HTMLButtonElement, d: boolean) { if (el.disabled !== d) el.disabled = d; }
 function effect(id: string): string {
   const d = BMAP[id];
-  if (d.kind === "gen" && s.ch === 1) return `+${si(genW(s, id), "W")} každý`;
-  if (d.kind === "gen") return `+${mass(prodRate(s, id) * plasmaMult(s))}/s každý`;
-  if (d.kind === "data") return `+${si(d.d! * mile(cnt(s, id)) * chOf(s).dataMult(s), "B")}/s každý`;
+  const ms = d.kind === "gen" || d.kind === "data" ? ` · ${UI.mileHint(Math.floor(cnt(s, id) / 25) * 25 + 25)}` : "";
+  if (d.kind === "gen" && s.ch === 1) return `+${si(genW(s, id), "W")} ${UI.perPiece}${ms}`;
+  if (d.kind === "gen") return `+${mass(prodRate(s, id) * plasmaMult(s))}/s ${UI.perPiece}${ms}`;
+  if (d.kind === "data") return `+${si(d.d! * mile(cnt(s, id)) * chOf(s).dataMult(s), "B")}/s ${UI.perPiece}${ms}`;
   if (d.kind === "swarm") return `+${si(L_ALDRA * colArea(s) * salvo(s), "W")} za salvu ${count(salvo(s))}`;
   if (d.kind === "unit") return `${count(cnt(s, id))} pracuje`;
   return find("b", id)?.d || "";
