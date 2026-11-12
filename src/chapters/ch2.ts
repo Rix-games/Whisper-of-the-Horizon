@@ -12,7 +12,8 @@ export const T2 = {
   goals: [3e19, 3e21, 3e23, 3.8e26, 5e28, 2.6e31],  // Typ II = 3,8·10²⁶ W (celé Slunce); 6 stadií
   firstGoalVsBase: 1.8,       // první cíl aspoň ×1,8 výkonu, se kterým hráč přišel
   area0: 5e-17,               // podíl světla Aldry na kolektor (bez vylepšení)
-  colCost0: 3, colCostExp: 0.62, // cena kolektoru = 3 · plocha^0,62
+  colCost0: 3, colCostExp: 0.62, // cena kolektoru = 3 · plocha^0,62 · (1 + n/colN0)^colGrow
+  colN0: 20, colGrow: 0.12, colCap: 4, // strop zdražení ×4 (jinak se pozdní stadia vlečou) // roj zdražuje: každý další kolektor letí na vzdálenější/horší dráhu
   salvoPer: 120,              // ruční salva = počet / 120
   mirror: 1.6,                // ×plocha za úroveň Zrcadlových plachet
   out: { sieve: 1.5, lift: 25, accel: 1e4, windc: 4e5, shell: 1.5e8, wr: 2e9 } as Record<string, number>, // kg/s za kus
@@ -61,7 +62,7 @@ export const MISSIONS2: MDef[] = [
   M({ id: "dust", cost: 1.5e19, dur: 90, req: () => true, at: [704, 544], view: "system" }),   // plazma ×2
   M({ id: "pulse", cost: 5e21, dur: 120, req: ST(1), at: [798, 483], view: "system" }),        // data ×2
   M({ id: "light", cost: 5e23, dur: 150, req: ST(2), at: [560, 420], view: "near" }),          // plocha ×2
-  M({ id: "remnant", cost: 6e28, dur: 160, req: ST(4), at: [1184, 276], view: "near" }),       // plocha ×1,5
+  M({ id: "remnant", cost: 4e28, dur: 160, req: (s) => s.stage >= 3 && n(s, "windc") >= 3, at: [1184, 276], view: "near" }),       // plocha ×1,5
   M({ id: "envelope", cost: 3e29, dur: 150, req: (s) => s.stage >= 4 && n(s, "shell") >= 5, at: [700, 600], view: "near" }), // plazma ×1,5
   M({ id: "wind", cost: 3e31, dur: 160, req: ST(5), at: [800, 486], view: "near" }),           // plazma ×2
 ];
@@ -106,7 +107,11 @@ export function areaMult(s: State) {
 }
 export const colArea = (s: State) => T2.area0 * areaMult(s);
 export const coverage = (s: State) => 1 - Math.exp(-s.n * colArea(s));
-export const colCost = (s: State) => T2.colCost0 * Math.pow(areaMult(s), T2.colCostExp);
+/** Cena jednoho kolektoru, když už jich v roji letí `nn`. */
+export const colCostAt = (s: State, nn: number) => T2.colCost0 * Math.pow(areaMult(s), T2.colCostExp) * Math.min(T2.colCap, Math.pow(1 + nn / T2.colN0, T2.colGrow));
+export const colCost = (s: State) => colCostAt(s, s.n);
+/** Cena `cnt` salv najednou (průměr ceny na začátku a na konci – cena roste s rojem). */
+export const colCostN = (s: State, cnt: number) => { const k = salvo(s) * cnt; return (k * (colCost(s) + colCostAt(s, s.n + k))) / 2; };
 export const salvo = (s: State) => Math.max(1, Math.floor(s.n / T2.salvoPer));
 export function plasmaMult(s: State) {
   let m = 1;

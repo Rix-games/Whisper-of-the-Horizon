@@ -350,7 +350,11 @@
     // podíl světla Aldry na kolektor (bez vylepšení)
     colCost0: 3,
     colCostExp: 0.62,
-    // cena kolektoru = 3 · plocha^0,62
+    // cena kolektoru = 3 · plocha^0,62 · (1 + n/colN0)^colGrow
+    colN0: 20,
+    colGrow: 0.12,
+    colCap: 4,
+    // strop zdražení ×4 (jinak se pozdní stadia vlečou) // roj zdražuje: každý další kolektor letí na vzdálenější/horší dráhu
     salvoPer: 120,
     // ruční salva = počet / 120
     mirror: 1.6,
@@ -419,7 +423,7 @@
     // data ×2
     M2({ id: "light", cost: 5e23, dur: 150, req: ST(2), at: [560, 420], view: "near" }),
     // plocha ×2
-    M2({ id: "remnant", cost: 6e28, dur: 160, req: ST(4), at: [1184, 276], view: "near" }),
+    M2({ id: "remnant", cost: 4e28, dur: 160, req: (s2) => s2.stage >= 3 && n(s2, "windc") >= 3, at: [1184, 276], view: "near" }),
     // plocha ×1,5
     M2({ id: "envelope", cost: 3e29, dur: 150, req: (s2) => s2.stage >= 4 && n(s2, "shell") >= 5, at: [700, 600], view: "near" }),
     // plazma ×1,5
@@ -465,7 +469,12 @@
   }
   var colArea = (s2) => T2.area0 * areaMult(s2);
   var coverage = (s2) => 1 - Math.exp(-s2.n * colArea(s2));
-  var colCost = (s2) => T2.colCost0 * Math.pow(areaMult(s2), T2.colCostExp);
+  var colCostAt = (s2, nn) => T2.colCost0 * Math.pow(areaMult(s2), T2.colCostExp) * Math.min(T2.colCap, Math.pow(1 + nn / T2.colN0, T2.colGrow));
+  var colCost = (s2) => colCostAt(s2, s2.n);
+  var colCostN = (s2, cnt) => {
+    const k = salvo(s2) * cnt;
+    return k * (colCost(s2) + colCostAt(s2, s2.n + k)) / 2;
+  };
   var salvo = (s2) => Math.max(1, Math.floor(s2.n / T2.salvoPer));
   function plasmaMult(s2) {
     let m = 1;
@@ -855,7 +864,8 @@
   function costN(s2, id, cnt) {
     const d = BMAP[id];
     const g = gOf(id);
-    if (d.kind === "swarm" || g === 1) return cost(s2, id) * cnt;
+    if (d.kind === "swarm") return cnt <= 1 ? cost(s2, id) * cnt : colCostN(s2, cnt);
+    if (g === 1) return cost(s2, id) * cnt;
     return cost(s2, id) * (Math.pow(g, cnt) - 1) / (g - 1);
   }
   function capOf(s2, id) {
@@ -871,7 +881,12 @@
     const c = cost(s2, id);
     if (have < c) return 0;
     const g = gOf(id);
-    if (g === 1 || d.kind === "swarm") return Math.floor(have / c);
+    if (d.kind === "swarm") {
+      let m2 = Math.floor(have / c);
+      while (m2 > 1 && costN(s2, id, m2) > have) m2 = Math.floor(m2 * 0.9);
+      return m2;
+    }
+    if (g === 1) return Math.floor(have / c);
     let m = Math.floor(Math.log(have * (g - 1) / c + 1) / Math.log(g));
     m = Math.min(m, capOf(s2, id) - n(s2, id));
     return Math.max(0, m);

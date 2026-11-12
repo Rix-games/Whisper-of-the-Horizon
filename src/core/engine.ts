@@ -3,7 +3,7 @@
 import { State, newState, Cur } from "./state";
 import { CHAPTERS, BMAP, BUILD, RMAP, RESEARCH, MMAP, MISSIONS, JOURNAL, stagesOf, LAST_CH, stageGoal, chOf } from "./defs";
 import { on, emit, RT, n, gain, mile } from "./bus";
-import { colCost, salvo } from "../chapters/ch2";
+import { colCost, colCostN, salvo } from "../chapters/ch2";
 
 export { on, emit, RT, gain };
 export const K = (P: number) => (Math.log10(Math.max(P, 1)) - 6) / 10;
@@ -28,7 +28,8 @@ export function cost(s: State, id: string, k = 0): number {
 export function costN(s: State, id: string, cnt: number) {
   const d = BMAP[id];
   const g = gOf(id);
-  if (d.kind === "swarm" || g === 1) return cost(s, id) * cnt;
+  if (d.kind === "swarm") return cnt <= 1 ? cost(s, id) * cnt : colCostN(s, cnt);
+  if (g === 1) return cost(s, id) * cnt;
   return (cost(s, id) * (Math.pow(g, cnt) - 1)) / (g - 1);   // geometrický součet
 }
 export function capOf(s: State, id: string) {
@@ -44,7 +45,8 @@ export function maxAfford(s: State, id: string) {
   const c = cost(s, id);
   if (have < c) return 0;
   const g = gOf(id);
-  if (g === 1 || d.kind === "swarm") return Math.floor(have / c);
+  if (d.kind === "swarm") { let m = Math.floor(have / c); while (m > 1 && costN(s, id, m) > have) m = Math.floor(m * 0.9); return m; }
+  if (g === 1) return Math.floor(have / c);
   let m = Math.floor(Math.log((have * (g - 1)) / c + 1) / Math.log(g));
   m = Math.min(m, capOf(s, id) - n(s, id));
   return Math.max(0, m);
