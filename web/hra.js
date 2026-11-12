@@ -3245,6 +3245,7 @@
     stage: "Stadium",
     goal: "C\xEDl stadia",
     stageHidden: "Zat\xEDm nezn\xE1m\xE9",
+    unitsTip: "Energie se ukl\xE1d\xE1 v joulech (J) a plat\xED se j\xED mise. P\u0159\xEDr\u016Fstek je v\xFDkon ve wattech (W): 1 W = 1 J ka\u017Edou sekundu.",
     noiseVol: "\u0160um vesm\xEDru",
     kBelow: "K < 0",
     toType: (k, x) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${x} v\xEDc v\xFDkonu`,
@@ -3299,7 +3300,7 @@
     theEnd: "Konec dostupn\xE9ho obsahu",
     theEndBody: "Kapitola 4 se p\u0159ipravuje. Galaxie d\xE1l sv\xEDt\xED a m\u016F\u017Ee\u0161 osidlovat d\xE1l.",
     ktitle: "Karda\u0161evova \u0161k\xE1la",
-    kbody: "M\u011B\u0159\xED civilizaci podle v\xFDkonu, kter\xFD vyu\u017E\xEDv\xE1. K = (log\u2081\u2080 P \u2212 6) / 10.",
+    kbody: "M\u011B\u0159\xED civilizaci podle v\xFDkonu, kter\xFD vyu\u017E\xEDv\xE1. K = (log\u2081\u2080 P \u2212 6) / 10. V\xFDkon je ve wattech (W), ulo\u017Een\xE1 energie v joulech (J): 1 W = 1 J za sekundu.",
     types: {
       1: "Typ I \u2013 v\xFDkon cel\xE9 planety, v\u0161echno sv\u011Btlo, kter\xE9 na ni dopad\xE1 (~10\xB9\u2076 W).",
       2: "Typ II \u2013 v\xFDkon cel\xE9 hv\u011Bzdy. Slunce vyza\u0159uje 3,8\xB710\xB2\u2076 W.",
@@ -4460,7 +4461,7 @@
       $("kprog").textContent = UI.typeMax;
     }
     const resList = [[C.cur, s.res[C.cur], RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, dataRate(s)]];
-    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`)).join("");
+    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"${k === "energy" ? ` title="${UI.unitsTip}"` : ""}><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${k === "energy" ? si(r, "W") : fmtCur(k, r) + "/s"}</span></div>`)).join("");
     const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
     $("chTitle").textContent = X.title;
     $("stName").textContent = `${UI.stage} ${Math.min(st + 1, stagesOf(s))}/${stagesOf(s)} \xB7 ${names[st]}`;

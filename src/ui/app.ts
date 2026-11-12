@@ -209,7 +209,7 @@ function updateUI() {
     setHTML($("kprog"), sx(UI.toType(nt.k, times(nt.w / P))));
   } else { $("kbar").style.width = "100%"; $("kprog").textContent = UI.typeMax; }
   const resList: [string, number, number][] = [[C.cur, s.res[C.cur], E.RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, E.dataRate(s)]];
-  $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`)).join("");
+  $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"${k === "energy" ? ` title="${UI.unitsTip}"` : ""}><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${k === "energy" ? si(r, "W") : fmtCur(k, r) + "/s"}</span></div>`)).join("");
   // levý panel
   const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
   $("chTitle").textContent = X.title;

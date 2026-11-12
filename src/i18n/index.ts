@@ -21,6 +21,7 @@ export const UI = {
   stage: "Stadium",
   goal: "Cíl stadia",
   stageHidden: "Zatím neznámé",
+  unitsTip: "Energie se ukládá v joulech (J) a platí se jí mise. Přírůstek je výkon ve wattech (W): 1 W = 1 J každou sekundu.",
   noiseVol: "Šum vesmíru",
   kBelow: "K < 0",
   toType: (k: number, x: string) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${x} víc výkonu`,
@@ -63,7 +64,7 @@ export const UI = {
   theEnd: "Konec dostupného obsahu",
   theEndBody: "Kapitola 4 se připravuje. Galaxie dál svítí a můžeš osidlovat dál.",
   ktitle: "Kardaševova škála",
-  kbody: "Měří civilizaci podle výkonu, který využívá. K = (log₁₀ P − 6) / 10.",
+  kbody: "Měří civilizaci podle výkonu, který využívá. K = (log₁₀ P − 6) / 10. Výkon je ve wattech (W), uložená energie v joulech (J): 1 W = 1 J za sekundu.",
   types: {
     1: "Typ I – výkon celé planety, všechno světlo, které na ni dopadá (~10¹⁶ W).",
     2: "Typ II – výkon celé hvězdy. Slunce vyzařuje 3,8·10²⁶ W.",
