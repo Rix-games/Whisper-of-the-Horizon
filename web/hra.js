@@ -1314,6 +1314,8 @@
     update(s2, dt, M4) {
       this.rt += dt;
       this.rot = 0.07 * Math.sin(this.rt * 0.05);
+      this.pop = Math.max(0, this.pop - dt);
+      this.flash = Math.max(0, this.flash - dt);
       const laser2 = M4.down && !this.over && this.stroke;
       const L = lv(s2, "cool"), hr = 0.3 * Math.pow(0.8, L), cr = 0.42 * Math.pow(1.25, L);
       if (laser2) {
@@ -1503,8 +1505,7 @@
       c.fillRect(-400, -400, 2400, 1800);
       drawGens(c, s2, T4, false);
       const halo = c.createRadialGradient(CX, CY, RA * 0.8, CX, CY, RA * 1.6);
-      halo.addColorStop(0, `rgba(170,200,255,${0.05 + this.flash * 0.3})`);
-      halo.addColorStop(1, "rgba(170,200,255,0)");
+      halo.addColorStop(0, "rgba(170,200,255,.05)");
       c.fillStyle = halo;
       c.beginPath();
       c.arc(CX, CY, RA * 1.6, 0, 7);
@@ -1624,7 +1625,7 @@
       drawPlat(c, s2, this);
       if (v.passive) return;
       if (M4.down && !this.over && this.stroke) {
-        const bw = 6 + lv(s2, "beam") * 3.5, fl = 0.93 + 0.07 * Math.sin(v.T * 47);
+        const bw = 6 + lv(s2, "beam") * 3.5, fl = 0.85 + rnd() * 0.15;
         c.save();
         c.globalCompositeOperation = "lighter";
         c.lineCap = "round";
@@ -3250,7 +3251,8 @@
     stage: "Stadium",
     goal: "C\xEDl stadia",
     stageHidden: "Zat\xEDm nezn\xE1m\xE9",
-    unitsTip: "Energie se ukl\xE1d\xE1 v joulech (J) a plat\xED se j\xED mise. P\u0159\xEDr\u016Fstek je v\xFDkon ve wattech (W): 1 W = 1 J ka\u017Edou sekundu.",
+    powerShort: "v\xFDkon",
+    unitsTip: "Z\xE1soba energie je v joulech (J) a plat\xED se z n\xED mise. V\xFDkon ve wattech (W) \u0159\xEDk\xE1, kolik energie p\u0159ibude za sekundu: 1 W = 1 J za sekundu.",
     noiseVol: "\u0160um vesm\xEDru",
     kBelow: "K < 0",
     toType: (k, n2) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${n2.big ? `pot\u0159eba ${n2.v} v\u011Bt\u0161\xED v\xFDkon` : `chyb\xED ${n2.v} v\xFDkonu`}`,
@@ -4470,7 +4472,7 @@
       $("kprog").textContent = UI.typeMax;
     }
     const resList = [[C.cur, s.res[C.cur], RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, dataRate(s)]];
-    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"${k === "energy" ? ` title="${UI.unitsTip}"` : ""}><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${k === "energy" ? si(r, "W") : fmtCur(k, r) + "/s"}</span></div>`)).join("");
+    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"${k === "energy" ? ` title="${UI.unitsTip}"` : ""}><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">${k === "energy" ? `${UI.powerShort} ${si(r, "W")}` : `+${fmtCur(k, r)}/s`}</span></div>`)).join("");
     const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
     $("chTitle").textContent = X.title;
     $("stName").textContent = `${UI.stage} ${Math.min(st + 1, stagesOf(s))}/${stagesOf(s)} \xB7 ${names[st]}`;

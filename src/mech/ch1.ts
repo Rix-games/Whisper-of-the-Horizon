@@ -83,7 +83,8 @@ export const kamen: Mech & any = {
   down(s: State) { if (!this.over) this.stroke = { id: rnd(), chain: 0, full: 0 }; },
   up() { this.stroke = null; },
   update(s: State, dt: number, M: Input) {
-    this.rt += dt; this.rot = 0.07 * Math.sin(this.rt * 0.05);   // jen jemné kolébání – stín na obrázku zůstává na odvrácené straně this.pop = Math.max(0, this.pop - dt); this.flash = Math.max(0, this.flash - dt);
+    this.rt += dt; this.rot = 0.07 * Math.sin(this.rt * 0.05);   // jen jemné kolébání – stín na obrázku zůstává na odvrácené straně
+    this.pop = Math.max(0, this.pop - dt); this.flash = Math.max(0, this.flash - dt);
     const laser = M.down && !this.over && this.stroke;
     const L = lv(s, "cool"), hr = 0.3 * Math.pow(0.8, L), cr = 0.42 * Math.pow(1.25, L);
     if (laser) {
@@ -193,7 +194,7 @@ export const kamen: Mech & any = {
     c.fillStyle = sun; c.fillRect(-400, -400, 2400, 1800);
     drawGens(c, s, T, false);
     const halo = c.createRadialGradient(CX, CY, RA * 0.8, CX, CY, RA * 1.6);
-    halo.addColorStop(0, `rgba(170,200,255,${0.05 + this.flash * 0.3})`); halo.addColorStop(1, "rgba(170,200,255,0)");
+    halo.addColorStop(0, "rgba(170,200,255,.05)");   // pozadí za kamenem nebliká; záblesk celé žíly jen jiskrami halo.addColorStop(1, "rgba(170,200,255,0)");
     c.fillStyle = halo; c.beginPath(); c.arc(CX, CY, RA * 1.6, 0, 7); c.fill();
     const A = img("asteroid");
     if (A) {   // obrázek z Gemini: velikost podle šířky, mírně větší než herní obrys
@@ -242,7 +243,7 @@ export const kamen: Mech & any = {
     drawPlat(c, s, this);
     if (v.passive) return;
     if (M.down && !this.over && this.stroke) {
-      const bw = 6 + lv(s, "beam") * 3.5, fl = 0.93 + 0.07 * Math.sin(v.T * 47);
+      const bw = 6 + lv(s, "beam") * 3.5, fl = 0.85 + rnd() * 0.15;
       c.save(); c.globalCompositeOperation = "lighter"; c.lineCap = "round";
       c.strokeStyle = `rgba(255,130,50,${0.16 * fl})`; c.lineWidth = bw * 1.8; c.beginPath(); c.moveTo(PX + 12, PY - 5); c.lineTo(M.x, M.y); c.stroke();
       c.strokeStyle = `rgba(255,225,180,${0.9 * fl})`; c.lineWidth = 1.8; c.stroke();
