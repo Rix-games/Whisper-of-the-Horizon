@@ -17,7 +17,7 @@ export const CS1 = {
   ship: { who: "Sonda", send: "Vyslat sondu", running: "Sonda letí", busy: "Sonda je na cestě" },
   hint: [
     "Drž myš a táhni laserem přes svítící žíly. Celá žíla jedním tahem dá dvojnásobek, víc žil v jednom tahu vytvoří řetěz. Kroužek u kurzoru ukazuje teplotu laseru.",
-    "Drony samy hledají nejbližší žílu a montážní dok staví další. Ruční řez je pořád nejvýnosnější.",
+    "Ruční řez je pořád nejvýnosnější.",
   ],
   b: {
     panel: { n: "Fotovoltaický panel", d: "Mění světlo Aldry na elektřinu." },

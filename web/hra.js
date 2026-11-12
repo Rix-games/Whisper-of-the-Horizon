@@ -3015,7 +3015,7 @@
     ship: { who: "Sonda", send: "Vyslat sondu", running: "Sonda let\xED", busy: "Sonda je na cest\u011B" },
     hint: [
       "Dr\u017E my\u0161 a t\xE1hni laserem p\u0159es sv\xEDt\xEDc\xED \u017E\xEDly. Cel\xE1 \u017E\xEDla jedn\xEDm tahem d\xE1 dvojn\xE1sobek, v\xEDc \u017Eil v jednom tahu vytvo\u0159\xED \u0159et\u011Bz. Krou\u017Eek u kurzoru ukazuje teplotu laseru.",
-      "Drony samy hledaj\xED nejbli\u017E\u0161\xED \u017E\xEDlu a mont\xE1\u017En\xED dok stav\xED dal\u0161\xED. Ru\u010Dn\xED \u0159ez je po\u0159\xE1d nejv\xFDnosn\u011Bj\u0161\xED."
+      "Ru\u010Dn\xED \u0159ez je po\u0159\xE1d nejv\xFDnosn\u011Bj\u0161\xED."
     ],
     b: {
       panel: { n: "Fotovoltaick\xFD panel", d: "M\u011Bn\xED sv\u011Btlo Aldry na elekt\u0159inu." },
@@ -3131,7 +3131,7 @@
     ],
     hint: [
       "Dr\u017E my\u0161 na dr\xE1ze a vypou\u0161t\xED\u0161 kolektory. Chy\u0165 vrchol magnetick\xE9 smy\u010Dky, nat\xE1hni ji a pus\u0165 v zelen\xE9m p\xE1smu \u2013 v\xFDtrysk m\xED\u0159\xED tam, kam t\xE1hne\u0161. Mi\u0159 na hust\xFD roj.",
-      "Tov\xE1rny vypou\u0161t\u011Bj\xED kolektory samy, kotvy uvol\u0148uj\xED smy\u010Dky za tebe. Ru\u010Dn\u011B nata\u017Een\xE1 smy\u010Dka d\xE1 po\u0159\xE1d nejv\xEDc a dr\u017E\xED rezonanci."
+      "Ru\u010Dn\u011B nata\u017Een\xE1 smy\u010Dka d\xE1 po\u0159\xE1d nejv\xEDc a dr\u017E\xED rezonanci."
     ],
     b: {
       kol: { n: "Kolektor", d: "Zrcadlo na ob\u011B\u017En\xE9 dr\xE1ze. Vypou\u0161t\u011Bj ho i dr\u017Een\xEDm my\u0161i na dr\xE1ze." },
@@ -3155,7 +3155,7 @@
       optics: { n: "Plazmov\xE1 optika", d: "Plocha kolektor\u016F \xD72." },
       loops: { n: "Mapa magnetick\xE9ho pole", d: "Plazma \xD71,5." },
       lifting: { n: "Hv\u011Bzdn\xFD zdvih", d: "Odemkne zdvih plazmatu z povrchu." },
-      replic: { n: "Samoreplikace", d: "Odemkne tov\xE1rny. Za\u010D\xEDn\xE1 automatizace." },
+      replic: { n: "Samoreplikace", d: "Odemkne tov\xE1rny, kter\xE9 vypou\u0161t\u011Bj\xED kolektory samy." },
       thin: { n: "Ten\u010D\xED zrcadla", d: "Plocha kolektor\u016F \xD73." },
       anchors: { n: "Magnetick\xE9 kotvy", d: "Odemkne kotvy, kter\xE9 pou\u0161t\u011Bj\xED smy\u010Dky samy." },
       outer: { n: "Vn\u011Bj\u0161\xED dr\xE1hy", d: "Roj se p\u0159esune d\xE1l. Plocha \xD73." },
@@ -3217,7 +3217,7 @@
     indicator: "Hv\u011Bzdy pod kontrolou",
     hint: [
       "Dr\u017E my\u0161: z nejbli\u017E\u0161\xED kolonie m\xED\u0159\xED svazek a tla\u010D\xED sv\u011Bteln\xE9 plachty. Podr\u017E ho na hv\u011Bzd\u011B, dokud se krou\u017Eek nezapln\xED. \u010C\xE1rkovan\xE1 hranice ukazuje, kam plachty zat\xEDm dolet\xED.",
-      "Sondy a maj\xE1ky te\u010F osidluj\xED samy. Ty mi\u0159 svazkem na velk\xE9 vzd\xE1len\xE9 soustavy, kam \u0161\xED\u0159en\xED je\u0161t\u011B nedos\xE1hlo."
+      "Mi\u0159 svazkem na velk\xE9 vzd\xE1len\xE9 soustavy, kam \u0161\xED\u0159en\xED je\u0161t\u011B nedos\xE1hlo."
     ],
     b: {
       power: { n: "V\xFDkonn\u011Bj\u0161\xED svazek", d: "Svazek osidluje o 60 % rychleji a v\xEDc spot\u0159ebuje." },
@@ -3233,7 +3233,7 @@
     r: {
       sailcloth: { n: "Grafenov\xE9 plachty", d: "Plachty \xD72." },
       dyson3: { n: "Roje u ka\u017Ed\xE9 hv\u011Bzdy", d: "Zachycen\xED sv\u011Btla \xD73." },
-      probes: { n: "Von Neumannovy sondy", d: "Odemkne samoreplikuj\xEDc\xED sondy. Za\u010D\xEDn\xE1 automatizace." },
+      probes: { n: "Von Neumannovy sondy", d: "Odemkne samoreplikuj\xEDc\xED sondy." },
       beacons: { n: "Maj\xE1ky", d: "Odemkne automatick\xE9 maj\xE1ky." },
       gaia: { n: "Astrometrie", d: "\u0160\xED\u0159en\xED \xD71,5 a data \xD72." },
       halo: { n: "Roje v halu", d: "Zachycen\xED sv\u011Btla \xD73." },

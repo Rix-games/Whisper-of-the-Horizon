@@ -29,7 +29,7 @@ export const CS2 = {
   ],
   hint: [
     "Drž myš na dráze a vypouštíš kolektory. Chyť vrchol magnetické smyčky, natáhni ji a pusť v zeleném pásmu – výtrysk míří tam, kam táhneš. Miř na hustý roj.",
-    "Továrny vypouštějí kolektory samy, kotvy uvolňují smyčky za tebe. Ručně natažená smyčka dá pořád nejvíc a drží rezonanci.",
+    "Ručně natažená smyčka dá pořád nejvíc a drží rezonanci.",
   ],
   b: {
     kol: { n: "Kolektor", d: "Zrcadlo na oběžné dráze. Vypouštěj ho i držením myši na dráze." },
@@ -53,7 +53,7 @@ export const CS2 = {
     optics: { n: "Plazmová optika", d: "Plocha kolektorů ×2." },
     loops: { n: "Mapa magnetického pole", d: "Plazma ×1,5." },
     lifting: { n: "Hvězdný zdvih", d: "Odemkne zdvih plazmatu z povrchu." },
-    replic: { n: "Samoreplikace", d: "Odemkne továrny. Začíná automatizace." },
+    replic: { n: "Samoreplikace", d: "Odemkne továrny, které vypouštějí kolektory samy." },
     thin: { n: "Tenčí zrcadla", d: "Plocha kolektorů ×3." },
     anchors: { n: "Magnetické kotvy", d: "Odemkne kotvy, které pouštějí smyčky samy." },
     outer: { n: "Vnější dráhy", d: "Roj se přesune dál. Plocha ×3." },

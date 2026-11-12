@@ -15,7 +15,7 @@ export const CS3 = {
   indicator: "Hvězdy pod kontrolou",
   hint: [
     "Drž myš: z nejbližší kolonie míří svazek a tlačí světelné plachty. Podrž ho na hvězdě, dokud se kroužek nezaplní. Čárkovaná hranice ukazuje, kam plachty zatím doletí.",
-    "Sondy a majáky teď osidlují samy. Ty miř svazkem na velké vzdálené soustavy, kam šíření ještě nedosáhlo.",
+    "Miř svazkem na velké vzdálené soustavy, kam šíření ještě nedosáhlo.",
   ],
   b: {
     power: { n: "Výkonnější svazek", d: "Svazek osidluje o 60 % rychleji a víc spotřebuje." },
@@ -31,7 +31,7 @@ export const CS3 = {
   r: {
     sailcloth: { n: "Grafenové plachty", d: "Plachty ×2." },
     dyson3: { n: "Roje u každé hvězdy", d: "Zachycení světla ×3." },
-    probes: { n: "Von Neumannovy sondy", d: "Odemkne samoreplikující sondy. Začíná automatizace." },
+    probes: { n: "Von Neumannovy sondy", d: "Odemkne samoreplikující sondy." },
     beacons: { n: "Majáky", d: "Odemkne automatické majáky." },
     gaia: { n: "Astrometrie", d: "Šíření ×1,5 a data ×2." },
     halo: { n: "Roje v halu", d: "Zachycení světla ×3." },
