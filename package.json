@@ -1,6 +1,6 @@
 {
   "name": "whisper-of-the-horizon",
-  "version": "0.4.0",
+  "version": "1.0.0-dev",
   "private": true,
   "description": "Šepot Horizontu – klidná inkrementální vesmírná hra postavená na skutečné fyzice.",
   "type": "module",
@@ -8,7 +8,7 @@
     "build": "tsc -p . && esbuild src/main.ts --bundle --format=iife --target=es2020 --outfile=web/hra.js",
     "watch": "esbuild src/main.ts --bundle --format=iife --target=es2020 --outfile=web/hra.js --watch",
     "serve": "npx --yes serve web",
-    "sim": "tsx sim/balance.ts"
+    "sim": "esbuild sim/balance.ts --bundle --platform=node --format=esm --outfile=sim/.out.mjs --log-level=warning && node sim/.out.mjs"
   },
   "devDependencies": {
     "typescript": "6.0.3",

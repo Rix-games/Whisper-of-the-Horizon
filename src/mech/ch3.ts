@@ -122,7 +122,7 @@ export const galaxie: Mech & any = {
   draw(c: CanvasRenderingContext2D, s: State, v: View, M: Input) {
     const N = galaxyNodes(), T = v.T;
     if (!tex) tex = spiralTex(1400, 21);
-    c.save(); c.globalAlpha = 0.78; c.translate(GCX, GCY); c.scale(1, TILT);
+    c.save(); c.globalAlpha = 0.6; c.translate(GCX, GCY); c.scale(1, TILT);
     c.drawImage(tex, -1.05 * RG, -1.05 * RG, 2.1 * RG, 2.1 * RG); c.restore();
     if (litKey !== s.col) { renderLit(s); litKey = s.col; }
     if (lit) { c.save(); c.globalCompositeOperation = "lighter"; c.drawImage(lit, 0, 0, 1600, 1000); c.restore(); }
@@ -156,9 +156,11 @@ export const galaxie: Mech & any = {
     for (const n of N) {
       if (n.home) continue;
       const p = gsp(n), on = isOn(s, n.i);
-      if (on) { c.fillStyle = "rgba(255,225,170,.95)"; c.beginPath(); c.arc(p[0], p[1], 2.2, 0, 7); c.fill(); continue; }
-      const tw = (inZone(s, n.i) ? 0.45 : 0.22) + 0.12 * Math.sin(T * 0.8 + n.tw), h = (n as any).heat || 0;
-      c.fillStyle = `rgba(225,232,255,${tw + 0.4 * h})`; c.beginPath(); c.arc(p[0], p[1], 1.6, 0, 7); c.fill();
+      if (on) { c.fillStyle = "rgba(255,225,170,.95)"; c.beginPath(); c.arc(p[0], p[1], 2.4 + 0.4 * Math.log10(n.stars / 1e4 + 1), 0, 7); c.fill(); continue; }
+      const z = inZone(s, n.i), tw = (z ? 0.55 : 0.25) + 0.12 * Math.sin(T * 0.8 + n.tw), h = (n as any).heat || 0;
+      const rad = 1.4 + 0.45 * Math.log10(n.stars / 1e4 + 1);
+      if (z) { const g = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], rad * 3.2); g.addColorStop(0, `rgba(200,215,255,${0.25 + 0.3 * h})`); g.addColorStop(1, "rgba(200,215,255,0)"); c.fillStyle = g; c.beginPath(); c.arc(p[0], p[1], rad * 3.2, 0, 7); c.fill(); }
+      c.fillStyle = `rgba(230,236,255,${tw + 0.4 * h})`; c.beginPath(); c.arc(p[0], p[1], rad, 0, 7); c.fill();
       const pg = s.prog[n.i] || 0;
       if (pg > 0.02) { c.strokeStyle = "rgba(255,210,150,.75)"; c.lineWidth = 1.5; c.beginPath(); c.arc(p[0], p[1], 6, -1.57, -1.57 + 6.283 * pg); c.stroke(); }
     }

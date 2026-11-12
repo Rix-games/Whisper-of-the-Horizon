@@ -1,3 +1,4 @@
 node_modules/
 web/js/
 .DS_Store
+sim/.out.mjs
