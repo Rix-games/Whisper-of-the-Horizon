@@ -2999,8 +2999,8 @@
       dock: { n: "Mont\xE1\u017En\xED dok", d: "S\xE1m stav\xED drony z \u010D\xE1sti p\u0159\xEDjmu rudy." },
       farm: { n: "Zrcadlov\xE1 farma", d: "Zrcadla na ob\u011B\u017En\xE9 dr\xE1ze soust\u0159ed\xED sv\u011Btlo Aldry na panely." },
       dcenter: { n: "V\xFDpo\u010Detn\xED j\xE1dro", d: "Zpracuje v\xEDc dat ze skener\u016F." },
-      statite: { n: "Statit", d: "Slune\u010Dn\xED plachta, kterou na m\xEDst\u011B dr\u017E\xED tlak z\xE1\u0159en\xED Aldry." },
-      ring: { n: "Kolektorov\xFD prstenec", d: "Prstenec statit\u016F pod\xE9l cel\xE9 dr\xE1hy p\xE1su." }
+      statite: { n: "Sv\u011Bteln\xE1 plachta", d: "Tenk\xE1 plachta, kterou na m\xEDst\u011B dr\u017E\xED tlak z\xE1\u0159en\xED Aldry." },
+      ring: { n: "Kolektorov\xFD prstenec", d: "Prstenec sv\u011Bteln\xFDch plachet pod\xE9l cel\xE9 dr\xE1hy p\xE1su." }
     },
     r: {
       spectro: { n: "Spektrometr", d: "2\xD7 v\xEDc rudy." },
@@ -3009,11 +3009,11 @@
       drones: { n: "Autonomn\xED drony", d: "Odemkne t\u011B\u017Eebn\xED drony." },
       dock: { n: "Mont\xE1\u017En\xED dok", d: "Odemkne dok, kter\xFD stav\xED drony s\xE1m." },
       regolith: { n: "Zrcadla z regolitu", d: "Zrcadlov\xE9 farmy d\xE1vaj\xED 3\xD7 v\xEDc." },
-      driver: { n: "Hmotov\xFD vrh", d: "Vyn\xE1\u0161\xED rudu na ob\u011B\u017Enou dr\xE1hu. Odemkne statity." },
+      driver: { n: "Hmotov\xFD vrh", d: "Vyn\xE1\u0161\xED rudu na ob\u011B\u017Enou dr\xE1hu. Odemkne sv\u011Bteln\xE9 plachty." },
       assembly: { n: "Autonomn\xED mont\xE1\u017E", d: "Platforma sama stav\xED elektr\xE1rny (d\xE1 se vypnout)." },
       deepdrill: { n: "Hlubinn\xFD vrt", d: "4\xD7 v\xEDc rudy." },
-      statites: { n: "Leh\u010D\xED plachty", d: "Statity d\xE1vaj\xED 3\xD7 v\xEDc." },
-      calib: { n: "Kalibrace statit\u016F", d: "Statity d\xE1vaj\xED o 50 % v\xEDc." },
+      statites: { n: "Leh\u010D\xED plachty", d: "Sv\u011Bteln\xE9 plachty d\xE1vaj\xED 3\xD7 v\xEDc." },
+      calib: { n: "Kalibrace plachet", d: "Sv\u011Bteln\xE9 plachty d\xE1vaj\xED o 50 % v\xEDc." },
       lens: { n: "Fokusa\u010Dn\xED prstenec", d: "Kolektorov\xFD prstenec d\xE1v\xE1 o 50 % v\xEDc." },
       collector: { n: "Hv\u011Bzdn\xFD kolektor", d: "P\u0159esun k Ald\u0159e. Dokon\u010D\xED kapitolu." }
     },
@@ -3047,8 +3047,8 @@
       c1_st3: "Niklov\xE9 j\xE1dro asteroidu. Tady by t\u011B\u017Eba m\u011Bla skon\u010Dit. Data ale ukazuj\xED, \u017Ee pod n\xEDm je je\u0161t\u011B n\u011Bco.",
       c1_layer3: "J\xE1dro je protkan\xE9 tenk\xFDmi kan\xE1lky. Vedou dovnit\u0159, ne ven. Jako by tu n\u011Bkdo hledal tot\xE9\u017E co j\xE1.",
       c1_drones20: "Dvacet dron\u016F. Pohybuj\xED se v rytmu, kter\xFD jsem jim nedal: jeden takt ka\u017Ed\xFDch 7,3 sekundy.",
-      c1_statite: "Prvn\xED statit vis\xED v z\xE1\u0159en\xED Aldry a nepad\xE1. Sv\u011Btlo ho dr\u017E\xED jako dla\u0148.",
-      f1_statite: "Statit nepot\u0159ebuje ob\u011B\u017Enou dr\xE1hu. Kdy\u017E je plachta dost lehk\xE1, tlak sv\u011Btla vyrovn\xE1 gravitaci hv\u011Bzdy.",
+      c1_statite: "Prvn\xED plachta vis\xED v z\xE1\u0159en\xED Aldry a nepad\xE1. Sv\u011Btlo ji dr\u017E\xED jako dla\u0148.",
+      f1_statite: "Placht\u011B, kter\xE1 vis\xED na m\xEDst\u011B bez ob\u011B\u017En\xE9 dr\xE1hy, se anglicky \u0159\xEDk\xE1 statite. Kdy\u017E je dost lehk\xE1, tlak sv\u011Btla vyrovn\xE1 gravitaci hv\u011Bzdy. Navrhl ji fyzik Robert Forward.",
       c1_comet: "Komety na okraji soustavy jsou roz\u0159ezan\xE9. \xDAhel \u0159ez\u016F odpov\xEDd\xE1 m\xE9mu laseru a kalibrace sed\xED na tis\xEDcinu.",
       c1_st4: "Izotopov\xE1 \u017E\xEDla. V rud\u011B je izotop, kter\xFD v p\u0159\xEDrod\u011B nem\xE1 jak vzniknout. A p\u0159esto tu je.",
       c1_layer4: "Puls nese \u010Dasovou zna\u010Dku a ta ukazuje do budoucnosti. O kolik, zat\xEDm nev\xEDm.",
@@ -3244,6 +3244,7 @@
     perSec: "/s",
     stage: "Stadium",
     goal: "C\xEDl stadia",
+    stageHidden: "Zat\xEDm nezn\xE1m\xE9",
     noiseVol: "\u0160um vesm\xEDru",
     kBelow: "K < 0",
     toType: (k, x) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${x} v\xEDc v\xFDkonu`,
@@ -3932,10 +3933,10 @@
       c.fill();
       c.font = `${on2 ? 600 : 500} 15px ${SANS}`;
       c.fillStyle = on2 ? "#ffd27a" : done ? "#dfe4ef" : "#5d6678";
-      c.fillText(`${done ? "\u2713 " : on2 ? "\u25B6 " : ""}${X.layer[i]}`, lx, y);
+      c.fillText(`${done ? "\u2713 " : on2 ? "\u25B6 " : ""}${i <= li ? X.layer[i] : "???"}`, lx, y);
       c.font = `12px ${MONO}`;
       c.fillStyle = on2 ? "#e3a970" : done ? "#8ef0c8" : "#4a5266";
-      c.fillText(i ? `${count(Math.pow(T1.layerMult, i))}\xD7 v\xEDc rudy` : "z\xE1kladn\xED v\xFDnos", lx, y + 17);
+      c.fillText(i > li ? "neprozkoum\xE1no" : i ? `${count(Math.pow(T1.layerMult, i))}\xD7 v\xEDc rudy` : "z\xE1kladn\xED v\xFDnos", lx, y + 17);
     }
   }
 
@@ -4741,6 +4742,10 @@
       for (let i = 0; i < N; i++) {
         const st = i < s.stage ? "done" : i === s.stage ? "now" : "next";
         const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${X.layer[i]} \xB7 ${i ? `${count(Math.pow(T1.layerMult, i))}\xD7 v\xEDc rudy` : "z\xE1kladn\xED v\xFDnos"}</small>` : "";
+        if (st === "next") {
+          tl.appendChild(h("div", "st next", `<i>${i + 1}</i><b>???</b><small>${UI.stageHidden}</small>`));
+          continue;
+        }
         tl.appendChild(h("div", "st " + st, sx(`<i>${st === "done" ? "\u2713" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} \xB7 ${K(g) < 0 ? UI.kBelow : "K " + fixed(K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`)));
       }
       box.appendChild(tl);

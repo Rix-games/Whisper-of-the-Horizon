@@ -10,6 +10,7 @@
 - Suroviny uprostřed lišty, barevné rozlišení energie, dat a suroviny i u staveb
 - Mise v Kapitole 1 létá sonda, texty Kapitoly 1 přepsané, puls vysvětlený
 - Tečky u záložek: mise a výzkum na dosah, nové stadium v Detailu
+- Statity přejmenované na světelné plachty, budoucí stadia skrytá
 - Pole panelů na povrchu, zrcadla na šikmé dráze místo kruhů
 - Spolehlivější tlačítka, jednotné barvy staveb, čitelnější mocniny, tenké posuvníky
 - Záložky drží místo, sbalený panel se schová celý

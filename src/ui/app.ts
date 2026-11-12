@@ -425,6 +425,7 @@ function detailText() {
     for (let i = 0; i < N; i++) {
       const st = i < s.stage ? "done" : i === s.stage ? "now" : "next";
       const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${(X as any).layer[i]} · ${i ? `${count(Math.pow(T1.layerMult, i))}× víc rudy` : "základní výnos"}</small>` : "";
+      if (st === "next") { tl.appendChild(h("div", "st next", `<i>${i + 1}</i><b>???</b><small>${UI.stageHidden}</small>`)); continue; }
       tl.appendChild(h("div", "st " + st, sx(`<i>${st === "done" ? "✓" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} · ${E.K(g) < 0 ? UI.kBelow : "K " + fixed(E.K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`)));
     }
     box.appendChild(tl);

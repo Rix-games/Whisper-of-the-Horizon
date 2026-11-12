@@ -138,8 +138,8 @@ function cutaway(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh
     c.beginPath(); c.moveTo(px, py); c.lineTo(lx - 34, y - 4); c.lineTo(lx - 10, y - 4); c.stroke();
     c.fillStyle = LAY[i].sp; c.beginPath(); c.arc(px, py, 2.5, 0, 7); c.fill();
     c.font = `${on ? 600 : 500} 15px ${SANS}`; c.fillStyle = on ? "#ffd27a" : done ? "#dfe4ef" : "#5d6678";
-    c.fillText(`${done ? "✓ " : on ? "▶ " : ""}${X.layer[i]}`, lx, y);
+    c.fillText(`${done ? "✓ " : on ? "▶ " : ""}${i <= li ? X.layer[i] : "???"}`, lx, y);
     c.font = `12px ${MONO}`; c.fillStyle = on ? "#e3a970" : done ? "#8ef0c8" : "#4a5266";
-    c.fillText(i ? `${count(Math.pow(T1.layerMult, i))}× víc rudy` : "základní výnos", lx, y + 17);
+    c.fillText(i > li ? "neprozkoumáno" : i ? `${count(Math.pow(T1.layerMult, i))}× víc rudy` : "základní výnos", lx, y + 17);
   }
 }
