@@ -110,7 +110,6 @@ function buildShell() {
   $("sndBtn").onclick = () => { s.opt.sound = !s.opt.sound; Audio.setSound(s.opt.sound, s.ch >= 1); $("sndBtn").classList.toggle("on", s.opt.sound); };
   $("modalOk").onclick = () => closeModal(true);
   $("modalCancel").onclick = () => closeModal(false);
-  $("detClose").onclick = () => setTab("build");
   setTab("build");
 }
 
@@ -148,7 +147,8 @@ function render() {
   c.globalAlpha = 1;
   const cur = passive ? (hoverMis ? "pointer" : "default") : MECH[s.ch].cursor?.(s, inp) || "crosshair";
   if (cv.style.cursor !== cur) cv.style.cursor = cur;
-  if (tab === "detail") drawDetail($("detc") as HTMLCanvasElement, s, T);
+  const dc = document.getElementById("detc") as HTMLCanvasElement | null;
+  if (tab === "detail" && dc) drawDetail(dc, s, T);
 }
 
 // ---------- pohledy ----------
@@ -167,7 +167,9 @@ function setView(v: string) {
 function setTab(t: string, keepView = false) {
   tab = t;
   document.querySelectorAll("#tabs .tab").forEach((b: any) => b.classList.toggle("on", b.dataset.t === t));
-  $("detail").hidden = t !== "detail";
+  // Výzkum a Detail přes celou obrazovku (vedle levého panelu), scéna zůstává ztlumeně vzadu
+  document.body.classList.toggle("wide", t === "research" || t === "detail");
+  if (dockOpen === false && t !== "build" && t !== "map") { dockOpen = true; document.body.classList.remove("dockclosed"); }
   s.seen["tab_" + t] = s.t;
   if (!keepView) {
     if (t === "map") { const ids = chOf(s).missions.filter((m) => E.mVisible(s, m.id) && !s.mis[m.id]).map((m) => MMAP[m.id].view); view = ids[0] || chOf(s).map; }
@@ -363,6 +365,7 @@ function detailText() {
   if (key === listKey) return;
   listKey = key; box.innerHTML = "";
   const X = tx(s.ch);
+  box.appendChild(h("canvas", "", "")).id = "detc";
   const list = h("div", "card");
   list.innerHTML = `<b>${UI.detail[s.ch]}</b><p>${X.stages.map((n, i) => (i === s.stage ? `<b>▶ ${n}</b>` : i < s.stage ? `<span class="dim">✓ ${n}</span>` : `<span class="dim">· ${n}</span>`)).join("<br>")}</p>`;
   box.appendChild(list);

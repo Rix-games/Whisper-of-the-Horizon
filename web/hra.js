@@ -4010,7 +4010,6 @@
     };
     $("modalOk").onclick = () => closeModal(true);
     $("modalCancel").onclick = () => closeModal(false);
-    $("detClose").onclick = () => setTab("build");
     setTab("build");
   }
   function resize() {
@@ -4054,7 +4053,8 @@
     c.globalAlpha = 1;
     const cur = passive2 ? hoverMis ? "pointer" : "default" : MECH[s.ch].cursor?.(s, inp) || "crosshair";
     if (cv.style.cursor !== cur) cv.style.cursor = cur;
-    if (tab === "detail") drawDetail($("detc"), s, T);
+    const dc = document.getElementById("detc");
+    if (tab === "detail" && dc) drawDetail(dc, s, T);
   }
   function viewOpen(v) {
     if (v === "body" || v === "system") return true;
@@ -4071,7 +4071,11 @@
   function setTab(t, keepView = false) {
     tab = t;
     document.querySelectorAll("#tabs .tab").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
-    $("detail").hidden = t !== "detail";
+    document.body.classList.toggle("wide", t === "research" || t === "detail");
+    if (dockOpen === false && t !== "build" && t !== "map") {
+      dockOpen = true;
+      document.body.classList.remove("dockclosed");
+    }
     s.seen["tab_" + t] = s.t;
     if (!keepView) {
       if (t === "map") {
@@ -4329,6 +4333,7 @@
     listKey = key;
     box.innerHTML = "";
     const X = tx(s.ch);
+    box.appendChild(h("canvas", "", "")).id = "detc";
     const list = h("div", "card");
     list.innerHTML = `<b>${UI.detail[s.ch]}</b><p>${X.stages.map((n2, i) => i === s.stage ? `<b>\u25B6 ${n2}</b>` : i < s.stage ? `<span class="dim">\u2713 ${n2}</span>` : `<span class="dim">\xB7 ${n2}</span>`).join("<br>")}</p>`;
     box.appendChild(list);

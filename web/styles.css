@@ -98,9 +98,14 @@ details.done summary { cursor:pointer; padding:4px 0; }
 details.done div { padding:3px 0; }
 
 /* detail uprostřed */
-#detail { position:fixed; left:330px; right:400px; top:70px; bottom:70px; background:#080a14; border:1px solid var(--line); border-radius:14px; z-index:2; }
-body.dockclosed #detail { right:56px; }
-#detc { width:100%; height:100%; display:block; }
+/* Výzkum a Detail přes celou plochu vedle levého panelu – stejné sklo jako ostatní panely, scéna prosvítá */
+body.wide #dock { left:330px; width:auto; transform:none; }
+body.wide #dockTog { display:none; }
+body.wide #dockBody { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:10px; align-content:start; padding:12px 14px; }
+body.wide #dockBody .card { margin:0; }
+body.wide #dockBody details.done { grid-column:1 / -1; }
+body.wide #tabs { max-width:640px; }
+#detc { grid-column:1 / -1; width:100%; height:min(58vh, 560px); display:block; }
 #detClose { position:absolute; right:10px; top:10px; }
 
 /* žebřík měřítka */
@@ -131,6 +136,7 @@ body.dockclosed #detail { right:56px; }
 
 @media (max-width: 900px) {
   #left { display:none; } #dock { width:min(376px,92vw); }
-  #detail { left:8px; right:8px; }
+  body.wide #dock { left:8px; }
   .brand, .chip .r { display:none; }
 }
+body.wide #hint { display:none; }
