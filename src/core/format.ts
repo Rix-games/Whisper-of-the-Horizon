@@ -62,3 +62,28 @@ export function duration(sec) {
 export function kValue(k) {
   return fixed(k, 2);
 }
+
+/** Počet kusů / bezrozměrné číslo: SI předpony, pak vědecký zápis. */
+export function count(n) {
+  const a = Math.abs(n);
+  if (a < 1e3) return a < 10 && a % 1 ? fixed(n, 1) : String(Math.floor(n));
+  const e = Math.floor(Math.log10(a) / 3);
+  if (e >= PREFIX.length) return sci(n);
+  const v = n / Math.pow(1e3, e);
+  return `${fixed(v, v >= 100 ? 0 : v >= 10 ? 1 : 2)} ${PREFIX[e]}`;
+}
+export function pct(f) {
+  if (f <= 0) return "0 %";
+  if (f < 1e-4) return "< 0,01 %";
+  if (f < 0.01) return `${fixed(f * 100, 2)} %`;
+  return `${fixed(f * 100, f < 0.1 ? 1 : 0)} %`;
+}
+/** Násobek pro "potřebuješ N× víc". */
+export function times(x) {
+  if (x < 10) return `${fixed(x, 1)}×`;
+  if (x < 1e4) return `${Math.round(x).toLocaleString("cs-CZ").replace(/\s/g, " ")}×`;
+  return `${sci(x, 1)}×`;
+}
+export function mult(x) {
+  return `×${x < 10 ? fixed(x, x % 1 ? 2 : 0).replace(/,?0+$/, (m) => (m.startsWith(",") ? "" : m)) : count(x)}`;
+}

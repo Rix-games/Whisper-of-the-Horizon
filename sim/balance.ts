@@ -1,190 +1,94 @@
-// Vyvažovací simulace: bot hraje kapitoly a vypíše časy milníků.
-// Spuštění: npx tsx sim/balance.ts
-// Proměnné: CPS (kliky/s), CATCH (podíl zachycených událostí), LIMIT (hodiny),
-//   CH=1 jen Kapitola 1, CH=2 do supernovy, PRESTIGE=1 bot přestavuje roj,
-//   TL=minuty  průběh K a surovin po čase, SNAP=sekundy,... stav budov,
-//   SAVEAT=ch2,ch3  vypíše uloženou hru (SH1.…) na začátku kapitoly,
-//   DUMP=soubor  uloží stav na začátku Kap. 3, START=soubor  začne z něj, SEED=číslo.
-import { readFileSync, writeFileSync } from 'node:fs';
-import { BUILDING_IDS, LOCATION_IDS, RESEARCH_IDS, B, type BuildingId, type Res } from '../src/core/defs.js';
-import { newState, migrate, encodeSave } from '../src/core/state.js';
-import * as E from '../src/core/engine.js';
-import * as N from '../src/core/bridge.js';
+// Simulace tempa: bot hraje mechaniku kapitoly a nakupuje jako rozumný hráč.
+//   npm run sim                 celá hra (Kap. 1–3)
+//   CH=2 npm run sim            jen Kap. 2 z typického startovního stavu (chapters/ch2.ts → simStart)
+// Proměnné: SEED, LIMIT (s), TL (výpis po N s), EV=1 (všechny události), SKILL (0..1, aktivita bota)
+// Výstup je krátký: časy stadií, K, příjem a mezery bez novinky > 8 min.
+import { newState } from "../src/core/state";
+import * as E from "../src/core/engine";
+import { CHAPTERS } from "../src/core/defs";
+import { seedRnd } from "../src/core/rng";
+import { kamen } from "../src/mech/ch1";
+import { hvezda } from "../src/mech/ch2";
+import { galaxie } from "../src/mech/ch3";
+import { fxUpdate, setFx } from "../src/mech/fx";
 
-const CLICKS_PER_SEC = Number(process.env.CPS ?? 4);
-const EVENT_CATCH = Number(process.env.CATCH ?? 0.6);
-const LIMIT_H = Number(process.env.LIMIT ?? 30);
-const STOP_CH = Number(process.env.CH ?? 99);
-const PRESTIGE = process.env.PRESTIGE !== '0';
-const TL = Number(process.env.TL ?? 0) * 60;
-const SNAP = (process.env.SNAP ?? '').split(',').filter(Boolean).map(Number);
-const SAVEAT = (process.env.SAVEAT ?? '').split(',').filter(Boolean);
-const DUMPAT = (process.env.DUMPAT ?? '').split(',').filter(Boolean).map((x) => x.split(':')); // sekundy:soubor
+const env = (k: string, d: number) => (process.env[k] ? Number(process.env[k]) : d);
+const SEED = env("SEED", 1), LIMIT = env("LIMIT", 6 * 3600), TL = env("TL", 0), SKILL = env("SKILL", 1), ONLY = env("CH", 0);
+seedRnd(SEED); setFx(false);
+const s = newState();
+if (ONLY > 1) { s.ch = ONLY; CHAPTERS[ONLY - 1].simStart?.(s); CHAPTERS[ONLY - 1].onStart?.(s); }
+const mechs: any = { 1: kamen, 2: hvezda, 3: galaxie };
+const M = { x: 800, y: 500, px: 800, py: 500, down: false, inside: true };
+let mech = mechs[s.ch]; mech.reset();
+const ev: [number, string][] = [];
+const nov = (w: string) => ev.push([s.t, w]);
+E.on((e) => {
+  if (["unlock", "runlock", "munlock", "stage", "mdone", "research"].includes(e.type)) nov(`${e.type}:${e.id}`);
+  if (e.type === "chapter") { mech = mechs[s.ch]; mech.reset(); nov("KAPITOLA " + s.ch); }
+});
+const fmt = (t: number) => `${Math.floor(t / 3600)}:${String(Math.floor((t % 3600) / 60)).padStart(2, "0")}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+const e2 = (x: number) => x.toExponential(1);
+const out: string[] = [];
+let lastKey = "", chStart = 0, buyT = 0, tlT = 0, idle = 0;
+const dt = 0.05;
 
-if (process.env.G2) E.TUNE.g2 = Number(process.env.G2);
-if (process.env.BOOST) E.TUNE.boost = Number(process.env.BOOST);
-let seed = Number(process.env.SEED ?? 42); const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-const s = process.env.START ? migrate(JSON.parse(readFileSync(process.env.START, 'utf8'))) : newState(0);
-const t0 = s.time;
-const marks: [string, number, string][] = [];
-const mark = (k: string) => { if (!marks.find((m) => m[0] === k)) marks.push([k, s.time, E.kardashev(s).toFixed(2)]); };
-let lastBuy = 0, longestWait = 0, waitStart = s.time;
-const CH1: BuildingId[] = ['drone', 'smelter', 'solar', 'lab', 'drill', 'mirror', 'replicator', 'forge', 'catcher', 'qcomp', 'fusion', 'dyson'];
-const CH2: BuildingId[] = ['dyson', 'windnet', 'sieve', 'corono', 'lifter', 'separator', 'seismo', 'swarmfab'];
-const CH2_SET = new Set(CH2);
-const CH4B = N.CH4_BUILDINGS as BuildingId[];
-const chapterSet = (): BuildingId[] => s.chapterDone === 0 ? CH1 : s.chapterDone === 1 ? CH2 : s.chapterDone >= 3 ? CH4B : BUILDING_IDS.filter((id) => !CH1.includes(id) && !CH2_SET.has(id) && !CH4B.includes(id));
-const e = (v: number) => v.toExponential(1);
-
-// ---- chování bota podle kapitoly ----
-const VENTBOT = Number(process.env.VENT ?? 2); // kolik chuchvalců za sekundu bot vypustí
-const FEED_SHARE = Number(process.env.FEED ?? 0.6); // kolik výroby plynu bot pošle do díry
-function botWants(st: typeof s, id: BuildingId) {
-  if (st.chapterDone < 2) return true;
-  const { p, c } = E.rates(st);
-  if (id === 'injector') return E.injDemand(st) + E.consOf(st, id, 'plasma') <= 0.85 * E.ventFill(st);
-  if (id === 'hawking') return c.plasma + E.consOf(st, id, 'plasma') <= FEED_SHARE * p.plasma;
-  if (id === 'jet') return E.jetCov(st) < 0.97;
-  if (id === 'bswarm') return N.capture(st) < 0.97;
-  if (id === 'trap') return N.trapCapture(st) < 0.97;
-  if (id === 'beacon') return N.revealCount(st) < 48;
-  return true;
-}
-function botWeight(_s: typeof s, _id: BuildingId) { return 1; }
-function botAct(st: typeof s) {
-  if (VENTBOT && st.star.done) {
-    for (let k = 0; k < VENTBOT; k++) E.ventRelease(st, rng() * 6.28); if (E.ventCanBurst(st)) E.ventBurst(st); for (const id of E.VENT_IDS) if (E.ventUpCost(st, id) < 0.1 * st.res.plasma) E.ventUpgrade(st, id); }
-  botNet(st);
-  if (E.ch4(st) && E.bridgeReady(st).ok) { E.bridgeAdvance(st); marks.push([st.bridge.pass >= 0 ? 'PRŮCHOD' : 'STADIUM4 ' + st.bridge.stage, st.time, E.kardashev(st).toFixed(2)]); }
-  if (st.star.done && !st.hole.done && E.phaseReady(st).ok) { E.advancePhase(st); marks.push([st.hole.dive >= 0 ? 'PONOR' : 'FÁZE ' + st.hole.phase, st.time, E.kardashev(st).toFixed(2)]); }
-}
-const SYNC = Number(process.env.SYNC ?? 0.6); // podíl pulsů, kdy bot trefí vlnu
-let lastWave = 0;
-function botNet(st: typeof s) {
-  if (!E.ch4(st) || !st.bridge.started) return;
-  // synchronizace: na začátku vlny zamkne až 4 nejvytíženější mosty
-  const ph = N.wavePhase(st);
-  if (ph < lastWave && rng() < SYNC) {
-    const f = N.netNow(st), L = st.bridge.links;
-    Object.keys(L).filter((id) => L[id].lk <= 0 || L[id].la).sort((a, b) => f.supply[b] / N.capBase(st, L[b].lv) - f.supply[a] / N.capBase(st, L[a].lv)).slice(0, 4)
-      .forEach((id) => { L[id].lk = N.lockLen(st); L[id].la = false; st.bridge.locks++; });
+function shop() {
+  const C = E.chDef(s);
+  for (const r of C.research) if (!s.r[r.id] && !r.final && E.rVisible(s, r.id) && s.res.data >= r.cost) E.doResearch(s, r.id);
+  for (const m of C.missions) if (!s.run && !s.mis[m.id] && E.mVisible(s, m.id) && s.res.energy >= m.cost) E.startMission(s, m.id);
+  // šetři na první kus nové klíčové stavby, když je do ~90 s příjmu
+  let save = "", saveC = 0;
+  for (const b of C.build) {
+    if (b.kind === "swarm" || !E.unlocked(s, b.id) || (s.b[b.id] || 0) > 0) continue;
+    if (!["auto", "unit", "gen", "mult"].includes(b.kind)) continue;
+    const c = E.cost(s, b.id);
+    if (c > s.res[b.cur] && c < Math.max(E.RT.rate[b.cur], 1e-9) * 90) { save = b.id; saveC = c; break; }
   }
-  lastWave = ph;
-  for (const id of N.SYNC_IDS) if (N.syncCost(st, id) < 0.05 * st.res.exotic) N.syncUpgrade(st, id);
-  if (st.b.plate < 3) return;
-  for (let k = 0; k < 30; k++) {
-    const o = N.bestOpen(st), w = N.bestWiden(st);
-    const vo = o ? (o.gain + 0.15 * N.nodeOut(st, N.NODE[o.to])) / o.cost : 0, vw = w ? N.widenGain(st, w) / N.upCost(st, st.bridge.links[w].lv) : 0;
-    if (!o && !w) break;
-    const cw = w ? N.upCost(st, st.bridge.links[w].lv) : Infinity;
-    if (vw > vo && w) { if (cw > 0.6 * st.res.exotic || !N.widen(st, w)) break; } else if (o) { if (o.cost > 0.6 * st.res.exotic || !N.openLink(st, o.from, o.to)) break; } else break;
-  }
-}
-function botStatus(st: typeof s) {
-  if (E.ch4(st)) { const f = N.netNow(st); return `stadium ${st.bridge.stage} mosty ${st.bridge.n} vidět ${N.revealCount(st)} sběr ${N.capture(st).toFixed(2)} síť ${e(f.total)} díra ${e(st.bridge.holeW)} exo ${e(st.res.exotic)} ${e(E.rates(st).p.exotic)}/s | ${chapterSet().map((id) => id + ' ' + Math.floor(st.b[id])).join(' ')}`; }
-  if (st.chapterDone === 1) return `stadium ${st.star.stage} t ${Math.round(st.star.t)} pokrytí ${E.coverage(st).toFixed(2)} body ${st.p.pts}`;
-  if (st.star.done) return `fáze ${st.hole.phase} a ${st.hole.a.toFixed(2)} L ${e(E.holeL(st))} kryt ${E.ringCov(st).toFixed(2)} trysky ${e(E.jetP(st))} γ ${E.gamma(st).toFixed(1)} | ${chapterSet().map((id) => id + ' ' + Math.floor(st.b[id])).join(' ')}`;
-  return '';
-}
-function botMarks(_s: typeof s): string[] { return []; }
-
-function buyChapter1() {
-  const unlocked = BUILDING_IDS.filter((id) => E.isUnlocked(s, id));
-  const newest = unlocked.filter((id) => id !== 'replicator').at(-1);
-  const pw = E.rates(s).p.energy;
-  const missing = unlocked.find((id) => Math.floor(s.b[id]) === 0 && !(id === 'qcomp' && pw < 6e8));
-  let olderBought = 0, bought = false;
-  for (let k = 0; k < 50; k++) {
-    const { p, c } = E.rates(s);
-    let best: BuildingId | null = null, bv = Infinity;
-    for (const id of CH1) {
-      if (!E.isUnlocked(s, id)) continue;
-      if (id === 'smelter' && s.b.smelter > 0 && c.ore > p.ore * 0.85) continue;
-      if (id === 'lab' && s.b.lab > 0 && c.energy > p.energy * 0.8) continue;
-      if (id === 'qcomp' && (p.energy < 6e8 || c.energy + 2e8 > p.energy * 0.8)) continue;
-      if (id === 'forge' && s.b.forge > 0 && c.ore > p.ore * 0.85) continue;
-      if (id === 'replicator' && c.energy + 2.5e5 > p.energy * 0.8) continue;
-      const cst = E.cost(s, id);
-      if (!E.affordable(s, cst)) continue;
-      if (missing && id !== missing && Object.keys(cst).some((r) => (E.cost(s, missing) as Record<string, number>)[r])) continue;
-      if (id !== newest && id !== missing && (olderBought >= 2 || Object.entries(cst).some(([r, x]) => x! > 0.25 * s.res[r as Res]))) continue;
-      const v = Object.entries(cst).reduce((a, [r, x]) => a + x! / Math.max(1, s.res[r as Res] + 1), 0);
-      if (v < bv) { bv = v; best = id; }
+  mech.reserve = saveC;   // bot nevypouští kolektory z peněz, na které šetří
+  for (let k = 0; k < 300; k++) {
+    let best = "", bv = 0;
+    for (const b of C.build) {
+      if (b.kind === "swarm" || !E.unlocked(s, b.id) || E.maxed(s, b.id)) continue;
+      const c = E.cost(s, b.id), have = s.res[b.cur];
+      if (c > have || (save && c > saveC * 0.02 && b.id !== save)) continue;
+      const cnt = s.b[b.id] || 0;
+      let ben = C.botValue?.(s, b.id);
+      if (ben === undefined) ben = b.kind === "mult" ? 0.12 : b.kind === "unit" ? 1 / (cnt + 6) : b.kind === "data" ? 0.6 / (cnt + 1) : b.kind === "gen" ? 0.2 : 0.3;
+      const v = ben / (c / have + 1e-9);
+      if (v > bv) { bv = v; best = b.id; }
     }
     if (!best) break;
-    E.buy(s, best); bought = true; if (best !== newest && best !== missing) olderBought++;
+    E.buy(s, best, 1);
   }
-  return bought;
+  const fin = C.research.find((r) => r.final);
+  if (fin && E.rVisible(s, fin.id) && !s.r[fin.id] && s.res.data >= fin.cost) {
+    E.doResearch(s, fin.id);
+    out.push(`Kap. ${s.ch} hotová v ${fmt(s.t)} (kapitola ${fmt(s.t - chStart)})`);
+    if (ONLY || s.ch >= CHAPTERS.length) return true;
+    E.archiveData(s); E.nextChapter(s); chStart = s.t;
+  }
+  return false;
 }
 
-/** Obecný bot pro další kapitoly: kupuje nejlevnější vzhledem k zásobám, převodníky jen když mají vstup. */
-function buyLater() {
-  let bought = false;
-  const ids = chapterSet().filter((id) => E.isUnlocked(s, id));
-  const missing = ids.find((id) => Math.floor(s.b[id]) === 0 && botWants(s, id));
-  for (let k = 0; k < 60; k++) {
-    const { p, c } = E.rates(s);
-    let best: BuildingId | null = null, bv = Infinity;
-    for (const id of ids) {
-      if (!botWants(s, id)) continue;
-      const d = B[id];
-      // převodník: po přikoupení musí zůstat vstup v plusu (energii trychtýřů hlídá účinnost)
-      if (d.cons && id !== 'swarmfab' && s.b[id] >= 1) {
-        const starve = (Object.keys(d.cons) as Res[]).some((r) => p[r] - c[r] < E.consOf(s, id, r) * 1.05);
-        if (starve) continue;
-      }
-      if (id === 'swarmfab' && (s.eff.swarmfab ?? 1) < 0.9 && s.b.swarmfab >= 1) continue;
-      const cst = E.cost(s, id);
-      if (!E.affordable(s, cst)) continue;
-      if (missing && id !== missing && Object.keys(cst).some((r) => (E.cost(s, missing) as Record<string, number>)[r] && cst[r as Res]! > 0.1 * s.res[r as Res])) continue;
-      const v = Object.entries(cst).reduce((a, [r, x]) => a + x! / Math.max(1, s.res[r as Res] + 1), 0) * botWeight(s, id);
-      if (v < bv) { bv = v; best = id; }
-    }
-    if (!best) break;
-    E.buy(s, best); bought = true;
+while (s.t < LIMIT) {
+  idle -= dt;
+  if (idle <= 0 && Math.random() > SKILL) idle = 4;
+  if (idle > 0) { if (M.down) { M.down = false; mech.up?.(s, M); } } else mech.bot(s, dt, M);
+  mech.update(s, dt, M);
+  E.tick(s, dt);
+  fxUpdate(dt);
+  buyT -= dt;
+  if (buyT <= 0) { buyT = 1; if (shop()) break; }
+  const cur = E.chDef(s).cur, key = s.ch + "." + s.stage;
+  if (key !== lastKey) { out.push(`  ${key} @ ${fmt(s.t)}  K ${E.K(E.power(s)).toFixed(2)}  ${cur}/s ${e2(E.RT.rate[cur])}  data/s ${e2(E.dataRate(s))}`); lastKey = key; }
+  if (TL && (tlT -= dt) <= 0) {
+    tlT = TL;
+    const b = Object.entries(s.b).filter(([id]) => E.chDef(s).build.some((x) => x.id === id)).map(([id, v]) => id + ":" + v).join(" ");
+    console.log(`${fmt(s.t)} ${key} K ${E.K(E.power(s)).toFixed(2)} ${cur} ${e2(s.res[cur])} (${e2(E.RT.rate[cur])}/s) data ${e2(s.res.data)} (${e2(E.dataRate(s))}/s) E ${e2(s.res.energy)} n ${e2(s.n)} | ${b}`);
   }
-  return bought;
 }
-
-let nextTL = s.time + TL;
-const tl = () => {
-  const { p, c } = E.rates(s);
-  const net = (r: Res) => p[r] - c[r];
-  console.log(`TL ${fmt(s.time - t0)} K ${E.kardashev(s).toFixed(2)} kov ${e(s.res.metal)} ${e(net('metal'))}/s energie ${e(s.res.energy)} ${e(net('energy'))}/s plazma ${e(s.res.plasma)} ${e(net('plasma'))}/s data ${e(s.res.data)} ${e(net('data'))}/s ${botStatus(s)}`);
-};
-for (let t = 0; t < LIMIT_H * 3600; t++) {
-  if (!s.r.auto && !s.chapterDone) for (let i = 0; i < CLICKS_PER_SEC; i++) E.mine(s);
-  if (s.event && rng() < EVENT_CATCH) E.claimEvent(s);
-  let bought = false;
-  for (const id of RESEARCH_IDS) if (E.doResearch(s, id)) { mark('R ' + id); bought = true; }
-  for (const id of LOCATION_IDS) if (id !== 'belt' && !s.visited[id] && E.canTravel(s, id)) E.depart(s, id);
-  for (const id of LOCATION_IDS) if (id !== 'belt' && s.visited[id]) mark('L ' + id);
-  if (s.chapterDone === 1) {
-    if (E.stageReady(s).ok) { E.advanceStage(s); mark('STADIUM ' + (s.star.collapse >= 0 ? 'kolaps' : s.star.stage)); }
-    if (PRESTIGE && E.canRebuild(s) && E.prestigeGain(s) >= Math.max(4, s.p.pts * 0.5)) { const g = E.rebuild(s); mark(`PŘESTAVBA ${s.p.count} (+${g})`); marks.at(-1)![0] += ` #${s.p.count}`; }
-  }
-  botAct(s);
-  bought = (s.chapterDone === 0 ? buyChapter1() : buyLater()) || bought;
-  if (bought) { longestWait = Math.max(longestWait, s.time - waitStart); waitStart = s.time; lastBuy = s.time; }
-  const ch = s.chapterDone;
-  E.tick(s, 1, rng);
-  for (const m of botMarks(s)) mark(m);
-  if (TL && s.time >= nextTL) { nextTL += TL; tl(); }
-  if (SNAP.includes(Math.round(s.time - t0))) console.log(`STAV ${fmt(s.time - t0)}:`, Object.entries(s.b).filter(([id, v]) => v >= 1 && chapterSet().includes(id as BuildingId)).map(([k, v]) => `${k} ${Math.floor(v)}`).join(', '));
-  for (const [sec, file] of DUMPAT) if (Math.round(s.time - t0) === Number(sec)) writeFileSync(file, JSON.stringify(s));
-  for (const id of BUILDING_IDS) if (s.b[id] >= 1) mark('B ' + id);
-  for (const k of [0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.25, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.95, 3, 3.05, 3.1, 3.15]) if (E.kardashev(s) >= k) mark('K ' + k);
-  if (s.chapterDone > ch) {
-    mark('KONEC KAPITOLY ' + s.chapterDone);
-    longestWait = 0; waitStart = s.time;
-    if (SAVEAT.includes('ch' + (s.chapterDone + 1))) console.log(`SAVE ch${s.chapterDone + 1}:`, encodeSave(s));
-    if (s.chapterDone === 2 && process.env.DUMP) writeFileSync(process.env.DUMP, JSON.stringify(s));
-    if (s.chapterDone === 1 && process.env.DUMP1) writeFileSync(process.env.DUMP1, JSON.stringify(s));
-    if (s.chapterDone === 3 && process.env.DUMP3) writeFileSync(process.env.DUMP3, JSON.stringify(s));
-  }
-  if (s.chapterDone >= STOP_CH) break;
-}
-function fmt(sec: number) { return `${Math.floor(sec / 3600)}:${String(Math.floor((sec % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(sec % 60)).padStart(2, '0')}`; }
-for (const [k, t, K] of marks) console.log(fmt(t - t0).padStart(8), ' K', K.padStart(5), ' ', k);
-console.log('budovy', JSON.stringify(Object.fromEntries(Object.entries(s.b).filter(([id]) => chapterSet().includes(id as BuildingId)).map(([k, v]) => [k, Math.floor(v)]))));
-console.log('nejdelší čekání na nákup:', Math.round(longestWait), 's', ' poslední nákup', fmt(lastBuy - t0), ' konec', fmt(s.time - t0));
+console.log(out.join("\n"));
+if (process.env.EV) for (const [t, w] of ev) console.log(fmt(t), w);
+let prev = ev.length ? ev[0][0] : 0; const gaps: string[] = [];
+for (const [t, w] of ev) { if (t - prev > 480) gaps.push(`${fmt(prev)}→${fmt(t)} (${Math.round((t - prev) / 60)} min) před ${w}`); prev = t; }
+if (gaps.length) console.log("Mezery > 8 min:\n " + gaps.join("\n "));
