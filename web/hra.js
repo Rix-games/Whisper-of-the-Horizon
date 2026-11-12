@@ -71,6 +71,7 @@
     MISSIONS: () => MISSIONS,
     RESEARCH: () => RESEARCH,
     RT: () => RT,
+    UNLOCK_GAP: () => UNLOCK_GAP,
     archiveData: () => archiveData,
     buy: () => buy,
     c0Of: () => c0Of,
@@ -370,12 +371,12 @@
   var B2 = (o) => ({ ch: 2, ...o });
   var BUILD2 = [
     B2({ id: "kol", tier: 1, kind: "swarm", cur: "plasma", c0: 3, g: 1, req: () => true }),
-    B2({ id: "sieve", tier: 1, kind: "gen", cur: "plasma", c0: 15, g: 1.15, req: () => true }),
-    B2({ id: "corona", tier: 1, kind: "data", cur: "plasma", c0: 60, g: 1.22, d: 3e3, req: (s2) => s2.tot.plasma >= 40 }),
-    B2({ id: "mirror", tier: 1, kind: "up", cur: "plasma", c0: 120, g: 3.2, max: 30, req: (s2) => s2.tot.plasma >= 80 }),
-    B2({ id: "tame", tier: 1, kind: "up", cur: "plasma", c0: 200, g: 3, max: 4, req: (s2) => s2.stats.flares >= 1 }),
-    B2({ id: "jet", tier: 1, kind: "up", cur: "plasma", c0: 350, g: 3, max: 4, req: (s2) => s2.stats.flares >= 3 }),
-    B2({ id: "harvest", tier: 1, kind: "up", cur: "plasma", c0: 600, g: 3.4, max: 6, req: (s2) => s2.stats.flares >= 5 }),
+    B2({ id: "sieve", tier: 1, kind: "gen", cur: "plasma", c0: 15, g: 1.15, req: (s2) => s2.n >= 3 }),
+    B2({ id: "corona", tier: 1, kind: "data", cur: "plasma", c0: 60, g: 1.22, d: 3e3, req: (s2) => n(s2, "sieve") >= 1 && s2.tot.plasma >= 150 }),
+    B2({ id: "mirror", tier: 1, kind: "up", cur: "plasma", c0: 120, g: 3.2, max: 30, req: (s2) => n(s2, "corona") >= 1 && s2.tot.plasma >= 400 }),
+    B2({ id: "tame", tier: 1, kind: "up", cur: "plasma", c0: 200, g: 3, max: 4, req: (s2) => s2.stats.flares >= 1 && n(s2, "sieve") >= 1 }),
+    B2({ id: "jet", tier: 1, kind: "up", cur: "plasma", c0: 350, g: 3, max: 4, req: (s2) => s2.stats.flares >= 4 && s2.tot.plasma >= 900 }),
+    B2({ id: "harvest", tier: 1, kind: "up", cur: "plasma", c0: 600, g: 3.4, max: 6, req: (s2) => s2.stats.flares >= 7 && s2.tot.plasma >= 2500 }),
     B2({ id: "lift", tier: 1, kind: "gen", cur: "plasma", c0: 2e3, g: 1.17, req: R("lifting") }),
     B2({ id: "fact", tier: 2, kind: "auto", cur: "plasma", c0: 3e4, g: 1.3, req: R("replic") }),
     B2({ id: "fspeed", tier: 2, kind: "up", cur: "plasma", c0: 1e6, g: 4, max: 6, req: R("replic") }),
@@ -879,13 +880,18 @@
     const d = BMAP[id];
     if (d.ch !== s2.ch) return false;
     if (s2.unl["b_" + id] != null) return true;
-    if (d.req(s2)) {
-      s2.unl["b_" + id] = s2.t;
-      emit("unlock", id);
-      return true;
+    if (!d.req(s2)) return false;
+    let last = -Infinity;
+    for (const b of chOf(s2).build) {
+      const u = s2.unl["b_" + b.id];
+      if (u != null && u > last) last = u;
     }
-    return false;
+    if (s2.t - last < UNLOCK_GAP) return false;
+    s2.unl["b_" + id] = s2.t;
+    emit("unlock", id);
+    return true;
   }
+  var UNLOCK_GAP = 20;
   function buy(s2, id, cnt = 1) {
     const d = BMAP[id];
     if (!unlocked(s2, id) || maxed(s2, id)) return false;
@@ -1169,6 +1175,8 @@
     starBlue: "kap2-aldra-modry.webp",
     starRed: "kap2-aldra-rudy.webp",
     starWR: "kap2-aldra-wolf-rayet.webp",
+    starCollapse: "kap2-aldra-kolaps.webp",
+    // volitelný – bez něj se ve stadiu Kolaps kreslí Wolf-Rayet
     collector: "kap2-kolektor.webp",
     factory: "kap2-tovarna.webp",
     near: "kap2-okoli.webp",
@@ -1834,16 +1842,16 @@
   var VIS = 700;
   var lv2 = (s2, id) => s2.b[id] || 0;
   var LOOK = [
-    { R: 64, core: "#f4f8ff", mid: "#b9d2ff", edge: "#6f8fe8", glow: [150, 185, 255] },
-    { R: 66, core: "#f4f8ff", mid: "#b9d2ff", edge: "#6f8fe8", glow: [150, 185, 255] },
-    { R: 72, core: "#f6f9ff", mid: "#c7dbff", edge: "#7d9cf0", glow: [160, 195, 255] },
-    { R: 76, core: "#f8faff", mid: "#d2e0ff", edge: "#8aa6f0", glow: [175, 200, 255] },
-    { R: 118, core: "#fff1d6", mid: "#ffb070", edge: "#d2502a", glow: [255, 140, 80] },
+    { R: 60, core: "#f4f8ff", mid: "#b9d2ff", edge: "#6f8fe8", glow: [150, 185, 255] },
+    { R: 68, core: "#f4f8ff", mid: "#b9d2ff", edge: "#6f8fe8", glow: [150, 185, 255] },
+    { R: 78, core: "#f6f9ff", mid: "#c7dbff", edge: "#7d9cf0", glow: [160, 195, 255] },
+    { R: 90, core: "#fafbff", mid: "#dbe5ff", edge: "#94acef", glow: [185, 205, 255] },
+    { R: 165, core: "#fff1d6", mid: "#ffb070", edge: "#d2502a", glow: [255, 140, 80] },
     { R: 56, core: "#ffffff", mid: "#d9d0ff", edge: "#8f7cf0", glow: [200, 185, 255] },
     { R: 52, core: "#ffffff", mid: "#e2d8ff", edge: "#9a86f5", glow: [210, 195, 255] }
   ];
   var look = (s2) => LOOK[Math.min(s2.stage, LOOK.length - 1)];
-  var PIC = (st) => st >= 5 ? ["starWR", 0.14] : st === 4 ? ["starRed", 0.76] : ["starBlue", 0.76];
+  var PIC = (st) => st >= 6 && img("starCollapse") ? ["starCollapse", 0.14] : st >= 5 ? ["starWR", 0.14] : st === 4 ? ["starRed", 0.76] : ["starBlue", 0.76];
   var sprC = {};
   function sprite(k, px) {
     const id = k + px;
@@ -1879,6 +1887,7 @@
     jets: [],
     cmes: [],
     fact: [],
+    Rd: 0,
     picSt: -1,
     picPrev: -1,
     picT0: 0,
@@ -1891,6 +1900,7 @@
     lastN: -1,
     manual: 0,
     reset() {
+      this.Rd = 0;
       this.dots = [];
       this.loops = [];
       this.jets = [];
@@ -1903,7 +1913,7 @@
       this.picPrev = -1;
     },
     geo(s2) {
-      const L = look(s2), Rs = L.R, out = s2.r.outer ? 1.25 : 1, base = Math.max(Rs * 2.1, 150);
+      const L = look(s2), Rs = this.Rd || L.R, base = Math.max(Rs * 1.5 + 40, 150), out = s2.r.outer ? Math.min(1.25, Math.max(1, 640 / (base * 1.9))) : 1;
       return { Rs, rings: [base * out, base * 1.42 * out, base * 1.9 * out] };
     },
     pos(d, g) {
@@ -2067,6 +2077,8 @@
       this.lastN = s2.n;
     },
     update(s2, dt, M4) {
+      const tR = look(s2).R;
+      this.Rd = this.Rd ? this.Rd + (tR - this.Rd) * (1 - Math.exp(-dt * 0.5)) : tR;
       const g = this.geo(s2);
       this.shake = Math.max(0, this.shake - dt);
       const nf = Math.min(lv2(s2, "fact"), 24);
@@ -2291,7 +2303,7 @@
       if (fade >= 1) this.picPrev = -1;
       let pic = false;
       if (img(pk)) {
-        if (this.picPrev >= 0) drawPic(c, this.picPrev, cx, cy, LOOK[this.picPrev].R, T4, 1 - fade);
+        if (this.picPrev >= 0) drawPic(c, this.picPrev, cx, cy, Rs, T4, 1 - fade);
         pic = drawPic(c, ps, cx, cy, Rs, T4, fade);
       }
       if (!pic) {
@@ -3080,6 +3092,28 @@
     },
     stages: ["Modr\xFD obr", "Roj", "Vyt\u011B\u017Eov\xE1n\xED", "Pln\xFD roj", "Rud\xFD veleobr", "Wolf-Rayet", "Kolaps"],
     indicator: "Zachyceno sv\u011Btla Aldry",
+    // Detail: skutečný stav hvězdy v každém stadiu (ukazuje se jen aktuální)
+    star: {
+      stage: "Stadium {n} z {of}",
+      burn: "V j\xE1d\u0159e",
+      T: "Povrch",
+      R: "Polom\u011Br",
+      L: "Sv\xEDtivost",
+      real: "Ve skute\u010Dnosti trv\xE1",
+      cov: "Roj zachyt\xED",
+      rsun: "{v} Slunc\xED",
+      lsun: "{v} Slunc\xED",
+      cut: "\u0158ez hv\u011Bzdou"
+    },
+    phase: [
+      { n: "Mlad\xE1 hlavn\xED posloupnost", burn: "vod\xEDk \u2192 helium", T: "35 000 K", R: "10", L: "150 000", real: "asi 2 mil. let", t: "Aldra je mlad\xE1 a hork\xE1. V j\xE1d\u0159e slu\u010Duje vod\xEDk na helium a skoro nic jin\xE9ho ji netr\xE1p\xED." },
+      { n: "St\u0159ed hlavn\xED posloupnosti", burn: "vod\xEDk \u2192 helium", T: "33 000 K", R: "12", L: "160 000", real: "asi 3 mil. let", t: "Helia v j\xE1d\u0159e p\u0159ib\xFDv\xE1. Hv\u011Bzda se kv\u016Fli tomu pomalu nafukuje a v\xEDc sv\xEDt\xED." },
+      { n: "Konec hlavn\xED posloupnosti", burn: "posledn\xED vod\xEDk \u2192 helium", T: "30 000 K", R: "15", L: "180 000", real: "asi 1 mil. let", t: "J\xE1dru doch\xE1z\xED vod\xEDk. Uprost\u0159ed z\u016Fst\xE1v\xE1 heliov\xFD popel, kter\xFD zat\xEDm neho\u0159\xED." },
+      { n: "Modr\xFD veleobr", burn: "helium \u2192 uhl\xEDk, kysl\xEDk", T: "22 000 K", R: "30", L: "200 000", real: "asi 10 tis. let", t: "Vod\xEDk ho\u0159\xED u\u017E jen ve slupce kolem j\xE1dra. J\xE1dro se smr\u0161\u0165uje a zap\xE1l\xED helium, ob\xE1lka se rozp\xEDn\xE1." },
+      { n: "Rud\xFD veleobr", burn: "helium \u2192 uhl\xEDk, kysl\xEDk", T: "3 600 K", R: "1 000", L: "200 000", real: "asi 700 tis. let", t: "Ob\xE1lka se nafoukla do ob\u0159\xED \u0159\xEDdk\xE9 koule. Povrch zchladl a zrudl, sv\xEDtivost z\u016Fstala skoro stejn\xE1." },
+      { n: "Wolf-Rayetova hv\u011Bzda", burn: "uhl\xEDk \u2192 neon, ho\u0159\u010D\xEDk", T: "80 000 K", R: "3", L: "250 000", real: "asi 300 tis. let", t: "Siln\xFD v\xEDtr odv\xE1l vod\xEDkovou ob\xE1lku. Z\u016Fstalo obna\u017Een\xE9, \u017Ehav\xE9 a mal\xE9 j\xE1dro." },
+      { n: "Posledn\xED dny", burn: "k\u0159em\xEDk \u2192 \u017Eelezo", T: "120 000 K", R: "3", L: "300 000", real: "dny", t: "Slupky ho\u0159\xED jedna za druhou st\xE1le rychleji. \u017Delezo u\u017E energii ned\xE1. J\xE1dro se brzy zhrout\xED." }
+    ],
     hint: [
       "Dr\u017E my\u0161 na dr\xE1ze a vypou\u0161t\xED\u0161 kolektory. Chy\u0165 vrchol magnetick\xE9 smy\u010Dky, nat\xE1hni ji a pus\u0165 v zelen\xE9m p\xE1smu \u2013 v\xFDtrysk m\xED\u0159\xED tam, kam t\xE1hne\u0161. Mi\u0159 na hust\xFD roj.",
       "Tov\xE1rny vypou\u0161t\u011Bj\xED kolektory samy, kotvy uvol\u0148uj\xED smy\u010Dky za tebe. Ru\u010Dn\u011B nata\u017Een\xE1 smy\u010Dka d\xE1 po\u0159\xE1d nejv\xEDc a dr\u017E\xED rezonanci."
@@ -3272,7 +3306,7 @@
     researchNone: "Te\u010F nen\xED co zkoumat. Dal\u0161\xED sm\u011Br se objev\xED s postupem.",
     researchReady: "P\u0159ipraveno",
     researchIn: (t) => `za ~${t}`,
-    detailNote: { 1: "\u010C\xEDm hloub\u011Bji laser \u0159e\u017Ee, t\xEDm bohat\u0161\xED ruda.", 2: "Aldra proch\xE1z\xED \u017Eivotem hv\u011Bzdy. Ka\u017Ed\xE1 f\xE1ze d\xE1v\xE1 jin\xE9 sv\u011Btlo.", 3: "Kolonie se \u0161\xED\u0159\xED galaxi\xED. Hranice ukazuje dosah svazku." },
+    detailNote: { 1: "\u010C\xEDm hloub\u011Bji laser \u0159e\u017Ee, t\xEDm bohat\u0161\xED ruda.", 2: "\u0158ez Aldrou ukazuje, co pr\xE1v\u011B ho\u0159\xED v j\xE1d\u0159e. S ka\u017Ed\xFDm stadiem se m\u011Bn\xED sv\u011Btlo i velikost hv\u011Bzdy.", 3: "Kolonie se \u0161\xED\u0159\xED galaxi\xED. Hranice ukazuje dosah svazku." },
     missionsDone: "Spln\u011Bn\xE9 mise",
     send: "Vyslat Vesper",
     running: "Vesper let\xED",
@@ -3715,15 +3749,6 @@
   }
 
   // src/ui/detail.ts
-  var PHASES = [
-    { r: 20, c: "#b9d2ff" },
-    { r: 21, c: "#b9d2ff" },
-    { r: 23, c: "#c7dbff" },
-    { r: 25, c: "#d2e0ff" },
-    { r: 40, c: "#ffb070" },
-    { r: 16, c: "#d9d0ff" },
-    { r: 6, c: "#ffffff" }
-  ];
   function drawDetail(cv, s2, T4) {
     const dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, hh = cv.clientHeight;
     if (!w || !hh) return;
@@ -3739,41 +3764,8 @@
     c.textAlign = "left";
     c.fillStyle = "#9aa6bd";
     if (s2.ch === 1) cutaway(c, s2, T4, w, hh, X);
-    else if (s2.ch === 2) {
-      const n2 = PHASES.length, y = hh * 0.45;
-      for (let i = 0; i < n2; i++) {
-        const x = w * (0.08 + 0.84 * i / (n2 - 1)), p = PHASES[i], on2 = i === Math.min(s2.stage, n2 - 1);
-        const g = c.createRadialGradient(x, y, 0, x, y, p.r * 3);
-        g.addColorStop(0, p.c);
-        g.addColorStop(0.35, p.c + "55");
-        g.addColorStop(1, p.c + "00");
-        c.globalAlpha = i <= s2.stage ? 1 : 0.35;
-        c.fillStyle = g;
-        c.beginPath();
-        c.arc(x, y, p.r * 3, 0, 7);
-        c.fill();
-        c.fillStyle = p.c;
-        c.beginPath();
-        c.arc(x, y, p.r, 0, 7);
-        c.fill();
-        c.globalAlpha = 1;
-        if (on2) {
-          c.strokeStyle = "#ffd27a";
-          c.lineWidth = 2;
-          c.beginPath();
-          c.arc(x, y, p.r + 8 + Math.sin(T4 * 3) * 2, 0, 7);
-          c.stroke();
-        }
-        c.textAlign = "center";
-        c.font = `${on2 ? 600 : 400} 13px ${SANS}`;
-        c.fillStyle = on2 ? "#ffd27a" : "#9aa6bd";
-        c.fillText(X.stages[i], x, y + 70);
-      }
-      c.textAlign = "left";
-      c.font = `13px ${MONO}`;
-      c.fillStyle = "#9aa6bd";
-      c.fillText(`${X.indicator}: ${pct(coverage(s2))} \xB7 kolektory ${count(s2.n)}`, 20, hh - 24);
-    } else {
+    else if (s2.ch === 2) starCut(c, s2, T4, w, hh, X);
+    else {
       const k = Math.min(w / 1600, hh / 1e3) * 1.1;
       c.save();
       c.translate((w - 1600 * k) / 2, (hh - 1e3 * k) / 2);
@@ -3948,6 +3940,211 @@
       c.fillStyle = on2 ? "#e3a970" : done ? "#8ef0c8" : "#4a5266";
       c.fillText(i > li ? "neprozkoum\xE1no" : i ? `${count(Math.pow(T1.layerMult, i))}\xD7 v\xEDc rudy` : "z\xE1kladn\xED v\xFDnos", lx, y + 17);
     }
+  }
+  var SHELLS = [
+    [["H", 1, "#2b3a78"], ["H \u2192 He", 0.34, "#5b3f92"]],
+    [["H", 1, "#2b3a78"], ["H \u2192 He", 0.32, "#5b3f92"]],
+    [["H", 1, "#2b3a78"], ["H \u2192 He", 0.34, "#5b3f92"], ["He", 0.2, "#6a4a9c"]],
+    [["H", 1, "#33407e"], ["H \u2192 He", 0.36, "#5b3f92"], ["He \u2192 C \xB7 O", 0.2, "#93406f"]],
+    [["H", 1, "#6e2a3e"], ["He", 0.5, "#5b3f92"], ["He \u2192 C \xB7 O", 0.28, "#93406f"]],
+    [["He", 1, "#5b3f92"], ["C \xB7 O", 0.62, "#93406f"], ["C \u2192 Ne \xB7 Mg", 0.32, "#bb5a40"]],
+    [["He", 1, "#5b3f92"], ["C \xB7 O", 0.8, "#93406f"], ["Ne \xB7 O", 0.62, "#bb5a40"], ["Si \xB7 S", 0.44, "#d8903c"], ["Si \u2192 Fe", 0.24, "#a9b2c6"]]
+  ];
+  var hexC = (h2) => [1, 3, 5].map((i) => parseInt(h2.slice(i, i + 2), 16));
+  var mixC = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  var rgbC = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  function wrap(c, txt2, x, y, maxW, lh) {
+    let line = "";
+    for (const wd of txt2.split(" ")) {
+      const t = line ? line + " " + wd : wd;
+      if (c.measureText(t).width > maxW && line) {
+        c.fillText(line, x, y);
+        y += lh;
+        line = wd;
+      } else line = t;
+    }
+    if (line) c.fillText(line, x, y);
+    return y + lh;
+  }
+  var spKey = "";
+  var spCv = null;
+  function starSprite(st, R2, T4) {
+    const [k, f] = PIC(st), im = img(k);
+    if (!im) return null;
+    const sz = Math.ceil(R2 * 4), key = k + sz;
+    if (key !== spKey) {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = sz;
+      const g = cv.getContext("2d"), hw = R2 / f;
+      g.imageSmoothingQuality = "high";
+      g.drawImage(im, sz / 2 - hw, sz / 2 - hw, hw * 2, hw * 2);
+      const m = g.createRadialGradient(sz / 2, sz / 2, R2 * 1.02, sz / 2, sz / 2, R2 * (f < 0.5 ? 1.7 : 1.35));
+      m.addColorStop(0, "rgba(0,0,0,1)");
+      m.addColorStop(1, "rgba(0,0,0,0)");
+      g.globalCompositeOperation = "destination-in";
+      g.fillStyle = m;
+      g.fillRect(0, 0, sz, sz);
+      spKey = key;
+      spCv = cv;
+    }
+    return spCv;
+  }
+  function starCut(c, s2, T4, w, hh, X) {
+    const st = Math.min(s2.stage, SHELLS.length - 1), Ls = SHELLS[st], Lk = LOOK[st], P = X.phase[st], S = X.star;
+    const R2 = Math.min(w * 0.19, hh * 0.36), cx = Math.min(w * 0.3, R2 * 1.45 + 60), cy = hh * 0.52;
+    const A0 = -Math.PI / 2, A1 = 0, gl = Lk.glow.join(","), hot = [255, 238, 205];
+    const fin = st === 6 ? 1 + 0.03 * Math.sin(T4 * 9) : 1;
+    const halo = c.createRadialGradient(cx, cy, R2 * 0.8, cx, cy, R2 * 2.1);
+    halo.addColorStop(0, `rgba(${gl},.42)`);
+    halo.addColorStop(0.35, `rgba(${gl},.1)`);
+    halo.addColorStop(1, `rgba(${gl},0)`);
+    c.fillStyle = halo;
+    c.beginPath();
+    c.arc(cx, cy, R2 * 2.1, 0, 7);
+    c.fill();
+    c.save();
+    c.beginPath();
+    c.moveTo(cx, cy);
+    c.arc(cx, cy, R2 * 2, A1, A0 + Math.PI * 2);
+    c.closePath();
+    c.clip();
+    const sp2 = starSprite(st, R2, T4);
+    if (sp2) {
+      c.globalCompositeOperation = "screen";
+      c.drawImage(sp2, cx - sp2.width / 2, cy - sp2.height / 2);
+      c.globalCompositeOperation = "source-over";
+    } else {
+      const g = c.createRadialGradient(cx - R2 * 0.2, cy - R2 * 0.2, R2 * 0.1, cx, cy, R2);
+      g.addColorStop(0, Lk.core);
+      g.addColorStop(0.6, Lk.mid);
+      g.addColorStop(1, Lk.edge);
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(cx, cy, R2, 0, 7);
+      c.fill();
+    }
+    c.restore();
+    Ls.forEach(([, fr, col], i) => {
+      const inner = i + 1 < Ls.length ? Ls[i + 1][1] : 0, base = hexC(col);
+      const g = c.createRadialGradient(cx, cy, R2 * inner, cx, cy, R2 * fr);
+      g.addColorStop(0, rgbC(mixC(base, hot, 0.35 + i * 0.07)));
+      g.addColorStop(1, rgbC(mixC(base, [8, 8, 20], 0.25)));
+      c.fillStyle = g;
+      c.beginPath();
+      c.moveTo(cx, cy);
+      c.arc(cx, cy, R2 * fr, A0, A1);
+      c.closePath();
+      c.fill();
+    });
+    c.save();
+    c.beginPath();
+    c.moveTo(cx, cy);
+    c.arc(cx, cy, R2, A0, A1);
+    c.closePath();
+    c.clip();
+    const env0 = Ls.length > 1 ? Ls[1][1] : 0;
+    for (let j = 0; j < 9; j++) {
+      const rr2 = R2 * (env0 + (1 - env0) * ((j + 0.5) / 9)), sh = Math.sin(T4 * 0.3 + j * 1.7) * 0.08;
+      c.strokeStyle = "rgba(255,255,255,.06)";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.arc(cx, cy, rr2, A0 + 0.12 + sh, A1 - 0.12 + sh);
+      c.stroke();
+    }
+    for (const [, fr] of Ls) {
+      c.strokeStyle = "rgba(255,240,220,.28)";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.arc(cx, cy, R2 * fr, A0, A1);
+      c.stroke();
+    }
+    const cr = R2 * Ls[Ls.length - 1][1] * (1 + 0.04 * Math.sin(T4 * 0.9)) * fin;
+    const cg = c.createRadialGradient(cx, cy, 0, cx, cy, cr * 1.6);
+    cg.addColorStop(0, "rgba(255,255,245,.85)");
+    cg.addColorStop(0.35, "rgba(255,230,190,.35)");
+    cg.addColorStop(1, "rgba(255,220,180,0)");
+    c.fillStyle = cg;
+    c.beginPath();
+    c.arc(cx, cy, cr * 1.6, 0, 7);
+    c.fill();
+    c.restore();
+    c.strokeStyle = "rgba(255,240,215,.55)";
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.moveTo(cx, cy - R2);
+    c.lineTo(cx, cy);
+    c.lineTo(cx + R2, cy);
+    c.stroke();
+    c.textBaseline = "middle";
+    const lx = Math.max(cx + R2 * 1.3, w * 0.42), gap = Math.min(34, (hh - 90) / Ls.length), top = cy - R2 * 0.45 - (Ls.length - 1) * gap / 2;
+    Ls.forEach(([name, fr, col], i) => {
+      const inner = i + 1 < Ls.length ? Ls[i + 1][1] : 0, mid = R2 * (fr + inner) / 2, a = -Math.PI / 4 + (i - (Ls.length - 1) / 2) * 0.12;
+      const sx0 = cx + Math.cos(a) * mid, sy0 = cy + Math.sin(a) * mid, ly = top + i * gap, last = i === Ls.length - 1;
+      c.strokeStyle = last ? "rgba(255,210,122,.7)" : "rgba(225,228,244,.4)";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(sx0, sy0);
+      c.lineTo(lx - 24, ly);
+      c.lineTo(lx - 10, ly);
+      c.stroke();
+      c.fillStyle = "#fff";
+      c.beginPath();
+      c.arc(sx0, sy0, 2, 0, 7);
+      c.fill();
+      c.fillStyle = rgbC(mixC(hexC(col), hot, 0.3));
+      c.beginPath();
+      c.arc(lx, ly, 5.5, 0, 7);
+      c.fill();
+      c.font = `${last ? 600 : 400} 14px ${MONO}`;
+      c.textAlign = "left";
+      c.fillStyle = last ? "#ffd27a" : "#e8eaf8";
+      c.fillText(name, lx + 14, ly);
+    });
+    c.font = `600 11px ${SANS}`;
+    c.fillStyle = "rgba(176,181,212,.9)";
+    c.textAlign = "left";
+    c.fillText(S.cut.toUpperCase(), 20, 24);
+    const ix = Math.max(lx + 190, w * 0.62), iw = Math.min(380, w - ix - 20);
+    if (iw < 200) {
+      c.textBaseline = "alphabetic";
+      return;
+    }
+    let y = Math.max(40, cy - 150);
+    c.textAlign = "left";
+    c.font = `12px ${MONO}`;
+    c.fillStyle = "#e3a970";
+    c.fillText(S.stage.replace("{n}", String(Math.min(st + 1, stagesOf(s2)))).replace("{of}", String(stagesOf(s2))).toUpperCase(), ix, y);
+    y += 30;
+    c.font = `600 22px ${SANS}`;
+    c.fillStyle = "#ffd27a";
+    c.fillText(X.stages[st], ix, y);
+    y += 26;
+    c.font = `15px ${SANS}`;
+    c.fillStyle = "#cfd6e6";
+    c.fillText(P.n, ix, y);
+    y += 30;
+    const rows2 = [[S.burn, P.burn], [S.T, P.T], [S.R, S.rsun.replace("{v}", P.R)], [S.L, S.lsun.replace("{v}", P.L)], [S.real, P.real], [S.cov, pct(coverage(s2))]];
+    for (const [a, b] of rows2) {
+      c.font = `13px ${SANS}`;
+      c.fillStyle = "#8f9ab0";
+      c.fillText(a, ix, y);
+      c.font = `13px ${MONO}`;
+      c.fillStyle = "#e8eaf8";
+      c.textAlign = "right";
+      c.fillText(b, ix + iw, y);
+      c.textAlign = "left";
+      c.strokeStyle = "rgba(255,255,255,.06)";
+      c.beginPath();
+      c.moveTo(ix, y + 11);
+      c.lineTo(ix + iw, y + 11);
+      c.stroke();
+      y += 26;
+    }
+    y += 10;
+    c.font = `14px ${SANS}`;
+    c.fillStyle = "#b9c2d6";
+    wrap(c, P.t, ix, y, iw, 20);
+    c.textBaseline = "alphabetic";
   }
 
   // src/ui/audio.ts
@@ -4472,7 +4669,7 @@
       $("kprog").textContent = UI.typeMax;
     }
     const resList = [[C.cur, s.res[C.cur], RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, dataRate(s)]];
-    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"${k === "energy" ? ` title="${UI.unitsTip}"` : ""}><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">${k === "energy" ? `${UI.powerShort} ${si(r, "W")}` : `+${fmtCur(k, r)}/s`}</span></div>`)).join("");
+    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"${k === "energy" ? ` title="${UI.unitsTip}"` : ""}><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">${k === "energy" ? `${UI.powerShort} ${si(r, "W")}` : `${r < 0 ? "\u2212" : "+"}${fmtCur(k, Math.abs(r))}/s`}</span></div>`)).join("");
     const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
     $("chTitle").textContent = X.title;
     $("stName").textContent = `${UI.stage} ${Math.min(st + 1, stagesOf(s))}/${stagesOf(s)} \xB7 ${names[st]}`;

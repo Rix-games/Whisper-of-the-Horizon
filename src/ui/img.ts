@@ -9,6 +9,7 @@ const FILES = {
   starBlue: "kap2-aldra-modry.webp",
   starRed: "kap2-aldra-rudy.webp",
   starWR: "kap2-aldra-wolf-rayet.webp",
+  starCollapse: "kap2-aldra-kolaps.webp",   // volitelný – bez něj se ve stadiu Kolaps kreslí Wolf-Rayet
   collector: "kap2-kolektor.webp",
   factory: "kap2-tovarna.webp",
   near: "kap2-okoli.webp",

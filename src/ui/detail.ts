@@ -8,12 +8,10 @@ import { galaxie } from "../mech/ch3";
 import { count, pct } from "../core/format";
 import { MONO, SANS } from "../mech/fx";
 import { img } from "./img";
+import { LOOK, PIC } from "../mech/ch2";
+import { stagesOf } from "../core/defs";
 
 const COLS = ["#6d655c", "#5c4a3e", "#8a7a55", "#9aa3ad", "#8a6fd0"];
-const PHASES = [
-  { r: 20, c: "#b9d2ff" }, { r: 21, c: "#b9d2ff" }, { r: 23, c: "#c7dbff" }, { r: 25, c: "#d2e0ff" },
-  { r: 40, c: "#ffb070" }, { r: 16, c: "#d9d0ff" }, { r: 6, c: "#ffffff" },
-];
 
 export function drawDetail(cv: HTMLCanvasElement, s: State, T: number) {
   const dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, hh = cv.clientHeight;
@@ -23,22 +21,8 @@ export function drawDetail(cv: HTMLCanvasElement, s: State, T: number) {
   const X = tx(s.ch) as any;
   c.font = `13px ${MONO}`; c.textAlign = "left"; c.fillStyle = "#9aa6bd";
   if (s.ch === 1) cutaway(c, s, T, w, hh, X);
-  else if (s.ch === 2) {
-    // život Aldry: fáze zleva doprava
-    const n = PHASES.length, y = hh * 0.45;
-    for (let i = 0; i < n; i++) {
-      const x = w * (0.08 + (0.84 * i) / (n - 1)), p = PHASES[i], on = i === Math.min(s.stage, n - 1);
-      const g = c.createRadialGradient(x, y, 0, x, y, p.r * 3);
-      g.addColorStop(0, p.c); g.addColorStop(0.35, p.c + "55"); g.addColorStop(1, p.c + "00");
-      c.globalAlpha = i <= s.stage ? 1 : 0.35; c.fillStyle = g; c.beginPath(); c.arc(x, y, p.r * 3, 0, 7); c.fill();
-      c.fillStyle = p.c; c.beginPath(); c.arc(x, y, p.r, 0, 7); c.fill(); c.globalAlpha = 1;
-      if (on) { c.strokeStyle = "#ffd27a"; c.lineWidth = 2; c.beginPath(); c.arc(x, y, p.r + 8 + Math.sin(T * 3) * 2, 0, 7); c.stroke(); }
-      c.textAlign = "center"; c.font = `${on ? 600 : 400} 13px ${SANS}`; c.fillStyle = on ? "#ffd27a" : "#9aa6bd";
-      c.fillText(X.stages[i], x, y + 70);
-    }
-    c.textAlign = "left"; c.font = `13px ${MONO}`; c.fillStyle = "#9aa6bd";
-    c.fillText(`${X.indicator}: ${pct(coverage(s))} · kolektory ${count(s.n)}`, 20, hh - 24);
-  } else {
+  else if (s.ch === 2) starCut(c, s, T, w, hh, X);
+  else {
     // galaxie zmenšeně s hranicí dosahu
     const k = Math.min(w / 1600, hh / 1000) * 1.1;
     c.save(); c.translate((w - 1600 * k) / 2, (hh - 1000 * k) / 2); c.scale(k, k);
@@ -142,4 +126,122 @@ function cutaway(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh
     c.font = `12px ${MONO}`; c.fillStyle = on ? "#e3a970" : done ? "#8ef0c8" : "#4a5266";
     c.fillText(i > li ? "neprozkoumáno" : i ? `${count(Math.pow(T1.layerMult, i))}× víc rudy` : "základní výnos", lx, y + 17);
   }
+}
+
+// ---------- Kap. 2: řez Aldrou (jen aktuální stadium) ----------
+// slupky od povrchu k jádru: [popisek, poloměr jako zlomek R, barva]
+const SHELLS: [string, number, string][][] = [
+  [["H", 1, "#2b3a78"], ["H → He", 0.34, "#5b3f92"]],
+  [["H", 1, "#2b3a78"], ["H → He", 0.32, "#5b3f92"]],
+  [["H", 1, "#2b3a78"], ["H → He", 0.34, "#5b3f92"], ["He", 0.2, "#6a4a9c"]],
+  [["H", 1, "#33407e"], ["H → He", 0.36, "#5b3f92"], ["He → C · O", 0.2, "#93406f"]],
+  [["H", 1, "#6e2a3e"], ["He", 0.5, "#5b3f92"], ["He → C · O", 0.28, "#93406f"]],
+  [["He", 1, "#5b3f92"], ["C · O", 0.62, "#93406f"], ["C → Ne · Mg", 0.32, "#bb5a40"]],
+  [["He", 1, "#5b3f92"], ["C · O", 0.8, "#93406f"], ["Ne · O", 0.62, "#bb5a40"], ["Si · S", 0.44, "#d8903c"], ["Si → Fe", 0.24, "#a9b2c6"]],
+];
+const hexC = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const mixC = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+const rgbC = (c: number[], a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+function wrap(c: CanvasRenderingContext2D, txt: string, x: number, y: number, maxW: number, lh: number) {
+  let line = "";
+  for (const wd of txt.split(" ")) {
+    const t = line ? line + " " + wd : wd;
+    if (c.measureText(t).width > maxW && line) { c.fillText(line, x, y); y += lh; line = wd; } else line = t;
+  }
+  if (line) c.fillText(line, x, y);
+  return y + lh;
+}
+
+/** Obrázek hvězdy zmenšený na poloměr R s měkkým okrajem (kotouč + kousek koróny), cache podle stadia a velikosti. */
+let spKey = "", spCv: HTMLCanvasElement | null = null;
+function starSprite(st: number, R: number, T: number) {
+  const [k, f] = PIC(st), im = img(k); if (!im) return null;
+  const sz = Math.ceil(R * 4), key = k + sz;
+  if (key !== spKey) {
+    const cv = document.createElement("canvas"); cv.width = cv.height = sz;
+    const g = cv.getContext("2d")!, hw = R / f; g.imageSmoothingQuality = "high";
+    g.drawImage(im, sz / 2 - hw, sz / 2 - hw, hw * 2, hw * 2);
+    const m = g.createRadialGradient(sz / 2, sz / 2, R * 1.02, sz / 2, sz / 2, R * (f < 0.5 ? 1.7 : 1.35));
+    m.addColorStop(0, "rgba(0,0,0,1)"); m.addColorStop(1, "rgba(0,0,0,0)");
+    g.globalCompositeOperation = "destination-in"; g.fillStyle = m; g.fillRect(0, 0, sz, sz);
+    spKey = key; spCv = cv;
+  }
+  return spCv;
+}
+
+function starCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh: number, X: any) {
+  const st = Math.min(s.stage, SHELLS.length - 1), Ls = SHELLS[st], Lk = LOOK[st], P = X.phase[st], S = X.star;
+  const R = Math.min(w * 0.19, hh * 0.36), cx = Math.min(w * 0.3, R * 1.45 + 60), cy = hh * 0.52;
+  const A0 = -Math.PI / 2, A1 = 0, gl = Lk.glow.join(","), hot = [255, 238, 205];
+  const fin = st === 6 ? 1 + 0.03 * Math.sin(T * 9) : 1;                       // poslední dny: jádro se chvěje
+  // záře
+  const halo = c.createRadialGradient(cx, cy, R * 0.8, cx, cy, R * 2.1);
+  halo.addColorStop(0, `rgba(${gl},.42)`); halo.addColorStop(0.35, `rgba(${gl},.1)`); halo.addColorStop(1, `rgba(${gl},0)`);
+  c.fillStyle = halo; c.beginPath(); c.arc(cx, cy, R * 2.1, 0, 7); c.fill();
+  // povrch (obrázek stadia s měkkou maskou, jinak kresba) mimo výřez
+  c.save(); c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R * 2, A1, A0 + Math.PI * 2); c.closePath(); c.clip();
+  const sp = starSprite(st, R, T);
+  if (sp) { c.globalCompositeOperation = "screen"; c.drawImage(sp, cx - sp.width / 2, cy - sp.height / 2); c.globalCompositeOperation = "source-over"; }
+  else {
+    const g = c.createRadialGradient(cx - R * 0.2, cy - R * 0.2, R * 0.1, cx, cy, R);
+    g.addColorStop(0, Lk.core); g.addColorStop(0.6, Lk.mid); g.addColorStop(1, Lk.edge);
+    c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill();
+  }
+  c.restore();
+  // slupky ve výřezu
+  Ls.forEach(([, fr, col], i) => {
+    const inner = i + 1 < Ls.length ? Ls[i + 1][1] : 0, base = hexC(col);
+    const g = c.createRadialGradient(cx, cy, R * inner, cx, cy, R * fr);
+    g.addColorStop(0, rgbC(mixC(base, hot, 0.35 + i * 0.07))); g.addColorStop(1, rgbC(mixC(base, [8, 8, 20], 0.25)));
+    c.fillStyle = g; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R * fr, A0, A1); c.closePath(); c.fill();
+  });
+  c.save(); c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R, A0, A1); c.closePath(); c.clip();
+  // proudění v obálce
+  const env0 = Ls.length > 1 ? Ls[1][1] : 0;
+  for (let j = 0; j < 9; j++) {
+    const rr = R * (env0 + (1 - env0) * ((j + 0.5) / 9)), sh = Math.sin(T * 0.3 + j * 1.7) * 0.08;
+    c.strokeStyle = "rgba(255,255,255,.06)"; c.lineWidth = 1; c.beginPath(); c.arc(cx, cy, rr, A0 + 0.12 + sh, A1 - 0.12 + sh); c.stroke();
+  }
+  for (const [, fr] of Ls) { c.strokeStyle = "rgba(255,240,220,.28)"; c.lineWidth = 1; c.beginPath(); c.arc(cx, cy, R * fr, A0, A1); c.stroke(); }
+  // hořící jádro
+  const cr = R * Ls[Ls.length - 1][1] * (1 + 0.04 * Math.sin(T * 0.9)) * fin;
+  const cg = c.createRadialGradient(cx, cy, 0, cx, cy, cr * 1.6);
+  cg.addColorStop(0, "rgba(255,255,245,.85)"); cg.addColorStop(0.35, "rgba(255,230,190,.35)"); cg.addColorStop(1, "rgba(255,220,180,0)");
+  c.fillStyle = cg; c.beginPath(); c.arc(cx, cy, cr * 1.6, 0, 7); c.fill();
+  c.restore();
+  // hrany výřezu
+  c.strokeStyle = "rgba(255,240,215,.55)"; c.lineWidth = 1.2;
+  c.beginPath(); c.moveTo(cx, cy - R); c.lineTo(cx, cy); c.lineTo(cx + R, cy); c.stroke();
+  // popisky slupek s vodicí čarou
+  c.textBaseline = "middle";
+  const lx = Math.max(cx + R * 1.3, w * 0.42), gap = Math.min(34, (hh - 90) / Ls.length), top = cy - R * 0.45 - ((Ls.length - 1) * gap) / 2;
+  Ls.forEach(([name, fr, col], i) => {
+    const inner = i + 1 < Ls.length ? Ls[i + 1][1] : 0, mid = (R * (fr + inner)) / 2, a = -Math.PI / 4 + (i - (Ls.length - 1) / 2) * 0.12;
+    const sx0 = cx + Math.cos(a) * mid, sy0 = cy + Math.sin(a) * mid, ly = top + i * gap, last = i === Ls.length - 1;
+    c.strokeStyle = last ? "rgba(255,210,122,.7)" : "rgba(225,228,244,.4)"; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(sx0, sy0); c.lineTo(lx - 24, ly); c.lineTo(lx - 10, ly); c.stroke();
+    c.fillStyle = "#fff"; c.beginPath(); c.arc(sx0, sy0, 2, 0, 7); c.fill();
+    c.fillStyle = rgbC(mixC(hexC(col), hot, 0.3)); c.beginPath(); c.arc(lx, ly, 5.5, 0, 7); c.fill();
+    c.font = `${last ? 600 : 400} 14px ${MONO}`; c.textAlign = "left"; c.fillStyle = last ? "#ffd27a" : "#e8eaf8";
+    c.fillText(name, lx + 14, ly);
+  });
+  c.font = `600 11px ${SANS}`; c.fillStyle = "rgba(176,181,212,.9)"; c.textAlign = "left";
+  c.fillText(S.cut.toUpperCase(), 20, 24);
+  // karta stadia vpravo
+  const ix = Math.max(lx + 190, w * 0.62), iw = Math.min(380, w - ix - 20);
+  if (iw < 200) { c.textBaseline = "alphabetic"; return; }
+  let y = Math.max(40, cy - 150);
+  c.textAlign = "left";
+  c.font = `12px ${MONO}`; c.fillStyle = "#e3a970"; c.fillText(S.stage.replace("{n}", String(Math.min(st + 1, stagesOf(s)))).replace("{of}", String(stagesOf(s))).toUpperCase(), ix, y); y += 30;
+  c.font = `600 22px ${SANS}`; c.fillStyle = "#ffd27a"; c.fillText(X.stages[st], ix, y); y += 26;
+  c.font = `15px ${SANS}`; c.fillStyle = "#cfd6e6"; c.fillText(P.n, ix, y); y += 30;
+  const rows: [string, string][] = [[S.burn, P.burn], [S.T, P.T], [S.R, S.rsun.replace("{v}", P.R)], [S.L, S.lsun.replace("{v}", P.L)], [S.real, P.real], [S.cov, pct(coverage(s))]];
+  for (const [a, b] of rows) {
+    c.font = `13px ${SANS}`; c.fillStyle = "#8f9ab0"; c.fillText(a, ix, y);
+    c.font = `13px ${MONO}`; c.fillStyle = "#e8eaf8"; c.textAlign = "right"; c.fillText(b, ix + iw, y); c.textAlign = "left";
+    c.strokeStyle = "rgba(255,255,255,.06)"; c.beginPath(); c.moveTo(ix, y + 11); c.lineTo(ix + iw, y + 11); c.stroke();
+    y += 26;
+  }
+  y += 10; c.font = `14px ${SANS}`; c.fillStyle = "#b9c2d6"; wrap(c, P.t, ix, y, iw, 20);
+  c.textBaseline = "alphabetic";
 }

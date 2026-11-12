@@ -13,6 +13,20 @@ export const CS2 = {
   },
   stages: ["Modrý obr", "Roj", "Vytěžování", "Plný roj", "Rudý veleobr", "Wolf-Rayet", "Kolaps"],
   indicator: "Zachyceno světla Aldry",
+  // Detail: skutečný stav hvězdy v každém stadiu (ukazuje se jen aktuální)
+  star: {
+    stage: "Stadium {n} z {of}", burn: "V jádře", T: "Povrch", R: "Poloměr", L: "Svítivost", real: "Ve skutečnosti trvá", cov: "Roj zachytí",
+    rsun: "{v} Sluncí", lsun: "{v} Sluncí", cut: "Řez hvězdou",
+  },
+  phase: [
+    { n: "Mladá hlavní posloupnost", burn: "vodík → helium", T: "35 000 K", R: "10", L: "150 000", real: "asi 2 mil. let", t: "Aldra je mladá a horká. V jádře slučuje vodík na helium a skoro nic jiného ji netrápí." },
+    { n: "Střed hlavní posloupnosti", burn: "vodík → helium", T: "33 000 K", R: "12", L: "160 000", real: "asi 3 mil. let", t: "Helia v jádře přibývá. Hvězda se kvůli tomu pomalu nafukuje a víc svítí." },
+    { n: "Konec hlavní posloupnosti", burn: "poslední vodík → helium", T: "30 000 K", R: "15", L: "180 000", real: "asi 1 mil. let", t: "Jádru dochází vodík. Uprostřed zůstává heliový popel, který zatím nehoří." },
+    { n: "Modrý veleobr", burn: "helium → uhlík, kyslík", T: "22 000 K", R: "30", L: "200 000", real: "asi 10 tis. let", t: "Vodík hoří už jen ve slupce kolem jádra. Jádro se smršťuje a zapálí helium, obálka se rozpíná." },
+    { n: "Rudý veleobr", burn: "helium → uhlík, kyslík", T: "3 600 K", R: "1 000", L: "200 000", real: "asi 700 tis. let", t: "Obálka se nafoukla do obří řídké koule. Povrch zchladl a zrudl, svítivost zůstala skoro stejná." },
+    { n: "Wolf-Rayetova hvězda", burn: "uhlík → neon, hořčík", T: "80 000 K", R: "3", L: "250 000", real: "asi 300 tis. let", t: "Silný vítr odvál vodíkovou obálku. Zůstalo obnažené, žhavé a malé jádro." },
+    { n: "Poslední dny", burn: "křemík → železo", T: "120 000 K", R: "3", L: "300 000", real: "dny", t: "Slupky hoří jedna za druhou stále rychleji. Železo už energii nedá. Jádro se brzy zhroutí." },
+  ],
   hint: [
     "Drž myš na dráze a vypouštíš kolektory. Chyť vrchol magnetické smyčky, natáhni ji a pusť v zeleném pásmu – výtrysk míří tam, kam táhneš. Miř na hustý roj.",
     "Továrny vypouštějí kolektory samy, kotvy uvolňují smyčky za tebe. Ručně natažená smyčka dá pořád nejvíc a drží rezonanci.",

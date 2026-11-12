@@ -53,9 +53,15 @@ export function unlocked(s: State, id: string) {
   const d = BMAP[id];
   if (d.ch !== s.ch) return false;
   if (s.unl["b_" + id] != null) return true;
-  if (d.req(s)) { s.unl["b_" + id] = s.t; emit("unlock", id); return true; }
-  return false;
+  if (!d.req(s)) return false;
+  // stavby se odkrývají po jedné: od poslední odkryté musí uplynout UNLOCK_GAP s
+  let last = -Infinity;
+  for (const b of chOf(s).build) { const u = s.unl["b_" + b.id]; if (u != null && u > last) last = u; }
+  if (s.t - last < UNLOCK_GAP) return false;
+  s.unl["b_" + id] = s.t; emit("unlock", id); return true;
 }
+/** Minimální odstup (s) mezi odkrytím dvou staveb téže kapitoly. */
+export const UNLOCK_GAP = 20;
 export function buy(s: State, id: string, cnt = 1): boolean {
   const d = BMAP[id];
   if (!unlocked(s, id) || maxed(s, id)) return false;

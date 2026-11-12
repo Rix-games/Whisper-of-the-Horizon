@@ -26,12 +26,12 @@ export const T2 = {
 const B = (o: Omit<BDef, "ch">): BDef => ({ ch: 2, ...o });
 export const BUILD2: BDef[] = [
   B({ id: "kol", tier: 1, kind: "swarm", cur: "plasma", c0: 3, g: 1, req: () => true }),
-  B({ id: "sieve", tier: 1, kind: "gen", cur: "plasma", c0: 15, g: 1.15, req: () => true }),
-  B({ id: "corona", tier: 1, kind: "data", cur: "plasma", c0: 60, g: 1.22, d: 3e3, req: (s) => s.tot.plasma >= 40 }),
-  B({ id: "mirror", tier: 1, kind: "up", cur: "plasma", c0: 120, g: 3.2, max: 30, req: (s) => s.tot.plasma >= 80 }),
-  B({ id: "tame", tier: 1, kind: "up", cur: "plasma", c0: 200, g: 3, max: 4, req: (s) => s.stats.flares >= 1 }),
-  B({ id: "jet", tier: 1, kind: "up", cur: "plasma", c0: 350, g: 3, max: 4, req: (s) => s.stats.flares >= 3 }),
-  B({ id: "harvest", tier: 1, kind: "up", cur: "plasma", c0: 600, g: 3.4, max: 6, req: (s) => s.stats.flares >= 5 }),
+  B({ id: "sieve", tier: 1, kind: "gen", cur: "plasma", c0: 15, g: 1.15, req: (s) => s.n >= 3 }),
+  B({ id: "corona", tier: 1, kind: "data", cur: "plasma", c0: 60, g: 1.22, d: 3e3, req: (s) => n(s, "sieve") >= 1 && s.tot.plasma >= 150 }),
+  B({ id: "mirror", tier: 1, kind: "up", cur: "plasma", c0: 120, g: 3.2, max: 30, req: (s) => n(s, "corona") >= 1 && s.tot.plasma >= 400 }),
+  B({ id: "tame", tier: 1, kind: "up", cur: "plasma", c0: 200, g: 3, max: 4, req: (s) => s.stats.flares >= 1 && n(s, "sieve") >= 1 }),
+  B({ id: "jet", tier: 1, kind: "up", cur: "plasma", c0: 350, g: 3, max: 4, req: (s) => s.stats.flares >= 4 && s.tot.plasma >= 900 }),
+  B({ id: "harvest", tier: 1, kind: "up", cur: "plasma", c0: 600, g: 3.4, max: 6, req: (s) => s.stats.flares >= 7 && s.tot.plasma >= 2500 }),
   B({ id: "lift", tier: 1, kind: "gen", cur: "plasma", c0: 2e3, g: 1.17, req: R("lifting") }),
   B({ id: "fact", tier: 2, kind: "auto", cur: "plasma", c0: 3e4, g: 1.3, req: R("replic") }),
   B({ id: "fspeed", tier: 2, kind: "up", cur: "plasma", c0: 1e6, g: 4, max: 6, req: R("replic") }),

@@ -39,7 +39,7 @@ export const UI = {
   researchNone: "Teď není co zkoumat. Další směr se objeví s postupem.",
   researchReady: "Připraveno",
   researchIn: (t: string) => `za ~${t}`,
-  detailNote: { 1: "Čím hlouběji laser řeže, tím bohatší ruda.", 2: "Aldra prochází životem hvězdy. Každá fáze dává jiné světlo.", 3: "Kolonie se šíří galaxií. Hranice ukazuje dosah svazku." } as Record<number, string>,
+  detailNote: { 1: "Čím hlouběji laser řeže, tím bohatší ruda.", 2: "Řez Aldrou ukazuje, co právě hoří v jádře. S každým stadiem se mění světlo i velikost hvězdy.", 3: "Kolonie se šíří galaxií. Hranice ukazuje dosah svazku." } as Record<number, string>,
   missionsDone: "Splněné mise",
   send: "Vyslat Vesper", running: "Vesper letí", busy: "Vesper je na cestě",
   duration: "Let",

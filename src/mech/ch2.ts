@@ -11,19 +11,20 @@ import { img, ImgKey } from "../ui/img";
 const CX = 760, CY = 480, VIS = 700;
 const lv = (s: State, id: string) => s.b[id] || 0;
 
-// vzhled Aldry podle stadia
-const LOOK = [
-  { R: 64, core: "#f4f8ff", mid: "#b9d2ff", edge: "#6f8fe8", glow: [150, 185, 255] },
-  { R: 66, core: "#f4f8ff", mid: "#b9d2ff", edge: "#6f8fe8", glow: [150, 185, 255] },
-  { R: 72, core: "#f6f9ff", mid: "#c7dbff", edge: "#7d9cf0", glow: [160, 195, 255] },
-  { R: 76, core: "#f8faff", mid: "#d2e0ff", edge: "#8aa6f0", glow: [175, 200, 255] },
-  { R: 118, core: "#fff1d6", mid: "#ffb070", edge: "#d2502a", glow: [255, 140, 80] },
+// vzhled Aldry podle stadia – na hlavní posloupnosti se hvězda pomalu nafukuje, rudý veleobr je největší,
+// Wolf-Rayet je obnažené (menší) jádro. Změna velikosti se plynule dorovná (update → Rd).
+export const LOOK = [
+  { R: 60, core: "#f4f8ff", mid: "#b9d2ff", edge: "#6f8fe8", glow: [150, 185, 255] },
+  { R: 68, core: "#f4f8ff", mid: "#b9d2ff", edge: "#6f8fe8", glow: [150, 185, 255] },
+  { R: 78, core: "#f6f9ff", mid: "#c7dbff", edge: "#7d9cf0", glow: [160, 195, 255] },
+  { R: 90, core: "#fafbff", mid: "#dbe5ff", edge: "#94acef", glow: [185, 205, 255] },
+  { R: 165, core: "#fff1d6", mid: "#ffb070", edge: "#d2502a", glow: [255, 140, 80] },
   { R: 56, core: "#ffffff", mid: "#d9d0ff", edge: "#8f7cf0", glow: [200, 185, 255] },
   { R: 52, core: "#ffffff", mid: "#e2d8ff", edge: "#9a86f5", glow: [210, 195, 255] },
 ];
 const look = (s: State) => LOOK[Math.min(s.stage, LOOK.length - 1)];
 // obrázek Aldry podle stadia: [klíč, poloměr disku v obrázku (podíl poloviny šířky)]
-const PIC = (st: number): [ImgKey, number] => st >= 5 ? ["starWR", 0.14] : st === 4 ? ["starRed", 0.76] : ["starBlue", 0.76];
+export const PIC = (st: number): [ImgKey, number] => st >= 6 && img("starCollapse") ? ["starCollapse", 0.14] : st >= 5 ? ["starWR", 0.14] : st === 4 ? ["starRed", 0.76] : ["starBlue", 0.76];
 /** Zmenšený obrázek do malého plátna (kreslí se stokrát za snímek). */
 const sprC: Record<string, HTMLCanvasElement> = {};
 function sprite(k: ImgKey, px: number): HTMLCanvasElement | null {
@@ -48,10 +49,10 @@ const gran = (() => { const r = mulberry(3); return Array.from({ length: 80 }, (
 
 export const hvezda: Mech & any = {
   dots: [] as Dot[], loops: [] as Loop[], jets: [] as any[], cmes: [] as any[], fact: [] as any[],
-  picSt: -1, picPrev: -1, picT0: 0, spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
-  reset() { this.dots = []; this.loops = []; this.jets = []; this.cmes = []; this.fact = []; this.grab = null; this.combo = 0; this.lastN = -1; this.picSt = -1; this.picPrev = -1; },
+  Rd: 0, picSt: -1, picPrev: -1, picT0: 0, spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
+  reset() { this.Rd = 0; this.dots = []; this.loops = []; this.jets = []; this.cmes = []; this.fact = []; this.grab = null; this.combo = 0; this.lastN = -1; this.picSt = -1; this.picPrev = -1; },
   geo(s: State) {
-    const L = look(s), Rs = L.R, out = s.r.outer ? 1.25 : 1, base = Math.max(Rs * 2.1, 150);
+    const L = look(s), Rs = this.Rd || L.R, base = Math.max(Rs * 1.5 + 40, 150), out = s.r.outer ? Math.min(1.25, Math.max(1, 640 / (base * 1.9))) : 1;
     return { Rs, rings: [base * out, base * 1.42 * out, base * 1.9 * out] };
   },
   pos(d: Dot, g: any) { const r = g.rings[d.ring]; return [CX + Math.cos(d.a) * r, CY + Math.sin(d.a) * r]; },
@@ -131,6 +132,7 @@ export const hvezda: Mech & any = {
     this.lastN = s.n;
   },
   update(s: State, dt: number, M: Input) {
+    const tR = look(s).R; this.Rd = this.Rd ? this.Rd + (tR - this.Rd) * (1 - Math.exp(-dt * 0.5)) : tR;   // hvězda roste plynule
     const g = this.geo(s); this.shake = Math.max(0, this.shake - dt);
     // továrny (viditelné až 24)
     const nf = Math.min(lv(s, "fact"), 24);
@@ -276,7 +278,7 @@ export const hvezda: Mech & any = {
     if (fade >= 1) this.picPrev = -1;
     let pic = false;
     if (img(pk)) {
-      if (this.picPrev >= 0) drawPic(c, this.picPrev, cx, cy, LOOK[this.picPrev].R, T, 1 - fade);
+      if (this.picPrev >= 0) drawPic(c, this.picPrev, cx, cy, Rs, T, 1 - fade);
       pic = drawPic(c, ps, cx, cy, Rs, T, fade);
     }
     if (!pic) {
