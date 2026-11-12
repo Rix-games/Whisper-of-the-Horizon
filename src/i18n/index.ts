@@ -20,6 +20,7 @@ export const UI = {
   perSec: "/s",
   stage: "Stadium",
   goal: "Cíl stadia",
+  noiseVol: "Šum vesmíru",
   kBelow: "K < 0",
   toType: (k: number, x: string) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${x} víc výkonu`,
   typeMax: "Typ III dosažen",

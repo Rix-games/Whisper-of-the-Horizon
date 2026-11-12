@@ -314,14 +314,9 @@ function drawPlat(c: CanvasRenderingContext2D, s: State, m: any) {
   }
   c.restore();
 }
-// Viditelný růst elektráren: panely u plošiny, pole na asteroidu, zrcadla a statity na oběžné dráze.
+// Viditelný růst elektráren: pole na asteroidu, zrcadla a statity na oběžné dráze.
 function drawGens(c: CanvasRenderingContext2D, s: State, T: number) {
-  const p = Math.min(lv(s, "panel"), 60);
-  for (let i = 0; i < p; i++) {
-    const row = Math.floor(i / 12), col = i % 12, side = col < 6 ? -1 : 1, k = col % 6;
-    const x = PX + side * (90 + k * 13), y = PY - 18 + row * 9;
-    c.fillStyle = "#1a3866"; c.fillRect(x - 5, y - 3, 10, 6); c.fillStyle = "rgba(140,190,255,.35)"; c.fillRect(x - 5, y - 3, 10, 1.2);
-  }
+  // panely u plošiny se nekreslí (vypadaly rušivě)
   const f = Math.min(lv(s, "field"), 40);
   for (let i = 0; i < f; i++) {
     const a = -2.2 + i * 0.07, r = RA * 1.0;

@@ -1,5 +1,15 @@
 # Novinky
 
+## 1.0 (vývoj) – Předělávka
+
+- Obrázky Kapitoly 2: Aldra ve třech fázích s prolnutím, zrcadla roje, továrny, Okolí, úvod
+- Kapitola 1: postupné odkrývání staveb, zvuk laseru při řezání
+- Deník v bublinách, výraznější Výzkum, Detail s výřezem asteroidu
+- K < 0 a postup k Typu I v horní liště
+- Hlasitost šumu v nastavení
+- Spolehlivější tlačítka, jednotné barvy staveb, čitelnější mocniny, tenké posuvníky
+- Záložky drží místo, sbalený panel se schová celý
+
 ## 0.4 – Kapitola 4: Most
 
 - Nová kapitola: síť červích děr mezi hvězdami v rameni Persea

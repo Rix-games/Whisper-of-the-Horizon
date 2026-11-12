@@ -35,7 +35,7 @@
       stats: { cuts: 0, full: 0, flares: 0, perfect: 0, cme: 0, sweeps: 0 },
       done: 0,
       last: Date.now(),
-      opt: { sound: false, vol: 0.8, fx: 1 },
+      opt: { sound: false, vol: 0.8, noise: 0.7, fx: 1 },
       story: {}
     };
   }
@@ -1133,7 +1133,7 @@
       if (f.t > 1.7) txt.splice(i, 1);
     }
   }
-  function fxDraw(c, sx) {
+  function fxDraw(c, sx2) {
     c.save();
     c.globalCompositeOperation = "lighter";
     for (const p of sp) {
@@ -1142,7 +1142,7 @@
       c.fillRect(p.x - 1.3, p.y - 1.3, 2.6, 2.6);
     }
     c.restore();
-    c.font = `600 ${Math.round(15 / Math.max(sx, 0.5))}px ${SANS}`;
+    c.font = `600 ${Math.round(15 / Math.max(sx2, 0.5))}px ${SANS}`;
     c.textAlign = "center";
     for (const f of txt) {
       c.globalAlpha = Math.min(1, (1.7 - f.t) * 1.5);
@@ -1309,9 +1309,9 @@
       this.rot += dt * 0.05;
       this.pop = Math.max(0, this.pop - dt);
       this.flash = Math.max(0, this.flash - dt);
-      const laser = M4.down && !this.over && this.stroke;
+      const laser2 = M4.down && !this.over && this.stroke;
       const L = lv(s2, "cool"), hr = 0.3 * Math.pow(0.8, L), cr = 0.42 * Math.pow(1.25, L);
-      if (laser) {
+      if (laser2) {
         this.heat += hr * dt;
         if (this.heat >= 1) {
           this.heat = 1;
@@ -1321,7 +1321,7 @@
         }
       } else this.heat = Math.max(0, this.heat - cr * dt);
       if (this.over && this.heat < 0.3) this.over = false;
-      if (laser) {
+      if (laser2) {
         const bw = 6 + lv(s2, "beam") * 3.5, dx = M4.x - M4.px, dy = M4.y - M4.py, steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 3));
         for (let k2 = 0; k2 <= steps; k2++) {
           const x = M4.px + dx * k2 / steps, y = M4.py + dy * k2 / steps;
@@ -1761,15 +1761,6 @@
     c.restore();
   }
   function drawGens(c, s2, T4) {
-    const p = Math.min(lv(s2, "panel"), 60);
-    for (let i = 0; i < p; i++) {
-      const row = Math.floor(i / 12), col = i % 12, side = col < 6 ? -1 : 1, k = col % 6;
-      const x = PX + side * (90 + k * 13), y = PY - 18 + row * 9;
-      c.fillStyle = "#1a3866";
-      c.fillRect(x - 5, y - 3, 10, 6);
-      c.fillStyle = "rgba(140,190,255,.35)";
-      c.fillRect(x - 5, y - 3, 10, 1.2);
-    }
     const f = Math.min(lv(s2, "field"), 40);
     for (let i = 0; i < f; i++) {
       const a = -2.2 + i * 0.07, r = RA * 1;
@@ -2003,7 +1994,7 @@
       for (const d of this.dots) if (!d.dying) alive++;
       const fromHand = this.manual > 0;
       while (alive < target) {
-        let ring = rnd() * 3 | 0, a = rnd() * 6.283, fly = 0, sx = 0, sy = 0;
+        let ring = rnd() * 3 | 0, a = rnd() * 6.283, fly = 0, sx2 = 0, sy = 0;
         if (fromHand && M4.down) {
           const ri = this.ringAt(g, M4);
           if (ri >= 0) {
@@ -2014,11 +2005,11 @@
           const f = this.fact[rnd() * this.fact.length | 0];
           fly = 0.8;
           const fr = g.rings[2] * 1.22;
-          sx = CX2 + Math.cos(f.a) * fr;
+          sx2 = CX2 + Math.cos(f.a) * fr;
           sy = CY2 + Math.sin(f.a) * fr;
           a = f.a + (rnd() - 0.5) * 0.6;
         }
-        this.dots.push({ ring, a, glow: 0, fly, sx, sy, dying: 0 });
+        this.dots.push({ ring, a, glow: 0, fly, sx: sx2, sy, dying: 0 });
         alive++;
       }
       if (alive >= VIS && this.fact.length && s2.n > this.lastN && this.dots.length) {
@@ -3217,6 +3208,7 @@
     perSec: "/s",
     stage: "Stadium",
     goal: "C\xEDl stadia",
+    noiseVol: "\u0160um vesm\xEDru",
     kBelow: "K < 0",
     toType: (k, x) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${x} v\xEDc v\xFDkonu`,
     typeMax: "Typ III dosa\u017Een",
@@ -3600,8 +3592,8 @@
     return m.at;
   }
   var ORIGIN = { system: SYS.platform, near: NEAR.aldra, galaxy: [0, 0] };
-  function drawMissions(c, s2, view2, T4, sx, hover) {
-    const fs = 13 / Math.max(sx, 0.3);
+  function drawMissions(c, s2, view2, T4, sx2, hover) {
+    const fs = 13 / Math.max(sx2, 0.3);
     for (const m of MISSIONS) {
       if (m.ch !== s2.ch || m.view !== view2 || !mVisible(s2, m.id)) continue;
       const [x, y] = missionPos(m.id), done = !!s2.mis[m.id], run = s2.run?.id === m.id;
@@ -3663,8 +3655,8 @@
     return null;
   }
   var LS = 1;
-  function setLabelScale(sx) {
-    LS = Math.max(sx, 0.3);
+  function setLabelScale(sx2) {
+    LS = Math.max(sx2, 0.3);
   }
   function label(c, x, y, t, col = "#9aa6bd", fs = 13 / LS) {
     c.font = `${fs}px ${MONO}`;
@@ -4104,10 +4096,68 @@
     o.start(now);
     o.stop(now + 3.6);
   }
+  var lz = null;
+  function laserNodes() {
+    if (lz || !ctx || !bus.chime) return lz;
+    const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 2400;
+    bp.Q.value = 1.4;
+    const hum = ctx.createOscillator();
+    hum.type = "sawtooth";
+    hum.frequency.value = 110;
+    const hlp = ctx.createBiquadFilter();
+    hlp.type = "lowpass";
+    hlp.frequency.value = 700;
+    const hg = ctx.createGain();
+    hg.gain.value = 0.18;
+    const out = ctx.createGain();
+    out.gain.value = 0;
+    src.connect(bp).connect(out);
+    hum.connect(hlp).connect(hg).connect(out);
+    out.connect(bus.chime);
+    src.start();
+    hum.start();
+    lz = { out, bp, hum };
+    return lz;
+  }
+  function laser(on2, heat) {
+    if (!ctx || !soundOn) {
+      if (lz) lz.out.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+      return;
+    }
+    const n2 = laserNodes();
+    if (!n2) return;
+    const now = ctx.currentTime;
+    n2.out.gain.setTargetAtTime(on2 ? 0.035 + heat * 0.02 : 0, now, on2 ? 0.03 : 0.08);
+    n2.bp.frequency.setTargetAtTime(1800 + heat * 2600, now, 0.1);
+    n2.hum.frequency.setTargetAtTime(95 + heat * 70, now, 0.1);
+  }
+  function crackle(rich = false) {
+    if (!ctx || !bus.chime || !soundOn) return;
+    const now = ctx.currentTime, len = Math.floor(ctx.sampleRate * 0.06), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = rich ? 2600 : 1500;
+    const g = ctx.createGain();
+    g.gain.value = rich ? 0.09 : 0.06;
+    src.connect(hp).connect(g).connect(bus.chime);
+    src.start(now);
+  }
 
   // src/ui/app.ts
   var VERSION = "1.0.0-dev";
   var $ = (id) => document.getElementById(id);
+  var SUPM = { "\u2070": "0", "\xB9": "1", "\xB2": "2", "\xB3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9", "\u207B": "\u2212" };
+  var sx = (t) => t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, (m) => `<sup>${[...m].map((c) => SUPM[c]).join("")}</sup>`);
   var h = (tag, cls = "", html = "") => {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -4117,6 +4167,8 @@
   var s;
   var MECH = { 1: kamen, 2: hvezda, 3: galaxie };
   var VIEWS = ["body", "star", "system", "near", "galaxy", "group", "laniakea"];
+  var lastCuts = 0;
+  var lastCrack = 0;
   var view = "body";
   var tab = "build";
   var buyN = 1;
@@ -4166,6 +4218,7 @@
     MECH[s.ch].reset();
     if (!s.story["intro" + s.ch]) setTimeout(showIntro, img("intro" + s.ch) ? 0 : 600);
     else if (off) showOffline(off);
+    setVolumes({ master: s.opt.vol, noise: s.opt.noise ?? 0.7 });
     resize();
     addEventListener("resize", resize);
     setInterval(save, 1e4);
@@ -4186,6 +4239,15 @@
         MECH[s.ch].update(s, dt, interactive ? inp : { ...inp, down: false });
         tick(s, dt);
         fxUpdate(dt);
+        if (s.ch === 1) {
+          const on2 = interactive && inp.down && !kamen.over && !!kamen.stroke;
+          laser(on2, kamen.heat);
+          if (on2 && s.stats.cuts > lastCuts && T - lastCrack > 0.06) {
+            crackle();
+            lastCrack = T;
+          }
+        }
+        lastCuts = s.stats.cuts;
         if (trans > 0) {
           trans -= dt;
           if (trans <= 0) afterTransition();
@@ -4277,8 +4339,8 @@
     cv.height = Math.round(H * DPR);
     const left = W > 900 ? 330 : 0, right = W > 900 ? dockOpen ? 400 : 30 : 0, top = 64, bottom = 58;
     const aw = W - left - right, ah = H - top - bottom;
-    const sx = Math.min(aw / VW, ah / VH) * 1.08;
-    geo = { sx, ox: left + (aw - VW * sx) / 2, oy: top + (ah - VH * sx) / 2 };
+    const sx2 = Math.min(aw / VW, ah / VH) * 1.08;
+    geo = { sx: sx2, ox: left + (aw - VW * sx2) / 2, oy: top + (ah - VH * sx2) / 2 };
   }
   function render() {
     const cv = $("scene"), c = cv.getContext("2d");
@@ -4329,6 +4391,7 @@
     tab = t;
     document.querySelectorAll("#tabs .tab").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
     document.body.classList.toggle("wide", t === "research" || t === "detail");
+    document.body.classList.toggle("tdetail", t === "detail");
     if (dockOpen === false && t !== "build" && t !== "map") {
       dockOpen = true;
       document.body.classList.remove("dockclosed");
@@ -4348,18 +4411,18 @@
     const C = chOf(s), X = tx(s.ch), P = power(s);
     const kk = K(P);
     $("kval").textContent = kk < 0 ? UI.kBelow : `K ${fixed(kk, 2)}`;
-    $("kpow").textContent = si(P, "W");
+    $("kpow").innerHTML = sx(si(P, "W"));
     const ti = KTYPES.findIndex((t) => P < t.w), nt = KTYPES[ti];
     if (nt) {
       const base = ti > 0 ? KTYPES[ti - 1].w : 500;
       $("kbar").style.width = `${Math.max(0, Math.min(1, Math.log(P / base) / Math.log(nt.w / base))) * 100}%`;
-      $("kprog").textContent = UI.toType(nt.k, times(nt.w / P));
+      setHTML($("kprog"), sx(UI.toType(nt.k, times(nt.w / P))));
     } else {
       $("kbar").style.width = "100%";
       $("kprog").textContent = UI.typeMax;
     }
     const resList = [[C.cur, s.res[C.cur], RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, dataRate(s)]];
-    $("res").innerHTML = resList.map(([k, v, r]) => `<div class="chip"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`).join("");
+    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`)).join("");
     const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
     $("chTitle").textContent = X.title;
     $("stName").textContent = `${UI.stage} ${Math.min(st + 1, stagesOf(s))}/${stagesOf(s)} \xB7 ${names[st]}`;
@@ -4367,16 +4430,16 @@
       const goal = stageGoal(s), prev = s.stage > 0 ? stageGoal(s, s.stage - 1) : s.ch === 1 ? 500 : s.base;
       const f = Math.max(0, Math.min(1, Math.log(P / prev) / Math.log(goal / prev)));
       $("goalBar").style.width = `${f * 100}%`;
-      $("goalTxt").textContent = `${UI.goal}: ${si(goal, "W")}`;
-      $("goalNeed").textContent = UI.needMore(times(goal / P));
+      $("goalTxt").innerHTML = sx(`${UI.goal}: ${si(goal, "W")}`);
+      $("goalNeed").innerHTML = sx(UI.needMore(times(goal / P)));
     } else {
       const fin = C.research.find((r) => r.final);
       $("goalBar").style.width = "100%";
       $("goalTxt").textContent = UI.stageDone;
       $("goalNeed").textContent = UI.finalHint(find("r", fin.id).n);
     }
-    $("indic").innerHTML = indicator();
-    $("stats").innerHTML = statRows().map(([l, v]) => `<dt>${l}</dt><dd class="mono">${v}</dd>`).join("");
+    $("indic").innerHTML = sx(indicator());
+    $("stats").innerHTML = statRows().map(([l, v]) => `<dt>${l}</dt><dd class="mono">${sx(v)}</dd>`).join("");
     $("hint").textContent = view === C.view ? X.hint[s.stage >= C.lvl2 ? 1 : 0] : "";
     $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
     journal();
@@ -4518,15 +4581,14 @@
       const mx = maxed(s, id), lvl = n(s, id);
       const ct = d.kind === "swarm" ? count(s.n) : d.max != null ? `${lvl}/${d.max}` : count(lvl);
       if (R2.cnt.textContent !== ct) R2.cnt.textContent = ct;
-      const ef = effect(id);
-      if (R2.eff.textContent !== ef) R2.eff.textContent = ef;
+      setHTML(R2.eff, sx(effect(id)));
       if (mx) {
         setHTML(R2.b, UI.maxed);
         setDis(R2.b, true);
         continue;
       }
       const k = Math.max(1, buyN || maxAfford(s, id)), c = costN(s, id, k);
-      setHTML(R2.b, `${k > 1 ? `\xD7${k} ` : ""}<span class="mono">${fmtCur(d.cur, c)}</span>`);
+      setHTML(R2.b, sx(`${k > 1 ? `\xD7${k} ` : ""}<span class="mono">${fmtCur(d.cur, c)}</span>`));
       setDis(R2.b, s.res[d.cur] < c);
     }
   }
@@ -4558,11 +4620,11 @@
       if (done.length) box.appendChild(h("div", "rdone", `<span class="ph">${UI.researchDone} (${done.length})</span>` + done.map((r) => `<span class="tag" title="${find("r", r.id).d}">\u2713 ${find("r", r.id).n}</span>`).join("")));
     }
     const rate = dataRate(s);
-    setHTML($("rData"), si(s.res.data, "B"));
-    setHTML($("rRate"), `+${si(rate, "B")}/s`);
+    setHTML($("rData"), sx(si(s.res.data, "B")));
+    setHTML($("rRate"), sx(`+${si(rate, "B")}/s`));
     for (const r of open) {
       const R2 = rows["r_" + r.id], ok2 = s.res.data >= r.cost, f = Math.min(1, s.res.data / r.cost);
-      setHTML(R2.b, `<span class="mono">${si(r.cost, "B")}</span>`);
+      setHTML(R2.b, sx(`<span class="mono">${si(r.cost, "B")}</span>`));
       setDis(R2.b, !ok2);
       R2.card.classList.toggle("ready", ok2);
       R2.bar.style.width = `${f * 100}%`;
@@ -4612,7 +4674,7 @@
         setDis(R2.b, true);
         continue;
       }
-      setHTML(R2.b, s.run ? UI.busy : `${UI.send} \xB7 <span class="mono">${si(m.cost, "J")}</span> \xB7 ${duration(m.dur)}`);
+      setHTML(R2.b, s.run ? UI.busy : sx(`${UI.send} \xB7 <span class="mono">${si(m.cost, "J")}</span> \xB7 ${duration(m.dur)}`));
       setDis(R2.b, !!s.run || s.res.energy < m.cost);
     }
   }
@@ -4630,7 +4692,7 @@
       for (let i = 0; i < N; i++) {
         const st = i < s.stage ? "done" : i === s.stage ? "now" : "next";
         const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${X.layer[i]} \xB7 ruda \xD7${count(Math.pow(T1.layerMult, i))}</small>` : "";
-        tl.appendChild(h("div", "st " + st, `<i>${st === "done" ? "\u2713" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} \xB7 ${K(g) < 0 ? UI.kBelow : "K " + fixed(K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`));
+        tl.appendChild(h("div", "st " + st, sx(`<i>${st === "done" ? "\u2713" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} \xB7 ${K(g) < 0 ? UI.kBelow : "K " + fixed(K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`)));
       }
       box.appendChild(tl);
     }
@@ -4724,6 +4786,7 @@
     modal(UI.settings, `
     <div class="set"><label><input type="checkbox" id="optFx" ${s.opt.fx !== 0 ? "checked" : ""}> ${UI.effects}</label></div>
     <div class="set"><label>${UI.volume} <input type="range" id="optVol" min="0" max="1" step="0.05" value="${s.opt.vol}"></label></div>
+    <div class="set"><label>${UI.noiseVol} <input type="range" id="optNoise" min="0" max="1" step="0.05" value="${s.opt.noise ?? 0.7}"></label></div>
     <div class="set row"><button class="btn" id="expBtn">${UI.export}</button><button class="btn" id="impBtn">${UI.import}</button><button class="btn danger" id="resBtn">${UI.reset}</button></div>
     <textarea id="saveTxt" rows="3" placeholder="\u2026"></textarea>
     <p class="dim mono">${VERSION}</p>`, false, void 0, UI.close);
@@ -4734,6 +4797,10 @@
     $("optVol").oninput = (e) => {
       s.opt.vol = +e.target.value;
       setVolumes({ master: s.opt.vol });
+    };
+    $("optNoise").oninput = (e) => {
+      s.opt.noise = +e.target.value;
+      setVolumes({ noise: s.opt.noise });
     };
     $("expBtn").onclick = () => {
       const t = encodeSave(s);

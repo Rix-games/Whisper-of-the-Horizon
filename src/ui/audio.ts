@@ -190,3 +190,40 @@ export function boom() {
   o.start(now);
   o.stop(now + 3.6);
 }
+
+// ---------- laser Kap. 1: syčení řezu + bzučení, výška roste s teplotou ----------
+let lz: any = null;
+function laserNodes() {
+  if (lz || !ctx || !bus.chime) return lz;
+  const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+  const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2400; bp.Q.value = 1.4;
+  const hum = ctx.createOscillator(); hum.type = "sawtooth"; hum.frequency.value = 110;
+  const hlp = ctx.createBiquadFilter(); hlp.type = "lowpass"; hlp.frequency.value = 700;
+  const hg = ctx.createGain(); hg.gain.value = 0.18;
+  const out = ctx.createGain(); out.gain.value = 0;
+  src.connect(bp).connect(out); hum.connect(hlp).connect(hg).connect(out); out.connect(bus.chime);
+  src.start(); hum.start();
+  lz = { out, bp, hum };
+  return lz;
+}
+/** Volat každý snímek: on = laser právě řeže, heat 0..1. */
+export function laser(on: boolean, heat: number) {
+  if (!ctx || !soundOn) { if (lz) lz.out.gain.setTargetAtTime(0, ctx.currentTime, 0.05); return; }
+  const n = laserNodes(); if (!n) return;
+  const now = ctx.currentTime;
+  n.out.gain.setTargetAtTime(on ? 0.035 + heat * 0.02 : 0, now, on ? 0.03 : 0.08);
+  n.bp.frequency.setTargetAtTime(1800 + heat * 2600, now, 0.1);
+  n.hum.frequency.setTargetAtTime(95 + heat * 70, now, 0.1);
+}
+/** Krátké prasknutí při rozříznutí kusu žíly. */
+export function crackle(rich = false) {
+  if (!ctx || !bus.chime || !soundOn) return;
+  const now = ctx.currentTime, len = Math.floor(ctx.sampleRate * 0.06), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = rich ? 2600 : 1500;
+  const g = ctx.createGain(); g.gain.value = rich ? 0.09 : 0.06;
+  src.connect(hp).connect(g).connect(bus.chime); src.start(now);
+}

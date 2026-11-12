@@ -34,7 +34,7 @@ export interface State {
   stats: { cuts: number; full: number; flares: number; perfect: number; cme: number; sweeps: number };
   done: number;                     // nejvyšší dokončená kapitola
   last: number;                     // reálný čas posledního uložení (ms)
-  opt: { sound: boolean; vol: number; fx: number };
+  opt: { sound: boolean; vol: number; noise: number; fx: number };
   story: Record<string, number>;    // úvodní okna
 }
 
@@ -48,7 +48,7 @@ export function newState(): State {
     best: { chainHand: 0, reson: 0 },
     stats: { cuts: 0, full: 0, flares: 0, perfect: 0, cme: 0, sweeps: 0 },
     done: 0, last: Date.now(),
-    opt: { sound: false, vol: 0.8, fx: 1 },
+    opt: { sound: false, vol: 0.8, noise: 0.7, fx: 1 },
     story: {},
   };
 }

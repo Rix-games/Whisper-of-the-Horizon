@@ -19,11 +19,15 @@ import { img, imgSrc, preload, ImgKey } from "./img";
 
 export const VERSION = "1.0.0-dev";
 const $ = (id: string) => document.getElementById(id)!;
+/** Mocniny (¹²) jako <sup>, aby byly čitelné. */
+const SUPM: Record<string, string> = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "−" };
+const sx = (t: string) => t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, (m) => `<sup>${[...m].map((c) => SUPM[c]).join("")}</sup>`);
 const h = (tag: string, cls = "", html = "") => { const e = document.createElement(tag); if (cls) e.className = cls; if (html) e.innerHTML = html; return e; };
 
 let s: State;
 const MECH: any = { 1: kamen, 2: hvezda, 3: galaxie };
 const VIEWS = ["body", "star", "system", "near", "galaxy", "group", "laniakea"];
+let lastCuts = 0, lastCrack = 0;
 let view = "body", tab = "build", buyN = 1, dockOpen = true, T = 0;
 const inp: Input = { x: -999, y: -999, px: -999, py: -999, down: false, inside: false };
 let geo = { sx: 1, ox: 0, oy: 0 }, W = 0, H = 0, DPR = 1, hoverMis: string | null = null;
@@ -59,6 +63,7 @@ export function start() {
   MECH[s.ch].reset();
   if (!s.story["intro" + s.ch]) setTimeout(showIntro, img(("intro" + s.ch) as ImgKey) ? 0 : 600);
   else if (off) showOffline(off);
+  Audio.setVolumes({ master: s.opt.vol, noise: s.opt.noise ?? 0.7 });
   resize(); addEventListener("resize", resize);
   setInterval(save, 10000); addEventListener("beforeunload", save);
   document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
@@ -72,6 +77,12 @@ export function start() {
       MECH[s.ch].update(s, dt, interactive ? inp : { ...inp, down: false });
       E.tick(s, dt);
       fxUpdate(dt);
+      if (s.ch === 1) {   // zvuk ručního řezu laserem
+        const on = interactive && inp.down && !kamen.over && !!kamen.stroke;
+        Audio.laser(on, kamen.heat);
+        if (on && s.stats.cuts > lastCuts && T - lastCrack > 0.06) { Audio.crackle(); lastCrack = T; }
+      }
+      lastCuts = s.stats.cuts;
       if (trans > 0) { trans -= dt; if (trans <= 0) afterTransition(); }
       render();
       uiT -= dt;
@@ -170,6 +181,7 @@ function setTab(t: string, keepView = false) {
   document.querySelectorAll("#tabs .tab").forEach((b: any) => b.classList.toggle("on", b.dataset.t === t));
   // Výzkum a Detail přes celou obrazovku (vedle levého panelu), scéna zůstává ztlumeně vzadu
   document.body.classList.toggle("wide", t === "research" || t === "detail");
+  document.body.classList.toggle("tdetail", t === "detail");
   if (dockOpen === false && t !== "build" && t !== "map") { dockOpen = true; document.body.classList.remove("dockclosed"); }
   s.seen["tab_" + t] = s.t;
   if (!keepView) {
@@ -187,16 +199,16 @@ function updateUI() {
   // horní lišta
   const kk = E.K(P);
   $("kval").textContent = kk < 0 ? UI.kBelow : `K ${fixed(kk, 2)}`;
-  $("kpow").textContent = si(P, "W");
+  $("kpow").innerHTML = sx(si(P, "W"));
   // postup k dalšímu typu Kardaševovy škály (oranžový bar)
   const ti = KTYPES.findIndex((t) => P < t.w), nt = KTYPES[ti];
   if (nt) {
     const base = ti > 0 ? KTYPES[ti - 1].w : 500;
     $("kbar").style.width = `${Math.max(0, Math.min(1, Math.log(P / base) / Math.log(nt.w / base))) * 100}%`;
-    $("kprog").textContent = UI.toType(nt.k, times(nt.w / P));
+    setHTML($("kprog"), sx(UI.toType(nt.k, times(nt.w / P))));
   } else { $("kbar").style.width = "100%"; $("kprog").textContent = UI.typeMax; }
   const resList: [string, number, number][] = [[C.cur, s.res[C.cur], E.RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, E.dataRate(s)]];
-  $("res").innerHTML = resList.map(([k, v, r]) => `<div class="chip"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`).join("");
+  $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`)).join("");
   // levý panel
   const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
   $("chTitle").textContent = X.title;
@@ -205,16 +217,16 @@ function updateUI() {
     const goal = stageGoal(s), prev = s.stage > 0 ? stageGoal(s, s.stage - 1) : s.ch === 1 ? 500 : s.base;
     const f = Math.max(0, Math.min(1, Math.log(P / prev) / Math.log(goal / prev)));
     $("goalBar").style.width = `${f * 100}%`;
-    $("goalTxt").textContent = `${UI.goal}: ${si(goal, "W")}`;
-    $("goalNeed").textContent = UI.needMore(times(goal / P));
+    $("goalTxt").innerHTML = sx(`${UI.goal}: ${si(goal, "W")}`);
+    $("goalNeed").innerHTML = sx(UI.needMore(times(goal / P)));
   } else {
     const fin = C.research.find((r) => r.final)!;
     $("goalBar").style.width = "100%";
     $("goalTxt").textContent = UI.stageDone;
     $("goalNeed").textContent = UI.finalHint(find("r", fin.id).n);
   }
-  $("indic").innerHTML = indicator();
-  $("stats").innerHTML = statRows().map(([l, v]) => `<dt>${l}</dt><dd class="mono">${v}</dd>`).join("");
+  $("indic").innerHTML = sx(indicator());
+  $("stats").innerHTML = statRows().map(([l, v]) => `<dt>${l}</dt><dd class="mono">${sx(v)}</dd>`).join("");
   $("hint").textContent = view === C.view ? X.hint[s.stage >= C.lvl2 ? 1 : 0] : "";
   $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
   journal();
@@ -321,10 +333,10 @@ function buildList() {
     const mx = E.maxed(s, id), lvl = cnt(s, id);
     const ct = d.kind === "swarm" ? count(s.n) : d.max != null ? `${lvl}/${d.max}` : count(lvl);
     if (R.cnt.textContent !== ct) R.cnt.textContent = ct;
-    const ef = effect(id); if (R.eff.textContent !== ef) R.eff.textContent = ef;
+    setHTML(R.eff, sx(effect(id)));
     if (mx) { setHTML(R.b, UI.maxed); setDis(R.b, true); continue; }
     const k = Math.max(1, buyN || E.maxAfford(s, id)), c = E.costN(s, id, k);
-    setHTML(R.b, `${k > 1 ? `×${k} ` : ""}<span class="mono">${fmtCur(d.cur, c)}</span>`);
+    setHTML(R.b, sx(`${k > 1 ? `×${k} ` : ""}<span class="mono">${fmtCur(d.cur, c)}</span>`));
     setDis(R.b, s.res[d.cur] < c);
   }
 }
@@ -349,10 +361,10 @@ function researchList() {
     if (done.length) box.appendChild(h("div", "rdone", `<span class="ph">${UI.researchDone} (${done.length})</span>` + done.map((r) => `<span class="tag" title="${find("r", r.id).d}">✓ ${find("r", r.id).n}</span>`).join("")));
   }
   const rate = E.dataRate(s);
-  setHTML($("rData"), si(s.res.data, "B")); setHTML($("rRate"), `+${si(rate, "B")}/s`);
+  setHTML($("rData"), sx(si(s.res.data, "B"))); setHTML($("rRate"), sx(`+${si(rate, "B")}/s`));
   for (const r of open) {
     const R = rows["r_" + r.id], ok = s.res.data >= r.cost, f = Math.min(1, s.res.data / r.cost);
-    setHTML(R.b, `<span class="mono">${si(r.cost, "B")}</span>`); setDis(R.b, !ok);
+    setHTML(R.b, sx(`<span class="mono">${si(r.cost, "B")}</span>`)); setDis(R.b, !ok);
     R.card.classList.toggle("ready", ok);
     R.bar.style.width = `${f * 100}%`;
     setHTML(R.eta, ok ? UI.researchReady : rate > 0 ? `${pct(f)} · ${UI.researchIn(duration((r.cost - s.res.data) / rate))}` : pct(f));
@@ -382,7 +394,7 @@ function missionList() {
     const R = rows["m_" + m.id], run = s.run?.id === m.id;
     R.bar.parentElement.hidden = !run;
     if (run) { R.bar.style.width = `${(1 - s.run!.left / s.run!.dur) * 100}%`; setHTML(R.b, `${UI.running} · ${duration(s.run!.left)}`); setDis(R.b, true); continue; }
-    setHTML(R.b, s.run ? UI.busy : `${UI.send} · <span class="mono">${si(m.cost, "J")}</span> · ${duration(m.dur)}`);
+    setHTML(R.b, s.run ? UI.busy : sx(`${UI.send} · <span class="mono">${si(m.cost, "J")}</span> · ${duration(m.dur)}`));
     setDis(R.b, !!s.run || s.res.energy < m.cost);
   }
 }
@@ -399,7 +411,7 @@ function detailText() {
     for (let i = 0; i < N; i++) {
       const st = i < s.stage ? "done" : i === s.stage ? "now" : "next";
       const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${(X as any).layer[i]} · ruda ×${count(Math.pow(T1.layerMult, i))}</small>` : "";
-      tl.appendChild(h("div", "st " + st, `<i>${st === "done" ? "✓" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} · ${E.K(g) < 0 ? UI.kBelow : "K " + fixed(E.K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`));
+      tl.appendChild(h("div", "st " + st, sx(`<i>${st === "done" ? "✓" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} · ${E.K(g) < 0 ? UI.kBelow : "K " + fixed(E.K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`)));
     }
     box.appendChild(tl);
   }
@@ -452,11 +464,13 @@ function showSettings() {
   modal(UI.settings, `
     <div class="set"><label><input type="checkbox" id="optFx" ${s.opt.fx !== 0 ? "checked" : ""}> ${UI.effects}</label></div>
     <div class="set"><label>${UI.volume} <input type="range" id="optVol" min="0" max="1" step="0.05" value="${s.opt.vol}"></label></div>
+    <div class="set"><label>${UI.noiseVol} <input type="range" id="optNoise" min="0" max="1" step="0.05" value="${s.opt.noise ?? 0.7}"></label></div>
     <div class="set row"><button class="btn" id="expBtn">${UI.export}</button><button class="btn" id="impBtn">${UI.import}</button><button class="btn danger" id="resBtn">${UI.reset}</button></div>
     <textarea id="saveTxt" rows="3" placeholder="…"></textarea>
     <p class="dim mono">${VERSION}</p>`, false, undefined, UI.close);
   ($("optFx") as HTMLInputElement).onchange = (e: any) => { s.opt.fx = e.target.checked ? 1 : 0; setFx(!!s.opt.fx); };
   ($("optVol") as HTMLInputElement).oninput = (e: any) => { s.opt.vol = +e.target.value; Audio.setVolumes({ master: s.opt.vol }); };
+  ($("optNoise") as HTMLInputElement).oninput = (e: any) => { s.opt.noise = +e.target.value; Audio.setVolumes({ noise: s.opt.noise }); };
   $("expBtn").onclick = () => { const t = encodeSave(s); ($("saveTxt") as HTMLTextAreaElement).value = t; navigator.clipboard?.writeText(t).then(() => toast(UI.copied)).catch(() => {}); };
   $("impBtn").onclick = () => { const st = decodeSave(($("saveTxt") as HTMLTextAreaElement).value); if (!st) { toast(UI.bad); return; } s = st; save(); location.reload(); };
   $("resBtn").onclick = (e: any) => {   // potvrzení druhým kliknutím (okno confirm v sandboxu nejde)
