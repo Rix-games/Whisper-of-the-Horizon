@@ -49,7 +49,7 @@ const gran = (() => { const r = mulberry(3); return Array.from({ length: 80 }, (
 
 export const hvezda: Mech & any = {
   dots: [] as Dot[], loops: [] as Loop[], jets: [] as any[], cmes: [] as any[], fact: [] as any[],
-  Rd: 0, picSt: -1, picPrev: -1, picT0: 0, spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
+  Rd: 0, flyCd: 0, picSt: -1, picPrev: -1, picT0: 0, spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
   reset() { this.Rd = 0; this.dots = []; this.loops = []; this.jets = []; this.cmes = []; this.fact = []; this.grab = null; this.combo = 0; this.lastN = -1; this.picSt = -1; this.picPrev = -1; },
   geo(s: State) {
     const L = look(s), Rs = this.Rd || L.R, base = Math.max(Rs * 1.5 + 40, 150), out = s.r.outer ? Math.min(1.25, Math.max(1, 640 / (base * 1.9))) : 1;
@@ -119,9 +119,11 @@ export const hvezda: Mech & any = {
       this.dots.push({ ring, a, glow: 0, fly, sx, sy, dying: 0 }); alive++;
     }
     // nad viditelným stropem: továrny dál viditelně posílají kolektory na dráhy
-    if (alive >= VIS && this.fact.length && s.n > this.lastN && this.dots.length) {
-      const reps = Math.min(4, 1 + Math.floor(this.fact.length / 6));
-      for (let i = 0; i < reps; i++) {
+    // (střídmě: jen jeden kolektor zhruba každého čtvrt sekundy, ať roj nepřebíjí scénu)
+    this.flyCd = (this.flyCd || 0) - 1;
+    if (alive >= VIS && this.fact.length && s.n > this.lastN && this.dots.length && this.flyCd <= 0) {
+      this.flyCd = 15;
+      for (let i = 0; i < 1; i++) {
         const d = this.dots[(rnd() * this.dots.length) | 0];
         if (d.dying || d.fly) continue;
         const f = this.fact[(rnd() * this.fact.length) | 0], fr = g.rings[2] * 1.22;
@@ -379,7 +381,6 @@ export const hvezda: Mech & any = {
       let p = this.pos(d, g); p = [p[0] + sh, p[1] + sh * 0.7];
       if (d.fly) {
         const k = 1 - d.fly / 0.8; p = [d.sx + (p[0] - d.sx) * k, d.sy + (p[1] - d.sy) * k];
-        c.strokeStyle = "rgba(142,240,200,.3)"; c.lineWidth = 1; c.beginPath(); c.moveTo(d.sx, d.sy); c.lineTo(p[0], p[1]); c.stroke();
       }
       if (d.dying) {
         const k = d.dying / 0.9, r = g.rings[d.ring] * (1 - k) + Rs * k;

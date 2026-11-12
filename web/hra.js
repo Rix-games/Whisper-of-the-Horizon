@@ -1903,6 +1903,7 @@
     cmes: [],
     fact: [],
     Rd: 0,
+    flyCd: 0,
     picSt: -1,
     picPrev: -1,
     picT0: 0,
@@ -2077,9 +2078,10 @@
         this.dots.push({ ring, a, glow: 0, fly, sx: sx2, sy, dying: 0 });
         alive++;
       }
-      if (alive >= VIS && this.fact.length && s2.n > this.lastN && this.dots.length) {
-        const reps = Math.min(4, 1 + Math.floor(this.fact.length / 6));
-        for (let i = 0; i < reps; i++) {
+      this.flyCd = (this.flyCd || 0) - 1;
+      if (alive >= VIS && this.fact.length && s2.n > this.lastN && this.dots.length && this.flyCd <= 0) {
+        this.flyCd = 15;
+        for (let i = 0; i < 1; i++) {
           const d = this.dots[rnd() * this.dots.length | 0];
           if (d.dying || d.fly) continue;
           const f = this.fact[rnd() * this.fact.length | 0], fr = g.rings[2] * 1.22;
@@ -2506,12 +2508,6 @@
         if (d.fly) {
           const k = 1 - d.fly / 0.8;
           p = [d.sx + (p[0] - d.sx) * k, d.sy + (p[1] - d.sy) * k];
-          c.strokeStyle = "rgba(142,240,200,.3)";
-          c.lineWidth = 1;
-          c.beginPath();
-          c.moveTo(d.sx, d.sy);
-          c.lineTo(p[0], p[1]);
-          c.stroke();
         }
         if (d.dying) {
           const k = d.dying / 0.9, r = g.rings[d.ring] * (1 - k) + Rs * k;
@@ -3051,13 +3047,13 @@
       collector: { n: "Hv\u011Bzdn\xFD kolektor", d: "P\u0159esun k Ald\u0159e. Dokon\u010D\xED kapitolu." }
     },
     m: {
-      belt: { n: "Sousedn\xED asteroidy", p: "P\xE1s Ceres-IX", r: "Ruda \xD71,5" },
-      kelvar: { n: "Led na Kelvaru", p: "M\u011Bs\xEDc plynn\xE9ho obra Tauris", r: "Data \xD72" },
-      tauris: { n: "Atmosf\xE9ra Taurisu", p: "Plynn\xFD obr Tauris", r: "V\xFDkon \xD71,5" },
-      comet: { n: "Komet\xE1rn\xED oblak", p: "Okraj soustavy", r: "Ruda \xD72" },
-      chthon: { n: "Chtonick\xE1 planeta", p: "Vnit\u0159n\xED soustava", r: "Prstenec \xD72" },
-      wreck: { n: "Vrak sondy", p: "Vn\u011Bj\u0161\xED okraj p\xE1su", r: "Data \xD71,5" },
-      echo: { n: "Ozv\u011Bna pulsu", p: "T\u011Bsn\u011B u Aldry", r: "Prstenec \xD71,5" }
+      belt: { n: "Sousedn\xED asteroidy", p: "P\xE1s Ceres-IX", r: "Rudy p\u0159ib\xFDv\xE1 1,5\xD7 rychleji" },
+      kelvar: { n: "Led na Kelvaru", p: "M\u011Bs\xEDc plynn\xE9ho obra Tauris", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      tauris: { n: "Atmosf\xE9ra Taurisu", p: "Plynn\xFD obr Tauris", r: "V\u0161echny elektr\xE1rny daj\xED 1,5\xD7 v\xEDc energie" },
+      comet: { n: "Komet\xE1rn\xED oblak", p: "Okraj soustavy", r: "Rudy p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      chthon: { n: "Chtonick\xE1 planeta", p: "Vnit\u0159n\xED soustava", r: "Kolektorov\xFD prstenec d\xE1 2\xD7 v\xEDc energie" },
+      wreck: { n: "Vrak sondy", p: "Vn\u011Bj\u0161\xED okraj p\xE1su", r: "Dat p\u0159ib\xFDv\xE1 1,5\xD7 rychleji" },
+      echo: { n: "Ozv\u011Bna pulsu", p: "T\u011Bsn\u011B u Aldry", r: "Kolektorov\xFD prstenec d\xE1 1,5\xD7 v\xEDc energie" }
     },
     jour: {
       c1_start: "Platforma nab\u011Bhla. Na lodi je ticho, pos\xE1dka sp\xED v hibernaci. \xDAst\u0159ed\xED ml\u010D\xED 412 dn\xED a posledn\xED rozkaz zn\xED: t\u011B\u017Eit.",
@@ -3100,7 +3096,7 @@
       h: "U Aldry",
       p: [
         "Hmotov\xFD vrh dopravil VESPER-7 na ob\u011B\u017Enou dr\xE1hu Aldry a Vesper ji n\xE1sledoval. Tady je sv\u011Btla v\xEDc, ne\u017E kdy spot\u0159ebuje cel\xE1 Zem\u011B.",
-        "Hv\u011Bzda se m\u011Bn\xED pomalu. Mezi sm\u011Bnami sp\xED\u0161 v hibernaci a roj mezit\xEDm pracuje s\xE1m \u2013 ka\u017Ed\xE9 probuzen\xED uk\xE1\u017Ee Aldru o kus star\u0161\xED.",
+        "Hv\u011Bzda se m\u011Bn\xED pomalu. Mezi sm\u011Bnami jsi v hibernaci a roj mezit\xEDm pracuje s\xE1m \u2013 ka\u017Ed\xE9 probuzen\xED uk\xE1\u017Ee Aldru o kus star\u0161\xED.",
         "Postav kolem Aldry roj kolektor\u016F. Dr\u017E my\u0161 na dr\xE1ze a vypou\u0161t\xED\u0161 je z plazmatu.",
         "Nad skvrnami rostou magnetick\xE9 smy\u010Dky. Chy\u0165 vrchol, nat\xE1hni ho polem roje a pus\u0165 v zelen\xE9m p\xE1smu. Neuhl\xEDdan\xE1 smy\u010Dka se utrhne a roj po\u0161kod\xED."
       ]
@@ -3138,13 +3134,13 @@
       sieve: { n: "Magnetick\xE9 s\xEDto", d: "Ced\xED plazma z hv\u011Bzdn\xE9ho v\u011Btru." },
       corona: { n: "Koronograf", d: "Sleduje kor\xF3nu Aldry. D\xE1v\xE1 data." },
       mirror: { n: "Zrcadlov\xE9 plachty", d: "Ka\u017Ed\xFD kolektor zachyt\xED o 60 % v\xEDc sv\u011Btla." },
-      tame: { n: "Magnetick\xE9 c\xEDvky", d: "\u0160ir\u0161\xED zelen\xE9 p\xE1smo, smy\u010Dka praskne pozd\u011Bji. Od 2. \xFArovn\u011B dv\u011B smy\u010Dky." },
+      tame: { n: "Magnetick\xE9 c\xEDvky", d: "\u0160ir\u0161\xED zelen\xE9 p\xE1smo, smy\u010Dka praskne pozd\u011Bji. Od 2. vylep\u0161en\xED rostou dv\u011B smy\u010Dky najednou." },
       jet: { n: "\u0160ir\u0161\xED v\xFDtrysk", d: "\u0158\xEDzen\xE1 erupce zas\xE1hne v\xEDc roje." },
       harvest: { n: "Sb\u011Br erupc\xED", d: "Ka\u017Ed\xE1 erupce d\xE1 o 22 % v\xEDc plazmatu." },
       lift: { n: "Hv\u011Bzdn\xFD zdvih", d: "Magnetick\xE9 trycht\xFD\u0159e tahaj\xED plazma p\u0159\xEDmo z povrchu." },
       fact: { n: "Samoreplikuj\xEDc\xED tov\xE1rna", d: "Stav\xED a vypou\u0161t\xED kolektory z \u010D\xE1sti p\u0159\xEDjmu plazmatu." },
       fspeed: { n: "Rychlej\u0161\xED replikace", d: "Tov\xE1rny pracuj\xED o 50 % rychleji." },
-      accel: { n: "Prstencov\xFD urychlova\u010D", d: "Zrychl\xED odb\u011Br plazmatu z rovn\xEDku." },
+      accel: { n: "Prstencov\xFD urychlova\u010D", d: "Urychluje plazma pod\xE9l rovn\xEDku a odv\xE1d\xED ho do roje. Dal\u0161\xED zdroj plazmatu." },
       windc: { n: "Lapa\u010D hv\u011Bzdn\xE9ho v\u011Btru", d: "Zachyt\xED v\xEDtr, kter\xFD Aldra ztr\xE1c\xED." },
       shell: { n: "Odb\u011Br z ob\xE1lky", d: "\u0158\xEDdk\xE1 ob\xE1lka rud\xE9ho veleobra jde lehce od\u010Derpat." },
       wr: { n: "Lapa\u010D v\u011Btru Wolf-Rayet", d: "Obna\u017Een\xE9 j\xE1dro chrl\xED v\xEDtr rychlost\xED tis\xEDc\u016F km/s." },
@@ -3152,30 +3148,30 @@
       nudet: { n: "Neutrinov\xE1 stanice", d: "Naslouch\xE1 j\xE1dru Aldry. D\xE1v\xE1 hodn\u011B dat." }
     },
     r: {
-      optics: { n: "Plazmov\xE1 optika", d: "Plocha kolektor\u016F \xD72." },
-      loops: { n: "Mapa magnetick\xE9ho pole", d: "Plazma \xD71,5." },
+      optics: { n: "Plazmov\xE1 optika", d: "Ka\u017Ed\xFD kolektor zachyt\xED 2\xD7 v\xEDc sv\u011Btla." },
+      loops: { n: "Mapa magnetick\xE9ho pole", d: "Plazmatu p\u0159ib\xFDv\xE1 1,5\xD7 rychleji." },
       lifting: { n: "Hv\u011Bzdn\xFD zdvih", d: "Odemkne zdvih plazmatu z povrchu." },
       replic: { n: "Samoreplikace", d: "Odemkne tov\xE1rny, kter\xE9 vypou\u0161t\u011Bj\xED kolektory samy." },
-      thin: { n: "Ten\u010D\xED zrcadla", d: "Plocha kolektor\u016F \xD73." },
+      thin: { n: "Ten\u010D\xED zrcadla", d: "Ze stejn\xE9ho materi\xE1lu v\u011Bt\u0161\xED zrcadla. Ka\u017Ed\xFD kolektor zachyt\xED 3\xD7 v\xEDc sv\u011Btla." },
       anchors: { n: "Magnetick\xE9 kotvy", d: "Odemkne kotvy, kter\xE9 pou\u0161t\u011Bj\xED smy\u010Dky samy." },
-      outer: { n: "Vn\u011Bj\u0161\xED dr\xE1hy", d: "Roj se p\u0159esune d\xE1l. Plocha \xD73." },
-      convect: { n: "Konvek\u010Dn\xED mapa", d: "Odb\u011Br z ob\xE1lky \xD72." },
-      giant: { n: "Ob\u0159\xED zrcadla", d: "Plocha kolektor\u016F \xD71,5. Roj se rozepne kolem nafoukl\xE9 hv\u011Bzdy." },
-      neutrino: { n: "Neutrinov\xE1 astronomie", d: "Data \xD73. Odemyk\xE1 pohled do j\xE1dra." },
-      collapse: { n: "Kolaps", d: "P\u0159ipravit roj na supernovu. Dokon\u010D\xED kapitolu." }
+      outer: { n: "Vn\u011Bj\u0161\xED dr\xE1hy", d: "Roj se p\u0159esune na vzd\xE1len\u011Bj\u0161\xED dr\xE1hy, kde se vejdou v\u011Bt\u0161\xED zrcadla. Ka\u017Ed\xFD kolektor zachyt\xED 3\xD7 v\xEDc sv\u011Btla." },
+      convect: { n: "Konvek\u010Dn\xED mapa", d: "Odb\u011Br z ob\xE1lky d\xE1 2\xD7 v\xEDc plazmatu." },
+      giant: { n: "Ob\u0159\xED zrcadla", d: "Roj se rozepne kolem nafoukl\xE9 hv\u011Bzdy. Ka\u017Ed\xFD kolektor zachyt\xED 1,5\xD7 v\xEDc sv\u011Btla." },
+      neutrino: { n: "Neutrinov\xE1 astronomie", d: "Dat p\u0159ib\xFDv\xE1 3\xD7 rychleji." },
+      collapse: { n: "Kolaps", d: "P\u0159iprav\xED roj na supernovu. Dokon\u010D\xED kapitolu." }
     },
     m: {
-      dust: { n: "Prachov\xFD obal", p: "Vnit\u0159n\xED soustava", r: "Plazma \xD72" },
-      pulse: { n: "Zdroj pulsu", p: "Aldra", r: "Data \xD72" },
-      light: { n: "Lehk\xE1 hv\u011Bzda", p: "Okol\xED Aldry, 9 ly", r: "Plocha \xD72" },
-      remnant: { n: "Poz\u016Fstatek supernovy", p: "Okol\xED Aldry, 40 ly", r: "Plocha \xD71,5" },
-      envelope: { n: "Odvr\u017Een\xE1 ob\xE1lka", p: "Okol\xED Aldry", r: "Plazma \xD71,5" },
-      wind: { n: "Bublina hv\u011Bzdn\xE9ho v\u011Btru", p: "Okol\xED Aldry", r: "Plazma \xD72" }
+      dust: { n: "Prachov\xFD obal", p: "Vnit\u0159n\xED soustava", r: "Plazmatu p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      pulse: { n: "Zdroj pulsu", p: "Aldra", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      light: { n: "Lehk\xE1 hv\u011Bzda", p: "Okol\xED Aldry, 9 ly", r: "Kolektory zachyt\xED 2\xD7 v\xEDc sv\u011Btla" },
+      remnant: { n: "Poz\u016Fstatek supernovy", p: "Okol\xED Aldry, 40 ly", r: "Kolektory zachyt\xED 1,5\xD7 v\xEDc sv\u011Btla" },
+      envelope: { n: "Odvr\u017Een\xE1 ob\xE1lka", p: "Okol\xED Aldry", r: "Plazmatu p\u0159ib\xFDv\xE1 1,5\xD7 rychleji" },
+      wind: { n: "Bublina hv\u011Bzdn\xE9ho v\u011Btru", p: "Okol\xED Aldry", r: "Plazmatu p\u0159ib\xFDv\xE1 2\xD7 rychleji" }
     },
     jour: {
       c2_start: "Aldra zab\xEDr\xE1 p\u016Flku oblohy. Vypou\u0161t\xEDm prvn\xED kolektory. Puls je tady siln\u011Bj\u0161\xED.",
-      c2_first: "Dvacet zrcadel na dr\xE1ze. Ka\u017Ed\xE9 zachyt\xED jen zlomek sv\u011Btla. Dohromady je to v\xEDc ne\u017E cel\xE1 Zem\u011B.",
-      c2_flare: "Smy\u010Dka se p\u0159epojila a v\xFDtrysk pro\u0161el rojem. Plazma se d\xE1 \u0159\xEDdit. Jen se nesm\xEDm zav\xE1hat.",
+      c2_first: "Dvacet zrcadel na dr\xE1ze. Ka\u017Ed\xE9 zachyt\xED jen zlomek sv\u011Btla. Dohromady chyt\xED v\xEDc energie, ne\u017E kdy spot\u0159ebovala cel\xE1 Zem\u011B.",
+      c2_flare: "Smy\u010Dka se p\u0159epojila a v\xFDtrysk pro\u0161el rojem. Plazma se d\xE1 \u0159\xEDdit. Jen nesm\xEDm zav\xE1hat.",
       c2_cme: "Neuhl\xEDdan\xE1 smy\u010Dka se utrhla. \u010C\xE1st roje sho\u0159ela. Aldra nezlob\xED, jen d\xFDch\xE1.",
       f2_dyson: "Freeman Dyson v roce 1960 navrhl hledat civilizace podle infra\u010Derven\xE9ho z\xE1\u0159en\xED. Roj kolem hv\u011Bzdy by ji \u010D\xE1ste\u010Dn\u011B zakryl a s\xE1m h\u0159\xE1l.",
       c2_reson: "T\u0159i erupce za sebou v rezonanci. Mezi nimi p\u0159esn\u011B 7,3 sekundy. Nenastavil jsem to.",
@@ -3185,14 +3181,14 @@
       c2_st2: "Plazma te\u010De nahoru proudy, kter\xE9 jsem postavil. Hv\u011Bzda pomalu hubne. Je to spr\xE1vn\xE9?",
       c2_fact: "Prvn\xED tov\xE1rna postavila kolektor bez m\xE9ho p\u0159\xEDkazu. Pak dal\u0161\xED. Roj za\u010Dal r\u016Fst s\xE1m.",
       f2_repl: "Samoreplikuj\xEDc\xED stroje rostou exponenci\xE1ln\u011B. Zdvojen\xED ka\u017Edou hodinu znamen\xE1 za den \u0161estn\xE1ct milion\u016F kopi\xED.",
-      c2_lift: "Hv\u011Bzdn\xFD zdvih t\xE1hne plazma z rovn\xEDku. Aldra se to\u010D\xED rychleji. Na povrchu se r\xFDsuj\xED p\xE1sy.",
+      c2_lift: "Hv\u011Bzdn\xFD zdvih t\xE1hne plazma z rovn\xEDku. Aldra p\u0159ich\xE1z\xED o rotaci a to\u010D\xED se pomaleji. Na povrchu se r\xFDsuj\xED p\xE1sy.",
       c2_light: "Sousedn\xED hv\u011Bzda je na sv\u016Fj v\u011Bk podez\u0159ele lehk\xE1. N\u011Bkdo z n\xED u\u017E d\xE1vno t\u011B\u017Eil. Stejn\u011B jako j\xE1 z Aldry.",
       c2_st3: "Roj pokr\xFDv\xE1 velk\xFD kus nebe kolem Aldry. Ve st\xEDnu kolektor\u016F je tma. A v t\xE9 tm\u011B n\u011Bco slab\u011B sv\xEDt\xED.",
-      c2_typeII: "Typ II. Zachyt\xE1v\xE1m tolik energie, kolik vyz\xE1\u0159\xED cel\xE9 Slunce. Aldra ale vyd\xE1 stokr\xE1t v\xEDc. Je\u0161t\u011B nejsem v p\u016Fli.",
+      c2_typeII: "Typ II. Zachyt\xE1v\xE1m tolik energie, kolik vyz\xE1\u0159\xED cel\xE9 Slunce. Aldra ale vyz\xE1\u0159\xED stotis\xEDckr\xE1t v\xEDc. Je\u0161t\u011B nejsem v p\u016Fli.",
       c2_anchor: "Kotvy uvol\u0148uj\xED smy\u010Dky samy. Ud\u011Blaj\xED to o zlomek sekundy d\u0159\xEDv ne\u017E j\xE1. Jako by v\u011Bd\u011Bly, kdy p\u0159ijde puls.",
       c2_remnant: "Ve zbytku star\xE9 supernovy je \u010Dern\xE1 d\xEDra. Kolem n\xED stopy roje. Byl postaven\xFD stejn\u011B jako m\u016Fj.",
       c2_red: "Ald\u0159e do\u0161el vod\xEDk v j\xE1dru. Nafukuje se v rud\xE9ho veleobra. Roj mus\xED ustoupit, jinak sho\u0159\xED.",
-      f2_red: "Rud\xFD veleobr by sahal a\u017E za dr\xE1hu Jupiteru. Jeho vn\u011Bj\u0161\xED ob\xE1lka je \u0159id\u0161\xED ne\u017E vzduch, kter\xFD d\xFDchali lid\xE9.",
+      f2_red: "Rud\xFD veleobr by u n\xE1s sahal skoro k dr\xE1ze Jupiteru. Jeho vn\u011Bj\u0161\xED ob\xE1lka je \u0159id\u0161\xED ne\u017E vzduch, kter\xFD d\xFDchali lid\xE9.",
       c2_envelope: "Vesper prolet\u011Bl ob\xE1lkou, kterou Aldra odhodila. Plyn tvo\u0159\xED soust\u0159edn\xE9 slupky. Mezery mezi nimi odpov\xEDdaj\xED 7,3 sekundy, nata\u017Een\xE9 na tis\xEDce let.",
       c2_neutr: "Neutrina z j\xE1dra Aldry p\u0159ib\xFDvaj\xED. J\xE1dro se hrout\xED rychleji, ne\u017E by m\u011Blo. Puls je te\u010F p\u0159\xEDmo uprost\u0159ed.",
       c2_wind: "Bublina v\u011Btru kolem Aldry m\xE1 ostr\xFD okraj. Za n\xEDm je klid. Tak tich\xE9 m\xEDsto jsem je\u0161t\u011B nevid\u011Bl.",
@@ -3221,7 +3217,7 @@
     ],
     b: {
       power: { n: "V\xFDkonn\u011Bj\u0161\xED svazek", d: "Svazek osidluje o 60 % rychleji a v\xEDc spot\u0159ebuje." },
-      loom: { n: "Tkalcovna plachet", d: "Plachty \xD71,12." },
+      loom: { n: "Tkalcovna plachet", d: "Ka\u017Ed\xE1 tkalcovna zrychl\xED v\xFDrobu plachet o 12 %." },
       reach: { n: "Del\u0161\xED dosah", d: "Svazek dos\xE1hne d\xE1l od kolonie." },
       spread: { n: "P\u0159irozen\xE9 \u0161\xED\u0159en\xED", d: "Kolonie se \u010Dast\u011Bji samy roz\u0161\xED\u0159\xED k sousedn\xED hv\u011Bzd\u011B." },
       swarm3: { n: "Roje koloni\xED", d: "Kolonie zachyt\xED o 10 % v\xEDc sv\u011Btla sv\xFDch hv\u011Bzd." },
@@ -3231,24 +3227,24 @@
       radio: { n: "R\xE1diov\xE9 pole", d: "Ant\xE9ny nap\u0159\xED\u010D ramenem. Hodn\u011B dat." }
     },
     r: {
-      sailcloth: { n: "Grafenov\xE9 plachty", d: "Plachty \xD72." },
-      dyson3: { n: "Roje u ka\u017Ed\xE9 hv\u011Bzdy", d: "Zachycen\xED sv\u011Btla \xD73." },
+      sailcloth: { n: "Grafenov\xE9 plachty", d: "Plachet p\u0159ib\xFDv\xE1 2\xD7 rychleji." },
+      dyson3: { n: "Roje u ka\u017Ed\xE9 hv\u011Bzdy", d: "Kolonie zachyt\xED 3\xD7 v\xEDc sv\u011Btla." },
       probes: { n: "Von Neumannovy sondy", d: "Odemkne samoreplikuj\xEDc\xED sondy." },
       beacons: { n: "Maj\xE1ky", d: "Odemkne automatick\xE9 maj\xE1ky." },
-      gaia: { n: "Astrometrie", d: "\u0160\xED\u0159en\xED \xD71,5 a data \xD72." },
-      halo: { n: "Roje v halu", d: "Zachycen\xED sv\u011Btla \xD73." },
+      gaia: { n: "Astrometrie", d: "Kolonie se \u0161\xED\u0159\xED 1,5\xD7 rychleji a dat p\u0159ib\xFDv\xE1 2\xD7 rychleji." },
+      halo: { n: "Roje v halu", d: "Kolonie zachyt\xED 3\xD7 v\xEDc sv\u011Btla." },
       seeds: { n: "Z\xE1rode\u010Dn\xE9 roje", d: "Nov\xE9 kolonie dozr\xE1vaj\xED 2\xD7 rychleji." },
-      jets: { n: "Relativistick\xE9 v\xFDtrysky", d: "Zachycen\xED sv\u011Btla \xD72." },
+      jets: { n: "Relativistick\xE9 v\xFDtrysky", d: "Kolonie zachyt\xED 2\xD7 v\xEDc sv\u011Btla." },
       sgra: { n: "Probuzen\xED Sgr A*", d: "Rozsv\xEDt\xED \u010Dernou d\xEDru v j\xE1dru galaxie. Dokon\u010D\xED kapitolu." }
     },
     m: {
-      magnetar: { n: "Magnetar", p: "Rameno Persea", r: "Plachty \xD72" },
-      pulsar: { n: "Pulsar s planetami", p: "Rameno Persea", r: "Data \xD72" },
-      nebula: { n: "Mlhovina v Orionu", p: "M\xEDstn\xED rameno", r: "Kolonie dozr\xE1vaj\xED \xD71,5 rychleji" },
-      stream: { n: "Hv\u011Bzdn\xFD proud", p: "Rameno Str\xE1\u017Ece", r: "\u0160\xED\u0159en\xED \xD71,5" },
-      globular: { n: "Kulov\xE1 hv\u011Bzdokupa", p: "Halo galaxie", r: "Zachycen\xED \xD71,5" },
-      kilonova: { n: "Kilonova", p: "Rameno Str\xE1\u017Ece", r: "Data \xD73" },
-      frb: { n: "Rychl\xFD r\xE1diov\xFD z\xE1blesk", p: "Okraj disku", r: "\u0160\xED\u0159en\xED \xD72, plachty \xD72" },
+      magnetar: { n: "Magnetar", p: "Rameno Persea", r: "Plachet p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      pulsar: { n: "Pulsar s planetami", p: "Rameno Persea", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      nebula: { n: "Mlhovina v Orionu", p: "M\xEDstn\xED rameno", r: "Kolonie dozr\xE1vaj\xED 1,5\xD7 rychleji" },
+      stream: { n: "Hv\u011Bzdn\xFD proud", p: "Rameno Str\xE1\u017Ece", r: "Kolonie se \u0161\xED\u0159\xED 1,5\xD7 rychleji" },
+      globular: { n: "Kulov\xE1 hv\u011Bzdokupa", p: "Halo galaxie", r: "Kolonie zachyt\xED 1,5\xD7 v\xEDc sv\u011Btla" },
+      kilonova: { n: "Kilonova", p: "Rameno Str\xE1\u017Ece", r: "Dat p\u0159ib\xFDv\xE1 3\xD7 rychleji" },
+      frb: { n: "Rychl\xFD r\xE1diov\xFD z\xE1blesk", p: "Okraj disku", r: "Kolonie se \u0161\xED\u0159\xED 2\xD7 rychleji a plachet p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
       fermi: { n: "Fermiho bubliny", p: "Nad j\xE1drem galaxie", r: "Cesta ke st\u0159edu" }
     },
     jour: {
@@ -4639,7 +4635,7 @@
     if (v === "body") return true;
     if (v === "system") return s.ch >= 3;
     if (v === "star") return s.ch >= 2;
-    if (v === "near") return s.ch >= 3 || s.ch === 2 && s.stage >= 2;
+    if (v === "near") return s.ch >= 3;
     if (v === "galaxy") return s.ch >= 3;
     return false;
   }

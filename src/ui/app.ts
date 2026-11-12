@@ -167,7 +167,7 @@ function viewOpen(v: string) {
   if (v === "body") return true;
   if (v === "system") return s.ch >= 3;   // v Kap. 1–2 je soustava jen na záložce Mapa
   if (v === "star") return s.ch >= 2;
-  if (v === "near") return s.ch >= 3 || (s.ch === 2 && s.stage >= 2);
+  if (v === "near") return s.ch >= 3;     // v Kap. 2 je okolí jen na záložce Mapa (mise)
   if (v === "galaxy") return s.ch >= 3;
   return false;
 }
