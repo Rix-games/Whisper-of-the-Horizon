@@ -190,7 +190,7 @@ export const kamen: Mech & any = {
     const sun = c.createRadialGradient(-200, -300, 0, -200, -300, 1500);
     sun.addColorStop(0, "rgba(150,190,255,.20)"); sun.addColorStop(1, "rgba(150,190,255,0)");
     c.fillStyle = sun; c.fillRect(-400, -400, 2400, 1800);
-    drawGens(c, s, T);
+    drawGens(c, s, T, false);
     const halo = c.createRadialGradient(CX, CY, RA * 0.8, CX, CY, RA * 1.6);
     halo.addColorStop(0, `rgba(170,200,255,${0.05 + this.flash * 0.3})`); halo.addColorStop(1, "rgba(170,200,255,0)");
     c.fillStyle = halo; c.beginPath(); c.arc(CX, CY, RA * 1.6, 0, 7); c.fill();
@@ -207,6 +207,7 @@ export const kamen: Mech & any = {
       lg.addColorStop(0, "rgba(200,220,255,.22)"); lg.addColorStop(0.45, "rgba(0,0,0,0)"); lg.addColorStop(1, "rgba(0,0,12,.82)");
       c.fillStyle = lg; c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6);
     }
+    drawFields(c, s, T, this.rot);
     c.lineCap = "round"; c.lineJoin = "round";
     for (const vn of this.veins) {
       const al = vn.fade * (1 - vn.dead / 0.9), pul = 0.75 + 0.25 * Math.sin(T * 3 + vn.ph), col = vn.rich ? lay.rich : lay.c;
@@ -221,6 +222,7 @@ export const kamen: Mech & any = {
     }
     c.restore();
     if (!A) { c.save(); path(c, this.rot); c.strokeStyle = "rgba(200,215,255,.14)"; c.lineWidth = 1.5; c.stroke(); c.restore(); }
+    drawGens(c, s, T, true);
     for (const ch of this.chunks) {
       c.save(); c.translate(ch.x, ch.y); c.rotate(ch.r);
       c.fillStyle = ch.rich ? `rgb(${lay.rich.join(",")})` : "#c9a27a"; c.fillRect(-ch.s / 2, -ch.s / 2, ch.s, ch.s * 0.8); c.restore();
@@ -314,26 +316,39 @@ function drawPlat(c: CanvasRenderingContext2D, s: State, m: any) {
   }
   c.restore();
 }
-// Viditelný růst elektráren: pole na asteroidu, zrcadla a statity na oběžné dráze.
-function drawGens(c: CanvasRenderingContext2D, s: State, T: number) {
-  // panely u plošiny se nekreslí (vypadaly rušivě)
+// Viditelný růst elektráren: pole panelů na povrchu, zrcadla na šikmé dráze (za i před kamenem), statity v dálce.
+function hash(i: number) { const x = Math.sin(i * 91.7 + 13.1) * 43758.5453; return x - Math.floor(x); }
+function drawFields(c: CanvasRenderingContext2D, s: State, T: number, rot: number) {
   const f = Math.min(lv(s, "field"), 40);
-  for (let i = 0; i < f; i++) {
-    const a = -2.2 + i * 0.07, r = RA * 1.0;
-    const x = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r;
-    c.save(); c.translate(x, y); c.rotate(a + 1.57); c.fillStyle = "#24477a"; c.fillRect(-6, -2, 12, 4); c.restore();
+  for (let i = 0; i < f; i++) {   // destičky panelů rozeseté po povrchu, otáčejí se s kamenem
+    const a = hash(i) * 6.283 + rot, r = RA * (0.25 + 0.55 * Math.sqrt(hash(i + 50)));
+    const x = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r * 0.92, gl = Math.max(0, Math.sin(T * 0.8 + i * 1.7));
+    c.save(); c.translate(x, y); c.rotate(a * 0.3 + 0.4);
+    c.fillStyle = "rgba(28,58,104,.92)"; c.fillRect(-5, -3.5, 10, 7);
+    c.strokeStyle = "rgba(120,170,240,.55)"; c.lineWidth = 0.8; c.strokeRect(-5, -3.5, 10, 7);
+    c.fillStyle = `rgba(190,220,255,${0.15 + 0.5 * gl * gl})`; c.fillRect(-5, -3.5, 10, 1.3);
+    c.restore();
   }
+}
+function drawGens(c: CanvasRenderingContext2D, s: State, T: number, front: boolean) {
   const fm = Math.min(lv(s, "farm"), 48);
   for (let i = 0; i < fm; i++) {
-    const a = (i / Math.max(fm, 1)) * 6.283 + T * 0.04, x = CX + Math.cos(a) * RA * 1.45, y = CY + Math.sin(a) * RA * 0.5 - 40;
-    const sh = 0.55 + 0.45 * Math.sin(a * 2 + T);
-    c.fillStyle = `rgba(200,225,255,${0.35 + 0.5 * sh})`; c.fillRect(x - 3, y - 1.5, 6, 3);
+    // zlatý úhel + drobné odchylky: žádný pravidelný „čárkovaný kruh“
+    const a = i * 2.39996 + T * (0.05 + hash(i) * 0.02), z = Math.sin(a);
+    if ((z > 0) !== front) continue;
+    const rr = RA * (1.32 + 0.12 * hash(i + 7)), x = CX + Math.cos(a) * rr, y = CY - 30 + z * rr * 0.28 + (hash(i + 3) - 0.5) * 14;
+    const sh = Math.pow(Math.max(0, Math.sin(a * 1.5 + T * 0.6 + i)), 6), al = front ? 1 : 0.4, sz = front ? 5.5 : 3.6;
+    c.save(); c.translate(x, y); c.rotate(0.6 + Math.sin(a) * 0.4);
+    c.fillStyle = `rgba(170,200,235,${0.55 * al})`; c.beginPath(); c.moveTo(0, -sz); c.lineTo(sz * 0.7, 0); c.lineTo(0, sz); c.lineTo(-sz * 0.7, 0); c.closePath(); c.fill();
+    c.restore();
+    if (sh > 0.05) { c.fillStyle = `rgba(235,245,255,${sh * al})`; c.beginPath(); c.arc(x, y, 1.5 + sh * 3, 0, 7); c.fill(); }
   }
+  if (front) return;
   const st = Math.min(lv(s, "statite"), 80);
   for (let i = 0; i < st; i++) {
-    const a = -2.5 + (i / 80) * 1.6 + Math.sin(T * 0.2 + i) * 0.01, r = 900 + (i % 5) * 18;
+    const a = -2.5 + hash(i + 11) * 1.6 + Math.sin(T * 0.2 + i) * 0.01, r = 900 + hash(i + 23) * 90;
     const x = CX - 300 + Math.cos(a) * r * 0.9, y = CY + 420 + Math.sin(a) * r * 0.75;
-    c.fillStyle = "rgba(255,230,180,.75)"; c.fillRect(x - 1.5, y - 1.5, 3, 3);
+    c.fillStyle = `rgba(255,230,180,${0.4 + 0.4 * hash(i)})`; c.beginPath(); c.arc(x, y, 1.4, 0, 7); c.fill();
   }
 }
 export function hudOre(s: State) { return fmtOre(s.res.ore); }

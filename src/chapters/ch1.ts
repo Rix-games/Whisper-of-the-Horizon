@@ -73,7 +73,7 @@ export const JOURNAL1: JDef[] = [
   J("c1_panel", (s) => n(s, "panel") >= 1),
   J("c1_full", (s) => s.stats.full >= 1),
   J("f1_aldra", (s) => s.t > 150, "fact"),
-  J("c1_chain", (s) => s.best.chainHand >= 3),
+  J("c1_chain", (s) => n(s, "scan") >= 1 && s.stats.cuts >= 60),
   J("c1_belt", (s) => did(s, "belt")),
   J("c1_st1", (s) => s.stage >= 1),
   J("c1_layer1", (s) => s.stage >= 1 && s.stT > 40),

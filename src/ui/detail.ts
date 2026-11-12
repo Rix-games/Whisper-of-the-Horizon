@@ -140,6 +140,6 @@ function cutaway(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh
     c.font = `${on ? 600 : 500} 15px ${SANS}`; c.fillStyle = on ? "#ffd27a" : done ? "#dfe4ef" : "#5d6678";
     c.fillText(`${done ? "✓ " : on ? "▶ " : ""}${X.layer[i]}`, lx, y);
     c.font = `12px ${MONO}`; c.fillStyle = on ? "#e3a970" : done ? "#8ef0c8" : "#4a5266";
-    c.fillText(i <= li ? `ruda za řez ×${count(Math.pow(T1.layerMult, i))}` : `hloubka ${i + 1} · ruda ×${count(Math.pow(T1.layerMult, i))}`, lx, y + 17);
+    c.fillText(i ? `${count(Math.pow(T1.layerMult, i))}× víc rudy` : "základní výnos", lx, y + 17);
   }
 }

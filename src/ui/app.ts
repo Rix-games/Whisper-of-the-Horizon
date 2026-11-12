@@ -184,6 +184,7 @@ function setTab(t: string, keepView = false) {
   document.body.classList.toggle("tdetail", t === "detail");
   if (dockOpen === false && t !== "build" && t !== "map") { dockOpen = true; document.body.classList.remove("dockclosed"); }
   s.seen["tab_" + t] = s.t;
+  if (t === "detail") s.seen["detail" + s.ch] = s.stage;
   if (!keepView) {
     if (t === "map") { const ids = chOf(s).missions.filter((m) => E.mVisible(s, m.id) && !s.mis[m.id]).map((m) => MMAP[m.id].view); view = ids[0] || chOf(s).map; }
     else if (t === "build") view = chOf(s).view;
@@ -208,7 +209,7 @@ function updateUI() {
     setHTML($("kprog"), sx(UI.toType(nt.k, times(nt.w / P))));
   } else { $("kbar").style.width = "100%"; $("kprog").textContent = UI.typeMax; }
   const resList: [string, number, number][] = [[C.cur, s.res[C.cur], E.RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, E.dataRate(s)]];
-  $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`)).join("");
+  $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`)).join("");
   // levý panel
   const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
   $("chTitle").textContent = X.title;
@@ -234,7 +235,12 @@ function updateUI() {
   document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
   // tečky na záložkách
   const newer = (pre: string) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + ({ b_: "build", r_: "research", m_: "map" } as any)[pre]] ?? -1));
-  const dots: Record<string, boolean> = { build: newer("b_"), research: newer("r_") || C.research.some((r) => E.rVisible(s, r.id) && !s.r[r.id] && s.res.data >= r.cost), map: newer("m_") };
+  const dots: Record<string, boolean> = {
+    build: newer("b_"),
+    research: newer("r_") || C.research.some((r) => E.rVisible(s, r.id) && !s.r[r.id] && s.res.data >= r.cost),
+    map: newer("m_") || (!s.run && C.missions.some((m) => E.mVisible(s, m.id) && !s.mis[m.id] && s.res.energy >= m.cost)),
+    detail: s.stage > (s.seen["detail" + s.ch] ?? 0),
+  };
   document.querySelectorAll("#tabs .tab").forEach((b: any) => b.classList.toggle("new", !!dots[b.dataset.t] && b.dataset.t !== tab));
   // obsah docku
   if (tab === "build") buildList(); else if (tab === "research") researchList(); else if (tab === "map") missionList(); else detailText();
@@ -244,7 +250,7 @@ function indicator() {
   const X = tx(s.ch);
   if (s.ch === 1) {
     const li = layerIdx(s);
-    return `<div class="ind"><span>Hloubka řezu</span><b>${(X as any).layer[li]}</b><small>Ruda za řez ×${count(oreMult(s))}</small></div>`;
+    return `<div class="ind"><span>Hloubka řezu</span><b>${(X as any).layer[li]}</b><small>Výnos rudy: ${count(oreMult(s))}× víc než na začátku</small></div>`;
   }
   if (s.ch === 2) {
     const cv = coverage(s);
@@ -257,7 +263,7 @@ function statRows(): [string, string][] {
   const C = chOf(s), rows: [string, string][] = [[UI.power, si(E.power(s), "W")]];
   rows.push([`${curName(C.cur)}${UI.perSec}`, fmtCur(C.cur, E.RT.rate[C.cur])]);
   rows.push([`${UI.res.data}${UI.perSec}`, si(E.dataRate(s), "B")]);
-  if (s.run) rows.push(["Vesper", `${find("m", s.run.id).n} · ${duration(s.run.left)}`]);
+  if (s.run) rows.push([ship().who, `${find("m", s.run.id).n} · ${duration(s.run.left)}`]);
   return rows;
 }
 
@@ -283,6 +289,14 @@ function journal() {
 function clock(t: number) { const m = Math.floor(t / 60); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`; }
 
 // ---------- karty staveb ----------
+/** Co stavba dává: energie (výkon), data, nebo hlavní surovina kapitoly – podle toho barva karty. */
+function bCat(id: string): "energy" | "data" | "cur" {
+  const d = BMAP[id];
+  if (d.kind === "data") return "data";
+  if ((s.ch === 1 && d.kind === "gen") || d.kind === "swarm") return "energy";
+  return "cur";
+}
+const ship = () => ({ who: "Vesper", send: UI.send, running: UI.running, busy: UI.busy, ...((tx(s.ch) as any).ship || {}) });
 const rows: Record<string, any> = {};
 /** Obsah tlačítka měnit jen při skutečné změně – přepsání innerHTML mezi stiskem a puštěním myši „sní“ klik. */
 function setHTML(el: HTMLElement, html: string) { if ((el as any)._h !== html) { (el as any)._h = html; el.innerHTML = html; } }
@@ -316,7 +330,7 @@ function buildList() {
     }
     for (const id of ids) {
       const d = BMAP[id], t = find("b", id);
-      const r = h("div", "row" + (d.tier === 2 ? " t2" : "") + (s.t - (s.unl["b_" + id] ?? -99) < 6 ? " fresh" : ""));
+      const r = h("div", "row c-" + bCat(id) + (d.tier === 2 ? " t2" : "") + (s.t - (s.unl["b_" + id] ?? -99) < 6 ? " fresh" : ""));
       r.innerHTML = `<div class="nm"><b>${t.n}</b><small class="eff"></small></div><span class="cnt mono"></span>`;
       const b = h("button", "buy"); b.onclick = () => {
         const k = d.kind === "swarm" ? Math.max(1, buyN || E.maxAfford(s, id)) : buyN || E.maxAfford(s, id);
@@ -393,8 +407,8 @@ function missionList() {
   for (const m of open) {
     const R = rows["m_" + m.id], run = s.run?.id === m.id;
     R.bar.parentElement.hidden = !run;
-    if (run) { R.bar.style.width = `${(1 - s.run!.left / s.run!.dur) * 100}%`; setHTML(R.b, `${UI.running} · ${duration(s.run!.left)}`); setDis(R.b, true); continue; }
-    setHTML(R.b, s.run ? UI.busy : sx(`${UI.send} · <span class="mono">${si(m.cost, "J")}</span> · ${duration(m.dur)}`));
+    if (run) { R.bar.style.width = `${(1 - s.run!.left / s.run!.dur) * 100}%`; setHTML(R.b, `${ship().running} · ${duration(s.run!.left)}`); setDis(R.b, true); continue; }
+    setHTML(R.b, s.run ? ship().busy : sx(`${ship().send} · <span class="mono">${si(m.cost, "J")}</span> · ${duration(m.dur)}`));
     setDis(R.b, !!s.run || s.res.energy < m.cost);
   }
 }
@@ -410,7 +424,7 @@ function detailText() {
     const tl = h("div", "tl");
     for (let i = 0; i < N; i++) {
       const st = i < s.stage ? "done" : i === s.stage ? "now" : "next";
-      const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${(X as any).layer[i]} · ruda ×${count(Math.pow(T1.layerMult, i))}</small>` : "";
+      const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${(X as any).layer[i]} · ${i ? `${count(Math.pow(T1.layerMult, i))}× víc rudy` : "základní výnos"}</small>` : "";
       tl.appendChild(h("div", "st " + st, sx(`<i>${st === "done" ? "✓" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} · ${E.K(g) < 0 ? UI.kBelow : "K " + fixed(E.K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`)));
     }
     box.appendChild(tl);

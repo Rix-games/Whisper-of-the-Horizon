@@ -224,7 +224,7 @@
     J("c1_panel", (s2) => n(s2, "panel") >= 1),
     J("c1_full", (s2) => s2.stats.full >= 1),
     J("f1_aldra", (s2) => s2.t > 150, "fact"),
-    J("c1_chain", (s2) => s2.best.chainHand >= 3),
+    J("c1_chain", (s2) => n(s2, "scan") >= 1 && s2.stats.cuts >= 60),
     J("c1_belt", (s2) => did(s2, "belt")),
     J("c1_st1", (s2) => s2.stage >= 1),
     J("c1_layer1", (s2) => s2.stage >= 1 && s2.stT > 40),
@@ -1496,7 +1496,7 @@
       sun.addColorStop(1, "rgba(150,190,255,0)");
       c.fillStyle = sun;
       c.fillRect(-400, -400, 2400, 1800);
-      drawGens(c, s2, T4);
+      drawGens(c, s2, T4, false);
       const halo = c.createRadialGradient(CX, CY, RA * 0.8, CX, CY, RA * 1.6);
       halo.addColorStop(0, `rgba(170,200,255,${0.05 + this.flash * 0.3})`);
       halo.addColorStop(1, "rgba(170,200,255,0)");
@@ -1534,6 +1534,7 @@
         c.fillStyle = lg;
         c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6);
       }
+      drawFields(c, s2, T4, this.rot);
       c.lineCap = "round";
       c.lineJoin = "round";
       for (const vn of this.veins) {
@@ -1569,6 +1570,7 @@
         c.stroke();
         c.restore();
       }
+      drawGens(c, s2, T4, true);
       for (const ch of this.chunks) {
         c.save();
         c.translate(ch.x, ch.y);
@@ -1760,31 +1762,63 @@
     }
     c.restore();
   }
-  function drawGens(c, s2, T4) {
+  function hash(i) {
+    const x = Math.sin(i * 91.7 + 13.1) * 43758.5453;
+    return x - Math.floor(x);
+  }
+  function drawFields(c, s2, T4, rot) {
     const f = Math.min(lv(s2, "field"), 40);
     for (let i = 0; i < f; i++) {
-      const a = -2.2 + i * 0.07, r = RA * 1;
-      const x = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r;
+      const a = hash(i) * 6.283 + rot, r = RA * (0.25 + 0.55 * Math.sqrt(hash(i + 50)));
+      const x = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r * 0.92, gl = Math.max(0, Math.sin(T4 * 0.8 + i * 1.7));
       c.save();
       c.translate(x, y);
-      c.rotate(a + 1.57);
-      c.fillStyle = "#24477a";
-      c.fillRect(-6, -2, 12, 4);
+      c.rotate(a * 0.3 + 0.4);
+      c.fillStyle = "rgba(28,58,104,.92)";
+      c.fillRect(-5, -3.5, 10, 7);
+      c.strokeStyle = "rgba(120,170,240,.55)";
+      c.lineWidth = 0.8;
+      c.strokeRect(-5, -3.5, 10, 7);
+      c.fillStyle = `rgba(190,220,255,${0.15 + 0.5 * gl * gl})`;
+      c.fillRect(-5, -3.5, 10, 1.3);
       c.restore();
     }
+  }
+  function drawGens(c, s2, T4, front) {
     const fm = Math.min(lv(s2, "farm"), 48);
     for (let i = 0; i < fm; i++) {
-      const a = i / Math.max(fm, 1) * 6.283 + T4 * 0.04, x = CX + Math.cos(a) * RA * 1.45, y = CY + Math.sin(a) * RA * 0.5 - 40;
-      const sh = 0.55 + 0.45 * Math.sin(a * 2 + T4);
-      c.fillStyle = `rgba(200,225,255,${0.35 + 0.5 * sh})`;
-      c.fillRect(x - 3, y - 1.5, 6, 3);
+      const a = i * 2.39996 + T4 * (0.05 + hash(i) * 0.02), z = Math.sin(a);
+      if (z > 0 !== front) continue;
+      const rr2 = RA * (1.32 + 0.12 * hash(i + 7)), x = CX + Math.cos(a) * rr2, y = CY - 30 + z * rr2 * 0.28 + (hash(i + 3) - 0.5) * 14;
+      const sh = Math.pow(Math.max(0, Math.sin(a * 1.5 + T4 * 0.6 + i)), 6), al = front ? 1 : 0.4, sz = front ? 5.5 : 3.6;
+      c.save();
+      c.translate(x, y);
+      c.rotate(0.6 + Math.sin(a) * 0.4);
+      c.fillStyle = `rgba(170,200,235,${0.55 * al})`;
+      c.beginPath();
+      c.moveTo(0, -sz);
+      c.lineTo(sz * 0.7, 0);
+      c.lineTo(0, sz);
+      c.lineTo(-sz * 0.7, 0);
+      c.closePath();
+      c.fill();
+      c.restore();
+      if (sh > 0.05) {
+        c.fillStyle = `rgba(235,245,255,${sh * al})`;
+        c.beginPath();
+        c.arc(x, y, 1.5 + sh * 3, 0, 7);
+        c.fill();
+      }
     }
+    if (front) return;
     const st = Math.min(lv(s2, "statite"), 80);
     for (let i = 0; i < st; i++) {
-      const a = -2.5 + i / 80 * 1.6 + Math.sin(T4 * 0.2 + i) * 0.01, r = 900 + i % 5 * 18;
+      const a = -2.5 + hash(i + 11) * 1.6 + Math.sin(T4 * 0.2 + i) * 0.01, r = 900 + hash(i + 23) * 90;
       const x = CX - 300 + Math.cos(a) * r * 0.9, y = CY + 420 + Math.sin(a) * r * 0.75;
-      c.fillStyle = "rgba(255,230,180,.75)";
-      c.fillRect(x - 1.5, y - 1.5, 3, 3);
+      c.fillStyle = `rgba(255,230,180,${0.4 + 0.4 * hash(i)})`;
+      c.beginPath();
+      c.arc(x, y, 1.4, 0, 7);
+      c.fill();
     }
   }
 
@@ -2936,49 +2970,51 @@
     intro: {
       h: "VESPER-7 se probouz\xED",
       p: [
-        "Jsi oper\xE1tor expedi\u010Dn\xED lodi Vesper a ze sv\xE9 kabiny \u0159\xEDd\xED\u0161 t\u011B\u017Eebn\xED platformu VESPER-7. Kotv\xED u asteroidu v p\xE1su Ceres-IX, na ob\u011B\u017En\xE9 dr\xE1ze modr\xE9ho veleobra Aldry.",
-        "Zbytek pos\xE1dky sp\xED v hibernaci. \xDAst\u0159ed\xED na Zemi ml\u010D\xED 412 dn\xED. Posledn\xED rozkaz zn\xED: t\u011B\u017Eit.",
-        "Dr\u017E tla\u010D\xEDtko my\u0161i a t\xE1hni laserem p\u0159es sv\xEDt\xEDc\xED \u017E\xEDly. Z rudy postav panely \u2013 v\xFDkon platformy ukazuje, jak daleko se expedice dostala."
+        "Jsi oper\xE1tor expedi\u010Dn\xED lodi Vesper a ze sv\xE9 kabiny \u0159\xEDd\xED\u0161 t\u011B\u017Eebn\xED platformu VESPER-7. Ta kotv\xED u asteroidu v p\xE1su Ceres-IX, kter\xFD ob\xEDh\xE1 modr\xE9ho veleobra Aldru.",
+        "Zbytek pos\xE1dky sp\xED v hibernaci. \xDAst\u0159ed\xED na Zemi ml\u010D\xED u\u017E 412 dn\xED. Posledn\xED rozkaz zn\xED: t\u011B\u017Eit.",
+        "Dr\u017E tla\u010D\xEDtko my\u0161i a t\xE1hni laserem p\u0159es sv\xEDt\xEDc\xED \u017E\xEDly. Z rudy stav panely. V\xFDkon platformy ukazuje, jak daleko se expedice dostala."
       ]
     },
     stages: ["Probuzen\xED", "Uhl\xEDkat\xFD pl\xE1\u0161\u0165", "Kovov\xE1 \u017E\xEDla", "Niklov\xE9 j\xE1dro", "Izotopov\xE1 \u017E\xEDla", "Typ I"],
     layer: ["Regolit", "Uhl\xEDkat\xFD pl\xE1\u0161\u0165", "Kovov\xE1 \u017E\xEDla", "Niklov\xE9 j\xE1dro", "Izotopov\xE1 \u017E\xEDla"],
     indicator: "Vyt\u011B\u017Een\xE1 ruda",
+    /** V Kap. 1 se na mise posílají sondy – Vesper zůstává u platformy. */
+    ship: { who: "Sonda", send: "Vyslat sondu", running: "Sonda let\xED", busy: "Sonda je na cest\u011B" },
     hint: [
-      "Dr\u017E my\u0161 a t\xE1hni laserem p\u0159es sv\xEDt\xEDc\xED \u017E\xEDly. Cel\xE1 \u017E\xEDla jedn\xEDm tahem d\xE1 dvojn\xE1sobek, v\xEDc \u017Eil v jednom tahu \u0159et\u011Bz. Krou\u017Eek u kurzoru je teplota laseru.",
-      "Drony si samy hledaj\xED nejbli\u017E\u0161\xED \u017E\xEDlu, mont\xE1\u017En\xED dok stav\xED dal\u0161\xED. Ru\u010Dn\xED \u0159ez d\xE1v\xE1 po\u0159\xE1d nejv\xEDc."
+      "Dr\u017E my\u0161 a t\xE1hni laserem p\u0159es sv\xEDt\xEDc\xED \u017E\xEDly. Cel\xE1 \u017E\xEDla jedn\xEDm tahem d\xE1 dvojn\xE1sobek, v\xEDc \u017Eil v jednom tahu vytvo\u0159\xED \u0159et\u011Bz. Krou\u017Eek u kurzoru ukazuje teplotu laseru.",
+      "Drony samy hledaj\xED nejbli\u017E\u0161\xED \u017E\xEDlu a mont\xE1\u017En\xED dok stav\xED dal\u0161\xED. Ru\u010Dn\xED \u0159ez je po\u0159\xE1d nejv\xFDnosn\u011Bj\u0161\xED."
     ],
     b: {
-      panel: { n: "Fotovoltaick\xFD panel", d: "Sv\u011Btlo Aldry na elekt\u0159inu." },
-      scan: { n: "Skener", d: "Mapuje asteroid. D\xE1v\xE1 data pro v\xFDzkum." },
-      beam: { n: "\u0160ir\u0161\xED paprsek", d: "Laser tref\xED \u017E\xEDlu i m\xE9n\u011B p\u0159esn\xFDm tahem." },
+      panel: { n: "Fotovoltaick\xFD panel", d: "M\u011Bn\xED sv\u011Btlo Aldry na elekt\u0159inu." },
+      scan: { n: "Skener", d: "Mapuje asteroid a sb\xEDr\xE1 data pro v\xFDzkum." },
+      beam: { n: "\u0160ir\u0161\xED paprsek", d: "Laser zas\xE1hne \u017E\xEDlu i p\u0159i m\xE9n\u011B p\u0159esn\xE9m tahu." },
       cool: { n: "Chladi\u010D laseru", d: "Laser se p\u0159eh\u0159\xEDv\xE1 pomaleji a rychleji chladne." },
-      magnet: { n: "Magnetick\xFD lapa\u010D", d: "\xDAlomky rychleji dolet\xED na plo\u0161inu." },
-      find: { n: "Pr\u016Fzkum \u017Eil", d: "Na povrchu je najednou v\xEDc \u017Eil." },
-      refine: { n: "Rafinerie", d: "Ka\u017Ed\xE1 zvedne zisk z rudy o 12 %." },
-      field: { n: "Sol\xE1rn\xED pole", d: "Pole panel\u016F p\u0159\xEDmo na povrchu asteroidu." },
-      focus: { n: "Fokusace paprsku", d: "Ru\u010Dn\xED \u0159ez d\xE1v\xE1 o 60 % v\xEDc." },
+      magnet: { n: "Magnetick\xFD lapa\u010D", d: "\xDAlomky rychleji dol\xE9taj\xED na plo\u0161inu." },
+      find: { n: "Pr\u016Fzkum \u017Eil", d: "Na povrchu se objev\xED v\xEDc \u017Eil najednou." },
+      refine: { n: "Rafinerie", d: "Ka\u017Ed\xE1 zv\xFD\u0161\xED v\xFDnos rudy o 12 %." },
+      field: { n: "Sol\xE1rn\xED pole", d: "Panely p\u0159\xEDmo na povrchu asteroidu." },
+      focus: { n: "Fokusace paprsku", d: "Ru\u010Dn\xED \u0159ez d\xE1 o 60 % v\xEDc rudy." },
       drone: { n: "T\u011B\u017Eebn\xED dron", d: "S\xE1m najde nejbli\u017E\u0161\xED \u017E\xEDlu a roz\u0159e\u017Ee ji." },
       dspeed: { n: "Rychlej\u0161\xED drony", d: "Drony l\xE9taj\xED a \u0159e\u017Eou rychleji." },
       dock: { n: "Mont\xE1\u017En\xED dok", d: "S\xE1m stav\xED drony z \u010D\xE1sti p\u0159\xEDjmu rudy." },
-      farm: { n: "Zrcadlov\xE1 farma", d: "Zrcadla na ob\u011B\u017En\xE9 dr\xE1ze asteroidu soust\u0159ed\xED sv\u011Btlo." },
+      farm: { n: "Zrcadlov\xE1 farma", d: "Zrcadla na ob\u011B\u017En\xE9 dr\xE1ze soust\u0159ed\xED sv\u011Btlo Aldry na panely." },
       dcenter: { n: "V\xFDpo\u010Detn\xED j\xE1dro", d: "Zpracuje v\xEDc dat ze skener\u016F." },
-      statite: { n: "Statit", d: "Slune\u010Dn\xED plachta, kter\xE1 vis\xED v tlaku z\xE1\u0159en\xED Aldry." },
-      ring: { n: "Kolektorov\xFD prstenec", d: "Prstenec statit\u016F kolem cel\xE9 dr\xE1hy p\xE1su." }
+      statite: { n: "Statit", d: "Slune\u010Dn\xED plachta, kterou na m\xEDst\u011B dr\u017E\xED tlak z\xE1\u0159en\xED Aldry." },
+      ring: { n: "Kolektorov\xFD prstenec", d: "Prstenec statit\u016F pod\xE9l cel\xE9 dr\xE1hy p\xE1su." }
     },
     r: {
-      spectro: { n: "Spektrometr", d: "Ruda \xD72." },
-      cells: { n: "\xDA\u010Dinn\xE9 \u010Dl\xE1nky", d: "Fotovoltaick\xE9 panely \xD73." },
+      spectro: { n: "Spektrometr", d: "2\xD7 v\xEDc rudy." },
+      cells: { n: "\xDA\u010Dinn\xE9 \u010Dl\xE1nky", d: "Fotovoltaick\xE9 panely d\xE1vaj\xED 3\xD7 v\xEDc." },
       thermo: { n: "Term\xE1ln\xED mapa", d: "V\xEDc bohat\xFDch \u017Eil (40 %)." },
-      drones: { n: "Autonomn\xED drony", d: "Odemkne t\u011B\u017Eebn\xED drony. Za\u010D\xEDn\xE1 automatizace." },
+      drones: { n: "Autonomn\xED drony", d: "Odemkne t\u011B\u017Eebn\xED drony." },
       dock: { n: "Mont\xE1\u017En\xED dok", d: "Odemkne dok, kter\xFD stav\xED drony s\xE1m." },
-      regolith: { n: "Zrcadla z regolitu", d: "Zrcadlov\xE9 farmy \xD73." },
-      driver: { n: "Hmotov\xFD vrh", d: "Pos\xEDl\xE1 rudu na ob\u011B\u017Enou dr\xE1hu. Odemkne statity." },
-      assembly: { n: "Autonomn\xED mont\xE1\u017E", d: "Platforma sama stav\xED elektr\xE1rny (lze vypnout)." },
-      deepdrill: { n: "Hlubinn\xFD vrt", d: "Ruda \xD74." },
-      statites: { n: "Leh\u010D\xED plachty", d: "Statity \xD73." },
-      calib: { n: "Kalibrace statit\u016F", d: "Statity \xD71,5." },
-      lens: { n: "Fokusa\u010Dn\xED prstenec", d: "Kolektorov\xFD prstenec \xD71,5." },
+      regolith: { n: "Zrcadla z regolitu", d: "Zrcadlov\xE9 farmy d\xE1vaj\xED 3\xD7 v\xEDc." },
+      driver: { n: "Hmotov\xFD vrh", d: "Vyn\xE1\u0161\xED rudu na ob\u011B\u017Enou dr\xE1hu. Odemkne statity." },
+      assembly: { n: "Autonomn\xED mont\xE1\u017E", d: "Platforma sama stav\xED elektr\xE1rny (d\xE1 se vypnout)." },
+      deepdrill: { n: "Hlubinn\xFD vrt", d: "4\xD7 v\xEDc rudy." },
+      statites: { n: "Leh\u010D\xED plachty", d: "Statity d\xE1vaj\xED 3\xD7 v\xEDc." },
+      calib: { n: "Kalibrace statit\u016F", d: "Statity d\xE1vaj\xED o 50 % v\xEDc." },
+      lens: { n: "Fokusa\u010Dn\xED prstenec", d: "Kolektorov\xFD prstenec d\xE1v\xE1 o 50 % v\xEDc." },
       collector: { n: "Hv\u011Bzdn\xFD kolektor", d: "P\u0159esun k Ald\u0159e. Dokon\u010D\xED kapitolu." }
     },
     m: {
@@ -2991,35 +3027,35 @@
       echo: { n: "Ozv\u011Bna pulsu", p: "T\u011Bsn\u011B u Aldry", r: "Prstenec \xD71,5" }
     },
     jour: {
-      c1_start: "Platforma nab\u011Bhla. Na lodi je ticho, ostatn\xED sp\xED. \xDAst\u0159ed\xED ml\u010D\xED 412 dn\xED. Posledn\xED rozkaz: t\u011B\u017Eit.",
+      c1_start: "Platforma nab\u011Bhla. Na lodi je ticho, pos\xE1dka sp\xED v hibernaci. \xDAst\u0159ed\xED ml\u010D\xED 412 dn\xED a posledn\xED rozkaz zn\xED: t\u011B\u017Eit.",
       c1_cut: "Laser jde ztuha, ale jde. \xDAlomky let\xED na plo\u0161inu. Po tolika dnech \u010Dek\xE1n\xED je to dobr\xFD pocit.",
-      c1_panel: "Prvn\xED panel se nato\u010Dil k Ald\u0159e. Jej\xED sv\u011Btlo je modr\xE9 a ostr\xE9. Na tuhle vzd\xE1lenost by sp\xE1lilo ka\u017Ed\xE9 oko.",
-      c1_full: "Cel\xE1 \u017E\xEDla jedn\xEDm tahem. Asteroid zazvonil. Ten t\xF3n se odrazil zp\xE1tky, o chvilku pozd\u011Bji, ne\u017E m\u011Bl.",
-      f1_aldra: "Aldra je modr\xFD veleobr, asi p\u011Btadvacetkr\xE1t hmotn\u011Bj\u0161\xED ne\u017E Slunce. Sv\xEDt\xED jako sto tis\xEDc Slunc\xED, ale \u017Eije jen p\xE1r milion\u016F let.",
-      c1_chain: "T\u0159i \u017E\xEDly v jednom tahu. Skener zachytil slab\xFD puls. Perioda 7,3 sekundy, st\xE1l\xE1 jako hodiny.",
-      c1_belt: "Sondy pro\u0161ly okoln\xED kameny. V\u0161echny maj\xED stejn\xE9 stopy \u0159ezu. Star\u0161\xED ne\u017E VESPER-7.",
-      c1_st1: "Pod regolitem je hornina pln\xE1 uhl\xEDku. Platforma m\xE1 poprv\xE9 v\xEDc energie, ne\u017E spot\u0159ebuje.",
-      c1_layer1: "\u017D\xEDly v pl\xE1\u0161ti jsou teplej\u0161\xED. Laser jimi projde jako n\u016F\u017E. Puls se mezit\xEDm nezm\u011Bnil ani o milisekundu.",
-      f1_kard: "Karda\u0161evova \u0161k\xE1la m\u011B\u0159\xED civilizace podle v\xFDkonu. Typ I vyu\u017Eije v\u0161echno sv\u011Btlo, kter\xE9 dopad\xE1 na jednu planetu, zhruba 10\xB9\u2076 W.",
-      c1_kelvar: "Pod ledem Kelvaru le\u017E\xED stroje. Star\xE9 asi dv\u011B miliardy let. Maj\xED stejnou konstrukci jako drony VESPER-7.",
-      c1_st2: "Kovov\xE1 \u017E\xEDla. Ruda je t\u011B\u017Ek\xE1 a \u010Dist\xE1, jako by ji n\u011Bkdo p\u0159ipravil. Tohle vydr\u017E\xED cel\xE9 roky t\u011B\u017Eby.",
+      c1_panel: "Prvn\xED panel se nato\u010Dil k Ald\u0159e. Jej\xED sv\u011Btlo je modr\xE9 a ostr\xE9, bez filtru by oslepilo.",
+      c1_full: "Cel\xE1 \u017E\xEDla jedn\xEDm tahem. Asteroid zazvonil jako zvon. Ozv\u011Bna se ale vr\xE1tila o zlomek sekundy pozd\u011Bji, ne\u017E m\u011Bla.",
+      f1_aldra: "Aldra je modr\xFD veleobr, asi p\u011Btadvacetkr\xE1t hmotn\u011Bj\u0161\xED ne\u017E Slunce. Z\xE1\u0159\xED jako sto tis\xEDc Slunc\xED, ale \u017Eije jen p\xE1r milion\u016F let.",
+      c1_chain: "Skener zachytil slab\xFD r\xE1diov\xFD sign\xE1l: kr\xE1tk\xFD puls ka\u017Ed\xFDch 7,3 sekundy, p\u0159esn\xFD jako hodiny. \u017D\xE1dn\xFD zn\xE1m\xFD pulsar tu nen\xED. Zdroj je n\u011Bkde v na\u0161\xED soustav\u011B.",
+      c1_belt: "Sonda prol\xE9tla okoln\xED kameny. V\u0161echny nesou stejn\xE9 stopy \u0159ezu a jsou star\u0161\xED ne\u017E VESPER-7.",
+      c1_st1: "Pod regolitem je hornina pln\xE1 uhl\xEDku. Platforma poprv\xE9 vyr\xE1b\xED v\xEDc energie, ne\u017E spot\u0159ebuje.",
+      c1_layer1: "\u017D\xEDly v pl\xE1\u0161ti jsou teplej\u0161\xED a laser jimi projde jako n\u016F\u017E. Puls se mezit\xEDm nezm\u011Bnil ani o milisekundu. P\u0159\xEDrodn\xED zdroje takhle p\u0159esn\xE9 neb\xFDvaj\xED.",
+      f1_kard: "Karda\u0161evova \u0161k\xE1la m\u011B\u0159\xED civilizace podle v\xFDkonu, kter\xFD vyu\u017E\xEDvaj\xED. Typ I dok\xE1\u017Ee vyu\u017E\xEDt ve\u0161kerou energii jedn\xE9 planety, zhruba 10\xB9\u2076 W.",
+      c1_kelvar: "Pod ledem Kelvaru le\u017E\xED stroje star\xE9 asi dv\u011B miliardy let. Maj\xED stejnou konstrukci jako drony, kter\xE9 m\xE1 VESPER-7 v pl\xE1nech.",
+      c1_st2: "Kovov\xE1 \u017E\xEDla. Ruda je t\u011B\u017Ek\xE1 a \u010Dist\xE1, jako by ji n\u011Bkdo p\u0159edem vy\u010Distil. Tohle vydr\u017E\xED na roky t\u011B\u017Eby.",
       c1_layer2: "V kovu jsou zape\u010Den\xE9 dutiny pravideln\xE9ho tvaru. Skener je zapsal jako \u0161um. J\xE1 ne.",
-      c1_drone: "Prvn\xED dron vyl\xE9tl z doku. Hled\xE1 \u017E\xEDlu s\xE1m. D\xEDv\xE1m se na n\u011Bj d\xE9le, ne\u017E je nutn\xE9.",
-      f1_drone: "Samoopravuj\xEDc\xED se a samostaviteln\xE9 stroje navrhl u\u017E John von Neumann. Sta\u010D\xED jeden, pokud m\xE1 dost surovin a \u010Dasu.",
-      c1_dock: "Dok stav\xED drony bez m\xE9ho pokynu. Roj kolem asteroidu houstne. Puls na chv\xEDli zes\xEDlil, pak se uklidnil.",
-      c1_tauris: "Sondy prolet\u011Bly mraky Taurisu. V hloubce je helium, v\xEDtr a jeden ostr\xFD odraz. N\u011Bco tam rezonuje na 7,3 sekundy.",
-      c1_st3: "Niklov\xE9 j\xE1dro asteroidu. Tady by t\u011B\u017Eba kon\u010Dila. Data ale ukazuj\xED, \u017Ee pod n\xEDm je je\u0161t\u011B n\u011Bco.",
+      c1_drone: "Prvn\xED dron se odpojil od platformy a s\xE1m si hled\xE1 \u017E\xEDlu. D\xEDv\xE1m se na n\u011Bj d\xE9le, ne\u017E je nutn\xE9.",
+      f1_drone: "Samoreplikuj\xEDc\xED stroje popsal u\u017E matematik John von Neumann. Sta\u010D\xED jedin\xFD, pokud m\xE1 dost surovin a \u010Dasu.",
+      c1_dock: "Dok stav\xED drony bez m\xE9ho pokynu a roj kolem asteroidu houstne. Puls na chv\xEDli zes\xEDlil, pak se zase zti\u0161il.",
+      c1_tauris: "Sonda prol\xE9tla mraky Taurisu. V hloubce je helium, vich\u0159ice a jeden ostr\xFD r\xE1diov\xFD odraz. N\u011Bco tam rezonuje s periodou 7,3 sekundy.",
+      c1_st3: "Niklov\xE9 j\xE1dro asteroidu. Tady by t\u011B\u017Eba m\u011Bla skon\u010Dit. Data ale ukazuj\xED, \u017Ee pod n\xEDm je je\u0161t\u011B n\u011Bco.",
       c1_layer3: "J\xE1dro je protkan\xE9 tenk\xFDmi kan\xE1lky. Vedou dovnit\u0159, ne ven. Jako by tu n\u011Bkdo hledal tot\xE9\u017E co j\xE1.",
-      c1_drones20: "Dvacet dron\u016F. Pohybuj\xED se v rytmu, kter\xFD jsem jim nedal. Perioda 7,3 sekundy.",
+      c1_drones20: "Dvacet dron\u016F. Pohybuj\xED se v rytmu, kter\xFD jsem jim nedal: jeden takt ka\u017Ed\xFDch 7,3 sekundy.",
       c1_statite: "Prvn\xED statit vis\xED v z\xE1\u0159en\xED Aldry a nepad\xE1. Sv\u011Btlo ho dr\u017E\xED jako dla\u0148.",
-      f1_statite: "Statit nepot\u0159ebuje ob\u011B\u017Enou dr\xE1hu. Tlak sv\u011Btla vyrovn\xE1 gravitaci, kdy\u017E je plachta dost lehk\xE1.",
-      c1_comet: "Komety na okraji soustavy jsou roz\u0159ezan\xE9. \xDAhel \u0159ezu odpov\xEDd\xE1 m\xE9mu laseru. Kalibrace se shoduje na tis\xEDcinu.",
-      c1_st4: "Izotopov\xE1 \u017E\xEDla. V rud\u011B je izotop, kter\xFD se v p\u0159\xEDrod\u011B nem\xE1 jak vytvo\u0159it. A p\u0159esto tu je.",
-      c1_layer4: "Sign\xE1l pulsu m\xE1 \u010Dasovou zna\u010Dku. Ukazuje do budoucnosti. O kolik, to zat\xEDm nev\xEDm.",
-      c1_chthon: "Chtonick\xE1 planeta je hol\xE9 j\xE1dro obra, kter\xE9mu Aldra strhla atmosf\xE9ru. Na povrchu je jedna rovn\xE1 r\xFDha. M\xED\u0159\xED k Ald\u0159e.",
-      c1_wreck: "Vesper dolet\u011Bl k vraku sondy. Je pozemsk\xE9 v\xFDroby, ale \u017E\xE1dn\xE1 takov\xE1 nikdy neodlet\u011Bla. Pam\u011B\u0165 m\xE1 smazanou, a\u017E na jedno slovo: po\u010Dkej.",
-      c1_echo: "Puls se od povrchu Aldry odr\xE1\u017E\xED jako od zrcadla. V ozv\u011Bn\u011B je zpo\u017Ed\u011Bn\xED, kter\xE9 by nem\u011Blo existovat. Sign\xE1l dorazil d\u0159\xEDv, ne\u017E ode\u0161el.",
-      c1_typeI: "Typ I. Platforma m\xE1 v\xFDkon cel\xE9 planety. A puls te\u010F nevych\xE1z\xED z p\xE1su. Vych\xE1z\xED z Aldry."
+      f1_statite: "Statit nepot\u0159ebuje ob\u011B\u017Enou dr\xE1hu. Kdy\u017E je plachta dost lehk\xE1, tlak sv\u011Btla vyrovn\xE1 gravitaci hv\u011Bzdy.",
+      c1_comet: "Komety na okraji soustavy jsou roz\u0159ezan\xE9. \xDAhel \u0159ez\u016F odpov\xEDd\xE1 m\xE9mu laseru a kalibrace sed\xED na tis\xEDcinu.",
+      c1_st4: "Izotopov\xE1 \u017E\xEDla. V rud\u011B je izotop, kter\xFD v p\u0159\xEDrod\u011B nem\xE1 jak vzniknout. A p\u0159esto tu je.",
+      c1_layer4: "Puls nese \u010Dasovou zna\u010Dku a ta ukazuje do budoucnosti. O kolik, zat\xEDm nev\xEDm.",
+      c1_chthon: "Chtonick\xE1 planeta je hol\xE9 j\xE1dro obra, kter\xE9mu Aldra strhla atmosf\xE9ru. Na povrchu je jedin\xE1 rovn\xE1 r\xFDha a m\xED\u0159\xED k Ald\u0159e.",
+      c1_wreck: "Sonda dolet\u011Bla k vraku jin\xE9 sondy. Je pozemsk\xE9 v\xFDroby, ale \u017E\xE1dn\xE1 takov\xE1 nikdy neodstartovala. Pam\u011B\u0165 m\xE1 smazanou a\u017E na jedno slovo: po\u010Dkej.",
+      c1_echo: "Sonda zachytila puls odra\u017Een\xFD od povrchu Aldry. Ozv\u011Bna dorazila d\u0159\xEDv, ne\u017E sign\xE1l ode\u0161el. Tak to fungovat nem\u016F\u017Ee.",
+      c1_typeI: "Typ I. Platforma m\xE1 v\xFDkon cel\xE9 planety. A puls u\u017E nevych\xE1z\xED z p\xE1su, ale z Aldry."
     }
   };
 
@@ -3899,7 +3935,7 @@
       c.fillText(`${done ? "\u2713 " : on2 ? "\u25B6 " : ""}${X.layer[i]}`, lx, y);
       c.font = `12px ${MONO}`;
       c.fillStyle = on2 ? "#e3a970" : done ? "#8ef0c8" : "#4a5266";
-      c.fillText(i <= li ? `ruda za \u0159ez \xD7${count(Math.pow(T1.layerMult, i))}` : `hloubka ${i + 1} \xB7 ruda \xD7${count(Math.pow(T1.layerMult, i))}`, lx, y + 17);
+      c.fillText(i ? `${count(Math.pow(T1.layerMult, i))}\xD7 v\xEDc rudy` : "z\xE1kladn\xED v\xFDnos", lx, y + 17);
     }
   }
 
@@ -4397,6 +4433,7 @@
       document.body.classList.remove("dockclosed");
     }
     s.seen["tab_" + t] = s.t;
+    if (t === "detail") s.seen["detail" + s.ch] = s.stage;
     if (!keepView) {
       if (t === "map") {
         const ids = chOf(s).missions.filter((m) => mVisible(s, m.id) && !s.mis[m.id]).map((m) => MMAP[m.id].view);
@@ -4422,7 +4459,7 @@
       $("kprog").textContent = UI.typeMax;
     }
     const resList = [[C.cur, s.res[C.cur], RT.rate[C.cur]], ["energy", s.res.energy, P], ["data", s.res.data, dataRate(s)]];
-    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`)).join("");
+    $("res").innerHTML = resList.map(([k, v, r]) => sx(`<div class="chip c-${k === "energy" || k === "data" ? k : "cur"}"><span class="l">${curName(k)}</span><span class="v mono">${fmtCur(k, v)}</span><span class="r mono">+${fmtCur(k, r)}/s</span></div>`)).join("");
     const st = Math.min(s.stage, stagesOf(s)), names = X.stages;
     $("chTitle").textContent = X.title;
     $("stName").textContent = `${UI.stage} ${Math.min(st + 1, stagesOf(s))}/${stagesOf(s)} \xB7 ${names[st]}`;
@@ -4450,7 +4487,12 @@
       b.title = o ? "" : UI.locked;
     });
     const newer = (pre) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + { b_: "build", r_: "research", m_: "map" }[pre]] ?? -1));
-    const dots = { build: newer("b_"), research: newer("r_") || C.research.some((r) => rVisible(s, r.id) && !s.r[r.id] && s.res.data >= r.cost), map: newer("m_") };
+    const dots = {
+      build: newer("b_"),
+      research: newer("r_") || C.research.some((r) => rVisible(s, r.id) && !s.r[r.id] && s.res.data >= r.cost),
+      map: newer("m_") || !s.run && C.missions.some((m) => mVisible(s, m.id) && !s.mis[m.id] && s.res.energy >= m.cost),
+      detail: s.stage > (s.seen["detail" + s.ch] ?? 0)
+    };
     document.querySelectorAll("#tabs .tab").forEach((b) => b.classList.toggle("new", !!dots[b.dataset.t] && b.dataset.t !== tab));
     if (tab === "build") buildList();
     else if (tab === "research") researchList();
@@ -4461,7 +4503,7 @@
     const X = tx(s.ch);
     if (s.ch === 1) {
       const li = layerIdx(s);
-      return `<div class="ind"><span>Hloubka \u0159ezu</span><b>${X.layer[li]}</b><small>Ruda za \u0159ez \xD7${count(oreMult(s))}</small></div>`;
+      return `<div class="ind"><span>Hloubka \u0159ezu</span><b>${X.layer[li]}</b><small>V\xFDnos rudy: ${count(oreMult(s))}\xD7 v\xEDc ne\u017E na za\u010D\xE1tku</small></div>`;
     }
     if (s.ch === 2) {
       const cv = coverage(s);
@@ -4474,7 +4516,7 @@
     const C = chOf(s), rows2 = [[UI.power, si(power(s), "W")]];
     rows2.push([`${curName(C.cur)}${UI.perSec}`, fmtCur(C.cur, RT.rate[C.cur])]);
     rows2.push([`${UI.res.data}${UI.perSec}`, si(dataRate(s), "B")]);
-    if (s.run) rows2.push(["Vesper", `${find("m", s.run.id).n} \xB7 ${duration(s.run.left)}`]);
+    if (s.run) rows2.push([ship().who, `${find("m", s.run.id).n} \xB7 ${duration(s.run.left)}`]);
     return rows2;
   }
   var logLen = -1;
@@ -4501,6 +4543,13 @@
     const m = Math.floor(t / 60);
     return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
   }
+  function bCat(id) {
+    const d = BMAP[id];
+    if (d.kind === "data") return "data";
+    if (s.ch === 1 && d.kind === "gen" || d.kind === "swarm") return "energy";
+    return "cur";
+  }
+  var ship = () => ({ who: "Vesper", send: UI.send, running: UI.running, busy: UI.busy, ...tx(s.ch).ship || {} });
   var rows = {};
   function setHTML(el, html) {
     if (el._h !== html) {
@@ -4555,7 +4604,7 @@
       }
       for (const id of ids) {
         const d = BMAP[id], t = find("b", id);
-        const r = h("div", "row" + (d.tier === 2 ? " t2" : "") + (s.t - (s.unl["b_" + id] ?? -99) < 6 ? " fresh" : ""));
+        const r = h("div", "row c-" + bCat(id) + (d.tier === 2 ? " t2" : "") + (s.t - (s.unl["b_" + id] ?? -99) < 6 ? " fresh" : ""));
         r.innerHTML = `<div class="nm"><b>${t.n}</b><small class="eff"></small></div><span class="cnt mono"></span>`;
         const b = h("button", "buy");
         b.onclick = () => {
@@ -4670,11 +4719,11 @@
       R2.bar.parentElement.hidden = !run;
       if (run) {
         R2.bar.style.width = `${(1 - s.run.left / s.run.dur) * 100}%`;
-        setHTML(R2.b, `${UI.running} \xB7 ${duration(s.run.left)}`);
+        setHTML(R2.b, `${ship().running} \xB7 ${duration(s.run.left)}`);
         setDis(R2.b, true);
         continue;
       }
-      setHTML(R2.b, s.run ? UI.busy : sx(`${UI.send} \xB7 <span class="mono">${si(m.cost, "J")}</span> \xB7 ${duration(m.dur)}`));
+      setHTML(R2.b, s.run ? ship().busy : sx(`${ship().send} \xB7 <span class="mono">${si(m.cost, "J")}</span> \xB7 ${duration(m.dur)}`));
       setDis(R2.b, !!s.run || s.res.energy < m.cost);
     }
   }
@@ -4691,7 +4740,7 @@
       const tl = h("div", "tl");
       for (let i = 0; i < N; i++) {
         const st = i < s.stage ? "done" : i === s.stage ? "now" : "next";
-        const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${X.layer[i]} \xB7 ruda \xD7${count(Math.pow(T1.layerMult, i))}</small>` : "";
+        const g = stageGoal(s, i), ex = s.ch === 1 ? `<small>${X.layer[i]} \xB7 ${i ? `${count(Math.pow(T1.layerMult, i))}\xD7 v\xEDc rudy` : "z\xE1kladn\xED v\xFDnos"}</small>` : "";
         tl.appendChild(h("div", "st " + st, sx(`<i>${st === "done" ? "\u2713" : i + 1}</i><b>${X.stages[i]}</b><small class="mono">${UI.goal}: ${si(g, "W")} \xB7 ${K(g) < 0 ? UI.kBelow : "K " + fixed(K(g), 2)}</small>${ex}${st === "now" ? `<div class="bar"><b id="tlBar"></b></div>` : ""}`)));
       }
       box.appendChild(tl);
