@@ -416,7 +416,10 @@ function showSettings() {
   ($("optVol") as HTMLInputElement).oninput = (e: any) => { s.opt.vol = +e.target.value; Audio.setVolumes({ master: s.opt.vol }); };
   $("expBtn").onclick = () => { const t = encodeSave(s); ($("saveTxt") as HTMLTextAreaElement).value = t; navigator.clipboard?.writeText(t).then(() => toast(UI.copied)).catch(() => {}); };
   $("impBtn").onclick = () => { const st = decodeSave(($("saveTxt") as HTMLTextAreaElement).value); if (!st) { toast(UI.bad); return; } s = st; save(); location.reload(); };
-  $("resBtn").onclick = () => { if (confirm(UI.resetConfirm)) { localStorage.removeItem(SAVE_KEY); location.reload(); } };
+  $("resBtn").onclick = (e: any) => {   // potvrzení druhým kliknutím (okno confirm v sandboxu nejde)
+    if (e.target.dataset.sure) { localStorage.removeItem(SAVE_KEY); s = newState(); location.reload(); return; }
+    e.target.dataset.sure = "1"; e.target.textContent = UI.resetConfirm;
+  };
 }
 let toastT = 0;
 function toast(t: string) {

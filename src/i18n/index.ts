@@ -38,7 +38,7 @@ export const UI = {
   settings: "Nastavení",
   sound: "Zvuk", effects: "Efekty", volume: "Hlasitost",
   export: "Uložit do textu", import: "Nahrát z textu", reset: "Začít znovu",
-  resetConfirm: "Opravdu smazat celou hru a začít znovu?",
+  resetConfirm: "Opravdu? Klikni znovu – hra se smaže",
   copied: "Uložená hra je ve schránce.",
   loaded: "Hra nahrána.",
   bad: "Text nejde přečíst jako uložená hra.",

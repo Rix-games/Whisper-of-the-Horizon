@@ -2999,7 +2999,7 @@
     export: "Ulo\u017Eit do textu",
     import: "Nahr\xE1t z textu",
     reset: "Za\u010D\xEDt znovu",
-    resetConfirm: "Opravdu smazat celou hru a za\u010D\xEDt znovu?",
+    resetConfirm: "Opravdu? Klikni znovu \u2013 hra se sma\u017Ee",
     copied: "Ulo\u017Een\xE1 hra je ve schr\xE1nce.",
     loaded: "Hra nahr\xE1na.",
     bad: "Text nejde p\u0159e\u010D\xEDst jako ulo\u017Een\xE1 hra.",
@@ -4210,11 +4210,15 @@
       save();
       location.reload();
     };
-    $("resBtn").onclick = () => {
-      if (confirm(UI.resetConfirm)) {
+    $("resBtn").onclick = (e) => {
+      if (e.target.dataset.sure) {
         localStorage.removeItem(SAVE_KEY);
+        s = newState();
         location.reload();
+        return;
       }
+      e.target.dataset.sure = "1";
+      e.target.textContent = UI.resetConfirm;
     };
   }
   var toastT = 0;
