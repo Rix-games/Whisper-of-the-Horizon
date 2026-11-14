@@ -52,8 +52,9 @@ export const hvezda: Mech & any = {
   Rd: 0, flyCd: 0, picSt: -1, picPrev: -1, picT0: 0, spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
   reset() { this.Rd = 0; this.dots = []; this.loops = []; this.jets = []; this.cmes = []; this.fact = []; this.grab = null; this.combo = 0; this.lastN = -1; this.picSt = -1; this.picPrev = -1; },
   geo(s: State) {
-    // dráhy roje stojí pevně (nezávisle na hvězdě) – jinak růst hvězdy vypadá jen jako přiblížení kamery
-    const L = look(s), Rs = this.Rd || L.R, base = 215, out = s.r.outer ? 1.2 : 1;
+    // roj před rostoucí hvězdou ustupuje, ale pomaleji, než hvězda roste (jinak to vypadá jen jako přiblížení kamery);
+    // když se hvězda zmenší, roj se zase stáhne blíž
+    const L = look(s), Rs = this.Rd || L.R, base = 215 + Math.max(0, Rs - 90) * 0.75, out = s.r.outer ? 1.2 : 1;
     return { Rs, rings: [base * out, base * 1.42 * out, base * 1.9 * out] };
   },
   pos(d: Dot, g: any) { const r = g.rings[d.ring]; return [CX + Math.cos(d.a) * r, CY + Math.sin(d.a) * r]; },
@@ -116,7 +117,7 @@ export const hvezda: Mech & any = {
     while (alive < target) {
       let ring = (rnd() * 3) | 0, a = rnd() * 6.283, fly = 0, sx = 0, sy = 0;
       if (fromHand && M.down) { const ri = this.ringAt(g, M); if (ri >= 0) { ring = ri; a = Math.atan2(M.y - CY, M.x - CX) + (rnd() - 0.5) * 0.15; } }
-      else if (this.fact.length && s.n > this.lastN) { const f = this.fact[(rnd() * this.fact.length) | 0]; fly = 0.8; const fr = g.rings[2] * 1.22; sx = CX + Math.cos(f.a) * fr; sy = CY + Math.sin(f.a) * fr; a = f.a + (rnd() - 0.5) * 0.6; }
+      else if (this.fact.length && s.n > this.lastN) { const f = this.fact[(rnd() * this.fact.length) | 0]; fly = 0.8; const fr = Math.min(g.rings[2] * 1.22, g.rings[2] + 70); sx = CX + Math.cos(f.a) * fr; sy = CY + Math.sin(f.a) * fr; a = f.a + (rnd() - 0.5) * 0.6; }
       this.dots.push({ ring, a, glow: 0, fly, sx, sy, dying: 0 }); alive++;
     }
     // nad viditelným stropem: továrny dál viditelně posílají kolektory na dráhy
@@ -127,7 +128,7 @@ export const hvezda: Mech & any = {
       for (let i = 0; i < 1; i++) {
         const d = this.dots[(rnd() * this.dots.length) | 0];
         if (d.dying || d.fly) continue;
-        const f = this.fact[(rnd() * this.fact.length) | 0], fr = g.rings[2] * 1.22;
+        const f = this.fact[(rnd() * this.fact.length) | 0], fr = Math.min(g.rings[2] * 1.22, g.rings[2] + 70);
         d.fly = 0.8; d.sx = CX + Math.cos(f.a) * fr; d.sy = CY + Math.sin(f.a) * fr;
       }
     }
@@ -135,7 +136,7 @@ export const hvezda: Mech & any = {
     this.lastN = s.n;
   },
   update(s: State, dt: number, M: Input) {
-    const tR = look(s).R; this.Rd = this.Rd ? this.Rd + (tR - this.Rd) * (1 - Math.exp(-dt * 0.5)) : tR;   // hvězda roste plynule
+    const tR = look(s).R; this.Rd = this.Rd ? this.Rd + (tR - this.Rd) * (1 - Math.exp(-dt * 0.3)) : tR;   // hvězda roste plynule (~10 s), roj se odsouvá s ní
     const g = this.geo(s); this.shake = Math.max(0, this.shake - dt);
     // továrny (viditelné až 24)
     const nf = Math.min(lv(s, "fact"), 24);
@@ -310,7 +311,7 @@ export const hvezda: Mech & any = {
     // vytěžování hvězdy (zdvih)
     const nl = Math.min(lv(s, "lift"), 10);
     for (let k = 0; k < nl; k++) {
-      const a = T * 0.08 + (k * 6.283) / nl, R2 = g.rings[2] * 1.22;
+      const a = T * 0.08 + (k * 6.283) / nl, R2 = Math.min(g.rings[2] * 1.22, g.rings[2] + 70);
       for (let j = 0; j < 16; j++) {
         const f = (j / 16 + T * 0.5) % 1, r = Rs + (R2 - Rs) * f, aa = a + Math.sin(f * 3) * 0.08;
         c.fillStyle = `rgba(${gl},${(1 - f) * 0.8})`; c.fillRect(cx + Math.cos(aa) * r - 1.2, cy + Math.sin(aa) * r - 1.2, 2.4, 2.4);
@@ -401,7 +402,7 @@ export const hvezda: Mech & any = {
       c.fillRect(p[0] - sz / 2, p[1] - sz / 2, sz, sz);
     }
     for (const fa of this.fact) {
-      const fr = g.rings[2] * 1.22, x = cx + Math.cos(fa.a) * fr, y = cy + Math.sin(fa.a) * fr;
+      const fr = Math.min(g.rings[2] * 1.22, g.rings[2] + 70), x = cx + Math.cos(fa.a) * fr, y = cy + Math.sin(fa.a) * fr;
       if (FS) {   // výrobní dok míří ke hvězdě, světlo automatiky pulzuje s výrobou
         c.save(); c.translate(x, y); c.rotate(fa.a + Math.PI * 0.75); c.drawImage(FS, -17, -17, 34, 34);
         c.globalCompositeOperation = "lighter"; c.fillStyle = `rgba(142,240,200,${0.08 + 0.22 * fa.t})`;

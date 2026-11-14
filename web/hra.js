@@ -1966,7 +1966,7 @@
       this.picPrev = -1;
     },
     geo(s2) {
-      const L = look(s2), Rs = this.Rd || L.R, base = 215, out = s2.r.outer ? 1.2 : 1;
+      const L = look(s2), Rs = this.Rd || L.R, base = 215 + Math.max(0, Rs - 90) * 0.75, out = s2.r.outer ? 1.2 : 1;
       return { Rs, rings: [base * out, base * 1.42 * out, base * 1.9 * out] };
     },
     pos(d, g) {
@@ -2107,7 +2107,7 @@
         } else if (this.fact.length && s2.n > this.lastN) {
           const f = this.fact[rnd() * this.fact.length | 0];
           fly = 0.8;
-          const fr = g.rings[2] * 1.22;
+          const fr = Math.min(g.rings[2] * 1.22, g.rings[2] + 70);
           sx2 = CX2 + Math.cos(f.a) * fr;
           sy = CY2 + Math.sin(f.a) * fr;
           a = f.a + (rnd() - 0.5) * 0.6;
@@ -2121,7 +2121,7 @@
         for (let i = 0; i < 1; i++) {
           const d = this.dots[rnd() * this.dots.length | 0];
           if (d.dying || d.fly) continue;
-          const f = this.fact[rnd() * this.fact.length | 0], fr = g.rings[2] * 1.22;
+          const f = this.fact[rnd() * this.fact.length | 0], fr = Math.min(g.rings[2] * 1.22, g.rings[2] + 70);
           d.fly = 0.8;
           d.sx = CX2 + Math.cos(f.a) * fr;
           d.sy = CY2 + Math.sin(f.a) * fr;
@@ -2132,7 +2132,7 @@
     },
     update(s2, dt, M4) {
       const tR = look(s2).R;
-      this.Rd = this.Rd ? this.Rd + (tR - this.Rd) * (1 - Math.exp(-dt * 0.5)) : tR;
+      this.Rd = this.Rd ? this.Rd + (tR - this.Rd) * (1 - Math.exp(-dt * 0.3)) : tR;
       const g = this.geo(s2);
       this.shake = Math.max(0, this.shake - dt);
       const nf = Math.min(lv2(s2, "fact"), 24);
@@ -2405,7 +2405,7 @@
       }
       const nl = Math.min(lv2(s2, "lift"), 10);
       for (let k = 0; k < nl; k++) {
-        const a = T4 * 0.08 + k * 6.283 / nl, R2 = g.rings[2] * 1.22;
+        const a = T4 * 0.08 + k * 6.283 / nl, R2 = Math.min(g.rings[2] * 1.22, g.rings[2] + 70);
         for (let j = 0; j < 16; j++) {
           const f = (j / 16 + T4 * 0.5) % 1, r = Rs + (R2 - Rs) * f, aa = a + Math.sin(f * 3) * 0.08;
           c.fillStyle = `rgba(${gl},${(1 - f) * 0.8})`;
@@ -2566,7 +2566,7 @@
         c.fillRect(p[0] - sz / 2, p[1] - sz / 2, sz, sz);
       }
       for (const fa of this.fact) {
-        const fr = g.rings[2] * 1.22, x = cx + Math.cos(fa.a) * fr, y = cy + Math.sin(fa.a) * fr;
+        const fr = Math.min(g.rings[2] * 1.22, g.rings[2] + 70), x = cx + Math.cos(fa.a) * fr, y = cy + Math.sin(fa.a) * fr;
         if (FS) {
           c.save();
           c.translate(x, y);
