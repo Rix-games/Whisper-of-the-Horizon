@@ -182,6 +182,9 @@ body.tdetail #detc { flex:1; min-height:300px; height:auto; }
 #ladder button { background:none; border:0; padding:6px 11px; border-radius:14px; cursor:pointer; font-size:12.5px; white-space:nowrap; }
 #ladder button.on { background:var(--acc); color:#1a1206; font-weight:600; }
 #ladder button:disabled { color:#3e465a; cursor:default; }
+#ladder button[hidden] { display:none; }
+#ladder button.sub { font-size:11px; padding:6px 7px; color:#8f9ab2; }
+#ladder button.sub.on { color:#1a1206; }
 #hint { position:fixed; left:50%; transform:translateX(-50%); bottom:58px; max-width:560px; margin:0; text-align:center; font-size:13px; color:#aeb7c8;
   background:rgba(4,5,10,.6); padding:6px 14px; border-radius:10px; z-index:2; pointer-events:none; }
 

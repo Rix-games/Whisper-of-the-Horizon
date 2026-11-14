@@ -171,7 +171,7 @@ export const CH3: ChapterDef = {
   effect(s, id) {
     const lv = n(s, id), x = (v: number) => "×" + (Math.round(v * 10) / 10).toString().replace(".", ",");
     if (id === "power") return `Síla svazku ${x(1 + 0.6 * lv)} → ${x(1 + 0.6 * (lv + 1))}`;
-    if (id === "loom") return `+${count(sailPassive(s) * (T3.loom - 1))} plachet/s`;
+    if (id === "loom") return `+${count(sailPassive(s) * (T3.loom - 1))} zárodků/s`;
     if (id === "reach") return `Dosah svazku ${lyOf(T3.reach[0] + T3.reach[1] * lv)} → ${lyOf(T3.reach[0] + T3.reach[1] * (lv + 1))}`;
     if (id === "spread") return `Kolonie se šíří samy ${x(1 + lv)} → ${x(2 + lv)}`;
     if (id === "swarm3") return `Zachycené světlo ${pct(capture(s))} → ${pct(Math.min(T3.capMax, capture(s) * T3.capStep))}`;

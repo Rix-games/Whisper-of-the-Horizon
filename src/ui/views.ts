@@ -265,7 +265,9 @@ let LS = 1;
 /** Měřítko scény – popisky drží čitelnou velikost na obrazovce (min. 12–13 px). */
 export function setLabelScale(sx: number) { LS = Math.max(sx, 0.3); }
 export function label(c: CanvasRenderingContext2D, x: number, y: number, t: string, col = "#9aa6bd", fs = 13 / LS) {
-  c.font = `${fs}px ${MONO}`; c.textAlign = "left";
-  c.fillStyle = "rgba(0,0,0,.7)"; c.fillText(t, x + 1, y + 1); c.fillStyle = col; c.fillText(t, x, y);
+  c.font = `600 ${fs}px ${MONO}`; c.textAlign = "left";
+  // tmavý obrys – popisek musí jít přečíst i přes jasná ramena galaxie
+  c.save(); c.lineJoin = "round"; c.lineWidth = fs * 0.32; c.strokeStyle = "rgba(4,6,14,.88)"; c.strokeText(t, x, y); c.restore();
+  c.fillStyle = col; c.fillText(t, x, y);
 }
 export { SANS };

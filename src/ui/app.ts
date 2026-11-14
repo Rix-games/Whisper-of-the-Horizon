@@ -116,7 +116,7 @@ function buildShell() {
     b.onclick = () => setTab(t); $("tabs").appendChild(b);
   }
   // žebřík
-  VIEWS.forEach((v, i) => { const b = h("button", "", UI.ladder[i]); b.dataset.v = v; b.onclick = () => setView(v); $("ladder").appendChild(b); });
+  VIEWS.forEach((v, i) => { const b = h("button", "", UI.ladder[i]); b.dataset.v = v; if (v === "system" || v === "near") b.classList.add("sub"); b.onclick = () => setView(v); $("ladder").appendChild(b); });
   $("kblock").onclick = showK;
   $("setBtn").onclick = showSettings;
   $("sndBtn").onclick = () => { s.opt.sound = !s.opt.sound; Audio.setSound(s.opt.sound, s.ch >= 1); $("sndBtn").classList.toggle("on", s.opt.sound); };
@@ -240,7 +240,8 @@ function updateUI() {
   $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
   journal();
   // žebřík
-  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3; setHTML(b, o || gone ? ladderName(b.dataset.v) : "???"); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
+  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3; b.hidden = !(o || gone); setHTML(b, ladderName(b.dataset.v)); b.disabled = !o;   // budoucí měřítka se neukazují vůbec
+    b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
   // tečky na záložkách
   const newer = (pre: string) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + ({ b_: "build", r_: "research", m_: "map" } as any)[pre]] ?? -1));
   const dots: Record<string, boolean> = {

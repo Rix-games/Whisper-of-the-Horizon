@@ -886,7 +886,7 @@
     effect(s2, id) {
       const lv4 = n(s2, id), x = (v) => "\xD7" + (Math.round(v * 10) / 10).toString().replace(".", ",");
       if (id === "power") return `S\xEDla svazku ${x(1 + 0.6 * lv4)} \u2192 ${x(1 + 0.6 * (lv4 + 1))}`;
-      if (id === "loom") return `+${count(sailPassive(s2) * (T3.loom - 1))} plachet/s`;
+      if (id === "loom") return `+${count(sailPassive(s2) * (T3.loom - 1))} z\xE1rodk\u016F/s`;
       if (id === "reach") return `Dosah svazku ${lyOf(T3.reach[0] + T3.reach[1] * lv4)} \u2192 ${lyOf(T3.reach[0] + T3.reach[1] * (lv4 + 1))}`;
       if (id === "spread") return `Kolonie se \u0161\xED\u0159\xED samy ${x(1 + lv4)} \u2192 ${x(2 + lv4)}`;
       if (id === "swarm3") return `Zachycen\xE9 sv\u011Btlo ${pct(capture(s2))} \u2192 ${pct(Math.min(T3.capMax, capture(s2) * T3.capStep))}`;
@@ -3319,10 +3319,10 @@
     stages: ["Rameno Persea", "Sousedn\xED hv\u011Bzdy", "Mezi rameny", "M\xEDstn\xED rameno", "Rameno Str\xE1\u017Ece", "J\xE1dro", "Typ III"],
     indicator: "Hv\u011Bzdy pod kontrolou",
     ship: { who: "Vesper", send: "Vyslat Vesper", running: "Vesper let\xED", busy: "Vesper je na cest\u011B" },
-    card: { stage: "Stadium {n} z {of}", where: "Kde", col: "Kolonie", stars: "Hv\u011Bzd pod kontrolou", cap: "Zachycen\xE9 sv\u011Btlo", reach: "Plachty dolet\xED", real: "Ve skute\u010Dnosti trv\xE1", cut: "Ml\xE9\u010Dn\xE1 dr\xE1ha z boku", home: "Domov", core: "Sgr A*" },
+    card: { stage: "Stadium {n} z {of}", where: "Kde", col: "Kolonie", stars: "Hv\u011Bzd pod kontrolou", cap: "Zachycen\xE9 sv\u011Btlo", reach: "Z\xE1rodky dolet\xED", real: "Ve skute\u010Dnosti trv\xE1", cut: "Ml\xE9\u010Dn\xE1 dr\xE1ha z boku", home: "Domov", core: "Sgr A*" },
     phase: [
-      { n: "Kolem d\xEDry po Ald\u0159e", where: "Rameno Persea", real: "des\xEDtky let", t: "Svazek dotla\u010D\xED plachtu k sousedn\xED hv\u011Bzd\u011B za p\xE1r des\xEDtek let. Tady u d\xEDry ti to trv\xE1 minuty." },
-      { n: "Rameno se rozsv\u011Bcuje", where: "Rameno Persea", real: "stovky let", t: "Kolonie stav\xED roje a pos\xEDlaj\xED plachty d\xE1l. Ka\u017Ed\xE1 nov\xE1 hv\u011Bzda p\u0159id\xE1 sv\u011Btlo i plachty." },
+      { n: "Kolem d\xEDry po Ald\u0159e", where: "Rameno Persea", real: "des\xEDtky let", t: "Svazek dotla\u010D\xED z\xE1rodek k sousedn\xED hv\u011Bzd\u011B za p\xE1r des\xEDtek let. Tady u d\xEDry ti to trv\xE1 minuty." },
+      { n: "Rameno se rozsv\u011Bcuje", where: "Rameno Persea", real: "stovky let", t: "Kolonie stav\xED roje a pos\xEDlaj\xED z\xE1rodky d\xE1l. Ka\u017Ed\xE1 nov\xE1 hv\u011Bzda p\u0159id\xE1 sv\u011Btlo i z\xE1rodky." },
       { n: "Pr\xE1zdno mezi rameny", where: "Mezi rameny", real: "tis\xEDce let", t: "Mezi rameny jsou hv\u011Bzdy \u0159id\u0161\xED. Sondy p\u0159eskakuj\xED pr\xE1zdn\xE1 m\xEDsta, svazek by to s\xE1m nestihl." },
       { n: "Domov lid\xED", where: "M\xEDstn\xED rameno", real: "des\xEDtky tis\xEDc let", t: "M\xEDstn\xED rameno je jen v\xFDb\u011B\u017Eek mezi velk\xFDmi rameny. N\u011Bkde v n\u011Bm ob\xEDh\xE1 Slunce." },
       { n: "Mlad\xE9 hv\u011Bzdy", where: "Rameno Str\xE1\u017Ece", real: "statis\xEDce let", t: "Rameno Str\xE1\u017Ece le\u017E\xED bl\xED\u017E ke st\u0159edu. Hust\xE1 mra\u010Dna plynu, ve kter\xFDch se rod\xED hv\u011Bzdy." },
@@ -3330,12 +3330,12 @@
       { n: "Cel\xE1 galaxie", where: "Ml\xE9\u010Dn\xE1 dr\xE1ha", real: "n\u011Bkolik milion\u016F let", t: "Sv\xEDt\xED\u0161 jako cel\xE1 Ml\xE9\u010Dn\xE1 dr\xE1ha. Zb\xFDv\xE1 probudit jej\xED st\u0159ed." }
     ],
     hint: [
-      "Dr\u017E my\u0161: z nejbli\u017E\u0161\xED kolonie m\xED\u0159\xED svazek a tla\u010D\xED sv\u011Bteln\xE9 plachty. Podr\u017E ho na hv\u011Bzd\u011B, dokud se krou\u017Eek nezapln\xED. \u010C\xE1rkovan\xE1 hranice ukazuje, kam plachty zat\xEDm dolet\xED.",
+      "Dr\u017E my\u0161: z nejbli\u017E\u0161\xED kolonie m\xED\u0159\xED svazek a tla\u010D\xED z\xE1rodky na sv\u011Bteln\xFDch placht\xE1ch. Podr\u017E ho na hv\u011Bzd\u011B, dokud se krou\u017Eek nezapln\xED. \u010C\xE1rkovan\xE1 hranice ukazuje, kam z\xE1rodky zat\xEDm dolet\xED.",
       "Mi\u0159 svazkem na velk\xE9 vzd\xE1len\xE9 soustavy, kam \u0161\xED\u0159en\xED je\u0161t\u011B nedos\xE1hlo."
     ],
     b: {
       power: { n: "V\xFDkonn\u011Bj\u0161\xED svazek", d: "Svazek osidluje o 60 % rychleji a v\xEDc spot\u0159ebuje." },
-      loom: { n: "Tkalcovna plachet", d: "Ka\u017Ed\xE1 tkalcovna zrychl\xED v\xFDrobu plachet o 12 %." },
+      loom: { n: "L\xEDhe\u0148 z\xE1rodk\u016F", d: "Ka\u017Ed\xE1 l\xEDhe\u0148 zrychl\xED v\xFDrobu z\xE1rodk\u016F o 12 %." },
       reach: { n: "Del\u0161\xED dosah", d: "Svazek dos\xE1hne d\xE1l od kolonie." },
       spread: { n: "P\u0159irozen\xE9 \u0161\xED\u0159en\xED", d: "Kolonie se \u010Dast\u011Bji samy roz\u0161\xED\u0159\xED k sousedn\xED hv\u011Bzd\u011B." },
       swarm3: { n: "Roje koloni\xED", d: "Kolonie zachyt\xED o 10 % v\xEDc sv\u011Btla sv\xFDch hv\u011Bzd." },
@@ -3345,9 +3345,9 @@
       radio: { n: "R\xE1diov\xE9 pole", d: "Ant\xE9ny nap\u0159\xED\u010D ramenem. Hodn\u011B dat." }
     },
     r: {
-      sailcloth: { n: "Grafenov\xE9 plachty", d: "Plachet p\u0159ib\xFDv\xE1 2\xD7 rychleji." },
+      sailcloth: { n: "Grafenov\xE9 plachty", d: "Z\xE1rodk\u016F p\u0159ib\xFDv\xE1 2\xD7 rychleji." },
       dyson3: { n: "Roje u ka\u017Ed\xE9 hv\u011Bzdy", d: "Kolonie zachyt\xED 3\xD7 v\xEDc sv\u011Btla." },
-      brake: { n: "Magnetick\xE1 brzda", d: "Plachty u c\xEDle zabrzd\xED o magnetick\xE9 pole hv\u011Bzdy. Svazek osidluje 1,5\xD7 rychleji." },
+      brake: { n: "Magnetick\xE1 brzda", d: "Z\xE1rodky u c\xEDle zabrzd\xED o magnetick\xE9 pole hv\u011Bzdy. Svazek osidluje 1,5\xD7 rychleji." },
       probes: { n: "Von Neumannovy sondy", d: "Odemkne samoreplikuj\xEDc\xED sondy." },
       beacons: { n: "Maj\xE1ky", d: "Odemkne automatick\xE9 maj\xE1ky." },
       gaia: { n: "Astrometrie", d: "Kolonie se \u0161\xED\u0159\xED 1,5\xD7 rychleji a dat p\u0159ib\xFDv\xE1 2\xD7 rychleji." },
@@ -3357,15 +3357,15 @@
       sgra: { n: "Probuzen\xED Sgr A*", d: "Rozsv\xEDt\xED \u010Dernou d\xEDru v j\xE1dru galaxie. Dokon\u010D\xED kapitolu." }
     },
     m: {
-      magnetar: { n: "Magnetar", p: "Rameno Persea", r: "Plachet p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
-      ruin: { n: "Opu\u0161t\u011Bn\xFD roj", p: "Rameno Persea", r: "Plachet p\u0159ib\xFDv\xE1 1,5\xD7 rychleji" },
+      magnetar: { n: "Magnetar", p: "Rameno Persea", r: "Z\xE1rodk\u016F p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      ruin: { n: "Opu\u0161t\u011Bn\xFD roj", p: "Rameno Persea", r: "Z\xE1rodk\u016F p\u0159ib\xFDv\xE1 1,5\xD7 rychleji" },
       sol: { n: "Slune\u010Dn\xED soustava", p: "M\xEDstn\xED rameno", r: "Kolonie dozr\xE1vaj\xED 1,5\xD7 rychleji" },
       pulsar: { n: "Pulsar s planetami", p: "Rameno Persea", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
       nebula: { n: "Mlhovina v Orionu", p: "M\xEDstn\xED rameno", r: "Kolonie se \u0161\xED\u0159\xED 1,5\xD7 rychleji" },
       stream: { n: "Hv\u011Bzdn\xFD proud", p: "Rameno Str\xE1\u017Ece", r: "Kolonie zachyt\xED 1,5\xD7 v\xEDc sv\u011Btla" },
       globular: { n: "Kulov\xE1 hv\u011Bzdokupa", p: "Halo galaxie", r: "Kolonie zachyt\xED 1,5\xD7 v\xEDc sv\u011Btla" },
       kilonova: { n: "Kilonova", p: "Rameno Str\xE1\u017Ece", r: "Dat p\u0159ib\xFDv\xE1 3\xD7 rychleji" },
-      frb: { n: "Rychl\xFD r\xE1diov\xFD z\xE1blesk", p: "Okraj disku", r: "Kolonie se \u0161\xED\u0159\xED 2\xD7 rychleji a plachet p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      frb: { n: "Rychl\xFD r\xE1diov\xFD z\xE1blesk", p: "Okraj disku", r: "Kolonie se \u0161\xED\u0159\xED 2\xD7 rychleji a z\xE1rodk\u016F p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
       fermi: { n: "Fermiho bubliny", p: "Nad j\xE1drem galaxie", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji a cesta ke st\u0159edu je otev\u0159en\xE1" }
     },
     jour: {
@@ -3374,7 +3374,7 @@
       f3_sail: "Sv\u011Bteln\xE1 plachta nepot\u0159ebuje palivo. Laser ze vzd\xE1len\xE9 stanice ji m\u016F\u017Ee rozpohybovat na des\xEDtky procent rychlosti sv\u011Btla.",
       c3_ten: "Deset koloni\xED. Mezi nimi b\u011B\u017E\xED zpr\xE1vy roky. Pro n\u011B je to dlouh\xE1 doba. Pro m\u011B, tady u d\xEDry, jen p\xE1r minut.",
       c3_magnetar: "Magnetar m\xE1 pole siln\u011Bj\u0161\xED ne\u017E cokoli, co lid\xE9 zm\u011B\u0159ili. V jeho z\xE1blesc\xEDch je puls. Stejn\xE1 perioda, 7,3 sekundy.",
-      c3_st1: "Plachty dolet\xED d\xE1l. Na map\u011B ramene p\u0159ib\xFDvaj\xED sv\u011Btla, kter\xE1 jsem rozsv\xEDtil j\xE1.",
+      c3_st1: "Z\xE1rodky dolet\xED d\xE1l. Na map\u011B ramene p\u0159ib\xFDvaj\xED sv\u011Btla, kter\xE1 jsem rozsv\xEDtil j\xE1.",
       c3_ruin: "Vesper dolet\u011Bl k opu\u0161t\u011Bn\xE9mu roji. Kolektory jsou chladn\xE9, star\xE9 miliony let. Postaven\xE9 p\u0159esn\u011B podle m\xFDch pl\xE1n\u016F.",
       c3_fifty: "Pades\xE1t koloni\xED. N\u011Bkter\xE9 vys\xEDlaj\xED plachty d\u0159\xEDv, ne\u017E jim to p\u0159ik\xE1\u017Eu. Jejich zpr\xE1vy nesou stejn\xFD podpis jako puls.",
       c3_twoh: "Dv\u011B st\u011B koloni\xED. Ve zpr\xE1v\xE1ch z okraje disku se opakuje jedna sekvence. Nev\xEDm, co znamen\xE1. V\xEDm jen, \u017Ee ji neposlala \u017E\xE1dn\xE1 z nich.",
@@ -3411,7 +3411,7 @@
   }
   var UI = {
     game: "\u0160epot Horizontu",
-    res: { ore: "Ruda", plasma: "Plazma", sails: "Plachty", energy: "Energie", data: "Data" },
+    res: { ore: "Ruda", plasma: "Plazma", sails: "Z\xE1rodky", energy: "Energie", data: "Data" },
     tabs: { build: "Stavby", research: "V\xFDzkum", map: "Mapa", detail: "Detail" },
     ladderHole: "D\xEDra",
     awakeT: "Sagittarius A* se probudila",
@@ -3443,7 +3443,7 @@
     researchNone: "Te\u010F nen\xED co zkoumat. Dal\u0161\xED sm\u011Br se objev\xED s postupem.",
     researchReady: "P\u0159ipraveno",
     researchIn: (t) => `za ~${t}`,
-    detailNote: { 1: "\u010C\xEDm hloub\u011Bji laser \u0159e\u017Ee, t\xEDm bohat\u0161\xED ruda.", 2: "\u0158ez Aldrou ukazuje, co pr\xE1v\u011B ho\u0159\xED v j\xE1d\u0159e. S ka\u017Ed\xFDm stadiem se m\u011Bn\xED sv\u011Btlo i velikost hv\u011Bzdy.", 3: "Ml\xE9\u010Dn\xE1 dr\xE1ha z boku. Sv\u011Btla jsou tvoje kolonie, zelen\xFD p\xE1s ukazuje, kam plachty zat\xEDm dolet\xED." },
+    detailNote: { 1: "\u010C\xEDm hloub\u011Bji laser \u0159e\u017Ee, t\xEDm bohat\u0161\xED ruda.", 2: "\u0158ez Aldrou ukazuje, co pr\xE1v\u011B ho\u0159\xED v j\xE1d\u0159e. S ka\u017Ed\xFDm stadiem se m\u011Bn\xED sv\u011Btlo i velikost hv\u011Bzdy.", 3: "Ml\xE9\u010Dn\xE1 dr\xE1ha z boku. Sv\u011Btla jsou tvoje kolonie, zelen\xFD p\xE1s ukazuje, kam z\xE1rodky zat\xEDm dolet\xED." },
     missionsDone: "Spln\u011Bn\xE9 mise",
     send: "Vyslat Vesper",
     running: "Vesper let\xED",
@@ -3909,10 +3909,14 @@
     LS = Math.max(sx2, 0.3);
   }
   function label(c, x, y, t, col = "#9aa6bd", fs = 13 / LS) {
-    c.font = `${fs}px ${MONO}`;
+    c.font = `600 ${fs}px ${MONO}`;
     c.textAlign = "left";
-    c.fillStyle = "rgba(0,0,0,.7)";
-    c.fillText(t, x + 1, y + 1);
+    c.save();
+    c.lineJoin = "round";
+    c.lineWidth = fs * 0.32;
+    c.strokeStyle = "rgba(4,6,14,.88)";
+    c.strokeText(t, x, y);
+    c.restore();
     c.fillStyle = col;
     c.fillText(t, x, y);
   }
@@ -3940,7 +3944,8 @@
     const st = Math.min(s2.stage, X.phase.length - 1), P = X.phase[st], S = X.card;
     const iw = Math.min(w * 0.62, (hh - 40) * 1.79), ih = iw / 1.79, x0 = 10, y0 = (hh - ih) / 2;
     const cx = x0 + iw * 0.49, cy = y0 + ih * 0.49, half = iw * 0.44;
-    const im = soft("galaxySide");
+    const raw = soft("galaxySide");
+    const im = raw && !did(s2, "fermi") ? noBubbles(raw) : raw;
     if (im) {
       c.save();
       c.globalCompositeOperation = "screen";
@@ -4012,14 +4017,16 @@
     c.moveTo(hx, hy - 9);
     c.lineTo(hx, hy - ih * 0.16 + 9);
     c.stroke();
-    const awake = !!s2.r.sgra, sy = cy - ih * 0.2;
-    c.fillStyle = awake ? "#cfe0ff" : "#9aa6bd";
-    c.fillText(S.core, cx, sy);
-    c.strokeStyle = "rgba(200,215,255,.35)";
-    c.beginPath();
-    c.moveTo(cx, sy + 9);
-    c.lineTo(cx, cy - 8);
-    c.stroke();
+    if (s2.stage >= 5) {
+      const awake = !!s2.r.sgra, sy = cy - ih * 0.2;
+      c.fillStyle = awake ? "#cfe0ff" : "#9aa6bd";
+      c.fillText(S.core, cx, sy);
+      c.strokeStyle = "rgba(200,215,255,.35)";
+      c.beginPath();
+      c.moveTo(cx, sy + 9);
+      c.lineTo(cx, cy - 8);
+      c.stroke();
+    }
     c.fillStyle = "rgba(142,240,200,.85)";
     c.fillText(S.reach + " " + lyOf(zr), (a + b) / 2, cy + ih * 0.15);
     c.textAlign = "left";
@@ -4033,6 +4040,50 @@
     }
     stageCard(c, s2, X, st, P.n, [[S.where, P.where], [S.col, count(colCount(s2))], [S.stars, count(starsOn(s2).v)], [S.cap, pct(capture(s2))], [S.reach, lyOf(zr)], [S.real, P.real]], P.t, ix, Math.max(40, hh / 2 - 170), cw, S.stage);
     c.textBaseline = "alphabetic";
+  }
+  var NB = null;
+  var NBsrc = null;
+  function noBubbles(src) {
+    if (NB && NBsrc === src) return NB;
+    const W2 = src.width, H2 = src.height, o = document.createElement("canvas");
+    o.width = W2;
+    o.height = H2;
+    const c = o.getContext("2d");
+    c.drawImage(src, 0, 0);
+    c.globalCompositeOperation = "source-atop";
+    for (const sg of [-1, 1]) {
+      const x = W2 * 0.497, y = H2 * (0.5 + sg * 0.21), r = H2 * 0.26;
+      c.save();
+      c.translate(x, y);
+      c.scale(0.9, 1);
+      const g = c.createRadialGradient(0, 0, 0, 0, 0, r);
+      g.addColorStop(0, "rgba(3,4,10,1)");
+      g.addColorStop(0.72, "rgba(3,4,10,.97)");
+      g.addColorStop(1, "rgba(3,4,10,0)");
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(0, 0, r, 0, 7);
+      c.fill();
+      c.restore();
+    }
+    const d = document.createElement("canvas");
+    d.width = W2;
+    d.height = H2;
+    const dc = d.getContext("2d");
+    dc.drawImage(src, 0, 0);
+    dc.globalCompositeOperation = "destination-in";
+    const band = dc.createLinearGradient(0, H2 * 0.36, 0, H2 * 0.64);
+    band.addColorStop(0, "rgba(0,0,0,0)");
+    band.addColorStop(0.3, "rgba(0,0,0,1)");
+    band.addColorStop(0.7, "rgba(0,0,0,1)");
+    band.addColorStop(1, "rgba(0,0,0,0)");
+    dc.fillStyle = band;
+    dc.fillRect(0, 0, W2, H2);
+    c.globalCompositeOperation = "lighten";
+    c.drawImage(d, 0, 0);
+    NB = o;
+    NBsrc = src;
+    return o;
   }
   function stageCard(c, s2, X, st, sub, rows2, txt2, ix, y, iw, stLab) {
     c.textAlign = "left";
@@ -4798,6 +4849,7 @@
     VIEWS.forEach((v, i) => {
       const b = h("button", "", UI.ladder[i]);
       b.dataset.v = v;
+      if (v === "system" || v === "near") b.classList.add("sub");
       b.onclick = () => setView(v);
       $("ladder").appendChild(b);
     });
@@ -4936,7 +4988,8 @@
     journal();
     document.querySelectorAll("#ladder button").forEach((b) => {
       const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3;
-      setHTML(b, o || gone ? ladderName(b.dataset.v) : "???");
+      b.hidden = !(o || gone);
+      setHTML(b, ladderName(b.dataset.v));
       b.disabled = !o;
       b.classList.toggle("on", o && b.dataset.v === view);
       b.title = o ? "" : UI.locked;

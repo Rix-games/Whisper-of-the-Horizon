@@ -13,7 +13,7 @@ export function find(kind: "b" | "r" | "m" | "jour", id: string): any {
 
 export const UI = {
   game: "Šepot Horizontu",
-  res: { ore: "Ruda", plasma: "Plazma", sails: "Plachty", energy: "Energie", data: "Data" } as Record<string, string>,
+  res: { ore: "Ruda", plasma: "Plazma", sails: "Zárodky", energy: "Energie", data: "Data" } as Record<string, string>,
   tabs: { build: "Stavby", research: "Výzkum", map: "Mapa", detail: "Detail" } as Record<string, string>,
   ladderHole: "Díra",
   awakeT: "Sagittarius A* se probudila",
@@ -42,7 +42,7 @@ export const UI = {
   researchNone: "Teď není co zkoumat. Další směr se objeví s postupem.",
   researchReady: "Připraveno",
   researchIn: (t: string) => `za ~${t}`,
-  detailNote: { 1: "Čím hlouběji laser řeže, tím bohatší ruda.", 2: "Řez Aldrou ukazuje, co právě hoří v jádře. S každým stadiem se mění světlo i velikost hvězdy.", 3: "Mléčná dráha z boku. Světla jsou tvoje kolonie, zelený pás ukazuje, kam plachty zatím doletí." } as Record<number, string>,
+  detailNote: { 1: "Čím hlouběji laser řeže, tím bohatší ruda.", 2: "Řez Aldrou ukazuje, co právě hoří v jádře. S každým stadiem se mění světlo i velikost hvězdy.", 3: "Mléčná dráha z boku. Světla jsou tvoje kolonie, zelený pás ukazuje, kam zárodky zatím doletí." } as Record<number, string>,
   missionsDone: "Splněné mise",
   send: "Vyslat Vesper", running: "Vesper letí", busy: "Vesper je na cestě",
   duration: "Let",

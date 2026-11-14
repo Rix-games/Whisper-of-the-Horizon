@@ -8,6 +8,7 @@ import { galaxyNodes } from "../core/galaxy";
 import { count, pct } from "../core/format";
 import { MONO, SANS } from "../mech/fx";
 import { img } from "./img";
+import { did } from "../core/bus";
 import { soft } from "./views";
 import { LOOK, PIC, starSprite } from "../mech/ch2";
 import { stagesOf } from "../core/defs";
@@ -31,7 +32,8 @@ function galaxyCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, 
   const st = Math.min(s.stage, X.phase.length - 1), P = X.phase[st], S = X.card;
   const iw = Math.min(w * 0.62, (hh - 40) * 1.79), ih = iw / 1.79, x0 = 10, y0 = (hh - ih) / 2;
   const cx = x0 + iw * 0.49, cy = y0 + ih * 0.49, half = iw * 0.44;
-  const im = soft("galaxySide");   // měkké okraje – jinak je vidět obdélník obrázku
+  const raw = soft("galaxySide");   // měkké okraje – jinak je vidět obdélník obrázku
+  const im = raw && !did(s, "fermi") ? noBubbles(raw) : raw;   // Fermiho bubliny až po misi
   if (im) { c.save(); c.globalCompositeOperation = "screen"; c.drawImage(im, x0, y0, iw, ih); c.restore(); }
   else {
     const g = c.createRadialGradient(cx, cy, 0, cx, cy, half); g.addColorStop(0, "rgba(255,225,170,.8)"); g.addColorStop(0.15, "rgba(200,210,255,.35)"); g.addColorStop(1, "rgba(120,140,220,0)");
@@ -62,9 +64,11 @@ function galaxyCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, 
   c.textBaseline = "middle"; c.font = `13px ${MONO}`; c.textAlign = "center";
   c.fillStyle = "#ffd27a"; c.fillText(S.home, hx, hy - ih * 0.16);
   c.strokeStyle = "rgba(255,210,122,.4)"; c.beginPath(); c.moveTo(hx, hy - 9); c.lineTo(hx, hy - ih * 0.16 + 9); c.stroke();
-  const awake = !!s.r.sgra, sy = cy - ih * 0.2;
-  c.fillStyle = awake ? "#cfe0ff" : "#9aa6bd"; c.fillText(S.core, cx, sy);
-  c.strokeStyle = "rgba(200,215,255,.35)"; c.beginPath(); c.moveTo(cx, sy + 9); c.lineTo(cx, cy - 8); c.stroke();
+  if (s.stage >= 5) {   // Sgr A* až ve stadiu Střed galaxie
+    const awake = !!s.r.sgra, sy = cy - ih * 0.2;
+    c.fillStyle = awake ? "#cfe0ff" : "#9aa6bd"; c.fillText(S.core, cx, sy);
+    c.strokeStyle = "rgba(200,215,255,.35)"; c.beginPath(); c.moveTo(cx, sy + 9); c.lineTo(cx, cy - 8); c.stroke();
+  }
   c.fillStyle = "rgba(142,240,200,.85)"; c.fillText(S.reach + " " + lyOf(zr), (a + b) / 2, cy + ih * 0.15);
   c.textAlign = "left"; c.font = `600 11px ${SANS}`; c.fillStyle = "rgba(176,181,212,.9)";
   c.fillText(S.cut.toUpperCase(), 20, 24);
@@ -73,6 +77,28 @@ function galaxyCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, 
   if (cw < 200) { c.textBaseline = "alphabetic"; return; }
   stageCard(c, s, X, st, P.n, [[S.where, P.where], [S.col, count(colCount(s))], [S.stars, count(starsOn(s).v)], [S.cap, pct(capture(s))], [S.reach, lyOf(zr)], [S.real, P.real]], P.t, ix, Math.max(40, hh / 2 - 170), cw, S.stage);
   c.textBaseline = "alphabetic";
+}
+/** Obrázek galaxie z boku bez Fermiho bublin (vymaže laloky nad a pod jádrem, disk a výduť nechá). */
+let NB: HTMLCanvasElement | null = null, NBsrc: any = null;
+function noBubbles(src: HTMLCanvasElement) {
+  if (NB && NBsrc === src) return NB;
+  const W = src.width, H = src.height, o = document.createElement("canvas"); o.width = W; o.height = H;
+  const c = o.getContext("2d")!; c.drawImage(src, 0, 0);
+  c.globalCompositeOperation = "source-atop";   // přetřít černou oblohou obrázku (vymazání by ukázalo světlejší panel)
+  for (const sg of [-1, 1]) {
+    const x = W * 0.497, y = H * (0.5 + sg * 0.21), r = H * 0.26;
+    c.save(); c.translate(x, y); c.scale(0.9, 1);
+    const g = c.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, "rgba(3,4,10,1)"); g.addColorStop(0.72, "rgba(3,4,10,.97)"); g.addColorStop(1, "rgba(3,4,10,0)");
+    c.fillStyle = g; c.beginPath(); c.arc(0, 0, r, 0, 7); c.fill(); c.restore();
+  }
+  // disk a výduť zpět (vymazání nesmí sáhnout na hvězdy v rovině disku)
+  const d = document.createElement("canvas"); d.width = W; d.height = H; const dc = d.getContext("2d")!;
+  dc.drawImage(src, 0, 0); dc.globalCompositeOperation = "destination-in";
+  const band = dc.createLinearGradient(0, H * 0.36, 0, H * 0.64);
+  band.addColorStop(0, "rgba(0,0,0,0)"); band.addColorStop(0.3, "rgba(0,0,0,1)"); band.addColorStop(0.7, "rgba(0,0,0,1)"); band.addColorStop(1, "rgba(0,0,0,0)");
+  dc.fillStyle = band; dc.fillRect(0, 0, W, H);
+  c.globalCompositeOperation = "lighten"; c.drawImage(d, 0, 0);
+  NB = o; NBsrc = src; return o;
 }
 /** Karta aktuálního stadia (sdílí Kap. 2 a 3). */
 function stageCard(c: CanvasRenderingContext2D, s: State, X: any, st: number, sub: string, rows: [string, string][], txt: string, ix: number, y: number, iw: number, stLab: string) {
