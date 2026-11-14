@@ -116,7 +116,8 @@ function buildShell() {
     b.onclick = () => setTab(t); $("tabs").appendChild(b);
   }
   // žebřík
-  VIEWS.forEach((v, i) => { const b = h("button", "", UI.ladder[i]); b.dataset.v = v; if (v === "system" || v === "near") b.classList.add("sub"); b.onclick = () => setView(v); $("ladder").appendChild(b); });
+  VIEWS.forEach((v, i) => { if (v === "near") return;   // Okolí jen přes Mapu v Kap. 2, na žebříku není
+    const b = h("button", "", UI.ladder[i]); b.dataset.v = v; if (v === "system") b.classList.add("sub"); b.onclick = () => setView(v); $("ladder").appendChild(b); });
   $("kblock").onclick = showK;
   $("setBtn").onclick = showSettings;
   $("sndBtn").onclick = () => { s.opt.sound = !s.opt.sound; Audio.setSound(s.opt.sound, s.ch >= 1); $("sndBtn").classList.toggle("on", s.opt.sound); };
@@ -174,7 +175,7 @@ function viewOpen(v: string) {
   if (v === "body") return s.ch < 3;   // asteroid zanikl se supernovou
   if (v === "system") return s.ch >= 3;   // v Kap. 1–2 je soustava jen na záložce Mapa
   if (v === "star") return s.ch >= 2;
-  if (v === "near") return s.ch >= 3;     // v Kap. 2 je okolí jen na záložce Mapa (mise)
+  if (v === "near") return false;     // okolí jen na záložce Mapa (mise Kap. 2)
   if (v === "galaxy") return s.ch >= 3;
   return false;
 }
@@ -240,8 +241,7 @@ function updateUI() {
   $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
   journal();
   // žebřík
-  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3; b.hidden = !(o || gone); setHTML(b, ladderName(b.dataset.v)); b.disabled = !o;   // budoucí měřítka se neukazují vůbec
-    b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
+  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3; setHTML(b, o || gone ? ladderName(b.dataset.v) : "???"); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
   // tečky na záložkách
   const newer = (pre: string) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + ({ b_: "build", r_: "research", m_: "map" } as any)[pre]] ?? -1));
   const dots: Record<string, boolean> = {

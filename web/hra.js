@@ -4847,9 +4847,10 @@
       $("tabs").appendChild(b);
     }
     VIEWS.forEach((v, i) => {
+      if (v === "near") return;
       const b = h("button", "", UI.ladder[i]);
       b.dataset.v = v;
-      if (v === "system" || v === "near") b.classList.add("sub");
+      if (v === "system") b.classList.add("sub");
       b.onclick = () => setView(v);
       $("ladder").appendChild(b);
     });
@@ -4920,7 +4921,7 @@
     if (v === "body") return s.ch < 3;
     if (v === "system") return s.ch >= 3;
     if (v === "star") return s.ch >= 2;
-    if (v === "near") return s.ch >= 3;
+    if (v === "near") return false;
     if (v === "galaxy") return s.ch >= 3;
     return false;
   }
@@ -4988,8 +4989,7 @@
     journal();
     document.querySelectorAll("#ladder button").forEach((b) => {
       const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3;
-      b.hidden = !(o || gone);
-      setHTML(b, ladderName(b.dataset.v));
+      setHTML(b, o || gone ? ladderName(b.dataset.v) : "???");
       b.disabled = !o;
       b.classList.toggle("on", o && b.dataset.v === view);
       b.title = o ? "" : UI.locked;
