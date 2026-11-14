@@ -220,3 +220,5 @@ body.wide #hint { display:none; }
 
 /* oddělovač tisíců: úzká mezera (v JetBrains Mono by obyčejná mezera měla šířku číslice) */
 .th { display:inline-block; width:.22em; }
+#stats .w { grid-column:1 / -1; }
+#stats dd.w { text-align:left; white-space:normal; margin-top:-2px; color:var(--ink,#e1e4f4); }

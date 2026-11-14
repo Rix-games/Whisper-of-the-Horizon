@@ -52,7 +52,8 @@ export const hvezda: Mech & any = {
   Rd: 0, flyCd: 0, picSt: -1, picPrev: -1, picT0: 0, spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
   reset() { this.Rd = 0; this.dots = []; this.loops = []; this.jets = []; this.cmes = []; this.fact = []; this.grab = null; this.combo = 0; this.lastN = -1; this.picSt = -1; this.picPrev = -1; },
   geo(s: State) {
-    const L = look(s), Rs = this.Rd || L.R, base = Math.max(Rs * 1.5 + 40, 150), out = s.r.outer ? Math.min(1.25, Math.max(1, 640 / (base * 1.9))) : 1;
+    // dráhy roje stojí pevně (nezávisle na hvězdě) – jinak růst hvězdy vypadá jen jako přiblížení kamery
+    const L = look(s), Rs = this.Rd || L.R, base = 215, out = s.r.outer ? 1.2 : 1;
     return { Rs, rings: [base * out, base * 1.42 * out, base * 1.9 * out] };
   },
   pos(d: Dot, g: any) { const r = g.rings[d.ring]; return [CX + Math.cos(d.a) * r, CY + Math.sin(d.a) * r]; },

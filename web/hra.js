@@ -1966,7 +1966,7 @@
       this.picPrev = -1;
     },
     geo(s2) {
-      const L = look(s2), Rs = this.Rd || L.R, base = Math.max(Rs * 1.5 + 40, 150), out = s2.r.outer ? Math.min(1.25, Math.max(1, 640 / (base * 1.9))) : 1;
+      const L = look(s2), Rs = this.Rd || L.R, base = 215, out = s2.r.outer ? 1.2 : 1;
       return { Rs, rings: [base * out, base * 1.42 * out, base * 1.9 * out] };
     },
     pos(d, g) {
@@ -4915,7 +4915,7 @@
       $("goalNeed").textContent = UI.finalHint(find("r", fin.id).n);
     }
     $("indic").innerHTML = sx(indicator());
-    $("stats").innerHTML = statRows().map(([l, v]) => `<dt>${l}</dt><dd class="mono">${sx(v)}</dd>`).join("");
+    $("stats").innerHTML = statRows().map(([l, v]) => l.startsWith("\xBB") ? `<dt class="w">${l.slice(1)}</dt><dd class="w">${sx(v)}</dd>` : `<dt>${l}</dt><dd class="mono">${sx(v)}</dd>`).join("");
     $("hint").textContent = view === C.view ? X.hint[s.stage >= C.lvl2 ? 1 : 0] : "";
     $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
     journal();
@@ -4956,7 +4956,7 @@
     const C = chOf(s), rows2 = [[UI.power, si(power(s), "W")]];
     rows2.push([`${curName(C.cur)}${UI.perSec}`, fmtCur(C.cur, RT.rate[C.cur])]);
     rows2.push([`${UI.res.data}${UI.perSec}`, si(dataRate(s), "B")]);
-    if (s.run) rows2.push([ship().who, `${find("m", s.run.id).n} \xB7 ${duration(s.run.left)}`]);
+    if (s.run) rows2.push(["\xBB" + ship().who, `${find("m", s.run.id).n} \xB7 <span class="mono">${duration(s.run.left)}</span>`]);
     return rows2;
   }
   var logLen = -1;

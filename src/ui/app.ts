@@ -230,7 +230,8 @@ function updateUI() {
     $("goalNeed").textContent = UI.finalHint(find("r", fin.id).n);
   }
   $("indic").innerHTML = sx(indicator());
-  $("stats").innerHTML = statRows().map(([l, v]) => `<dt>${l}</dt><dd class="mono">${sx(v)}</dd>`).join("");
+  // dlouhá hodnota (»popisek) jde na vlastní řádek pod popisek, jinak by vylezla z panelu
+  $("stats").innerHTML = statRows().map(([l, v]) => l.startsWith("»") ? `<dt class="w">${l.slice(1)}</dt><dd class="w">${sx(v)}</dd>` : `<dt>${l}</dt><dd class="mono">${sx(v)}</dd>`).join("");
   $("hint").textContent = view === C.view ? X.hint[s.stage >= C.lvl2 ? 1 : 0] : "";
   $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
   journal();
@@ -266,7 +267,7 @@ function statRows(): [string, string][] {
   const C = chOf(s), rows: [string, string][] = [[UI.power, si(E.power(s), "W")]];
   rows.push([`${curName(C.cur)}${UI.perSec}`, fmtCur(C.cur, E.RT.rate[C.cur])]);
   rows.push([`${UI.res.data}${UI.perSec}`, si(E.dataRate(s), "B")]);
-  if (s.run) rows.push([ship().who, `${find("m", s.run.id).n} · ${duration(s.run.left)}`]);
+  if (s.run) rows.push(["»" + ship().who, `${find("m", s.run.id).n} · <span class="mono">${duration(s.run.left)}</span>`]);
   return rows;
 }
 
