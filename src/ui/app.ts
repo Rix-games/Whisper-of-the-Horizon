@@ -120,6 +120,10 @@ function buildShell() {
   $("kblock").onclick = showK;
   $("setBtn").onclick = showSettings;
   $("sndBtn").onclick = () => { s.opt.sound = !s.opt.sound; Audio.setSound(s.opt.sound, s.ch >= 1); $("sndBtn").classList.toggle("on", s.opt.sound); };
+  // zvuk zapnutý z minula: ikonu ukázat hned, zvuk spustit při prvním kliku kamkoli (prohlížeč jinak zvuk nepustí);
+  // dřív ikona ukazovala vypnuto, a první klik ho tak naopak vypnul – musel se dávat dvakrát
+  $("sndBtn").classList.toggle("on", !!s.opt.sound);
+  if (s.opt.sound) addEventListener("pointerdown", (e: any) => { if (e.target?.closest?.("#sndBtn")) return; if (s.opt.sound) Audio.setSound(true, s.ch >= 1); }, { once: true, capture: true });
   $("modalOk").onclick = () => closeModal(true);
   $("modalCancel").onclick = () => closeModal(false);
   setTab("build");

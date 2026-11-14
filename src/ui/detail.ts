@@ -9,7 +9,7 @@ import { count, pct } from "../core/format";
 import { MONO, SANS } from "../mech/fx";
 import { img } from "./img";
 import { soft } from "./views";
-import { LOOK, PIC } from "../mech/ch2";
+import { LOOK, PIC, starSprite } from "../mech/ch2";
 import { stagesOf } from "../core/defs";
 
 const COLS = ["#6d655c", "#5c4a3e", "#8a7a55", "#9aa3ad", "#8a6fd0"];
@@ -208,22 +208,6 @@ function wrap(c: CanvasRenderingContext2D, txt: string, x: number, y: number, ma
   return y + lh;
 }
 
-/** Obrázek hvězdy zmenšený na poloměr R s měkkým okrajem (kotouč + kousek koróny), cache podle stadia a velikosti. */
-let spKey = "", spCv: HTMLCanvasElement | null = null;
-function starSprite(st: number, R: number, T: number) {
-  const [k, f] = PIC(st), im = img(k); if (!im) return null;
-  const sz = Math.ceil(R * 4), key = k + sz;
-  if (key !== spKey) {
-    const cv = document.createElement("canvas"); cv.width = cv.height = sz;
-    const g = cv.getContext("2d")!, hw = R / f; g.imageSmoothingQuality = "high";
-    g.drawImage(im, sz / 2 - hw, sz / 2 - hw, hw * 2, hw * 2);
-    const m = g.createRadialGradient(sz / 2, sz / 2, R * 1.02, sz / 2, sz / 2, R * (f < 0.5 ? 1.7 : 1.35));
-    m.addColorStop(0, "rgba(0,0,0,1)"); m.addColorStop(1, "rgba(0,0,0,0)");
-    g.globalCompositeOperation = "destination-in"; g.fillStyle = m; g.fillRect(0, 0, sz, sz);
-    spKey = key; spCv = cv;
-  }
-  return spCv;
-}
 
 function starCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh: number, X: any) {
   const st = Math.min(s.stage, SHELLS.length - 1), Ls = SHELLS[st], Lk = LOOK[st], P = X.phase[st], S = X.star;

@@ -4,6 +4,7 @@ import type { State } from "../core/state";
 import { MISSIONS, MMAP } from "../core/defs";
 import { mVisible } from "../core/engine";
 import { coverage } from "../chapters/ch2";
+import { hvezda, LOOK, starSprite } from "../mech/ch2";
 import { GAL_SITES } from "../chapters/ch3";
 import { gsp } from "../mech/ch3";
 import { galaxyNodes } from "../core/galaxy";
@@ -79,8 +80,28 @@ export const SYS = {
   platform: at(0.42, 0.66), comet: at(0.655, 0.134), beltR: 0.2,
 };
 const orbit = (r: number, a: number, k = 0.42) => [SYS.aldra[0] + Math.cos(a) * r, SYS.aldra[1] + Math.sin(a) * r * k];
+
+/** Aldra na mapě (Soustava / Okolí) podle stadia: zakryje hvězdu z obrázku a nakreslí aktuální – roste i se mění barva.
+ *  k = měřítko mapy (Soustava 1, Okolí menší). Vrací poloměr, aby se roj kolem dal odsunout. */
+function aldraOnMap(c: CanvasRenderingContext2D, s: State, x: number, y: number, k: number) {
+  const st = Math.min(s.stage, LOOK.length - 1), Rd = hvezda.Rd || LOOK[st].R;
+  const r = 45 * k * (st >= 5 ? 0.45 : Math.pow(Rd / 60, 0.8));   // modrá 45→62, rudý veleobr ~100, Wolf-Rayet malé jádro
+  const sp = starSprite(st, r);
+  // zakrýt hvězdu, která je nakreslená v obrázku
+  const cr = 58 * k, cov = c.createRadialGradient(x, y, 0, x, y, cr);
+  cov.addColorStop(0, "rgba(5,7,14,1)"); cov.addColorStop(0.75, "rgba(5,7,14,.8)"); cov.addColorStop(1, "rgba(5,7,14,0)");
+  c.fillStyle = cov; c.beginPath(); c.arc(x, y, cr, 0, 7); c.fill();
+  const gl = LOOK[st].glow.join(","), h = c.createRadialGradient(x, y, r * 0.8, x, y, r * 2.4);
+  h.addColorStop(0, `rgba(${gl},.35)`); h.addColorStop(1, `rgba(${gl},0)`);
+  c.fillStyle = h; c.beginPath(); c.arc(x, y, r * 2.4, 0, 7); c.fill();
+  if (sp) { c.save(); c.globalCompositeOperation = "screen"; c.drawImage(sp, x - sp.width / 2, y - sp.height / 2); c.restore(); }
+  else { c.fillStyle = LOOK[st].mid; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
+  return r;
+}
+
 export function drawSystem(c: CanvasRenderingContext2D, s: State, T: number) {
   const [cx, cy] = SYS.aldra;
+  let aldraR = 22;
   const I3 = s.ch >= 3 ? soft("system3") : null;
   if (I3) {   // soustava po supernově (obrázek): díra uprostřed, jen popisky
     c.drawImage(I3, 0, IY, 1600, IH);
@@ -92,12 +113,7 @@ export function drawSystem(c: CanvasRenderingContext2D, s: State, T: number) {
   if (I) {
     c.drawImage(I, 0, IY, 1600, IH);
     if (s.ch >= 3) { c.fillStyle = "rgba(4,5,10,.9)"; c.beginPath(); c.arc(cx, cy, 34, 0, 7); c.fill(); drawHole(c, cx, cy, 12, T); }
-    else if (s.ch === 2 && s.stage >= 4) {   // rudý veleobr / Wolf-Rayet přebarví hvězdu
-      const red = s.stage === 4, col = red ? "255,130,70" : "200,180,255", R = red ? 40 : 18;
-      c.save(); c.globalCompositeOperation = red ? "source-over" : "lighter";
-      const g = c.createRadialGradient(cx, cy, 0, cx, cy, R * 2.2); g.addColorStop(0, `rgba(${col},.95)`); g.addColorStop(1, `rgba(${col},0)`);
-      c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * 2.2, 0, 7); c.fill(); c.restore();
-    }
+    else if (s.ch === 2) aldraR = aldraOnMap(c, s, cx, cy, 1);
   } else {
     c.strokeStyle = "rgba(140,160,210,.13)"; c.lineWidth = 1;
     for (const r of [150, 330, 470, 640]) { c.beginPath(); c.ellipse(cx, cy, r, r * 0.42, 0, 0, 7); c.stroke(); }
@@ -117,7 +133,7 @@ export function drawSystem(c: CanvasRenderingContext2D, s: State, T: number) {
   if (s.ch >= 2) {
     const cov = s.ch === 2 ? coverage(s) : 0.45, vis = Math.max(0.05, Math.min(1, (Math.log10(Math.max(cov, 1e-14)) + 14) / 14));
     c.save(); c.globalCompositeOperation = "lighter";
-    for (let i = 0; i < 260 * vis; i++) { const a = i * 2.39996 + T * 0.05, r = 80 + (i % 3) * 16, p = orbit(r, a, 0.5); c.fillStyle = "rgba(255,215,150,.7)"; c.fillRect(p[0], p[1], 1.8, 1.8); }
+    for (let i = 0; i < 260 * vis; i++) { const a = i * 2.39996 + T * 0.05, r = Math.max(80, aldraR + 38) + (i % 3) * 16, p = orbit(r, a, 0.5); c.fillStyle = "rgba(255,215,150,.7)"; c.fillRect(p[0], p[1], 1.8, 1.8); }
     c.restore();
   }
   const [px, py] = SYS.platform;
@@ -126,7 +142,7 @@ export function drawSystem(c: CanvasRenderingContext2D, s: State, T: number) {
   label(c, px + 12, py + 16, "VESPER-7", "#f2a65a");
   label(c, SYS.tauris[0] + 30, SYS.tauris[1] - 42, "Tauris");
   label(c, SYS.kelvar[0] - 78, SYS.kelvar[1] + 30, "Kelvar");
-  label(c, cx - 30, cy + 58, s.ch <= 2 ? "Aldra" : "Díra po Aldře");
+  label(c, cx - 30, cy + Math.max(58, aldraR + 20), s.ch <= 2 ? "Aldra" : "Díra po Aldře");
 }
 function planet(c: CanvasRenderingContext2D, x: number, y: number, r: number, col: string, bands = false) {
   const g = c.createRadialGradient(x - r * 0.4, y - r * 0.4, r * 0.1, x, y, r);
@@ -181,12 +197,7 @@ export function drawNear(c: CanvasRenderingContext2D, s: State, T: number) {
     const [ax, ay] = NEAR.aldra;
     c.drawImage(I, 0, IY, 1600, IH);
     if (s.ch >= 3) { c.fillStyle = "rgba(4,5,10,.92)"; c.beginPath(); c.arc(ax, ay, 22, 0, 7); c.fill(); drawHole(c, ax, ay, 8, T); }
-    else if (s.ch === 2 && s.stage >= 4) {   // rudý veleobr / Wolf-Rayet přebarví hvězdu i v okolí
-      const red = s.stage === 4, col = red ? "255,130,70" : "200,180,255", R = red ? 26 : 12;
-      c.save(); c.globalCompositeOperation = red ? "source-over" : "lighter";
-      const g = c.createRadialGradient(ax, ay, 0, ax, ay, R * 2.2); g.addColorStop(0, `rgba(${col},.95)`); g.addColorStop(1, `rgba(${col},0)`);
-      c.fillStyle = g; c.beginPath(); c.arc(ax, ay, R * 2.2, 0, 7); c.fill(); c.restore();
-    }
+    else if (s.ch === 2) aldraOnMap(c, s, ax, ay, 0.5);
     return label(c, ax + 34, ay - 28, s.ch <= 2 ? "Aldra" : "Díra po Aldře");
   }
   const r = mulberry(12);

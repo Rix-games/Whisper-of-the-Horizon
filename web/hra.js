@@ -1933,6 +1933,30 @@
     const r = mulberry(3);
     return Array.from({ length: 80 }, () => ({ a: r() * 6.28, d: Math.sqrt(r()) * 0.95, r: 0.04 + r() * 0.1, s: 0.5 + r() * 2, p: r() * 6 }));
   })();
+  var SPR = /* @__PURE__ */ new Map();
+  function starSprite(st, R2, _T = 0) {
+    const [k, f] = PIC(st), im = img(k);
+    if (!im) return null;
+    R2 = Math.max(4, Math.round(R2 / 4) * 4);
+    const sz = Math.ceil(R2 * (f < 0.5 ? 4 : 3)), key = k + ":" + R2;
+    let cv = SPR.get(key);
+    if (!cv) {
+      cv = document.createElement("canvas");
+      cv.width = cv.height = sz;
+      const g = cv.getContext("2d"), hw = R2 / f;
+      g.imageSmoothingQuality = "high";
+      g.drawImage(im, sz / 2 - hw, sz / 2 - hw, hw * 2, hw * 2);
+      const m = g.createRadialGradient(sz / 2, sz / 2, R2 * 1.02, sz / 2, sz / 2, R2 * (f < 0.5 ? 1.9 : 1.35));
+      m.addColorStop(0, "rgba(0,0,0,1)");
+      m.addColorStop(1, "rgba(0,0,0,0)");
+      g.globalCompositeOperation = "destination-in";
+      g.fillStyle = m;
+      g.fillRect(0, 0, sz, sz);
+      if (SPR.size > 10) SPR.delete(SPR.keys().next().value);
+      SPR.set(key, cv);
+    }
+    return cv;
+  }
   var hvezda = {
     dots: [],
     loops: [],
@@ -3568,8 +3592,41 @@
     beltR: 0.2
   };
   var orbit = (r, a, k = 0.42) => [SYS.aldra[0] + Math.cos(a) * r, SYS.aldra[1] + Math.sin(a) * r * k];
+  function aldraOnMap(c, s2, x, y, k) {
+    const st = Math.min(s2.stage, LOOK.length - 1), Rd = hvezda.Rd || LOOK[st].R;
+    const r = 45 * k * (st >= 5 ? 0.45 : Math.pow(Rd / 60, 0.8));
+    const sp2 = starSprite(st, r);
+    const cr = 58 * k, cov = c.createRadialGradient(x, y, 0, x, y, cr);
+    cov.addColorStop(0, "rgba(5,7,14,1)");
+    cov.addColorStop(0.75, "rgba(5,7,14,.8)");
+    cov.addColorStop(1, "rgba(5,7,14,0)");
+    c.fillStyle = cov;
+    c.beginPath();
+    c.arc(x, y, cr, 0, 7);
+    c.fill();
+    const gl = LOOK[st].glow.join(","), h2 = c.createRadialGradient(x, y, r * 0.8, x, y, r * 2.4);
+    h2.addColorStop(0, `rgba(${gl},.35)`);
+    h2.addColorStop(1, `rgba(${gl},0)`);
+    c.fillStyle = h2;
+    c.beginPath();
+    c.arc(x, y, r * 2.4, 0, 7);
+    c.fill();
+    if (sp2) {
+      c.save();
+      c.globalCompositeOperation = "screen";
+      c.drawImage(sp2, x - sp2.width / 2, y - sp2.height / 2);
+      c.restore();
+    } else {
+      c.fillStyle = LOOK[st].mid;
+      c.beginPath();
+      c.arc(x, y, r, 0, 7);
+      c.fill();
+    }
+    return r;
+  }
   function drawSystem(c, s2, T4) {
     const [cx, cy] = SYS.aldra;
+    let aldraR = 22;
     const I3 = s2.ch >= 3 ? soft("system3") : null;
     if (I3) {
       c.drawImage(I3, 0, IY, 1600, IH);
@@ -3586,19 +3643,7 @@
         c.arc(cx, cy, 34, 0, 7);
         c.fill();
         drawHole(c, cx, cy, 12, T4);
-      } else if (s2.ch === 2 && s2.stage >= 4) {
-        const red = s2.stage === 4, col = red ? "255,130,70" : "200,180,255", R2 = red ? 40 : 18;
-        c.save();
-        c.globalCompositeOperation = red ? "source-over" : "lighter";
-        const g = c.createRadialGradient(cx, cy, 0, cx, cy, R2 * 2.2);
-        g.addColorStop(0, `rgba(${col},.95)`);
-        g.addColorStop(1, `rgba(${col},0)`);
-        c.fillStyle = g;
-        c.beginPath();
-        c.arc(cx, cy, R2 * 2.2, 0, 7);
-        c.fill();
-        c.restore();
-      }
+      } else if (s2.ch === 2) aldraR = aldraOnMap(c, s2, cx, cy, 1);
     } else {
       c.strokeStyle = "rgba(140,160,210,.13)";
       c.lineWidth = 1;
@@ -3636,7 +3681,7 @@
       c.save();
       c.globalCompositeOperation = "lighter";
       for (let i = 0; i < 260 * vis; i++) {
-        const a = i * 2.39996 + T4 * 0.05, r = 80 + i % 3 * 16, p = orbit(r, a, 0.5);
+        const a = i * 2.39996 + T4 * 0.05, r = Math.max(80, aldraR + 38) + i % 3 * 16, p = orbit(r, a, 0.5);
         c.fillStyle = "rgba(255,215,150,.7)";
         c.fillRect(p[0], p[1], 1.8, 1.8);
       }
@@ -3654,7 +3699,7 @@
     label(c, px + 12, py + 16, "VESPER-7", "#f2a65a");
     label(c, SYS.tauris[0] + 30, SYS.tauris[1] - 42, "Tauris");
     label(c, SYS.kelvar[0] - 78, SYS.kelvar[1] + 30, "Kelvar");
-    label(c, cx - 30, cy + 58, s2.ch <= 2 ? "Aldra" : "D\xEDra po Ald\u0159e");
+    label(c, cx - 30, cy + Math.max(58, aldraR + 20), s2.ch <= 2 ? "Aldra" : "D\xEDra po Ald\u0159e");
   }
   function planet(c, x, y, r, col, bands = false) {
     const g = c.createRadialGradient(x - r * 0.4, y - r * 0.4, r * 0.1, x, y, r);
@@ -3744,19 +3789,7 @@
         c.arc(ax, ay, 22, 0, 7);
         c.fill();
         drawHole(c, ax, ay, 8, T4);
-      } else if (s2.ch === 2 && s2.stage >= 4) {
-        const red = s2.stage === 4, col = red ? "255,130,70" : "200,180,255", R2 = red ? 26 : 12;
-        c.save();
-        c.globalCompositeOperation = red ? "source-over" : "lighter";
-        const g = c.createRadialGradient(ax, ay, 0, ax, ay, R2 * 2.2);
-        g.addColorStop(0, `rgba(${col},.95)`);
-        g.addColorStop(1, `rgba(${col},0)`);
-        c.fillStyle = g;
-        c.beginPath();
-        c.arc(ax, ay, R2 * 2.2, 0, 7);
-        c.fill();
-        c.restore();
-      }
+      } else if (s2.ch === 2) aldraOnMap(c, s2, ax, ay, 0.5);
       return label(c, ax + 34, ay - 28, s2.ch <= 2 ? "Aldra" : "D\xEDra po Ald\u0159e");
     }
     const r = mulberry(12);
@@ -4225,29 +4258,6 @@
     }
     if (line) c.fillText(line, x, y);
     return y + lh;
-  }
-  var spKey = "";
-  var spCv = null;
-  function starSprite(st, R2, T4) {
-    const [k, f] = PIC(st), im = img(k);
-    if (!im) return null;
-    const sz = Math.ceil(R2 * 4), key = k + sz;
-    if (key !== spKey) {
-      const cv = document.createElement("canvas");
-      cv.width = cv.height = sz;
-      const g = cv.getContext("2d"), hw = R2 / f;
-      g.imageSmoothingQuality = "high";
-      g.drawImage(im, sz / 2 - hw, sz / 2 - hw, hw * 2, hw * 2);
-      const m = g.createRadialGradient(sz / 2, sz / 2, R2 * 1.02, sz / 2, sz / 2, R2 * (f < 0.5 ? 1.7 : 1.35));
-      m.addColorStop(0, "rgba(0,0,0,1)");
-      m.addColorStop(1, "rgba(0,0,0,0)");
-      g.globalCompositeOperation = "destination-in";
-      g.fillStyle = m;
-      g.fillRect(0, 0, sz, sz);
-      spKey = key;
-      spCv = cv;
-    }
-    return spCv;
   }
   function starCut(c, s2, T4, w, hh, X) {
     const st = Math.min(s2.stage, SHELLS.length - 1), Ls = SHELLS[st], Lk = LOOK[st], P = X.phase[st], S = X.star;
@@ -4798,6 +4808,11 @@
       setSound(s.opt.sound, s.ch >= 1);
       $("sndBtn").classList.toggle("on", s.opt.sound);
     };
+    $("sndBtn").classList.toggle("on", !!s.opt.sound);
+    if (s.opt.sound) addEventListener("pointerdown", (e) => {
+      if (e.target?.closest?.("#sndBtn")) return;
+      if (s.opt.sound) setSound(true, s.ch >= 1);
+    }, { once: true, capture: true });
     $("modalOk").onclick = () => closeModal(true);
     $("modalCancel").onclick = () => closeModal(false);
     setTab("build");

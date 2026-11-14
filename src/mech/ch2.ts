@@ -47,6 +47,27 @@ interface Loop { a: number; grow: number; life: number; ph: number; held: boolea
 
 const gran = (() => { const r = mulberry(3); return Array.from({ length: 80 }, () => ({ a: r() * 6.28, d: Math.sqrt(r()) * 0.95, r: 0.04 + r() * 0.1, s: 0.5 + r() * 2, p: r() * 6 })); })();
 
+/** Obrázek hvězdy daného stadia zmenšený na poloměr R s měkkým okrajem (kotouč + kousek koróny / mlhoviny).
+ *  Cache podle stadia a velikosti (zaokrouhleno na 4 px, max 10 kusů) – kreslí se v Detailu i na mapách. */
+const SPR = new Map<string, HTMLCanvasElement>();
+export function starSprite(st: number, R: number, _T = 0) {
+  const [k, f] = PIC(st), im = img(k); if (!im) return null;
+  R = Math.max(4, Math.round(R / 4) * 4);
+  const sz = Math.ceil(R * (f < 0.5 ? 4 : 3)), key = k + ":" + R;
+  let cv = SPR.get(key);
+  if (!cv) {
+    cv = document.createElement("canvas"); cv.width = cv.height = sz;
+    const g = cv.getContext("2d")!, hw = R / f; g.imageSmoothingQuality = "high";
+    g.drawImage(im, sz / 2 - hw, sz / 2 - hw, hw * 2, hw * 2);
+    const m = g.createRadialGradient(sz / 2, sz / 2, R * 1.02, sz / 2, sz / 2, R * (f < 0.5 ? 1.9 : 1.35));
+    m.addColorStop(0, "rgba(0,0,0,1)"); m.addColorStop(1, "rgba(0,0,0,0)");
+    g.globalCompositeOperation = "destination-in"; g.fillStyle = m; g.fillRect(0, 0, sz, sz);
+    if (SPR.size > 10) SPR.delete(SPR.keys().next().value!);
+    SPR.set(key, cv);
+  }
+  return cv;
+}
+
 export const hvezda: Mech & any = {
   dots: [] as Dot[], loops: [] as Loop[], jets: [] as any[], cmes: [] as any[], fact: [] as any[],
   Rd: 0, flyCd: 0, picSt: -1, picPrev: -1, picT0: 0, spawnT: 2.5, launchT: 0, grab: null as Loop | null, combo: 0, jid: 0, shake: 0, lastN: -1, manual: 0,
