@@ -6,6 +6,7 @@ import { mVisible } from "../core/engine";
 import { coverage } from "../chapters/ch2";
 import { GAL_SITES } from "../chapters/ch3";
 import { gsp } from "../mech/ch3";
+import { galaxyNodes } from "../core/galaxy";
 import { MONO, SANS } from "../mech/fx";
 import { find } from "../i18n";
 import { img } from "./img";
@@ -55,7 +56,7 @@ export function background(c: CanvasRenderingContext2D, W: number, H: number, dp
 
 /** Obrázek s rozmazanými okraji (aby nebyl vidět obdélník), počítá se jednou. */
 const softC: Record<string, HTMLCanvasElement> = {};
-function soft(k: "system" | "near"): HTMLCanvasElement | null {
+export function soft(k: "system" | "near" | "system3" | "near3" | "galaxySide"): HTMLCanvasElement | null {
   if (softC[k]) return softC[k];
   const I = img(k); if (!I) return null;
   const cv = document.createElement("canvas"); cv.width = I.width; cv.height = I.height;
@@ -79,7 +80,15 @@ export const SYS = {
 };
 const orbit = (r: number, a: number, k = 0.42) => [SYS.aldra[0] + Math.cos(a) * r, SYS.aldra[1] + Math.sin(a) * r * k];
 export function drawSystem(c: CanvasRenderingContext2D, s: State, T: number) {
-  const [cx, cy] = SYS.aldra, I = soft("system");
+  const [cx, cy] = SYS.aldra;
+  const I3 = s.ch >= 3 ? soft("system3") : null;
+  if (I3) {   // soustava po supernově (obrázek): díra uprostřed, jen popisky
+    c.drawImage(I3, 0, IY, 1600, IH);
+    label(c, 830, 470, "Díra po Aldře");
+    label(c, 1060, 640, "Zbytky pásu");
+    return;
+  }
+  const I = soft("system");
   if (I) {
     c.drawImage(I, 0, IY, 1600, IH);
     if (s.ch >= 3) { c.fillStyle = "rgba(4,5,10,.9)"; c.beginPath(); c.arc(cx, cy, 34, 0, 7); c.fill(); drawHole(c, cx, cy, 12, T); }
@@ -140,6 +149,12 @@ export function drawHole(c: CanvasRenderingContext2D, x: number, y: number, R: n
 }
 /** Pohled Hvězda v Kap. 3: díra po Aldře se zbytkem supernovy. */
 export function drawRemnant(c: CanvasRenderingContext2D, T: number) {
+  const H = img("hole3");
+  if (H) {   // obrázek díry s měkkým okrajem, disk se pomalu „dýchá“
+    const sz = 980 * (1 + 0.006 * Math.sin(T * 0.4));
+    c.save(); c.globalCompositeOperation = "screen"; c.drawImage(H, 800 - sz / 2, 500 - sz / 2, sz, sz); c.restore();
+    return label(c, 800 + 120, 500 + 120, "Díra po Aldře · 8 M☉");
+  }
   c.save(); c.globalCompositeOperation = "lighter";
   const r = mulberry(4);
   for (let i = 0; i < 900; i++) {
@@ -155,6 +170,12 @@ export function drawRemnant(c: CanvasRenderingContext2D, T: number) {
 // Rozvržení odpovídá obrázku kap2-okoli (stejné vložení jako soustava): Aldra uprostřed, pozůstatek supernovy vpravo nahoře.
 export const NEAR = { aldra: at(0.5, 0.485), remnant: at(0.74, 0.25) };
 export function drawNear(c: CanvasRenderingContext2D, s: State, T: number) {
+  const I3 = s.ch >= 3 ? soft("near3") : null;
+  if (I3) {   // okolí díry: čerstvý pozůstatek supernovy a sousední hvězdy
+    c.drawImage(I3, 0, IY, 1600, IH);
+    label(c, 830, 480, "Díra po Aldře");
+    return label(c, 1010, 290, "Pozůstatek supernovy", "#e9a3b8");
+  }
   const I = soft("near");
   if (I) {
     const [ax, ay] = NEAR.aldra;
@@ -212,7 +233,7 @@ export function drawMissions(c: CanvasRenderingContext2D, s: State, view: string
   if (s.run && MMAP[s.run.id].view === view) {
     const [tx, ty] = missionPos(s.run.id);
     let [ox, oy] = ORIGIN[view];
-    if (view === "galaxy") { const h = gsp({ x: -0.51, y: -0.46 }); ox = h[0]; oy = h[1]; }
+    if (view === "galaxy") { const h = gsp(galaxyNodes()[0]); ox = h[0]; oy = h[1]; }
     const f = 1 - s.run.left / s.run.dur, k = f < 0.5 ? f * 2 : (1 - f) * 2;
     const x = ox + (tx - ox) * k, y = oy + (ty - oy) * k;
     c.setLineDash([3, 6]); c.strokeStyle = "rgba(242,166,90,.35)"; c.lineWidth = 1; c.beginPath(); c.moveTo(ox, oy); c.lineTo(tx, ty); c.stroke(); c.setLineDash([]);

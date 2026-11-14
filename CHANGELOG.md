@@ -1,5 +1,17 @@
 # Novinky
 
+## Připravuje se
+
+- Kapitola 3: obrázky galaxie, díry po Aldře, soustavy, okolí, Sgr A* a úvodu
+- Kolonie, plachty a majáky jako ikony na mapě galaxie
+- Hvězdy galaxie rozmístěné podle ramen na obrázku
+- Detail Kapitoly 3: Mléčná dráha z boku s kartou stadia
+- Stavby Kapitoly 3 se odkrývají postupně, karty ukazují skutečný přínos
+- Svazek bere méně energie, mise dřív na dosah
+- Nové mise Opuštěný roj a Sluneční soustava, výzkum Magnetická brzda
+- Víc útržků deníku, okno probuzení Sgr A*
+- Kapitola 2: postupné odkrývání staveb, Detail jen s aktuálním stadiem, zdražující kolektory, srozumitelnější bonusy
+
 ## 1.0.0-alfa – Předělávka
 
 - Obrázky Kapitoly 2: Aldra ve třech fázích s prolnutím, zrcadla roje, továrny, Okolí, úvod

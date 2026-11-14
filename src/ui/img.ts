@@ -14,6 +14,16 @@ const FILES = {
   factory: "kap2-tovarna.webp",
   near: "kap2-okoli.webp",
   intro2: "kap2-uvod.webp",
+  galaxy: "kap3-galaxie.webp",       // hrací plocha (uzly podle core/galaxy.ts GIMG)
+  galaxySide: "kap3-galaxie-bok.webp",
+  hole3: "kap3-dira.webp",
+  system3: "kap3-soustava.webp",
+  near3: "kap3-okoli.webp",
+  sgra: "kap3-sgr-a.webp",
+  colony: "kap3-kolonie.webp",
+  beacon: "kap3-majak.webp",
+  sail: "kap3-plachta.webp",
+  intro3: "kap3-uvod.webp",
 };
 export type ImgKey = keyof typeof FILES;
 const cache: Partial<Record<ImgKey, HTMLImageElement>> = {};

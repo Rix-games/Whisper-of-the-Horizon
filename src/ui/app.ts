@@ -164,8 +164,10 @@ function render() {
 }
 
 // ---------- pohledy ----------
+/** Popisek na žebříku (v Kap. 3+ je místo hvězdy díra). */
+function ladderName(v: string) { return v === "star" && s.ch >= 3 ? UI.ladderHole : UI.ladder[VIEWS.indexOf(v)]; }
 function viewOpen(v: string) {
-  if (v === "body") return true;
+  if (v === "body") return s.ch < 3;   // asteroid zanikl se supernovou
   if (v === "system") return s.ch >= 3;   // v Kap. 1–2 je soustava jen na záložce Mapa
   if (v === "star") return s.ch >= 2;
   if (v === "near") return s.ch >= 3;     // v Kap. 2 je okolí jen na záložce Mapa (mise)
@@ -233,7 +235,7 @@ function updateUI() {
   $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
   journal();
   // žebřík
-  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v); setHTML(b, o ? UI.ladder[VIEWS.indexOf(b.dataset.v)] : "???"); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
+  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3; setHTML(b, o || gone ? ladderName(b.dataset.v) : "???"); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
   // tečky na záložkách
   const newer = (pre: string) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + ({ b_: "build", r_: "research", m_: "map" } as any)[pre]] ?? -1));
   const dots: Record<string, boolean> = {
@@ -305,7 +307,8 @@ const rows: Record<string, any> = {};
 function setHTML(el: HTMLElement, html: string) { if ((el as any)._h !== html) { (el as any)._h = html; el.innerHTML = html; } }
 function setDis(el: HTMLButtonElement, d: boolean) { if (el.disabled !== d) el.disabled = d; }
 function effect(id: string): string {
-  const d = BMAP[id];
+  const d = BMAP[id], own = chOf(s).effect?.(s, id);
+  if (own) return own;
   const ms = d.kind === "gen" || d.kind === "data" ? ` · ${UI.mileHint(Math.floor(cnt(s, id) / 25) * 25 + 25)}` : "";
   if (d.kind === "gen" && s.ch === 1) return `+${si(genW(s, id), "W")} ${UI.perPiece}${ms}`;
   if (d.kind === "gen") return `+${mass(prodRate(s, id) * plasmaMult(s))}/s ${UI.perPiece}${ms}`;
@@ -448,7 +451,11 @@ function onEvent(e: { type: string; id?: string; v?: any }) {
   if (e.type === "theend") modal(UI.theEnd, `<p>${UI.theEndBody}</p>`, false);
 }
 function startTransition() {
-  if (s.ch >= 3) { s.done = 3; modal(tx(3).stages[5], `<p>${UI.theEndBody}</p>`, false); return; }
+  if (s.ch >= 3) {   // probuzení Sgr A*: nejdřív ukázat výtrysky na mapě, pak okno
+    s.done = 3; view = "galaxy"; setTab("build"); Audio.boom();
+    setTimeout(() => modal(UI.awakeT, (img("sgra") ? `<img class="intro" src="${imgSrc("sgra")}" alt="">` : "") + UI.awake.map((p) => `<p>${p}</p>`).join("") + `<p class="dim">${UI.theEndBody}</p>`, false), 4500);
+    return;
+  }
   trans = 3.2; Audio.boom();
 }
 function afterTransition() {

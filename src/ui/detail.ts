@@ -3,11 +3,12 @@ import type { State } from "../core/state";
 import { tx } from "../i18n";
 import { layerIdx, T1 } from "../chapters/ch1";
 import { coverage } from "../chapters/ch2";
-import { colCount, starsOn, capture, zoneR } from "../chapters/ch3";
-import { galaxie } from "../mech/ch3";
+import { colCount, starsOn, capture, zoneR, lyOf, isOn } from "../chapters/ch3";
+import { galaxyNodes } from "../core/galaxy";
 import { count, pct } from "../core/format";
 import { MONO, SANS } from "../mech/fx";
 import { img } from "./img";
+import { soft } from "./views";
 import { LOOK, PIC } from "../mech/ch2";
 import { stagesOf } from "../core/defs";
 
@@ -22,15 +23,70 @@ export function drawDetail(cv: HTMLCanvasElement, s: State, T: number) {
   c.font = `13px ${MONO}`; c.textAlign = "left"; c.fillStyle = "#9aa6bd";
   if (s.ch === 1) cutaway(c, s, T, w, hh, X);
   else if (s.ch === 2) starCut(c, s, T, w, hh, X);
+  else galaxyCut(c, s, T, w, hh, X);
+}
+
+// ---------- Kap. 3: Mléčná dráha z boku (jen aktuální stadium) ----------
+function galaxyCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh: number, X: any) {
+  const st = Math.min(s.stage, X.phase.length - 1), P = X.phase[st], S = X.card;
+  const iw = Math.min(w * 0.62, (hh - 40) * 1.79), ih = iw / 1.79, x0 = 10, y0 = (hh - ih) / 2;
+  const cx = x0 + iw * 0.49, cy = y0 + ih * 0.49, half = iw * 0.44;
+  const im = soft("galaxySide");   // měkké okraje – jinak je vidět obdélník obrázku
+  if (im) { c.save(); c.globalCompositeOperation = "screen"; c.drawImage(im, x0, y0, iw, ih); c.restore(); }
   else {
-    // galaxie zmenšeně s hranicí dosahu
-    const k = Math.min(w / 1600, hh / 1000) * 1.1;
-    c.save(); c.translate((w - 1600 * k) / 2, (hh - 1000 * k) / 2); c.scale(k, k);
-    galaxie.draw(c, s, { T, sx: k, passive: true, fx: 0 }, { x: -1e4, y: -1e4, px: 0, py: 0, down: false, inside: false });
-    c.restore();
-    c.font = `13px ${MONO}`; c.fillStyle = "#9aa6bd";
-    c.fillText(`Kolonie ${colCount(s)} · hvězdy ${count(starsOn(s).v)} · zachycení ${pct(capture(s))} · dosah ${zoneR(s).toFixed(2).replace(".", ",")}`, 20, hh - 24);
+    const g = c.createRadialGradient(cx, cy, 0, cx, cy, half); g.addColorStop(0, "rgba(255,225,170,.8)"); g.addColorStop(0.15, "rgba(200,210,255,.35)"); g.addColorStop(1, "rgba(120,140,220,0)");
+    c.save(); c.translate(cx, cy); c.scale(1, 0.06); c.fillStyle = g; c.beginPath(); c.arc(0, 0, half, 0, 7); c.fill(); c.restore();
   }
+  const N = galaxyNodes(), h = N[0], px = (x: number) => cx + x * half;
+  // kam plachty zatím doletí (pás kolem domova)
+  const zr = zoneR(s), a = px(Math.max(-1, h.x - zr)), b = px(Math.min(1, h.x + zr));
+  const band = c.createLinearGradient(0, cy - ih * 0.09, 0, cy + ih * 0.09);
+  band.addColorStop(0, "rgba(142,240,200,0)"); band.addColorStop(0.5, "rgba(142,240,200,.10)"); band.addColorStop(1, "rgba(142,240,200,0)");
+  c.fillStyle = band; c.fillRect(a, cy - ih * 0.09, b - a, ih * 0.18);
+  c.strokeStyle = "rgba(142,240,200,.45)"; c.setLineDash([3, 5]); c.lineWidth = 1;
+  for (const xx of [a, b]) { c.beginPath(); c.moveTo(xx, cy - ih * 0.1); c.lineTo(xx, cy + ih * 0.1); c.stroke(); }
+  c.setLineDash([]);
+  // kolonie (průmět do roviny disku)
+  c.save(); c.globalCompositeOperation = "lighter";
+  for (const n of N) {
+    if (n.home || !isOn(s, n.i)) continue;
+    const x = px(n.x), y = cy + (n.core ? n.y * 0.5 : n.y * 0.06) * ih * 0.5, r = 1.6 + 0.35 * Math.log10(n.stars / 1e4 + 1);
+    const g = c.createRadialGradient(x, y, 0, x, y, r * 4); g.addColorStop(0, "rgba(255,205,135,.55)"); g.addColorStop(1, "rgba(255,170,90,0)");
+    c.fillStyle = g; c.beginPath(); c.arc(x, y, r * 4, 0, 7); c.fill();
+    c.fillStyle = "rgba(255,232,190,.95)"; c.beginPath(); c.arc(x, y, r * 0.7, 0, 7); c.fill();
+  }
+  c.restore();
+  // domov a střed
+  const hx = px(h.x), hy = cy + h.y * 0.06 * ih * 0.5;
+  c.strokeStyle = "rgba(255,210,122,.9)"; c.lineWidth = 1.2; c.beginPath(); c.arc(hx, hy, 6 + Math.sin(T * 2) * 1.2, 0, 7); c.stroke();
+  c.textBaseline = "middle"; c.font = `13px ${MONO}`; c.textAlign = "center";
+  c.fillStyle = "#ffd27a"; c.fillText(S.home, hx, hy - ih * 0.16);
+  c.strokeStyle = "rgba(255,210,122,.4)"; c.beginPath(); c.moveTo(hx, hy - 9); c.lineTo(hx, hy - ih * 0.16 + 9); c.stroke();
+  const awake = !!s.r.sgra, sy = cy - ih * 0.2;
+  c.fillStyle = awake ? "#cfe0ff" : "#9aa6bd"; c.fillText(S.core, cx, sy);
+  c.strokeStyle = "rgba(200,215,255,.35)"; c.beginPath(); c.moveTo(cx, sy + 9); c.lineTo(cx, cy - 8); c.stroke();
+  c.fillStyle = "rgba(142,240,200,.85)"; c.fillText(S.reach + " " + lyOf(zr), (a + b) / 2, cy + ih * 0.15);
+  c.textAlign = "left"; c.font = `600 11px ${SANS}`; c.fillStyle = "rgba(176,181,212,.9)";
+  c.fillText(S.cut.toUpperCase(), 20, 24);
+  // karta stadia vpravo
+  const ix = x0 + iw + 28, cw = Math.min(380, w - ix - 20);
+  if (cw < 200) { c.textBaseline = "alphabetic"; return; }
+  stageCard(c, s, X, st, P.n, [[S.where, P.where], [S.col, count(colCount(s))], [S.stars, count(starsOn(s).v)], [S.cap, pct(capture(s))], [S.reach, lyOf(zr)], [S.real, P.real]], P.t, ix, Math.max(40, hh / 2 - 170), cw, S.stage);
+  c.textBaseline = "alphabetic";
+}
+/** Karta aktuálního stadia (sdílí Kap. 2 a 3). */
+function stageCard(c: CanvasRenderingContext2D, s: State, X: any, st: number, sub: string, rows: [string, string][], txt: string, ix: number, y: number, iw: number, stLab: string) {
+  c.textAlign = "left"; c.textBaseline = "middle";
+  c.font = `12px ${MONO}`; c.fillStyle = "#e3a970"; c.fillText(stLab.replace("{n}", String(Math.min(st + 1, stagesOf(s)))).replace("{of}", String(stagesOf(s))).toUpperCase(), ix, y); y += 30;
+  c.font = `600 22px ${SANS}`; c.fillStyle = "#ffd27a"; c.fillText(X.stages[st], ix, y); y += 26;
+  c.font = `15px ${SANS}`; c.fillStyle = "#cfd6e6"; c.fillText(sub, ix, y); y += 30;
+  for (const [a, b] of rows) {
+    c.font = `13px ${SANS}`; c.fillStyle = "#8f9ab0"; c.fillText(a, ix, y);
+    c.font = `13px ${MONO}`; c.fillStyle = "#e8eaf8"; c.textAlign = "right"; c.fillText(b, ix + iw, y); c.textAlign = "left";
+    c.strokeStyle = "rgba(255,255,255,.06)"; c.beginPath(); c.moveTo(ix, y + 11); c.lineTo(ix + iw, y + 11); c.stroke();
+    y += 26;
+  }
+  y += 10; c.font = `14px ${SANS}`; c.fillStyle = "#b9c2d6"; wrap(c, txt, ix, y, iw, 20);
 }
 
 // ---------- Kap. 1: výřez asteroidem ----------
@@ -230,18 +286,6 @@ function starCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh
   // karta stadia vpravo
   const ix = Math.max(lx + 190, w * 0.62), iw = Math.min(380, w - ix - 20);
   if (iw < 200) { c.textBaseline = "alphabetic"; return; }
-  let y = Math.max(40, cy - 150);
-  c.textAlign = "left";
-  c.font = `12px ${MONO}`; c.fillStyle = "#e3a970"; c.fillText(S.stage.replace("{n}", String(Math.min(st + 1, stagesOf(s)))).replace("{of}", String(stagesOf(s))).toUpperCase(), ix, y); y += 30;
-  c.font = `600 22px ${SANS}`; c.fillStyle = "#ffd27a"; c.fillText(X.stages[st], ix, y); y += 26;
-  c.font = `15px ${SANS}`; c.fillStyle = "#cfd6e6"; c.fillText(P.n, ix, y); y += 30;
-  const rows: [string, string][] = [[S.burn, P.burn], [S.T, P.T], [S.R, S.rsun.replace("{v}", P.R)], [S.L, S.lsun.replace("{v}", P.L)], [S.real, P.real], [S.cov, pct(coverage(s))]];
-  for (const [a, b] of rows) {
-    c.font = `13px ${SANS}`; c.fillStyle = "#8f9ab0"; c.fillText(a, ix, y);
-    c.font = `13px ${MONO}`; c.fillStyle = "#e8eaf8"; c.textAlign = "right"; c.fillText(b, ix + iw, y); c.textAlign = "left";
-    c.strokeStyle = "rgba(255,255,255,.06)"; c.beginPath(); c.moveTo(ix, y + 11); c.lineTo(ix + iw, y + 11); c.stroke();
-    y += 26;
-  }
-  y += 10; c.font = `14px ${SANS}`; c.fillStyle = "#b9c2d6"; wrap(c, P.t, ix, y, iw, 20);
+  stageCard(c, s, X, st, P.n, [[S.burn, P.burn], [S.T, P.T], [S.R, S.rsun.replace("{v}", P.R)], [S.L, S.lsun.replace("{v}", P.L)], [S.real, P.real], [S.cov, pct(coverage(s))]], P.t, ix, Math.max(40, cy - 150), iw, S.stage);
   c.textBaseline = "alphabetic";
 }

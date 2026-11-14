@@ -29,6 +29,8 @@ export interface ChapterDef {
   dataMult(s: State): number;
   autos?(s: State, dt: number): void; // automatika
   onStart?(s: State): void;           // dar na začátku kapitoly
+  /** Text přínosu na kartě stavby (co přinese další kus/úroveň); undefined = obecný text. */
+  effect?(s: State, id: string): string | undefined;
   /** Hodnota pro bota v simulaci (přibližný relativní přínos kusu). */
   botValue?(s: State, id: string): number | undefined;
   /** Typický stav na začátku kapitoly – pro simulaci jen této kapitoly (CH=n). */

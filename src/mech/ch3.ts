@@ -3,7 +3,8 @@ import { Mech, Input, View, ftxt, sparks, MONO } from "./fx";
 import { rnd, mulberry, angDiff } from "../core/rng";
 import { power } from "../core/engine";
 import { isOn, setOn, spreadMult, needOf, inZone, zoneR, maturity, T3 } from "../chapters/ch3";
-import { galaxyNodes, GNode } from "../core/galaxy";
+import { galaxyNodes, GNode, GIMG } from "../core/galaxy";
+import { img } from "../ui/img";
 import { count } from "../core/format";
 import type { State } from "../core/state";
 
@@ -50,9 +51,9 @@ export const galaxie: Mech & any = {
     for (const n of N) (n as any).heat = Math.max(0, ((n as any).heat || 0) - dt * 2);
     this.beamOn = null;
     if (M.down) {
-      const o = this.nearestOn(s, M.x, M.y), op = gsp(o), pl = 1 + 0.6 * lv(s, "power");
+      const o = this.nearestOn(s, M.x, M.y), op = gsp(o), pl = (1 + 0.6 * lv(s, "power")) * (s.r.brake ? 1.5 : 1);
       const len = Math.min(Math.hypot(M.x - op[0], M.y - op[1]), this.reachPx(s));
-      const drain = T3.beamDrain * P * pl, ok = s.res.energy > 0;
+      const drain = T3.beamDrain * P, ok = s.res.energy > 0;   // silnější svazek nestojí víc energie
       s.res.energy = Math.max(0, s.res.energy - drain * dt);
       const ang = Math.atan2(M.y - op[1], M.x - op[0]);
       this.beamOn = { o, ang, len, weak: !ok };
@@ -121,9 +122,16 @@ export const galaxie: Mech & any = {
 
   draw(c: CanvasRenderingContext2D, s: State, v: View, M: Input) {
     const N = galaxyNodes(), T = v.T;
-    if (!tex) tex = spiralTex(1400, 21);
-    c.save(); c.globalAlpha = 0.6; c.translate(GCX, GCY); c.scale(1, TILT);
-    c.drawImage(tex, -1.05 * RG, -1.05 * RG, 2.1 * RG, 2.1 * RG); c.restore();
+    const GI = img("galaxy");
+    if (GI) {   // obrázek galaxie (uzly jsou rozmístěné podle něj – core/galaxy.ts)
+      const iw = RG / GIMG.R;
+      c.save(); c.globalCompositeOperation = "screen"; c.globalAlpha = 0.8; c.translate(GCX, GCY); c.scale(1, TILT);
+      c.drawImage(GI, -GIMG.cx * iw, -GIMG.cy * iw, iw, iw); c.restore();
+    } else {
+      if (!tex) tex = spiralTex(1400, 21);
+      c.save(); c.globalAlpha = 0.6; c.translate(GCX, GCY); c.scale(1, TILT);
+      c.drawImage(tex, -1.05 * RG, -1.05 * RG, 2.1 * RG, 2.1 * RG); c.restore();
+    }
     const lk = s.col + Math.floor(s.t / 2);   // kolonie dozrávají – záře roste
     if (litKey !== lk) { renderLit(s); litKey = lk; }
     if (lit) { c.save(); c.globalCompositeOperation = "lighter"; c.drawImage(lit, 0, 0, 1600, 1000); c.restore(); }
@@ -132,21 +140,30 @@ export const galaxie: Mech & any = {
     const cg = c.createRadialGradient(cp[0], cp[1], 0, cp[0], cp[1], 26);
     cg.addColorStop(0, "rgba(255,240,210,.55)"); cg.addColorStop(1, "rgba(255,200,140,0)");
     c.fillStyle = cg; c.beginPath(); c.arc(cp[0], cp[1], 26, 0, 7); c.fill();
-    if (s.r.sgra) {
-      const k = Math.min(1, this.coreT / 3), L = RG * 0.6 * k;
-      c.save(); c.globalCompositeOperation = "lighter";
-      for (const sd of [-1, 1]) {
-        const jg = c.createLinearGradient(GCX, GCY, GCX, GCY + sd * L);
-        jg.addColorStop(0, "rgba(200,220,255,.75)"); jg.addColorStop(1, "rgba(120,160,255,0)");
-        c.fillStyle = jg; c.beginPath(); c.moveTo(GCX - 3, GCY); c.lineTo(GCX - 11 - 4 * Math.sin(T * 2), GCY + sd * L); c.lineTo(GCX + 11 + 4 * Math.sin(T * 2), GCY + sd * L); c.lineTo(GCX + 3, GCY); c.fill();
+    if (s.r.sgra) {   // probuzená Sgr A*
+      const k = Math.min(1, this.coreT / 4), SG = img("sgra");
+      if (SG) {
+        const sz = 70 + 230 * k * k;
+        c.save(); c.globalCompositeOperation = "screen"; c.globalAlpha = Math.min(1, k * 1.5);
+        c.drawImage(SG, GCX - sz / 2, GCY - sz / 2, sz, sz); c.restore();
+      } else {
+        const L = RG * 0.6 * k;
+        c.save(); c.globalCompositeOperation = "lighter";
+        for (const sd of [-1, 1]) {
+          const jg = c.createLinearGradient(GCX, GCY, GCX, GCY + sd * L);
+          jg.addColorStop(0, "rgba(200,220,255,.75)"); jg.addColorStop(1, "rgba(120,160,255,0)");
+          c.fillStyle = jg; c.beginPath(); c.moveTo(GCX - 3, GCY); c.lineTo(GCX - 11 - 4 * Math.sin(T * 2), GCY + sd * L); c.lineTo(GCX + 11 + 4 * Math.sin(T * 2), GCY + sd * L); c.lineTo(GCX + 3, GCY); c.fill();
+        }
+        c.restore();
       }
-      c.restore();
     }
+    const SL = img("sail"), CO = img("colony"), BE = img("beacon");
     c.save(); c.globalCompositeOperation = "lighter";
     for (const th of this.threads) {
       const a = gsp(th.a), b = gsp(th.b), k = Math.min(1, s.prog[th.b.i] || 0);
       c.strokeStyle = `rgba(255,215,160,${0.12 + 0.2 * k})`; c.lineWidth = 1;
       c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k); c.stroke();
+      if (SL) c.drawImage(SL, a[0] + (b[0] - a[0]) * k - 4, a[1] + (b[1] - a[1]) * k - 4, 8, 8);   // plachta letí k hvězdě
     }
     for (const tr of this.trails) {
       const k = tr.t / 1.2, f = Math.min(1, k * 1.6), x = tr.ax + (tr.bx - tr.ax) * f, y = tr.ay + (tr.by - tr.ay) * f;
@@ -157,7 +174,12 @@ export const galaxie: Mech & any = {
     for (const n of N) {
       if (n.home) continue;
       const p = gsp(n), on = isOn(s, n.i);
-      if (on) { c.fillStyle = "rgba(255,225,170,.95)"; c.beginPath(); c.arc(p[0], p[1], 2.4 + 0.4 * Math.log10(n.stars / 1e4 + 1), 0, 7); c.fill(); continue; }
+      if (on) {
+        const lg = Math.log10(n.stars / 1e4 + 1);
+        if (CO) { const m = maturity(s, n.i), sz = (7 + 2.4 * lg) * (0.55 + 0.45 * m); c.drawImage(CO, p[0] - sz / 2, p[1] - sz / 2, sz, sz); }
+        else { c.fillStyle = "rgba(255,225,170,.95)"; c.beginPath(); c.arc(p[0], p[1], 2.4 + 0.4 * lg, 0, 7); c.fill(); }
+        continue;
+      }
       const z = inZone(s, n.i), tw = (z ? 0.55 : 0.25) + 0.12 * Math.sin(T * 0.8 + n.tw), h = (n as any).heat || 0;
       const rad = 1.4 + 0.45 * Math.log10(n.stars / 1e4 + 1);
       if (z) { const g = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], rad * 3.2); g.addColorStop(0, `rgba(200,215,255,${0.25 + 0.3 * h})`); g.addColorStop(1, "rgba(200,215,255,0)"); c.fillStyle = g; c.beginPath(); c.arc(p[0], p[1], rad * 3.2, 0, 7); c.fill(); }
@@ -174,8 +196,15 @@ export const galaxie: Mech & any = {
       c.strokeStyle = `rgba(${col},${0.45 * a})`; c.lineWidth = 1;
       c.beginPath(); c.moveTo(op[0], op[1]); c.lineTo(op[0] + Math.cos(ang) * len, op[1] + Math.sin(ang) * len); c.stroke();
       c.restore();
+      if (SL && a > 0.5) for (let j = 0; j < 3; j++) {   // plachty letí po svazku
+        const f = (T * 0.45 + j / 3) % 1, x = op[0] + Math.cos(ang) * len * f, y = op[1] + Math.sin(ang) * len * f, sz = 9 * (1 - 0.5 * f);
+        c.globalAlpha = Math.min(1, (1 - f) * 3); c.drawImage(SL, x - sz / 2, y - sz / 2, sz, sz); c.globalAlpha = 1;
+      }
     };
-    for (const b of this.beacons) if (b.n && b.ang != null) drawBeam(b.n, b.ang, this.reachPx(s) * 0.85, 0.55, "150,230,255");
+    for (const b of this.beacons) if (b.n && b.ang != null) {
+      drawBeam(b.n, b.ang, this.reachPx(s) * 0.85, 0.55, "150,230,255");
+      if (BE) { const q = gsp(b.n); c.save(); c.globalCompositeOperation = "screen"; c.translate(q[0], q[1]); c.rotate(b.ang); c.drawImage(BE, -7, -7, 14, 14); c.restore(); }   // maják míří svazkem (tmavý trup splyne s pozadím, svítí jen světla)
+    }
     if (this.beamOn && !v.passive) drawBeam(this.beamOn.o, this.beamOn.ang, this.beamOn.len, this.beamOn.weak ? 0.3 : 1, "255,215,150");
     // hranice dosahu sond (roste se stadiem)
     if (zoneR(s) < 2) {

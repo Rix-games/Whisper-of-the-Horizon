@@ -1,3 +1,4 @@
+import { GV, remapColonies } from "./galaxy";
 // Stav hry 1.0 (předělávka). Vše, co se ukládá.
 export const SAVE_KEY = "sepot-horizontu-1";
 export const SAVE_VERSION = 1;
@@ -29,6 +30,7 @@ export interface State {
   n: number;
   // Kap. 3: osídlené uzly galaxie (bitová mapa v řetězci "0/1")
   col: string;
+  gv: number;                       // verze rozmístění uzlů galaxie
   prog: Record<string, number>;
   best: { chainHand: number; reson: number };
   stats: { cuts: number; full: number; flares: number; perfect: number; cme: number; sweeps: number };
@@ -44,7 +46,7 @@ export function newState(): State {
     res: { ore: 0, plasma: 0, sails: 0, energy: 0, data: 0 },
     tot: { ore: 0, plasma: 0, sails: 0 },
     b: {}, r: {}, mis: {}, run: null, unl: {}, seen: {}, log: [],
-    base: 0, auto: {}, bank: {}, n: 0, col: "", prog: {},
+    base: 0, auto: {}, bank: {}, n: 0, col: "", gv: GV, prog: {},
     best: { chainHand: 0, reson: 0 },
     stats: { cuts: 0, full: 0, flares: 0, perfect: 0, cme: 0, sweeps: 0 },
     done: 0, last: Date.now(),
@@ -62,6 +64,7 @@ export function migrate(o: any): State {
     if (s[k] && typeof s[k] === "object" && !Array.isArray(s[k]) && o[k] && typeof o[k] === "object") s[k] = { ...s[k], ...o[k] };
     else s[k] = o[k];
   }
+  if (o.gv !== GV) { if (s.col) { s.col = remapColonies(s.col); s.prog = {}; } s.gv = GV; }   // nové rozmístění galaxie
   s.v = SAVE_VERSION;
   return s;
 }
