@@ -36,7 +36,7 @@ export const CS3 = {
     swarm3: { n: "Roje kolonií", d: "Kolonie zachytí o 10 % víc světla svých hvězd." },
     interf: { n: "Interferometr", d: "Spojené dalekohledy kolonií. Dává data." },
     probe: { n: "Samoreplikující sondy", d: "Kolonie se šíří mnohem rychleji a dál." },
-    beacon: { n: "Automatický maják", d: "Kolonie sama zametá okolí svazkem." },
+    beacon: { n: "Automatický maják", d: "Kolonie sama míří svazkem na okolní hvězdy a osidluje je." },
     radio: { n: "Rádiové pole", d: "Antény napříč ramenem. Hodně dat." },
   } as Record<string, { n: string; d: string }>,
   r: {
@@ -77,7 +77,7 @@ export const CS3 = {
     c3_st2: "Kolonie se sledují navzájem. Tvoří síť, kterou jsem neplánoval. Puls se v ní šíří rychleji než zprávy.",
     c3_probe: "Sondy se staví samy. Každá kolonie vyšle dvě další. Galaxie začíná svítit i bez mého svazku.",
     f3_vn: "Fermiho paradox: pokud se dá galaxie osídlit za pár milionů let, kde jsou všichni? Odpověď se možná schovává tam, kde čas běží jinak.",
-    c3_beacon: "Majáky zametají okolí samy. Jejich svazky se na mapě kříží v pravidelném rytmu. Nenastavoval jsem ho.",
+    c3_beacon: "Majáky samy míří svazky na okolní hvězdy. Jejich paprsky se na mapě kříží v pravidelném rytmu. Nenastavoval jsem ho.",
     c3_kilonova: "Srážka neutronových hvězd vyslala gravitační vlny. Mají modulaci s periodou 7,3 sekundy. Tohle je můj podpis.",
     c3_pulsar: "Kolem pulsaru obíhají tři planety, spálené zářením supernovy. Pulsar tiká stokrát za sekundu. Každý sedmistý třicátý tik je o chlup silnější.",
     c3_sun: "Vesper proletěl kolem Slunce. Země je modrá a tichá, na noční straně žádná světla. Puls je tu slabší než kdekoli jinde.",

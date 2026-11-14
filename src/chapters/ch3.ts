@@ -38,7 +38,7 @@ export const BUILD3: BDef[] = [
   B({ id: "reach", tier: 1, kind: "up", cur: "sails", c0: 90, g: 2.7, max: 6, maxAt: (s) => 1 + s.stage, req: (s) => colCount(s) >= 10 && n(s, "power") >= 1 }),
   B({ id: "spread", tier: 1, kind: "up", cur: "sails", c0: 140, g: 2.5, max: 6, maxAt: (s) => 1 + s.stage, req: (s) => colCount(s) >= 15 && n(s, "loom") >= 1 }),
   B({ id: "swarm3", tier: 1, kind: "mult", cur: "sails", c0: 220, g: 1.35, maxAt: (s) => 4 + 4 * s.stage, req: (s) => colCount(s) >= 21 && n(s, "reach") >= 1 }),
-  // 2. úroveň – automatika: sondy se šíří samy, majáky zametají svazkem
+  // 2. úroveň – automatika: sondy se šíří samy, majáky samy míří svazkem
   B({ id: "probe", tier: 2, kind: "up", cur: "sails", c0: 3e3, g: 3.2, max: 5, maxAt: (s) => s.stage - 1, req: R("probes") }),
   B({ id: "beacon", tier: 2, kind: "auto", cur: "sails", c0: 5e3, g: 2, req: R("beacons") }),
   B({ id: "radio", tier: 2, kind: "data", cur: "sails", c0: 2e5, g: 1.25, d: 3e12, req: (s) => s.stage >= 3 && n(s, "beacon") >= 2 }),
@@ -176,7 +176,7 @@ export const CH3: ChapterDef = {
     if (id === "spread") return `Kolonie se šíří samy ${x(1 + lv)} → ${x(2 + lv)}`;
     if (id === "swarm3") return `Zachycené světlo ${pct(capture(s))} → ${pct(Math.min(T3.capMax, capture(s) * T3.capStep))}`;
     if (id === "probe") return `Sondy: šíření ${x(1 + T3.probe[0] * lv)} → ${x(1 + T3.probe[0] * (lv + 1))}`;
-    if (id === "beacon") return !lv ? "První maják začne zametat sám" : lv === 1 ? "1 maják zametá galaxii" : lv < 5 ? `${lv} majáky zametají galaxii` : `${count(lv)} majáků zametá galaxii`;
+    if (id === "beacon") return !lv ? "První maják začne osidlovat sám" : lv === 1 ? "1 maják osidluje hvězdy sám" : lv < 5 ? `${lv} majáky osidlují hvězdy samy` : `${count(lv)} majáků osidluje hvězdy samo`;
     return undefined;
   },
   simStart(s) { s.base = 2.6e31; s.res.data = 2e11; s.res.energy = 2.6e31 * 300; },

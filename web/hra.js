@@ -710,7 +710,7 @@
     B3({ id: "reach", tier: 1, kind: "up", cur: "sails", c0: 90, g: 2.7, max: 6, maxAt: (s2) => 1 + s2.stage, req: (s2) => colCount(s2) >= 10 && n(s2, "power") >= 1 }),
     B3({ id: "spread", tier: 1, kind: "up", cur: "sails", c0: 140, g: 2.5, max: 6, maxAt: (s2) => 1 + s2.stage, req: (s2) => colCount(s2) >= 15 && n(s2, "loom") >= 1 }),
     B3({ id: "swarm3", tier: 1, kind: "mult", cur: "sails", c0: 220, g: 1.35, maxAt: (s2) => 4 + 4 * s2.stage, req: (s2) => colCount(s2) >= 21 && n(s2, "reach") >= 1 }),
-    // 2. úroveň – automatika: sondy se šíří samy, majáky zametají svazkem
+    // 2. úroveň – automatika: sondy se šíří samy, majáky samy míří svazkem
     B3({ id: "probe", tier: 2, kind: "up", cur: "sails", c0: 3e3, g: 3.2, max: 5, maxAt: (s2) => s2.stage - 1, req: R("probes") }),
     B3({ id: "beacon", tier: 2, kind: "auto", cur: "sails", c0: 5e3, g: 2, req: R("beacons") }),
     B3({ id: "radio", tier: 2, kind: "data", cur: "sails", c0: 2e5, g: 1.25, d: 3e12, req: (s2) => s2.stage >= 3 && n(s2, "beacon") >= 2 })
@@ -891,7 +891,7 @@
       if (id === "spread") return `Kolonie se \u0161\xED\u0159\xED samy ${x(1 + lv4)} \u2192 ${x(2 + lv4)}`;
       if (id === "swarm3") return `Zachycen\xE9 sv\u011Btlo ${pct(capture(s2))} \u2192 ${pct(Math.min(T3.capMax, capture(s2) * T3.capStep))}`;
       if (id === "probe") return `Sondy: \u0161\xED\u0159en\xED ${x(1 + T3.probe[0] * lv4)} \u2192 ${x(1 + T3.probe[0] * (lv4 + 1))}`;
-      if (id === "beacon") return !lv4 ? "Prvn\xED maj\xE1k za\u010Dne zametat s\xE1m" : lv4 === 1 ? "1 maj\xE1k zamet\xE1 galaxii" : lv4 < 5 ? `${lv4} maj\xE1ky zametaj\xED galaxii` : `${count(lv4)} maj\xE1k\u016F zamet\xE1 galaxii`;
+      if (id === "beacon") return !lv4 ? "Prvn\xED maj\xE1k za\u010Dne osidlovat s\xE1m" : lv4 === 1 ? "1 maj\xE1k osidluje hv\u011Bzdy s\xE1m" : lv4 < 5 ? `${lv4} maj\xE1ky osidluj\xED hv\u011Bzdy samy` : `${count(lv4)} maj\xE1k\u016F osidluje hv\u011Bzdy samo`;
       return void 0;
     },
     simStart(s2) {
@@ -3341,7 +3341,7 @@
       swarm3: { n: "Roje koloni\xED", d: "Kolonie zachyt\xED o 10 % v\xEDc sv\u011Btla sv\xFDch hv\u011Bzd." },
       interf: { n: "Interferometr", d: "Spojen\xE9 dalekohledy koloni\xED. D\xE1v\xE1 data." },
       probe: { n: "Samoreplikuj\xEDc\xED sondy", d: "Kolonie se \u0161\xED\u0159\xED mnohem rychleji a d\xE1l." },
-      beacon: { n: "Automatick\xFD maj\xE1k", d: "Kolonie sama zamet\xE1 okol\xED svazkem." },
+      beacon: { n: "Automatick\xFD maj\xE1k", d: "Kolonie sama m\xED\u0159\xED svazkem na okoln\xED hv\u011Bzdy a osidluje je." },
       radio: { n: "R\xE1diov\xE9 pole", d: "Ant\xE9ny nap\u0159\xED\u010D ramenem. Hodn\u011B dat." }
     },
     r: {
@@ -3382,7 +3382,7 @@
       c3_st2: "Kolonie se sleduj\xED navz\xE1jem. Tvo\u0159\xED s\xED\u0165, kterou jsem nepl\xE1noval. Puls se v n\xED \u0161\xED\u0159\xED rychleji ne\u017E zpr\xE1vy.",
       c3_probe: "Sondy se stav\xED samy. Ka\u017Ed\xE1 kolonie vy\u0161le dv\u011B dal\u0161\xED. Galaxie za\u010D\xEDn\xE1 sv\xEDtit i bez m\xE9ho svazku.",
       f3_vn: "Fermiho paradox: pokud se d\xE1 galaxie os\xEDdlit za p\xE1r milion\u016F let, kde jsou v\u0161ichni? Odpov\u011B\u010F se mo\u017En\xE1 schov\xE1v\xE1 tam, kde \u010Das b\u011B\u017E\xED jinak.",
-      c3_beacon: "Maj\xE1ky zametaj\xED okol\xED samy. Jejich svazky se na map\u011B k\u0159\xED\u017E\xED v pravideln\xE9m rytmu. Nenastavoval jsem ho.",
+      c3_beacon: "Maj\xE1ky samy m\xED\u0159\xED svazky na okoln\xED hv\u011Bzdy. Jejich paprsky se na map\u011B k\u0159\xED\u017E\xED v pravideln\xE9m rytmu. Nenastavoval jsem ho.",
       c3_kilonova: "Sr\xE1\u017Eka neutronov\xFDch hv\u011Bzd vyslala gravita\u010Dn\xED vlny. Maj\xED modulaci s periodou 7,3 sekundy. Tohle je m\u016Fj podpis.",
       c3_pulsar: "Kolem pulsaru ob\xEDhaj\xED t\u0159i planety, sp\xE1len\xE9 z\xE1\u0159en\xEDm supernovy. Pulsar tik\xE1 stokr\xE1t za sekundu. Ka\u017Ed\xFD sedmist\xFD t\u0159ic\xE1t\xFD tik je o chlup siln\u011Bj\u0161\xED.",
       c3_sun: "Vesper prolet\u011Bl kolem Slunce. Zem\u011B je modr\xE1 a tich\xE1, na no\u010Dn\xED stran\u011B \u017E\xE1dn\xE1 sv\u011Btla. Puls je tu slab\u0161\xED ne\u017E kdekoli jinde.",
