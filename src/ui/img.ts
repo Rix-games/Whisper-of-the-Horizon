@@ -23,7 +23,8 @@ const FILES = {
   colony: "kap3-kolonie.webp",
   beacon: "kap3-majak.webp",
   sail: "kap3-plachta.webp",
-  intro3: "kap3-uvod.webp",
+  intro4: "kap3-uvod.webp",
+  intro3: "kap3-dira-uvod.webp",   // zatím chybí – úvod Kap. 3 Díra
 };
 export type ImgKey = keyof typeof FILES;
 const cache: Partial<Record<ImgKey, HTMLImageElement>> = {};

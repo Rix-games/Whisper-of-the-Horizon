@@ -6,11 +6,13 @@ import { n as cnt, mile } from "../core/bus";
 import { si, mass, count, pct, times, duration, fixed } from "../core/format";
 import { kamen } from "../mech/ch1";
 import { hvezda } from "../mech/ch2";
-import { galaxie } from "../mech/ch3";
+import { diera } from "../mech/ch3";
+import { galaxie } from "../mech/ch4";
 import { VW, VH, Input, fxUpdate, fxDraw, fxClear, setFx } from "../mech/fx";
 import { genW, layerIdx, oreMult, GEN1, T1 } from "../chapters/ch1";
 import { coverage, prodRate, plasmaMult, colCost, salvo, L_ALDRA, colArea } from "../chapters/ch2";
-import { starsOn, capture, colCount } from "../chapters/ch3";
+import { starsOn, capture, colCount } from "../chapters/ch4";
+import { eddMax, eta, spinA } from "../chapters/ch3";
 import { setLabelScale, background, drawSystem, drawNear, drawRemnant, drawMissions, missionAt } from "./views";
 import { drawDetail } from "./detail";
 import { tx, find, UI } from "../i18n";
@@ -26,7 +28,7 @@ const sx = (t: string) => t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, (m) =>
 const h = (tag: string, cls = "", html = "") => { const e = document.createElement(tag); if (cls) e.className = cls; if (html) e.innerHTML = html; return e; };
 
 let s: State;
-const MECH: any = { 1: kamen, 2: hvezda, 3: galaxie };
+const MECH: any = { 1: kamen, 2: hvezda, 3: diera, 4: galaxie };
 const VIEWS = ["body", "star", "system", "near", "galaxy", "group", "laniakea"];
 let lastCuts = 0, lastCrack = 0;
 let view = "body", tab = "build", buyN = 1, dockOpen = true, T = 0;
@@ -36,7 +38,7 @@ let trans = 0; // přechod mezi kapitolami (s)
 
 // ---------- formát podle suroviny ----------
 export function fmtCur(cur: string, v: number) {
-  if (cur === "ore" || cur === "plasma") return mass(v);
+  if (cur === "ore" || cur === "plasma" || cur === "mass") return mass(v);
   if (cur === "energy") return si(v, "J");
   if (cur === "data") return si(v, "B");
   return count(v);
@@ -54,7 +56,7 @@ function load(): State {
 export function start() {
   s = load();
   preload();
-  (window as any).sepot = { get s() { return s; }, E, MECH, inp };   // ladicí přístup z konzole
+  (window as any).sepot = { get s() { return s; }, get geo() { return geo; }, E, MECH, inp };   // ladicí přístup z konzole
   setFx(s.opt.fx !== 0);
   view = chOf(s).view;
   buildShell();
@@ -152,10 +154,10 @@ function render() {
   setLabelScale(geo.sx * k);
   const passive = view !== chOf(s).view, V = { T, sx: geo.sx * k, passive, fx: s.opt.fx };
   if (view === "body") kamen.draw(c, s, { ...V, passive: s.ch !== 1 || passive }, inp);
-  else if (view === "star") { if (s.ch >= 3) drawRemnant(c, T); else hvezda.draw(c, s, { ...V, passive: s.ch !== 2 || passive }, inp); }
+  else if (view === "star") { if (s.ch === 3) diera.draw(c, s, { ...V, passive }, inp); else if (s.ch >= 4) drawRemnant(c, T); else hvezda.draw(c, s, { ...V, passive: s.ch !== 2 || passive }, inp); }
   else if (view === "system") drawSystem(c, s, T);
   else if (view === "near") drawNear(c, s, T);
-  else if (view === "galaxy") galaxie.draw(c, s, { ...V, passive: s.ch !== 3 || passive }, inp);
+  else if (view === "galaxy") galaxie.draw(c, s, { ...V, passive: s.ch !== 4 || passive }, inp);
   if (["system", "near", "galaxy"].includes(view)) {
     hoverMis = missionAt(s, view, inp.x, inp.y);
     drawMissions(c, s, view, T, geo.sx, hoverMis);
@@ -176,7 +178,7 @@ function viewOpen(v: string) {
   if (v === "system") return s.ch >= 3;   // v Kap. 1–2 je soustava jen na záložce Mapa
   if (v === "star") return s.ch >= 2;
   if (v === "near") return false;     // okolí jen na záložce Mapa (mise Kap. 2)
-  if (v === "galaxy") return s.ch >= 3;
+  if (v === "galaxy") return s.ch >= 4;
   return false;
 }
 function setView(v: string) {
@@ -264,6 +266,10 @@ function indicator() {
   if (s.ch === 2) {
     const cv = coverage(s);
     return `<div class="ind"><span>${X.indicator}</span><b class="mono">${pct(cv)}</b><div class="bar"><b style="width:${Math.max(0.5, ((Math.log10(Math.max(cv, 1e-14)) + 14) / 14) * 100)}%"></b></div><small>Kolektory: ${count(s.n)}</small></div>`;
+  }
+  if (s.ch === 3) {
+    const f = E.power(s) / eddMax(s);
+    return `<div class="ind"><span>${X.indicator}</span><b class="mono">${pct(f)}</b><div class="bar"><b style="width:${Math.max(0.5, Math.min(1, (Math.log10(Math.max(f, 1e-6)) + 6) / 6)) * 100}%"></b></div><small>Účinnost disku ${pct(eta(s))} · rotace ${fixed(spinA(s), 3)}</small></div>`;
   }
   const so = starsOn(s).v;
   return `<div class="ind"><span>${X.indicator}</span><b class="mono">${count(so)} z 100 G</b><div class="bar"><b style="width:${Math.max(0.5, ((Math.log10(Math.max(so, 1)) - 4) / 7) * 100)}%"></b></div><small>Kolonie: ${colCount(s)} · zachycení světla ${pct(capture(s))}</small></div>`;
@@ -457,8 +463,8 @@ function onEvent(e: { type: string; id?: string; v?: any }) {
   if (e.type === "theend") modal(UI.theEnd, `<p>${UI.theEndBody}</p>`, false);
 }
 function startTransition() {
-  if (s.ch >= 3) {   // probuzení Sgr A*: nejdřív ukázat výtrysky na mapě, pak okno
-    s.done = 3; view = "galaxy"; setTab("build"); Audio.boom();
+  if (s.ch >= 4) {   // probuzení Sgr A*: nejdřív ukázat výtrysky na mapě, pak okno
+    s.done = 4; view = "galaxy"; setTab("build"); Audio.boom();
     setTimeout(() => modal(UI.awakeT, (img("sgra") ? `<img class="intro" src="${imgSrc("sgra")}" alt="">` : "") + UI.awake.map((p) => `<p>${p}</p>`).join("") + `<p class="dim">${UI.theEndBody}</p>`, false), 4500);
     return;
   }

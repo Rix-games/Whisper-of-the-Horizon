@@ -3,9 +3,12 @@ import type { State } from "../core/state";
 import { tx } from "../i18n";
 import { layerIdx, T1 } from "../chapters/ch1";
 import { coverage } from "../chapters/ch2";
-import { colCount, starsOn, capture, zoneR, lyOf, isOn } from "../chapters/ch3";
+import { colCount, starsOn, capture, zoneR, lyOf, isOn } from "../chapters/ch4";
+import { eta, spinA, eddMax, mdot } from "../chapters/ch3";
+import { iscoM } from "../mech/ch3";
+import { power } from "../core/engine";
 import { galaxyNodes } from "../core/galaxy";
-import { count, pct } from "../core/format";
+import { count, pct, mass } from "../core/format";
 import { MONO, SANS } from "../mech/fx";
 import { img } from "./img";
 import { did } from "../core/bus";
@@ -24,10 +27,48 @@ export function drawDetail(cv: HTMLCanvasElement, s: State, T: number) {
   c.font = `13px ${MONO}`; c.textAlign = "left"; c.fillStyle = "#9aa6bd";
   if (s.ch === 1) cutaway(c, s, T, w, hh, X);
   else if (s.ch === 2) starCut(c, s, T, w, hh, X);
+  else if (s.ch === 3) holeCut(c, s, T, w, hh, X);
   else galaxyCut(c, s, T, w, hh, X);
 }
 
-// ---------- Kap. 3: Mléčná dráha z boku (jen aktuální stadium) ----------
+// ---------- Kap. 3: disk díry z boku ----------
+let RS: HTMLCanvasElement | null = null;
+/** Obrázek s černým pozadím přes měkkou kruhovou masku – jinak je vidět čtverec. */
+function roundSoft(I: HTMLImageElement | null) {
+  if (!I) return null;
+  if (RS) return RS;
+  const cv = document.createElement("canvas"); cv.width = I.width; cv.height = I.height;
+  const g = cv.getContext("2d")!; g.drawImage(I, 0, 0); g.globalCompositeOperation = "destination-in";
+  const w = I.width / 2, gr = g.createRadialGradient(w, w, w * 0.55, w, w, w);
+  gr.addColorStop(0, "#000"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, I.width, I.height);
+  return (RS = cv);
+}
+function holeCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh: number, X: any) {
+  const st = Math.min(s.stage, X.phase.length - 1), P = X.phase[st], S = X.card;
+  const sz = Math.min(w * 0.55, hh - 30), x0 = 20, y0 = (hh - sz) / 2, cx = x0 + sz / 2, cy = y0 + sz / 2;
+  const im = roundSoft(img("hole3"));
+  if (im) {   // obrázek díry přes měkkou kruhovou masku
+    c.save(); c.globalCompositeOperation = "screen"; c.globalAlpha = 0.45 + 0.55 * Math.min(1, Math.max(0, (Math.log10(Math.max(power(s), 1e26)) - 26) / 6)); c.drawImage(im, x0, y0, sz, sz); c.restore();
+  }
+  // horizont a vnitřní prstenec (měřítko: stín na obrázku ~8 % šířky = horizont)
+  const a = spinA(s), Mkm = 11.8, rh = sz * 0.04, isco = rh * iscoM(a) / 2;
+  c.strokeStyle = "rgba(255,210,122,.75)"; c.setLineDash([4, 5]); c.lineWidth = 1.2;
+  c.beginPath(); c.ellipse(cx, cy, isco, isco * 0.28, 0, 0, 7); c.stroke(); c.setLineDash([]);
+  c.font = `13px ${MONO}`; c.textBaseline = "middle"; c.textAlign = "left";
+  const lab = (t: string, x: number, y: number, tx: number, ty: number, col: string) => {
+    c.strokeStyle = col.replace(")", ",.45)").replace("rgb", "rgba"); c.beginPath(); c.moveTo(x, y); c.lineTo(tx - 4, ty); c.stroke();
+    c.fillStyle = col; c.fillText(t, tx, ty);
+  };
+  lab(`${S.hor} ${Math.round(2 * Mkm * (1 + Math.sqrt(1 - a * a)))} km`, cx + rh * 0.7, cy - rh * 0.7, cx + sz * 0.22, cy - sz * 0.3, "rgb(207,224,255)");
+  lab(`${S.isco} ${Math.round(Mkm * iscoM(a))} km`, cx + isco, cy, cx + sz * 0.3, cy + sz * 0.26, "rgb(255,210,122)");
+  c.textAlign = "left"; c.font = `600 11px ${SANS}`; c.fillStyle = "rgba(176,181,212,.9)"; c.fillText(S.cut.toUpperCase(), 20, 24);
+  const ix = x0 + sz + 40, cw = Math.min(380, w - ix - 20);
+  if (cw < 200) { c.textBaseline = "alphabetic"; return; }
+  stageCard(c, s, X, st, S.sub, [[S.spin, a.toFixed(3).replace(".", ",")], [S.eta, pct(eta(s))], [S.flow, mass(mdot(s)) + "/s"], [S.edd, pct(power(s) / eddMax(s))], [S.real, P.real]], P.t, ix, Math.max(40, hh / 2 - 150), cw, S.stage);
+  c.textBaseline = "alphabetic"; void T;
+}
+
+// ---------- Kap. 4: Mléčná dráha z boku (jen aktuální stadium) ----------
 function galaxyCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh: number, X: any) {
   const st = Math.min(s.stage, X.phase.length - 1), P = X.phase[st], S = X.card;
   const iw = Math.min(w * 0.62, (hh - 40) * 1.79), ih = iw / 1.79, x0 = 10, y0 = (hh - ih) / 2;

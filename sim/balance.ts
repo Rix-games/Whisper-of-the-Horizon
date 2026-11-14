@@ -9,7 +9,8 @@ import { CHAPTERS } from "../src/core/defs";
 import { seedRnd } from "../src/core/rng";
 import { kamen } from "../src/mech/ch1";
 import { hvezda } from "../src/mech/ch2";
-import { galaxie } from "../src/mech/ch3";
+import { diera } from "../src/mech/ch3";
+import { galaxie } from "../src/mech/ch4";
 import { fxUpdate, setFx } from "../src/mech/fx";
 
 const env = (k: string, d: number) => (process.env[k] ? Number(process.env[k]) : d);
@@ -17,7 +18,7 @@ const SEED = env("SEED", 1), LIMIT = env("LIMIT", 6 * 3600), TL = env("TL", 0), 
 seedRnd(SEED); setFx(false);
 const s = newState();
 if (ONLY > 1) { s.ch = ONLY; CHAPTERS[ONLY - 1].simStart?.(s); CHAPTERS[ONLY - 1].onStart?.(s); }
-const mechs: any = { 1: kamen, 2: hvezda, 3: galaxie };
+const mechs: any = { 1: kamen, 2: hvezda, 3: diera, 4: galaxie };
 const M = { x: 800, y: 500, px: 800, py: 500, down: false, inside: true };
 let mech = mechs[s.ch]; mech.reset();
 const ev: [number, string][] = [];
@@ -70,7 +71,9 @@ function shop() {
   return false;
 }
 
+const STOPCH = env("STOPCH", 0);
 while (s.t < LIMIT) {
+  if (STOPCH && s.ch >= STOPCH) break;
   idle -= dt;
   if (idle <= 0 && Math.random() > SKILL) idle = 4;
   if (idle > 0) { if (M.down) { M.down = false; mech.up?.(s, M); } } else mech.bot(s, dt, M);

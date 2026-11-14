@@ -134,7 +134,7 @@ export function tick(s: State, dt: number) {
   s.res.data += dataRate(s) * dt;
   const ps = C.passive(s);
   if (ps > 0) gain(s, C.cur, ps * dt);
-  for (const c of ["ore", "plasma", "sails"] as Cur[]) {   // klouzavý průměr příjmu
+  for (const c of ["ore", "plasma", "mass", "sails"] as Cur[]) {   // klouzavý průměr příjmu
     const k = Math.min(1, dt * 0.35);
     RT.rate[c] = RT.rate[c] * (1 - k) + (RT.inc[c] / Math.max(dt, 1e-3)) * k;
     RT.inc[c] = 0;

@@ -5,8 +5,8 @@ import { MISSIONS, MMAP } from "../core/defs";
 import { mVisible } from "../core/engine";
 import { coverage } from "../chapters/ch2";
 import { hvezda, LOOK, starSprite } from "../mech/ch2";
-import { GAL_SITES } from "../chapters/ch3";
-import { gsp } from "../mech/ch3";
+import { GAL_SITES } from "../chapters/ch4";
+import { gsp } from "../mech/ch4";
 import { galaxyNodes } from "../core/galaxy";
 import { MONO, SANS } from "../mech/fx";
 import { find } from "../i18n";
@@ -243,7 +243,7 @@ export function drawMissions(c: CanvasRenderingContext2D, s: State, view: string
   }
   if (s.run && MMAP[s.run.id].view === view) {
     const [tx, ty] = missionPos(s.run.id);
-    let [ox, oy] = ORIGIN[view];
+    let [ox, oy] = view === "system" && s.ch >= 3 ? SYS.aldra : ORIGIN[view];
     if (view === "galaxy") { const h = gsp(galaxyNodes()[0]); ox = h[0]; oy = h[1]; }
     const f = 1 - s.run.left / s.run.dur, k = f < 0.5 ? f * 2 : (1 - f) * 2;
     const x = ox + (tx - ox) * k, y = oy + (ty - oy) * k;

@@ -1,19 +1,20 @@
-// Texty hry. Kapitoly: cs1.ts, cs2.ts, cs3.ts. Obecné rozhraní: UI níže.
+// Texty hry. Kapitoly: cs1.ts … cs4.ts. Obecné rozhraní: UI níže.
 import { CS1 } from "./cs1";
 import { CS2 } from "./cs2";
 import { CS3 } from "./cs3";
+import { CS4 } from "./cs4";
 
-export const TX: Record<number, typeof CS1 & { layer?: string[] }> = { 1: CS1, 2: CS2 as any, 3: CS3 as any };
+export const TX: Record<number, typeof CS1 & { layer?: string[] }> = { 1: CS1, 2: CS2 as any, 3: CS3 as any, 4: CS4 as any };
 export const tx = (ch: number) => TX[ch];
 /** Najde text stavby/výzkumu/mise/útržku v libovolné kapitole. */
 export function find(kind: "b" | "r" | "m" | "jour", id: string): any {
-  for (const k of [1, 2, 3]) { const v = (TX[k] as any)[kind][id]; if (v) return v; }
+  for (const k of [1, 2, 3, 4]) { const v = (TX[k] as any)[kind][id]; if (v) return v; }
   return null;
 }
 
 export const UI = {
   game: "Šepot Horizontu",
-  res: { ore: "Ruda", plasma: "Plazma", sails: "Zárodky", energy: "Energie", data: "Data" } as Record<string, string>,
+  res: { ore: "Ruda", plasma: "Plazma", mass: "Hmota", sails: "Zárodky", energy: "Energie", data: "Data" } as Record<string, string>,
   tabs: { build: "Stavby", research: "Výzkum", map: "Mapa", detail: "Detail" } as Record<string, string>,
   ladderHole: "Díra",
   awakeT: "Sagittarius A* se probudila",
@@ -42,7 +43,7 @@ export const UI = {
   researchNone: "Teď není co zkoumat. Další směr se objeví s postupem.",
   researchReady: "Připraveno",
   researchIn: (t: string) => `za ~${t}`,
-  detailNote: { 1: "Čím hlouběji laser řeže, tím bohatší ruda.", 2: "Řez Aldrou ukazuje, co právě hoří v jádře. S každým stadiem se mění světlo i velikost hvězdy.", 3: "Mléčná dráha z boku. Světla jsou tvoje kolonie, zelený pás ukazuje, kam zárodky zatím doletí." } as Record<number, string>,
+  detailNote: { 1: "Čím hlouběji laser řeže, tím bohatší ruda.", 2: "Řez Aldrou ukazuje, co právě hoří v jádře. S každým stadiem se mění světlo i velikost hvězdy.", 3: "Disk díry z boku. Čím rychleji se díra točí, tím blíž k ní sahá vnitřní prstenec.", 4: "Mléčná dráha z boku. Světla jsou tvoje kolonie, zelený pás ukazuje, kam zárodky zatím doletí." } as Record<number, string>,
   missionsDone: "Splněné mise",
   send: "Vyslat Vesper", running: "Vesper letí", busy: "Vesper je na cestě",
   duration: "Let",
@@ -68,7 +69,7 @@ export const UI = {
   passiveView: "Pohled – hraje se jinde",
   next: "Další kapitola",
   theEnd: "Konec dostupného obsahu",
-  theEndBody: "Kapitola 4 se připravuje. Galaxie dál svítí a můžeš osidlovat dál.",
+  theEndBody: "Kapitola 5 se připravuje. Galaxie dál svítí a můžeš osidlovat dál.",
   ktitle: "Kardaševova škála",
   kbody: "Měří civilizaci podle výkonu, který využívá. K = (log₁₀ P − 6) / 10. Výkon je ve wattech (W), uložená energie v joulech (J): 1 W = 1 J za sekundu.",
   types: {
@@ -77,5 +78,5 @@ export const UI = {
     3: "Typ III – výkon celé galaxie, zhruba 5·10³⁶ W pro Mléčnou dráhu.",
   } as Record<number, string>,
   kmore: "Další typy se ukážou, až se k nim přiblížíš.",
-  detail: { 1: "Řez asteroidem", 2: "Život Aldry", 3: "Řez galaxií" } as Record<number, string>,
+  detail: { 1: "Řez asteroidem", 2: "Život Aldry", 3: "Řez diskem", 4: "Řez galaxií" } as Record<number, string>,
 };

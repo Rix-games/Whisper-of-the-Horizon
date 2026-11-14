@@ -64,7 +64,7 @@
 
   // src/core/state.ts
   var SAVE_KEY = "sepot-horizontu-1";
-  var SAVE_VERSION = 1;
+  var SAVE_VERSION = 2;
   function newState() {
     return {
       v: SAVE_VERSION,
@@ -73,8 +73,9 @@
       t: 0,
       chT: 0,
       stT: 0,
-      res: { ore: 0, plasma: 0, sails: 0, energy: 0, data: 0 },
-      tot: { ore: 0, plasma: 0, sails: 0 },
+      res: { ore: 0, plasma: 0, mass: 0, sails: 0, energy: 0, data: 0 },
+      tot: { ore: 0, plasma: 0, mass: 0, sails: 0 },
+      hole: { D: 0, combo: 0, flares: 0, hits: 0, perfect: 0 },
       b: {},
       r: {},
       mis: {},
@@ -100,6 +101,18 @@
   function migrate(o) {
     const s2 = newState();
     if (!o || typeof o !== "object") return s2;
+    if ((o.v ?? 1) < 2) {
+      if (o.ch >= 3) o.ch++;
+      if (o.done >= 3) o.done++;
+      if (o.story?.intro3) {
+        o.story.intro4 = 1;
+        delete o.story.intro3;
+      }
+      if (o.seen?.detail3 != null) {
+        o.seen.detail4 = o.seen.detail3;
+        delete o.seen.detail3;
+      }
+    }
     for (const k of Object.keys(s2)) {
       if (o[k] === void 0) continue;
       if (s2[k] && typeof s2[k] === "object" && !Array.isArray(s2[k]) && o[k] && typeof o[k] === "object") s2[k] = { ...s2[k], ...o[k] };
@@ -179,10 +192,11 @@
     for (const f of listeners) f({ type, id, v });
   }
   var RT = {
-    inc: { ore: 0, plasma: 0, sails: 0 },
-    rate: { ore: 0, plasma: 0, sails: 0 },
+    inc: { ore: 0, plasma: 0, mass: 0, sails: 0 },
+    rate: { ore: 0, plasma: 0, mass: 0, sails: 0 },
     P: 0,
-    jt: 0
+    jt: 0,
+    flare: 0
   };
   var n = (s2, id) => s2.b[id] || 0;
   var has = (s2, id) => !!s2.r[id];
@@ -664,11 +678,188 @@
   }
 
   // src/chapters/ch3.ts
-  var L_SUN = 3828e23;
+  var C2 = 8988e13;
   var T3 = {
+    goals: [3e28, 25e28, 4e30, 4e31, 95e30, 3e32],
+    // 6 stadií; Eddingtonova mez 1e32, výtrysky ji prolomí
+    tau: 30,
+    // s – doba, za kterou disk steče do díry (vyhlazení výkonu)
+    edd: 1e32,
+    // W – Eddingtonova mez díry 8 M☉
+    clump: 4e12,
+    // kg – chuchvalec na začátku
+    clumpUp: 1.6,
+    // ×hmota chuchvalce za úroveň
+    pool: [3, 1],
+    // chuchvalců v mlhovině: základ + za úroveň Zásobníku
+    respawn: [2.2, 0.75],
+    // s mezi novými chuchvalci, ×za úroveň Zásobníku
+    q: { perfect: 1.5, disk: 1, outer: 0.7, plunge: 0.25 },
+    // výnos podle toho, kam chuchvalec dopadne
+    tugEvery: 8,
+    // s – jeden remorkér hodí chuchvalec
+    wind: 0.02,
+    // lapač zachytí 2 % přítoku (vítr z disku)
+    windFloor: 2e9,
+    // kg/s na lapač i bez přítoku
+    ring: 1.12,
+    // prstenec lapačů: ×hmota všem lapačům za kus
+    spinA: [0, 0.5, 0.7, 0.9, 0.97, 0.99, 0.998],
+    spinEta: [0.057, 0.082, 0.104, 0.155, 0.21, 0.264, 0.32],
+    jets: 4,
+    // výtrysky: ×Eddingtonova mez
+    field: 1.25,
+    // magnetická síť: ×mez za kus
+    startMass: 15e11,
+    startDisk: 25e11,
+    energyCapS: 300,
+    price: { k: 1, g: 0 }
+  };
+  var B3 = (o) => ({ ch: 3, ...o });
+  var BUILD3 = [
+    // 1. úroveň – hráč hází chuchvalce prakem
+    B3({ id: "lap", tier: 1, kind: "gen", cur: "mass", c0: 5e11, g: 1.2, req: () => true }),
+    B3({ id: "clump", tier: 1, kind: "up", cur: "mass", c0: 2e12, g: 5, max: 14, maxAt: (s2) => 3 + 2 * s2.stage, req: (s2) => n(s2, "lap") >= 2 }),
+    B3({ id: "xray", tier: 1, kind: "data", cur: "mass", c0: 1e12, g: 1.45, d: 4e9, req: (s2) => n(s2, "clump") >= 1 }),
+    B3({ id: "pool", tier: 1, kind: "up", cur: "mass", c0: 6e12, g: 2.8, max: 5, req: (s2) => n(s2, "xray") >= 1 && s2.hole.hits >= 12 }),
+    B3({ id: "ring3", tier: 1, kind: "mult", cur: "mass", c0: 3e13, g: 1.6, req: (s2) => n(s2, "lap") >= 8 && n(s2, "pool") >= 1 }),
+    // 2. úroveň – automatika: remorkéry hází samy, rotace zvedá účinnost, magnetické pole prorazí mez
+    B3({ id: "tug", tier: 2, kind: "unit", cur: "mass", c0: 2e15, g: 1.3, req: R("tugs") }),
+    B3({ id: "spin", tier: 2, kind: "up", cur: "mass", c0: 4e16, g: 3.6, max: 6, maxAt: (s2) => Math.max(0, s2.stage - 1), req: R("spinup") }),
+    B3({ id: "field3", tier: 2, kind: "mult", cur: "mass", c0: 2e18, g: 2.2, max: 5, req: R("jets3") })
+  ];
+  var Rr3 = (o) => ({ ch: 3, ...o });
+  var RESEARCH3 = [
+    Rr3({ id: "aim", cost: 1e12, req: (s2) => s2.hole.hits >= 5 }),
+    // delší předpověď dráhy
+    Rr3({ id: "qpo", cost: 3e12, req: ST(1) }),
+    // data ×2
+    Rr3({ id: "tugs", cost: 8e12, req: ST(2), lvl2: true }),
+    // remorkéry
+    Rr3({ id: "guide", cost: 2e13, req: (s2) => n(s2, "tug") >= 3 }),
+    // remorkéry míří do vnitřního prstence
+    Rr3({ id: "spinup", cost: 5e13, req: ST(3) }),
+    // roztáčení díry
+    Rr3({ id: "jets3", cost: 12e13, req: ST(4) }),
+    // výtrysky ×4 mez
+    Rr3({ id: "beam3", cost: 2e14, req: (s2) => s2.stage >= 6, final: true })
+  ];
+  var M3 = (o) => ({ ch: 3, view: "system", ...o });
+  var MISSIONS3 = [
+    M3({ id: "belt3", cost: 2e33, dur: 90, req: () => true, at: [1060, 640] }),
+    // chuchvalce ×2
+    M3({ id: "kelvar3", cost: 3e33, dur: 110, req: ST(1), at: [560, 380] }),
+    // data ×2
+    M3({ id: "tauris3", cost: 4e33, dur: 140, req: ST(2), at: [1150, 330] }),
+    // proud z Taurise
+    M3({ id: "ergo", cost: 5e33, dur: 140, req: ST(3), at: [800, 470] }),
+    // η ×1,3 (Penroseův proces)
+    M3({ id: "star3", cost: 6e34, dur: 160, req: ST(4), at: [380, 700] })
+    // roztržená hvězda: velký proud
+  ];
+  var J3 = (id, when, kind) => ({ id, ch: 3, when, kind });
+  var JOURNAL3 = [
+    J3("h3_start", () => true),
+    J3("h3_first", (s2) => s2.hole.hits >= 1),
+    J3("f3_isco", (s2) => s2.hole.perfect >= 1, "fact"),
+    J3("h3_ten", (s2) => s2.hole.hits >= 10),
+    J3("h3_belt", (s2) => did(s2, "belt3")),
+    J3("h3_st1", (s2) => s2.stage >= 1),
+    J3("f3_edd", (s2) => s2.stage >= 1 && s2.stT > 90, "fact"),
+    J3("h3_qpo", (s2) => has(s2, "qpo")),
+    J3("h3_kelvar", (s2) => did(s2, "kelvar3")),
+    J3("h3_st2", (s2) => s2.stage >= 2),
+    J3("h3_tug", (s2) => n(s2, "tug") >= 1),
+    J3("h3_tauris", (s2) => did(s2, "tauris3")),
+    J3("f3_hawking", (s2) => s2.stage >= 2 && s2.stT > 150, "fact"),
+    J3("h3_st3", (s2) => s2.stage >= 3),
+    J3("h3_spin", (s2) => n(s2, "spin") >= 1),
+    J3("f3_cyg", (s2) => n(s2, "spin") >= 2, "fact"),
+    J3("h3_ergo", (s2) => did(s2, "ergo")),
+    J3("h3_st4", (s2) => s2.stage >= 4),
+    J3("h3_flare", (s2) => s2.hole.flares >= 1),
+    J3("h3_jets", (s2) => has(s2, "jets3")),
+    J3("h3_star", (s2) => did(s2, "star3")),
+    J3("f3_tde", (s2) => did(s2, "star3") && s2.stT > 60, "fact"),
+    J3("h3_st5", (s2) => s2.stage >= 5),
+    J3("h3_end", (s2) => s2.stage >= 6)
+  ];
+  var eta = (s2) => T3.spinEta[Math.min(n(s2, "spin"), 6)] * (did(s2, "ergo") ? 1.3 : 1);
+  var spinA = (s2) => T3.spinA[Math.min(n(s2, "spin"), 6)];
+  var eddMax = (s2) => T3.edd * (has(s2, "jets3") ? T3.jets : 1) * Math.pow(T3.field, n(s2, "field3"));
+  var mdot = (s2) => s2.hole.D / T3.tau;
+  var holePower = (s2) => eta(s2) * C2 * mdot(s2);
+  var clumpMass = (s2) => T3.clump * Math.pow(T3.clumpUp, n(s2, "clump")) * (did(s2, "belt3") ? 2 : 1);
+  var poolCap = (s2) => T3.pool[0] + T3.pool[1] * n(s2, "pool");
+  var respawnT = (s2) => T3.respawn[0] * Math.pow(T3.respawn[1], n(s2, "pool"));
+  function streams(s2) {
+    let f = 0;
+    if (did(s2, "tauris3")) f += 0.25 * clumpMass(s2);
+    if (did(s2, "star3")) f += 2 * clumpMass(s2);
+    return f;
+  }
+  var tugRate = (s2) => n(s2, "tug") / T3.tugEvery * clumpMass(s2) * (has(s2, "guide") ? T3.q.perfect : T3.q.disk);
+  var lapRate = (s2) => (T3.wind * mdot(s2) + T3.windFloor) * Math.pow(T3.ring, n(s2, "ring3"));
+  function feed(s2, kg) {
+    s2.hole.D += kg;
+    const Dmax = eddMax(s2) * T3.tau / (eta(s2) * C2);
+    if (s2.hole.D > Dmax) {
+      s2.hole.D = Dmax;
+      return true;
+    }
+    return false;
+  }
+  var CH3 = {
+    id: 3,
+    cur: "mass",
+    view: "star",
+    map: "system",
+    lvl2: 2,
+    price: T3.price,
+    goals: () => T3.goals,
+    build: BUILD3,
+    research: RESEARCH3,
+    missions: MISSIONS3,
+    journal: JOURNAL3,
+    power: holePower,
+    passive: (s2) => n(s2, "lap") * lapRate(s2),
+    dataMult: (s2) => (has(s2, "qpo") ? 2 : 1) * (did(s2, "kelvar3") ? 2 : 1),
+    autos(s2, dt) {
+      s2.hole.D -= mdot(s2) * dt;
+      const f = (tugRate(s2) + streams(s2)) * dt;
+      if (f > 0 && feed(s2, f)) {
+        RT.flare = (RT.flare || 0) + dt;
+      }
+    },
+    onStart(s2) {
+      s2.base = 0;
+      s2.res.mass = T3.startMass;
+      if (!s2.hole.D) s2.hole.D = T3.startDisk;
+    },
+    effect(s2, id) {
+      const lv5 = n(s2, id);
+      if (id === "lap") return `+${mass(lapRate(s2))}/s za kus`;
+      if (id === "clump") return `Chuchvalec ${mass(clumpMass(s2))} \u2192 ${mass(clumpMass(s2) * T3.clumpUp)}`;
+      if (id === "pool") return `V mlhovin\u011B ${poolCap(s2)} \u2192 ${poolCap(s2) + T3.pool[1]} chuchvalc\u016F, rychleji p\u0159ib\xFDvaj\xED`;
+      if (id === "ring3") return `Ka\u017Ed\xFD lapa\u010D zachyt\xED o 12 % v\xEDc`;
+      if (id === "tug") return !lv5 ? "Prvn\xED remork\xE9r za\u010Dne h\xE1zet s\xE1m" : `${count(lv5)} remork\xE9r\u016F \xB7 +${mass(tugRate(s2) / Math.max(lv5, 1))}/s za kus`;
+      if (id === "spin") return `Rotace ${fixed(spinA(s2), 3)} \u2192 ${fixed(T3.spinA[Math.min(lv5 + 1, 6)], 3)} \xB7 \xFA\u010Dinnost ${pct(eta(s2))} \u2192 ${pct(T3.spinEta[Math.min(lv5 + 1, 6)] * (did(s2, "ergo") ? 1.3 : 1))}`;
+      if (id === "field3") return `Strop v\xFDkonu \xD7${fixed(T3.field, 2)}`;
+      return void 0;
+    },
+    simStart(s2) {
+      s2.res.data = 23e11;
+      s2.res.energy = 45e32;
+    }
+  };
+
+  // src/chapters/ch4.ts
+  var L_SUN = 3828e23;
+  var T4 = {
     goals: [5e31, 4e32, 3e33, 3e34, 6e35, 52e35],
     // Typ III ≈ 5·10³⁶ W (Mléčná dráha); 6 stadií
-    firstGoalVsBase: 1.8,
+    base0: 26e30,
+    // výkon díry, se kterým počítají cíle stadií
     cap0: 2e-3,
     capStep: 1.08,
     capMax: 0.16,
@@ -701,63 +892,63 @@
     ly: 5e4
     // poloměr disku galaxie ve světelných letech (pro texty)
   };
-  var B3 = (o) => ({ ch: 3, ...o });
-  var BUILD3 = [
+  var B4 = (o) => ({ ch: 4, ...o });
+  var BUILD4 = [
     // 1. úroveň – hráč maluje svazkem; stavby se odkrývají postupně podle počtu kolonií
-    B3({ id: "power", tier: 1, kind: "up", cur: "sails", c0: 20, g: 2.6, max: 6, maxAt: (s2) => 1 + s2.stage, req: () => true }),
-    B3({ id: "interf", tier: 1, kind: "data", cur: "sails", c0: 40, g: 1.22, d: 4e9, req: (s2) => colCount(s2) >= 3 }),
-    B3({ id: "loom", tier: 1, kind: "mult", cur: "sails", c0: 60, g: 1.35, req: (s2) => colCount(s2) >= 6 && n(s2, "interf") >= 1 }),
-    B3({ id: "reach", tier: 1, kind: "up", cur: "sails", c0: 90, g: 2.7, max: 6, maxAt: (s2) => 1 + s2.stage, req: (s2) => colCount(s2) >= 10 && n(s2, "power") >= 1 }),
-    B3({ id: "spread", tier: 1, kind: "up", cur: "sails", c0: 140, g: 2.5, max: 6, maxAt: (s2) => 1 + s2.stage, req: (s2) => colCount(s2) >= 15 && n(s2, "loom") >= 1 }),
-    B3({ id: "swarm3", tier: 1, kind: "mult", cur: "sails", c0: 220, g: 1.35, maxAt: (s2) => 4 + 4 * s2.stage, req: (s2) => colCount(s2) >= 21 && n(s2, "reach") >= 1 }),
+    B4({ id: "power", tier: 1, kind: "up", cur: "sails", c0: 20, g: 2.6, max: 6, maxAt: (s2) => 1 + s2.stage, req: () => true }),
+    B4({ id: "interf", tier: 1, kind: "data", cur: "sails", c0: 40, g: 1.22, d: 4e9, req: (s2) => colCount(s2) >= 3 }),
+    B4({ id: "loom", tier: 1, kind: "mult", cur: "sails", c0: 60, g: 1.35, req: (s2) => colCount(s2) >= 6 && n(s2, "interf") >= 1 }),
+    B4({ id: "reach", tier: 1, kind: "up", cur: "sails", c0: 90, g: 2.7, max: 6, maxAt: (s2) => 1 + s2.stage, req: (s2) => colCount(s2) >= 10 && n(s2, "power") >= 1 }),
+    B4({ id: "spread", tier: 1, kind: "up", cur: "sails", c0: 140, g: 2.5, max: 6, maxAt: (s2) => 1 + s2.stage, req: (s2) => colCount(s2) >= 15 && n(s2, "loom") >= 1 }),
+    B4({ id: "swarm3", tier: 1, kind: "mult", cur: "sails", c0: 220, g: 1.35, maxAt: (s2) => 4 + 4 * s2.stage, req: (s2) => colCount(s2) >= 21 && n(s2, "reach") >= 1 }),
     // 2. úroveň – automatika: sondy se šíří samy, majáky samy míří svazkem
-    B3({ id: "probe", tier: 2, kind: "up", cur: "sails", c0: 3e3, g: 3.2, max: 5, maxAt: (s2) => s2.stage - 1, req: R("probes") }),
-    B3({ id: "beacon", tier: 2, kind: "auto", cur: "sails", c0: 5e3, g: 2, req: R("beacons") }),
-    B3({ id: "radio", tier: 2, kind: "data", cur: "sails", c0: 2e5, g: 1.25, d: 3e12, req: (s2) => s2.stage >= 3 && n(s2, "beacon") >= 2 })
+    B4({ id: "probe", tier: 2, kind: "up", cur: "sails", c0: 3e3, g: 3.2, max: 5, maxAt: (s2) => s2.stage - 1, req: R("probes") }),
+    B4({ id: "beacon", tier: 2, kind: "auto", cur: "sails", c0: 5e3, g: 2, req: R("beacons") }),
+    B4({ id: "radio", tier: 2, kind: "data", cur: "sails", c0: 2e5, g: 1.25, d: 3e12, req: (s2) => s2.stage >= 3 && n(s2, "beacon") >= 2 })
   ];
-  var Rr3 = (o) => ({ ch: 3, ...o });
-  var RESEARCH3 = [
-    Rr3({ id: "sailcloth", cost: 4e12, req: () => true }),
+  var Rr4 = (o) => ({ ch: 4, ...o });
+  var RESEARCH4 = [
+    Rr4({ id: "sailcloth", cost: 4e12, req: () => true }),
     // plachty ×2
-    Rr3({ id: "dyson3", cost: 3e13, req: (s2) => n(s2, "swarm3") >= 3 }),
+    Rr4({ id: "dyson3", cost: 3e13, req: (s2) => n(s2, "swarm3") >= 3 }),
     // zachycení ×3
-    Rr3({ id: "brake", cost: 8e13, req: (s2) => s2.stage >= 1 && colCount(s2) >= 30 }),
+    Rr4({ id: "brake", cost: 8e13, req: (s2) => s2.stage >= 1 && colCount(s2) >= 30 }),
     // svazek ×1,5 (magnetická brzda)
-    Rr3({ id: "probes", cost: 2e14, req: ST(2), lvl2: true }),
+    Rr4({ id: "probes", cost: 2e14, req: ST(2), lvl2: true }),
     // sondy
-    Rr3({ id: "beacons", cost: 1e15, req: (s2) => n(s2, "probe") >= 1 }),
+    Rr4({ id: "beacons", cost: 1e15, req: (s2) => n(s2, "probe") >= 1 }),
     // majáky
-    Rr3({ id: "gaia", cost: 6e15, req: ST(3) }),
+    Rr4({ id: "gaia", cost: 6e15, req: ST(3) }),
     // šíření ×1,5, data ×2
-    Rr3({ id: "halo", cost: 4e16, req: (s2) => s2.stage >= 3 && n(s2, "beacon") >= 4 }),
+    Rr4({ id: "halo", cost: 4e16, req: (s2) => s2.stage >= 3 && n(s2, "beacon") >= 4 }),
     // zachycení ×3
-    Rr3({ id: "seeds", cost: 15e16, req: (s2) => s2.stage >= 4 && colCount(s2) >= 120 }),
+    Rr4({ id: "seeds", cost: 15e16, req: (s2) => s2.stage >= 4 && colCount(s2) >= 120 }),
     // kolonie dozrávají 2× rychleji
-    Rr3({ id: "jets", cost: 3e17, req: ST(5) }),
+    Rr4({ id: "jets", cost: 3e17, req: ST(5) }),
     // zachycení ×2
-    Rr3({ id: "sgra", cost: 2e16, req: (s2) => s2.stage >= 6, final: true })
+    Rr4({ id: "sgra", cost: 2e16, req: (s2) => s2.stage >= 6, final: true })
   ];
-  var M3 = (o) => ({ ch: 3, view: "galaxy", at: [0, 0], ...o });
-  var MISSIONS3 = [
-    M3({ id: "magnetar", cost: 14e33, dur: 90, req: () => true }),
+  var M4 = (o) => ({ ch: 4, view: "galaxy", at: [0, 0], ...o });
+  var MISSIONS4 = [
+    M4({ id: "magnetar", cost: 14e33, dur: 90, req: () => true }),
     // plachty ×2
-    M3({ id: "pulsar", cost: 25e33, dur: 110, req: ST(1) }),
+    M4({ id: "pulsar", cost: 25e33, dur: 110, req: ST(1) }),
     // data ×2
-    M3({ id: "ruin", cost: 5e34, dur: 120, req: (s2) => s2.stage >= 1 && colCount(s2) >= 25 }),
+    M4({ id: "ruin", cost: 5e34, dur: 120, req: (s2) => s2.stage >= 1 && colCount(s2) >= 25 }),
     // plachty ×1,5
-    M3({ id: "globular", cost: 15e34, dur: 120, req: ST(2) }),
+    M4({ id: "globular", cost: 15e34, dur: 120, req: ST(2) }),
     // zachycení ×1,5
-    M3({ id: "kilonova", cost: 1e36, dur: 140, req: ST(3) }),
+    M4({ id: "kilonova", cost: 1e36, dur: 140, req: ST(3) }),
     // data ×3
-    M3({ id: "sol", cost: 15e35, dur: 140, req: (s2) => s2.stage >= 3 && s2.stT > 120 }),
+    M4({ id: "sol", cost: 15e35, dur: 140, req: (s2) => s2.stage >= 3 && s2.stT > 120 }),
     // dozrávání ×1,5 (příběh)
-    M3({ id: "nebula", cost: 25e35, dur: 140, req: (s2) => s2.stage >= 3 && colCount(s2) >= 60 }),
+    M4({ id: "nebula", cost: 25e35, dur: 140, req: (s2) => s2.stage >= 3 && colCount(s2) >= 60 }),
     // šíření ×1,5
-    M3({ id: "frb", cost: 12e36, dur: 150, req: ST(4) }),
+    M4({ id: "frb", cost: 12e36, dur: 150, req: ST(4) }),
     // šíření ×2, plachty ×2
-    M3({ id: "stream", cost: 3e37, dur: 150, req: (s2) => s2.stage >= 4 && colCount(s2) >= 140 }),
+    M4({ id: "stream", cost: 3e37, dur: 150, req: (s2) => s2.stage >= 4 && colCount(s2) >= 140 }),
     // zachycení ×1,5
-    M3({ id: "fermi", cost: 3e38, dur: 160, req: ST(5) })
+    M4({ id: "fermi", cost: 3e38, dur: 160, req: ST(5) })
     // příběh, data ×2
   ];
   var GAL_SITES = {
@@ -772,35 +963,35 @@
     frb: [0.82, -0.66],
     fermi: [0, -0.1]
   };
-  var J3 = (id, when, kind) => ({ id, ch: 3, when, kind });
-  var JOURNAL3 = [
-    J3("c3_start", () => true),
-    J3("c3_first", (s2) => colCount(s2) >= 3),
-    J3("f3_sail", (s2) => s2.chT > 150, "fact"),
-    J3("c3_ten", (s2) => colCount(s2) >= 10),
-    J3("c3_magnetar", (s2) => did(s2, "magnetar")),
-    J3("c3_st1", (s2) => s2.stage >= 1),
-    J3("c3_ruin", (s2) => did(s2, "ruin")),
-    J3("c3_fifty", (s2) => colCount(s2) >= 50),
-    J3("c3_globular", (s2) => did(s2, "globular")),
-    J3("c3_st2", (s2) => s2.stage >= 2),
-    J3("c3_probe", (s2) => n(s2, "probe") >= 1),
-    J3("f3_vn", (s2) => n(s2, "probe") >= 2, "fact"),
-    J3("c3_beacon", (s2) => n(s2, "beacon") >= 1),
-    J3("c3_pulsar", (s2) => did(s2, "pulsar")),
-    J3("c3_st3", (s2) => s2.stage >= 3),
-    J3("c3_kilonova", (s2) => did(s2, "kilonova")),
-    J3("c3_sun", (s2) => did(s2, "sol")),
-    J3("c3_nebula", (s2) => did(s2, "nebula")),
-    J3("c3_hundred", (s2) => colCount(s2) >= 100),
-    J3("c3_st3b", (s2) => s2.stage >= 4),
-    J3("c3_stream", (s2) => did(s2, "stream")),
-    J3("c3_frb", (s2) => did(s2, "frb")),
-    J3("c3_twoh", (s2) => colCount(s2) >= 200),
-    J3("c3_st4", (s2) => s2.stage >= 5),
-    J3("f3_sgra", (s2) => s2.stage >= 5 && s2.stT > 120, "fact"),
-    J3("c3_fermi", (s2) => did(s2, "fermi")),
-    J3("c3_typeIII", (s2) => s2.stage >= 6)
+  var J4 = (id, when, kind) => ({ id, ch: 4, when, kind });
+  var JOURNAL4 = [
+    J4("c3_start", () => true),
+    J4("c3_first", (s2) => colCount(s2) >= 3),
+    J4("f3_sail", (s2) => s2.chT > 150, "fact"),
+    J4("c3_ten", (s2) => colCount(s2) >= 10),
+    J4("c3_magnetar", (s2) => did(s2, "magnetar")),
+    J4("c3_st1", (s2) => s2.stage >= 1),
+    J4("c3_ruin", (s2) => did(s2, "ruin")),
+    J4("c3_fifty", (s2) => colCount(s2) >= 50),
+    J4("c3_globular", (s2) => did(s2, "globular")),
+    J4("c3_st2", (s2) => s2.stage >= 2),
+    J4("c3_probe", (s2) => n(s2, "probe") >= 1),
+    J4("f3_vn", (s2) => n(s2, "probe") >= 2, "fact"),
+    J4("c3_beacon", (s2) => n(s2, "beacon") >= 1),
+    J4("c3_pulsar", (s2) => did(s2, "pulsar")),
+    J4("c3_st3", (s2) => s2.stage >= 3),
+    J4("c3_kilonova", (s2) => did(s2, "kilonova")),
+    J4("c3_sun", (s2) => did(s2, "sol")),
+    J4("c3_nebula", (s2) => did(s2, "nebula")),
+    J4("c3_hundred", (s2) => colCount(s2) >= 100),
+    J4("c3_st3b", (s2) => s2.stage >= 4),
+    J4("c3_stream", (s2) => did(s2, "stream")),
+    J4("c3_frb", (s2) => did(s2, "frb")),
+    J4("c3_twoh", (s2) => colCount(s2) >= 200),
+    J4("c3_st4", (s2) => s2.stage >= 5),
+    J4("f3_sgra", (s2) => s2.stage >= 5 && s2.stT > 120, "fact"),
+    J4("c3_fermi", (s2) => did(s2, "fermi")),
+    J4("c3_typeIII", (s2) => s2.stage >= 6)
   ];
   function colCount(s2) {
     let c = 0;
@@ -814,7 +1005,7 @@
     delete s2.prog[i];
     s2.prog["t" + i] = s2.t;
   }
-  var matureT = (s2) => T3.mature / ((has(s2, "seeds") ? 2 : 1) * (did(s2, "sol") ? 1.5 : 1));
+  var matureT = (s2) => T4.mature / ((has(s2, "seeds") ? 2 : 1) * (did(s2, "sol") ? 1.5 : 1));
   function maturity(s2, i) {
     const t0 = s2.prog["t" + i];
     if (t0 == null) return 1;
@@ -834,75 +1025,73 @@
     return cache2;
   }
   function capture(s2) {
-    let c = T3.cap0 * Math.pow(T3.capStep, n(s2, "swarm3"));
-    if (has(s2, "dyson3")) c *= T3.boost;
-    if (has(s2, "halo")) c *= T3.boost;
+    let c = T4.cap0 * Math.pow(T4.capStep, n(s2, "swarm3"));
+    if (has(s2, "dyson3")) c *= T4.boost;
+    if (has(s2, "halo")) c *= T4.boost;
     if (did(s2, "globular")) c *= 1.5;
     if (did(s2, "stream")) c *= 1.5;
     if (has(s2, "jets")) c *= 2;
-    return Math.min(T3.capMax, c);
+    return Math.min(T4.capMax, c);
   }
   function sailMult(s2) {
-    let m = Math.pow(T3.loom, n(s2, "loom"));
+    let m = Math.pow(T4.loom, n(s2, "loom"));
     if (has(s2, "sailcloth")) m *= 2;
     if (did(s2, "magnetar")) m *= 2;
     if (did(s2, "frb")) m *= 2;
     if (did(s2, "ruin")) m *= 1.5;
     return m;
   }
-  var sailPassive = (s2) => (T3.sail0 + starsOn(s2).sq * T3.sailPerStar) * sailMult(s2);
-  var zoneR = (s2) => T3.zone[Math.min(s2.stage, T3.zone.length - 1)];
+  var sailPassive = (s2) => (T4.sail0 + starsOn(s2).sq * T4.sailPerStar) * sailMult(s2);
+  var zoneR = (s2) => T4.zone[Math.min(s2.stage, T4.zone.length - 1)];
   function inZone(s2, i) {
     const N = galaxyNodes(), h2 = N[0], p = N[i];
     return Math.hypot(p.x - h2.x, p.y - h2.y) <= zoneR(s2);
   }
-  var needOf = (stars) => T3.need[0] * Math.pow(stars / 1e4 + 1, T3.need[1]);
-  var lyOf = (g) => `${count(Math.round(g * T3.ly / 100) * 100)} ly`;
+  var needOf = (stars) => T4.need[0] * Math.pow(stars / 1e4 + 1, T4.need[1]);
+  var lyOf = (g) => `${count(Math.round(g * T4.ly / 100) * 100)} ly`;
   var spreadMult = (s2) => (did(s2, "frb") ? 2 : 1) * (has(s2, "gaia") ? 1.5 : 1) * (did(s2, "nebula") ? 1.5 : 1);
-  var CH3 = {
-    id: 3,
+  var CH4 = {
+    id: 4,
     cur: "sails",
     view: "galaxy",
     map: "galaxy",
     lvl2: 2,
-    price: T3.price,
-    goals: (s2) => {
-      const g = T3.goals.slice();
-      g[0] = Math.max(g[0], T3.firstGoalVsBase * s2.base);
-      return g;
-    },
-    build: BUILD3,
-    research: RESEARCH3,
-    missions: MISSIONS3,
-    journal: JOURNAL3,
+    price: T4.price,
+    goals: (s2) => T4.goals.map((g) => Math.max(g, s2.base + (g - T4.base0))),
+    // kolonie musí přidat stejně jako dřív, ať díra přinese cokoli
+    build: BUILD4,
+    research: RESEARCH4,
+    missions: MISSIONS4,
+    journal: JOURNAL4,
     power: (s2) => s2.base + starsOn(s2).v * L_SUN * capture(s2),
     passive: sailPassive,
     dataMult: (s2) => (did(s2, "kilonova") ? 3 : 1) * (has(s2, "gaia") ? 2 : 1) * (did(s2, "pulsar") ? 2 : 1) * (did(s2, "fermi") ? 2 : 1),
     onStart(s2) {
-      s2.res.sails = T3.startSails;
-      s2.res.energy = Math.min(s2.res.energy, CH3.power(s2) * T3.energyCapS);
+      s2.res.sails = T4.startSails;
+      s2.res.data = Math.min(s2.res.data, 2e12);
+      s2.res.energy = Math.min(s2.res.energy, CH4.power(s2) * T4.energyCapS);
       if (!s2.col) setOn(s2, 0);
     },
     effect(s2, id) {
-      const lv4 = n(s2, id), x = (v) => "\xD7" + (Math.round(v * 10) / 10).toString().replace(".", ",");
-      if (id === "power") return `S\xEDla svazku ${x(1 + 0.6 * lv4)} \u2192 ${x(1 + 0.6 * (lv4 + 1))}`;
-      if (id === "loom") return `+${count(sailPassive(s2) * (T3.loom - 1))} z\xE1rodk\u016F/s`;
-      if (id === "reach") return `Dosah svazku ${lyOf(T3.reach[0] + T3.reach[1] * lv4)} \u2192 ${lyOf(T3.reach[0] + T3.reach[1] * (lv4 + 1))}`;
-      if (id === "spread") return `Kolonie se \u0161\xED\u0159\xED samy ${x(1 + lv4)} \u2192 ${x(2 + lv4)}`;
-      if (id === "swarm3") return `Zachycen\xE9 sv\u011Btlo ${pct(capture(s2))} \u2192 ${pct(Math.min(T3.capMax, capture(s2) * T3.capStep))}`;
-      if (id === "probe") return `Sondy: \u0161\xED\u0159en\xED ${x(1 + T3.probe[0] * lv4)} \u2192 ${x(1 + T3.probe[0] * (lv4 + 1))}`;
-      if (id === "beacon") return !lv4 ? "Prvn\xED maj\xE1k za\u010Dne osidlovat s\xE1m" : lv4 === 1 ? "1 maj\xE1k osidluje hv\u011Bzdy s\xE1m" : lv4 < 5 ? `${lv4} maj\xE1ky osidluj\xED hv\u011Bzdy samy` : `${count(lv4)} maj\xE1k\u016F osidluje hv\u011Bzdy samo`;
+      const lv5 = n(s2, id), x = (v) => "\xD7" + (Math.round(v * 10) / 10).toString().replace(".", ",");
+      if (id === "power") return `S\xEDla svazku ${x(1 + 0.6 * lv5)} \u2192 ${x(1 + 0.6 * (lv5 + 1))}`;
+      if (id === "loom") return `+${count(sailPassive(s2) * (T4.loom - 1))} z\xE1rodk\u016F/s`;
+      if (id === "reach") return `Dosah svazku ${lyOf(T4.reach[0] + T4.reach[1] * lv5)} \u2192 ${lyOf(T4.reach[0] + T4.reach[1] * (lv5 + 1))}`;
+      if (id === "spread") return `Kolonie se \u0161\xED\u0159\xED samy ${x(1 + lv5)} \u2192 ${x(2 + lv5)}`;
+      if (id === "swarm3") return `Zachycen\xE9 sv\u011Btlo ${pct(capture(s2))} \u2192 ${pct(Math.min(T4.capMax, capture(s2) * T4.capStep))}`;
+      if (id === "probe") return `Sondy: \u0161\xED\u0159en\xED ${x(1 + T4.probe[0] * lv5)} \u2192 ${x(1 + T4.probe[0] * (lv5 + 1))}`;
+      if (id === "beacon") return !lv5 ? "Prvn\xED maj\xE1k za\u010Dne osidlovat s\xE1m" : lv5 === 1 ? "1 maj\xE1k osidluje hv\u011Bzdy s\xE1m" : lv5 < 5 ? `${lv5} maj\xE1ky osidluj\xED hv\u011Bzdy samy` : `${count(lv5)} maj\xE1k\u016F osidluje hv\u011Bzdy samo`;
       return void 0;
     },
     simStart(s2) {
-      s2.base = 26e30;
-      s2.res.data = 2e11;
-      s2.res.energy = 26e30 * 300;
+      s2.base = 3e32;
+      s2.res.data = 5e11;
+      s2.res.energy = 3e32 * 300;
     }
   };
 
   // src/core/defs.ts
-  var CHAPTERS = [CH1, CH2, CH3];
+  var CHAPTERS = [CH1, CH2, CH3, CH4];
   var LAST_CH = CHAPTERS.length;
   var stagesOf = (s2) => chOf(s2).goals(s2).length;
   var BUILD = CHAPTERS.flatMap((c) => c.build);
@@ -920,7 +1109,7 @@
   var KTYPES = [
     { k: 1, ch: 1, w: 1e16 },
     { k: 2, ch: 2, w: 38e25 },
-    { k: 3, ch: 3, w: 5e36 }
+    { k: 3, ch: 4, w: 5e36 }
   ];
 
   // src/core/engine.ts
@@ -1079,7 +1268,7 @@
     s2.res.data += dataRate(s2) * dt;
     const ps = C.passive(s2);
     if (ps > 0) gain(s2, C.cur, ps * dt);
-    for (const c of ["ore", "plasma", "sails"]) {
+    for (const c of ["ore", "plasma", "mass", "sails"]) {
       const k = Math.min(1, dt * 0.35);
       RT.rate[c] = RT.rate[c] * (1 - k) + RT.inc[c] / Math.max(dt, 1e-3) * k;
       RT.inc[c] = 0;
@@ -1232,7 +1421,9 @@
     colony: "kap3-kolonie.webp",
     beacon: "kap3-majak.webp",
     sail: "kap3-plachta.webp",
-    intro3: "kap3-uvod.webp"
+    intro4: "kap3-uvod.webp",
+    intro3: "kap3-dira-uvod.webp"
+    // zatím chybí – úvod Kap. 3 Díra
   };
   var cache3 = {};
   var ok = {};
@@ -1371,12 +1562,12 @@
     up() {
       this.stroke = null;
     },
-    update(s2, dt, M4) {
+    update(s2, dt, M5) {
       this.rt += dt;
       this.rot = 0.07 * Math.sin(this.rt * 0.05);
       this.pop = Math.max(0, this.pop - dt);
       this.flash = Math.max(0, this.flash - dt);
-      const laser2 = M4.down && !this.over && this.stroke;
+      const laser2 = M5.down && !this.over && this.stroke;
       const L = lv(s2, "cool"), hr = 0.3 * Math.pow(0.8, L), cr = 0.42 * Math.pow(1.25, L);
       if (laser2) {
         this.heat += hr * dt;
@@ -1389,9 +1580,9 @@
       } else this.heat = Math.max(0, this.heat - cr * dt);
       if (this.over && this.heat < 0.3) this.over = false;
       if (laser2 && this.stroke) {
-        const bw = 6 + lv(s2, "beam") * 3.5, dx = M4.x - M4.px, dy = M4.y - M4.py, steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 3));
+        const bw = 6 + lv(s2, "beam") * 3.5, dx = M5.x - M5.px, dy = M5.y - M5.py, steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 3));
         for (let k2 = 0; k2 <= steps; k2++) {
-          const x = M4.px + dx * k2 / steps, y = M4.py + dy * k2 / steps;
+          const x = M5.px + dx * k2 / steps, y = M5.py + dy * k2 / steps;
           for (const v of this.veins) {
             if (v.fade < 1 || v.dead) continue;
             for (let i = 0; i < v.cut.length; i++) {
@@ -1401,7 +1592,7 @@
             }
           }
         }
-        if (rnd() < 0.4) sparks(M4.x, M4.y, 1, "#ffcc88", 70);
+        if (rnd() < 0.4) sparks(M5.x, M5.y, 1, "#ffcc88", 70);
       }
       for (const v of this.veins) {
         v.fade = Math.min(1, v.fade + dt * 1.5);
@@ -1506,24 +1697,24 @@
       sparks(PX, PY, 14, "#8ef0c8", 110);
     },
     // ---- bot pro simulaci: táhne laser po nejbližší žíle, hlídá teplotu ----
-    bot(s2, dt, M4) {
-      M4.px = M4.x;
-      M4.py = M4.y;
+    bot(s2, dt, M5) {
+      M5.px = M5.x;
+      M5.py = M5.y;
       if (this.over || this.heat > 0.88) {
-        if (M4.down) {
-          M4.down = false;
+        if (M5.down) {
+          M5.down = false;
           this.up();
         }
         return;
       }
-      if (!M4.down && this.heat > 0.25 && this.botRest) return;
+      if (!M5.down && this.heat > 0.25 && this.botRest) return;
       this.botRest = false;
       let tgt = null, bd = 1e9;
       for (const v of this.veins) {
         if (v.fade < 1 || v.dead) continue;
         for (let i = 0; i < v.cut.length; i++) {
           if (v.cut[i]) continue;
-          const a = this.wp(v.pts[i]), b = this.wp(v.pts[i + 1]), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dd = Math.hypot(mx - M4.x, my - M4.y);
+          const a = this.wp(v.pts[i]), b = this.wp(v.pts[i + 1]), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dd = Math.hypot(mx - M5.x, my - M5.y);
           if (dd < bd) {
             bd = dd;
             tgt = [mx, my];
@@ -1531,39 +1722,39 @@
         }
       }
       if (!tgt) {
-        if (M4.down) {
-          M4.down = false;
+        if (M5.down) {
+          M5.down = false;
           this.up();
         }
         return;
       }
-      if (!M4.down) {
-        M4.down = true;
-        M4.x = tgt[0];
-        M4.y = tgt[1];
-        M4.px = M4.x;
-        M4.py = M4.y;
+      if (!M5.down) {
+        M5.down = true;
+        M5.x = tgt[0];
+        M5.y = tgt[1];
+        M5.px = M5.x;
+        M5.py = M5.y;
         this.down(s2);
         return;
       }
-      const step = 700 * dt, dx = tgt[0] - M4.x, dy = tgt[1] - M4.y, d = Math.hypot(dx, dy) || 1;
-      M4.x += dx / d * Math.min(step, d);
-      M4.y += dy / d * Math.min(step, d);
+      const step = 700 * dt, dx = tgt[0] - M5.x, dy = tgt[1] - M5.y, d = Math.hypot(dx, dy) || 1;
+      M5.x += dx / d * Math.min(step, d);
+      M5.y += dy / d * Math.min(step, d);
       if (this.heat > 0.8) this.botRest = true;
     },
     cursor() {
       return "crosshair";
     },
     // ---------- kresba ----------
-    draw(c, s2, v, M4) {
+    draw(c, s2, v, M5) {
       if (!tex) tex = makeTex();
-      const T4 = v.T, li = layerIdx(s2), lay = LAYERS[li];
+      const T5 = v.T, li = layerIdx(s2), lay = LAYERS[li];
       const sun = c.createRadialGradient(-200, -300, 0, -200, -300, 1500);
       sun.addColorStop(0, "rgba(150,190,255,.20)");
       sun.addColorStop(1, "rgba(150,190,255,0)");
       c.fillStyle = sun;
       c.fillRect(-400, -400, 2400, 1800);
-      drawGens(c, s2, T4, false);
+      drawGens(c, s2, T5, false);
       const halo = c.createRadialGradient(CX, CY, RA * 0.8, CX, CY, RA * 1.6);
       halo.addColorStop(0, "rgba(170,200,255,.05)");
       c.fillStyle = halo;
@@ -1600,11 +1791,11 @@
         c.fillStyle = lg;
         c.fillRect(CX - RA * 1.3, CY - RA * 1.3, RA * 2.6, RA * 2.6);
       }
-      drawFields(c, s2, T4, this.rot);
+      drawFields(c, s2, T5, this.rot);
       c.lineCap = "round";
       c.lineJoin = "round";
       for (const vn of this.veins) {
-        const al = vn.fade * (1 - vn.dead / 0.9), pul = 0.75 + 0.25 * Math.sin(T4 * 3 + vn.ph), col = vn.rich ? lay.rich : lay.c;
+        const al = vn.fade * (1 - vn.dead / 0.9), pul = 0.75 + 0.25 * Math.sin(T5 * 3 + vn.ph), col = vn.rich ? lay.rich : lay.c;
         for (let i = 0; i < vn.cut.length; i++) {
           const a = this.wp(vn.pts[i]), b = this.wp(vn.pts[i + 1]);
           c.beginPath();
@@ -1636,7 +1827,7 @@
         c.stroke();
         c.restore();
       }
-      drawGens(c, s2, T4, true);
+      drawGens(c, s2, T5, true);
       for (const ch of this.chunks) {
         c.save();
         c.translate(ch.x, ch.y);
@@ -1684,7 +1875,7 @@
       }
       drawPlat(c, s2, this);
       if (v.passive) return;
-      if (M4.down && !this.over && this.stroke) {
+      if (M5.down && !this.over && this.stroke) {
         const bw = 6 + lv(s2, "beam") * 3.5, fl = 0.85 + rnd() * 0.15;
         c.save();
         c.globalCompositeOperation = "lighter";
@@ -1693,29 +1884,29 @@
         c.lineWidth = bw * 1.8;
         c.beginPath();
         c.moveTo(PX + 12, PY - 5);
-        c.lineTo(M4.x, M4.y);
+        c.lineTo(M5.x, M5.y);
         c.stroke();
         c.strokeStyle = `rgba(255,225,180,${0.9 * fl})`;
         c.lineWidth = 1.8;
         c.stroke();
-        const gr = c.createRadialGradient(M4.x, M4.y, 0, M4.x, M4.y, bw * 2.4);
+        const gr = c.createRadialGradient(M5.x, M5.y, 0, M5.x, M5.y, bw * 2.4);
         gr.addColorStop(0, "rgba(255,240,210,.9)");
         gr.addColorStop(1, "rgba(255,140,60,0)");
         c.fillStyle = gr;
         c.beginPath();
-        c.arc(M4.x, M4.y, bw * 2.4, 0, 7);
+        c.arc(M5.x, M5.y, bw * 2.4, 0, 7);
         c.fill();
         c.restore();
       }
-      if (M4.inside || M4.down) {
+      if (M5.inside || M5.down) {
         c.lineWidth = 2.5;
         c.strokeStyle = "rgba(255,255,255,.08)";
         c.beginPath();
-        c.arc(M4.x, M4.y, 16, 0, 7);
+        c.arc(M5.x, M5.y, 16, 0, 7);
         c.stroke();
         c.strokeStyle = this.over ? "#ff6b5a" : this.heat > 0.7 ? "#ffb35c" : "#8ef0c8";
         c.beginPath();
-        c.arc(M4.x, M4.y, 16, -Math.PI / 2, -Math.PI / 2 + this.heat * 6.283);
+        c.arc(M5.x, M5.y, 16, -Math.PI / 2, -Math.PI / 2 + this.heat * 6.283);
         c.stroke();
       }
     }
@@ -1832,11 +2023,11 @@
     const x = Math.sin(i * 91.7 + 13.1) * 43758.5453;
     return x - Math.floor(x);
   }
-  function drawFields(c, s2, T4, rot) {
+  function drawFields(c, s2, T5, rot) {
     const f = Math.min(lv(s2, "field"), 40);
     for (let i = 0; i < f; i++) {
       const a = hash(i) * 6.283 + rot, r = RA * (0.25 + 0.55 * Math.sqrt(hash(i + 50)));
-      const x = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r * 0.92, gl = Math.max(0, Math.sin(T4 * 0.8 + i * 1.7));
+      const x = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r * 0.92, gl = Math.max(0, Math.sin(T5 * 0.8 + i * 1.7));
       c.save();
       c.translate(x, y);
       c.rotate(a * 0.3 + 0.4);
@@ -1850,13 +2041,13 @@
       c.restore();
     }
   }
-  function drawGens(c, s2, T4, front) {
+  function drawGens(c, s2, T5, front) {
     const fm = Math.min(lv(s2, "farm"), 48);
     for (let i = 0; i < fm; i++) {
-      const a = i * 2.39996 + T4 * (0.05 + hash(i) * 0.02), z = Math.sin(a);
+      const a = i * 2.39996 + T5 * (0.05 + hash(i) * 0.02), z = Math.sin(a);
       if (z > 0 !== front) continue;
       const rr2 = RA * (1.32 + 0.12 * hash(i + 7)), x = CX + Math.cos(a) * rr2, y = CY - 30 + z * rr2 * 0.28 + (hash(i + 3) - 0.5) * 14;
-      const sh = Math.pow(Math.max(0, Math.sin(a * 1.5 + T4 * 0.6 + i)), 6), al = front ? 1 : 0.4, sz = front ? 5.5 : 3.6;
+      const sh = Math.pow(Math.max(0, Math.sin(a * 1.5 + T5 * 0.6 + i)), 6), al = front ? 1 : 0.4, sz = front ? 5.5 : 3.6;
       c.save();
       c.translate(x, y);
       c.rotate(0.6 + Math.sin(a) * 0.4);
@@ -1879,7 +2070,7 @@
     if (front) return;
     const st = Math.min(lv(s2, "statite"), 80);
     for (let i = 0; i < st; i++) {
-      const a = -2.5 + hash(i + 11) * 1.6 + Math.sin(T4 * 0.2 + i) * 0.01, r = 900 + hash(i + 23) * 90;
+      const a = -2.5 + hash(i + 11) * 1.6 + Math.sin(T5 * 0.2 + i) * 0.01, r = 900 + hash(i + 23) * 90;
       const x = CX - 300 + Math.cos(a) * r * 0.9, y = CY + 420 + Math.sin(a) * r * 0.75;
       c.fillStyle = `rgba(255,230,180,${0.4 + 0.4 * hash(i)})`;
       c.beginPath();
@@ -1917,14 +2108,14 @@
     g.drawImage(I, 0, 0, px, px);
     return sprC[id] = cv;
   }
-  function drawPic(c, st, cx, cy, Rs, T4, alpha) {
+  function drawPic(c, st, cx, cy, Rs, T5, alpha) {
     const [k, f] = PIC(st), I = img(k);
     if (!I || alpha <= 0) return false;
-    const h2 = Rs / f * (st === 4 ? 1 + 0.012 * Math.sin(T4 * 0.45) : 1);
+    const h2 = Rs / f * (st === 4 ? 1 + 0.012 * Math.sin(T5 * 0.45) : 1);
     c.save();
     c.globalAlpha = alpha;
     c.translate(cx, cy);
-    c.rotate(T4 * (st >= 5 ? 0.02 : 6e-3));
+    c.rotate(T5 * (st >= 5 ? 0.02 : 6e-3));
     c.drawImage(I, -h2, -h2, h2 * 2, h2 * 2);
     c.restore();
     return true;
@@ -1997,8 +2188,8 @@
       const r = g.rings[d.ring];
       return [CX2 + Math.cos(d.a) * r, CY2 + Math.sin(d.a) * r];
     },
-    ringAt(g, M4) {
-      const d = Math.hypot(M4.x - CX2, M4.y - CY2);
+    ringAt(g, M5) {
+      const d = Math.hypot(M5.x - CX2, M5.y - CY2);
       let best = -1, bd = 22;
       g.rings.forEach((r, i) => {
         if (Math.abs(d - r) < bd) {
@@ -2019,9 +2210,9 @@
       return 0.13 + 0.035 * lv2(s2, "jet");
     },
     reach: 0.9,
-    apex(L, g, T4) {
+    apex(L, g, T5) {
       if (L.held) return [L.hx, L.hy];
-      const h2 = g.Rs * (1.3 + 0.6 * L.grow) + Math.sin(T4 * 3 + L.ph) * 2;
+      const h2 = g.Rs * (1.3 + 0.6 * L.grow) + Math.sin(T5 * 3 + L.ph) * 2;
       return [CX2 + Math.cos(L.a) * h2, CY2 + Math.sin(L.a) * h2];
     },
     tension(L, g) {
@@ -2045,17 +2236,17 @@
       }
       return best;
     },
-    down(s2, M4) {
+    down(s2, M5) {
       const g = this.geo(s2);
       this.launchT = 0;
       for (const L of this.loops) {
         if (L.grow < 0.25) continue;
         const p = this.apex(L, g, 0);
-        if (Math.hypot(M4.x - p[0], M4.y - p[1]) < 38) {
+        if (Math.hypot(M5.x - p[0], M5.y - p[1]) < 38) {
           this.grab = L;
           L.held = true;
-          L.hx = M4.x;
-          L.hy = M4.y;
+          L.hx = M5.x;
+          L.hy = M5.y;
           return;
         }
       }
@@ -2112,7 +2303,7 @@
       this.combo = 0;
       this.cmes.push({ a: L.a, front: this.geo(s2).Rs, hit: 0 });
     },
-    syncDots(s2, g, M4) {
+    syncDots(s2, g, M5) {
       if (this.lastN < 0) {
         this.lastN = s2.n;
       }
@@ -2122,11 +2313,11 @@
       const fromHand = this.manual > 0;
       while (alive < target) {
         let ring = rnd() * 3 | 0, a = rnd() * 6.283, fly = 0, sx2 = 0, sy = 0;
-        if (fromHand && M4.down) {
-          const ri = this.ringAt(g, M4);
+        if (fromHand && M5.down) {
+          const ri = this.ringAt(g, M5);
           if (ri >= 0) {
             ring = ri;
-            a = Math.atan2(M4.y - CY2, M4.x - CX2) + (rnd() - 0.5) * 0.15;
+            a = Math.atan2(M5.y - CY2, M5.x - CX2) + (rnd() - 0.5) * 0.15;
           }
         } else if (this.fact.length && s2.n > this.lastN) {
           const f = this.fact[rnd() * this.fact.length | 0];
@@ -2154,7 +2345,7 @@
       this.manual = Math.max(0, this.manual - 1);
       this.lastN = s2.n;
     },
-    update(s2, dt, M4) {
+    update(s2, dt, M5) {
       const tR = look(s2).R;
       this.Rd = this.Rd ? this.Rd + (tR - this.Rd) * (1 - Math.exp(-dt * 0.3)) : tR;
       const g = this.geo(s2);
@@ -2165,18 +2356,18 @@
         f.a += 0.05 * dt;
         f.t = (f.t + dt * 0.4) % 1;
       }
-      if (M4.down && !this.grab) {
-        const ri = this.ringAt(g, M4);
+      if (M5.down && !this.grab) {
+        const ri = this.ringAt(g, M5);
         this.launchT -= dt;
         if (ri >= 0 && this.launchT <= 0) {
           if (buy(s2, "kol", 1)) {
             this.manual = 2;
             this.launchT = 0.1;
-            sparks(M4.x, M4.y, 4, "#ffd27a", 70);
+            sparks(M5.x, M5.y, 4, "#ffd27a", 70);
           }
         }
       }
-      this.syncDots(s2, g, M4);
+      this.syncDots(s2, g, M5);
       for (const c of this.dots) {
         c.a += 0.45 * Math.pow(g.rings[0] / g.rings[c.ring], 1.5) * dt;
         if (c.fly) c.fly = Math.max(0, c.fly - dt);
@@ -2195,10 +2386,10 @@
         L.life += dt;
         if (!L.held) L.grow = Math.min(1, L.grow + dt / 2.2);
         if (L.held) {
-          L.hx = M4.x;
-          L.hy = M4.y;
+          L.hx = M5.x;
+          L.hy = M5.y;
           if (this.tension(L, g) > this.snapAt(s2)) {
-            ftxt(M4.x, M4.y - 18, "Smy\u010Dka praskla!", "#ff6b5a");
+            ftxt(M5.x, M5.y - 18, "Smy\u010Dka praskla!", "#ff6b5a");
             this.grab = null;
             L.held = false;
             this.cme(s2, L);
@@ -2216,34 +2407,34 @@
       }
       this.loops = this.loops.filter((L) => !L.dead);
       const maxR = g.rings[2] * 1.35, vis = Math.max(1, this.dots.length);
-      for (const J4 of this.jets) {
-        J4.t += dt;
-        const prev = J4.front;
-        J4.front += (maxR - g.Rs) / 0.6 * dt;
+      for (const J5 of this.jets) {
+        J5.t += dt;
+        const prev = J5.front;
+        J5.front += (maxR - g.Rs) / 0.6 * dt;
         for (const c of this.dots) {
-          if (c.dying || c.fly || c.jid === J4.id) continue;
+          if (c.dying || c.fly || c.jid === J5.id) continue;
           const r = g.rings[c.ring];
-          if (r > prev && r <= J4.front && Math.abs(angDiff(c.a, J4.a)) < J4.w) {
-            c.jid = J4.id;
+          if (r > prev && r <= J5.front && Math.abs(angDiff(c.a, J5.a)) < J5.w) {
+            c.jid = J5.id;
             c.glow = 1;
-            J4.hits++;
-            if (J4.hits % 3 === 1) {
+            J5.hits++;
+            if (J5.hits % 3 === 1) {
               const p = this.pos(c, g);
               sparks(p[0], p[1], 3, "#dffcf0", 60);
             }
           }
         }
-        if (J4.front >= maxR && !J4.done) {
-          J4.done = true;
-          const share = J4.hits / vis;
-          const v = flareGain(s2, J4.pw, share);
+        if (J5.front >= maxR && !J5.done) {
+          J5.done = true;
+          const share = J5.hits / vis;
+          const v = flareGain(s2, J5.pw, share);
           gain(s2, "plasma", v);
-          const x = CX2 + Math.cos(J4.a) * g.rings[2] * 1.15, y = CY2 + Math.sin(J4.a) * g.rings[2] * 1.15;
-          ftxt(x, y - 10, `${J4.txt} +${mass(v)}`, J4.col);
-          if (J4.hits) ftxt(x, y + 10, `nabito ${count(Math.round(J4.hits * Math.max(1, s2.n / vis)))} kolektor\u016F`, "#9aa6bd");
+          const x = CX2 + Math.cos(J5.a) * g.rings[2] * 1.15, y = CY2 + Math.sin(J5.a) * g.rings[2] * 1.15;
+          ftxt(x, y - 10, `${J5.txt} +${mass(v)}`, J5.col);
+          if (J5.hits) ftxt(x, y + 10, `nabito ${count(Math.round(J5.hits * Math.max(1, s2.n / vis)))} kolektor\u016F`, "#9aa6bd");
         }
       }
-      this.jets = this.jets.filter((J4) => J4.t < 1.1);
+      this.jets = this.jets.filter((J5) => J5.t < 1.1);
       for (const C of this.cmes) {
         C.front += (maxR - g.Rs) * dt;
         for (const c of this.dots) {
@@ -2262,65 +2453,65 @@
       this.cmes = this.cmes.filter((C) => !C.done);
     },
     // ---- bot: vypouští, chytá zralé smyčky a pouští je v zeleném pásmu k hustému roji ----
-    bot(s2, dt, M4) {
+    bot(s2, dt, M5) {
       const g = this.geo(s2);
-      M4.px = M4.x;
-      M4.py = M4.y;
+      M5.px = M5.x;
+      M5.py = M5.y;
       if (this.grab) {
         const L2 = this.grab, [z0, z1] = this.zone(s2), t = (z0 + z1) / 2;
         const dir = L2.autoDir ?? (L2.autoDir = this.densest(L2.a, s2)), dist = g.Rs * 1.3 + t * g.Rs * 2.9;
         const tx2 = CX2 + Math.cos(dir) * dist, ty = CY2 + Math.sin(dir) * dist;
-        const dx = tx2 - M4.x, dy = ty - M4.y, d = Math.hypot(dx, dy);
+        const dx = tx2 - M5.x, dy = ty - M5.y, d = Math.hypot(dx, dy);
         if (d > 4) {
           const m = Math.min(d, 900 * dt);
-          M4.x += dx / d * m;
-          M4.y += dy / d * m;
+          M5.x += dx / d * m;
+          M5.y += dy / d * m;
           return;
         }
-        M4.down = false;
+        M5.down = false;
         this.up(s2);
         return;
       }
       const L = this.loops.find((l) => l.grow >= 0.95 && !l.held);
       if (L) {
         const p = this.apex(L, g, 0);
-        if (M4.down) {
-          M4.down = false;
+        if (M5.down) {
+          M5.down = false;
           this.up(s2);
         }
-        M4.x = p[0];
-        M4.y = p[1];
-        M4.down = true;
-        this.down(s2, M4);
+        M5.x = p[0];
+        M5.y = p[1];
+        M5.down = true;
+        this.down(s2, M5);
         if (this.grab) this.grab.autoDir = void 0;
         return;
       }
       if (s2.res.plasma - (this.reserve || 0) >= colCost(s2) * salvo(s2)) {
         const a = s2.t * 0.7 % 6.283, r = g.rings[Math.floor(s2.t / 3) % 3];
-        M4.x = CX2 + Math.cos(a) * r;
-        M4.y = CY2 + Math.sin(a) * r;
-        if (!M4.down) {
-          M4.down = true;
-          this.down(s2, M4);
+        M5.x = CX2 + Math.cos(a) * r;
+        M5.y = CY2 + Math.sin(a) * r;
+        if (!M5.down) {
+          M5.down = true;
+          this.down(s2, M5);
         }
-      } else if (M4.down) {
-        M4.down = false;
+      } else if (M5.down) {
+        M5.down = false;
         this.up(s2);
       }
     },
-    cursor(s2, M4) {
+    cursor(s2, M5) {
       if (this.grab) return "grabbing";
       const g = this.geo(s2);
       for (const L of this.loops) {
         if (L.grow < 0.25) continue;
         const p = this.apex(L, g, 0);
-        if (Math.hypot(M4.x - p[0], M4.y - p[1]) < 38) return "grab";
+        if (Math.hypot(M5.x - p[0], M5.y - p[1]) < 38) return "grab";
       }
-      return this.ringAt(g, M4) >= 0 ? "copy" : "crosshair";
+      return this.ringAt(g, M5) >= 0 ? "copy" : "crosshair";
     },
     // ---------- kresba ----------
-    draw(c, s2, v, M4) {
-      const g = this.geo(s2), T4 = v.T, Lk = look(s2);
+    draw(c, s2, v, M5) {
+      const g = this.geo(s2), T5 = v.T, Lk = look(s2);
       const shell = Math.max(0, Math.min(1, (Math.log10(Math.max(1e-20, s2.n * colArea(s2))) + 14) / 14));
       const sh = this.shake ? (rnd() - 0.5) * 6 * this.shake : 0;
       const cx = CX2 + sh, cy = CY2 + sh * 0.7, Rs = g.Rs;
@@ -2336,7 +2527,7 @@
           c.stroke();
         }
       });
-      const hov = this.grab || v.passive ? -1 : this.ringAt(g, M4);
+      const hov = this.grab || v.passive ? -1 : this.ringAt(g, M5);
       if (hov >= 0) {
         c.strokeStyle = "rgba(242,166,90,.38)";
         c.lineWidth = 2;
@@ -2356,7 +2547,7 @@
       c.save();
       c.globalCompositeOperation = "lighter";
       for (let i = 0; i < 9; i++) {
-        const a = i / 9 * 6.283 + T4 * 0.02 + Math.sin(T4 * 0.3 + i) * 0.1, d = Rs * (1.05 + 0.12 * Math.sin(T4 * 0.5 + i * 2.1)), r2 = Rs * (0.55 + 0.2 * Math.sin(T4 * 0.4 + i));
+        const a = i / 9 * 6.283 + T5 * 0.02 + Math.sin(T5 * 0.3 + i) * 0.1, d = Rs * (1.05 + 0.12 * Math.sin(T5 * 0.5 + i * 2.1)), r2 = Rs * (0.55 + 0.2 * Math.sin(T5 * 0.4 + i));
         const x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d, cg = c.createRadialGradient(x, y, 0, x, y, r2);
         cg.addColorStop(0, `rgba(${gl},${0.14 * vis})`);
         cg.addColorStop(1, `rgba(${gl},0)`);
@@ -2370,15 +2561,15 @@
       if (this.picSt < 0) this.picSt = ps;
       if (PIC(this.picSt)[0] !== pk) {
         this.picPrev = this.picSt;
-        this.picT0 = T4;
+        this.picT0 = T5;
       }
       this.picSt = ps;
-      const fade = this.picPrev >= 0 ? Math.min(1, (T4 - this.picT0) / 3) : 1;
+      const fade = this.picPrev >= 0 ? Math.min(1, (T5 - this.picT0) / 3) : 1;
       if (fade >= 1) this.picPrev = -1;
       let pic = false;
       if (img(pk)) {
-        if (this.picPrev >= 0) drawPic(c, this.picPrev, cx, cy, Rs, T4, 1 - fade);
-        pic = drawPic(c, ps, cx, cy, Rs, T4, fade);
+        if (this.picPrev >= 0) drawPic(c, this.picPrev, cx, cy, Rs, T5, 1 - fade);
+        pic = drawPic(c, ps, cx, cy, Rs, T5, fade);
       }
       if (!pic) {
         gr = c.createRadialGradient(cx - Rs * 0.15, cy - Rs * 0.15, Rs * 0.1, cx, cy, Rs);
@@ -2399,12 +2590,12 @@
         c.fillRect(cx - Rs, cy - Rs, Rs * 2, Rs * 2);
       }
       if (!pic) for (const b of gran) {
-        const a = b.a + T4 * 0.03, x = cx + Math.cos(a) * b.d * Rs, y = cy + Math.sin(a) * b.d * Rs;
-        c.fillStyle = `rgba(255,255,255,${0.05 + 0.05 * Math.sin(T4 * b.s + b.p)})`;
+        const a = b.a + T5 * 0.03, x = cx + Math.cos(a) * b.d * Rs, y = cy + Math.sin(a) * b.d * Rs;
+        c.fillStyle = `rgba(255,255,255,${0.05 + 0.05 * Math.sin(T5 * b.s + b.p)})`;
         c.beginPath();
         c.arc(x, y, b.r * Rs, 0, 7);
         c.fill();
-        c.fillStyle = `rgba(20,30,90,${0.04 + 0.04 * Math.cos(T4 * b.s + b.p)})`;
+        c.fillStyle = `rgba(20,30,90,${0.04 + 0.04 * Math.cos(T5 * b.s + b.p)})`;
         c.beginPath();
         c.arc(x + b.r * Rs, y, b.r * Rs * 0.5, 0, 7);
         c.fill();
@@ -2421,7 +2612,7 @@
         c.save();
         c.globalCompositeOperation = "lighter";
         for (let i = 0; i < 70; i++) {
-          const a = i * 2.39996 + T4 * 0.05, f = (i * 0.137 + T4 * 0.25) % 1, r = Rs + f * g.rings[2] * 1.3;
+          const a = i * 2.39996 + T5 * 0.05, f = (i * 0.137 + T5 * 0.25) % 1, r = Rs + f * g.rings[2] * 1.3;
           c.fillStyle = `rgba(200,185,255,${0.35 * (1 - f)})`;
           c.fillRect(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 2, 2);
         }
@@ -2429,9 +2620,9 @@
       }
       const nl = Math.min(lv2(s2, "lift"), 10);
       for (let k = 0; k < nl; k++) {
-        const a = T4 * 0.08 + k * 6.283 / nl, R2 = Math.min(g.rings[2] * 1.22, g.rings[2] + 70);
+        const a = T5 * 0.08 + k * 6.283 / nl, R2 = Math.min(g.rings[2] * 1.22, g.rings[2] + 70);
         for (let j = 0; j < 16; j++) {
-          const f = (j / 16 + T4 * 0.5) % 1, r = Rs + (R2 - Rs) * f, aa = a + Math.sin(f * 3) * 0.08;
+          const f = (j / 16 + T5 * 0.5) % 1, r = Rs + (R2 - Rs) * f, aa = a + Math.sin(f * 3) * 0.08;
           c.fillStyle = `rgba(${gl},${(1 - f) * 0.8})`;
           c.fillRect(cx + Math.cos(aa) * r - 1.2, cy + Math.sin(aa) * r - 1.2, 2.4, 2.4);
         }
@@ -2450,15 +2641,15 @@
         c.closePath();
         c.fill();
       }
-      for (const J4 of this.jets) {
-        const fade2 = J4.front >= g.rings[2] * 1.35 ? Math.max(0, 1 - (J4.t - 0.6) * 2) : 1, w = J4.w, big = J4.pw > 1.2;
-        const jg = c.createRadialGradient(cx, cy, Rs, cx, cy, Math.max(Rs + 1, J4.front));
+      for (const J5 of this.jets) {
+        const fade2 = J5.front >= g.rings[2] * 1.35 ? Math.max(0, 1 - (J5.t - 0.6) * 2) : 1, w = J5.w, big = J5.pw > 1.2;
+        const jg = c.createRadialGradient(cx, cy, Rs, cx, cy, Math.max(Rs + 1, J5.front));
         jg.addColorStop(0, big ? `rgba(230,255,245,${0.8 * fade2})` : `rgba(255,235,190,${0.7 * fade2})`);
         jg.addColorStop(1, big ? `rgba(120,240,200,${0.25 * fade2})` : `rgba(255,170,90,${0.2 * fade2})`);
         c.fillStyle = jg;
         c.beginPath();
-        c.arc(cx, cy, J4.front, J4.a - w, J4.a + w);
-        c.arc(cx, cy, Rs, J4.a + w, J4.a - w, true);
+        c.arc(cx, cy, J5.front, J5.a - w, J5.a + w);
+        c.arc(cx, cy, Rs, J5.a + w, J5.a - w, true);
         c.closePath();
         c.fill();
       }
@@ -2466,7 +2657,7 @@
       const [z0, z1] = this.zone(s2);
       for (const L of this.loops) {
         const f1 = [cx + Math.cos(L.a - 0.28) * Rs * 0.97, cy + Math.sin(L.a - 0.28) * Rs * 0.97], f2 = [cx + Math.cos(L.a + 0.28) * Rs * 0.97, cy + Math.sin(L.a + 0.28) * Rs * 0.97];
-        const ap = this.apex(L, g, T4);
+        const ap = this.apex(L, g, T5);
         if (!L.held) {
           ap[0] += sh;
           ap[1] += sh * 0.7;
@@ -2478,7 +2669,7 @@
         c.globalCompositeOperation = "lighter";
         c.lineCap = "round";
         for (let k = 0; k < 4; k++) {
-          const off = Math.sin(T4 * 4 + k * 1.7 + L.ph) * (3 + 6 * t) + (k - 1.5) * 2.2, nx = Math.cos(L.a + 1.57) * off, ny = Math.sin(L.a + 1.57) * off;
+          const off = Math.sin(T5 * 4 + k * 1.7 + L.ph) * (3 + 6 * t) + (k - 1.5) * 2.2, nx = Math.cos(L.a + 1.57) * off, ny = Math.sin(L.a + 1.57) * off;
           c.strokeStyle = `rgba(${base.join(",")},${(k === 0 ? 0.9 : 0.28) * L.grow})`;
           c.lineWidth = k === 0 ? 2.2 : 5 + 3 * t;
           c.beginPath();
@@ -2488,7 +2679,7 @@
         }
         c.restore();
         if (!L.held && L.grow > 0.25 && !v.passive) {
-          const pr = 11 + 3 * Math.sin(T4 * 5 + L.ph);
+          const pr = 11 + 3 * Math.sin(T5 * 5 + L.ph);
           c.strokeStyle = danger ? "rgba(255,107,90,.8)" : "rgba(255,230,190,.55)";
           c.lineWidth = 1.5;
           c.beginPath();
@@ -2525,7 +2716,7 @@
           c.save();
           c.globalCompositeOperation = "lighter";
           for (const [, p] of near) {
-            const mx = (p[0] + L.hx) / 2 + Math.sin(T4 * 3 + p[0]) * 10, my = (p[1] + L.hy) / 2 + Math.cos(T4 * 3 + p[1]) * 10;
+            const mx = (p[0] + L.hx) / 2 + Math.sin(T5 * 3 + p[0]) * 10, my = (p[1] + L.hy) / 2 + Math.cos(T5 * 3 + p[1]) * 10;
             c.strokeStyle = `rgba(142,240,200,${0.15 + 0.25 * t})`;
             c.lineWidth = 1;
             c.beginPath();
@@ -2620,11 +2811,405 @@
   };
 
   // src/mech/ch3.ts
+  var CX3 = 800;
+  var CY3 = 500;
+  var GM = 97e5;
+  var RH = 38;
+  var RD = 230;
+  var VK = 1;
+  var VMAX = 320;
+  function iscoM(a) {
+    const z1 = 1 + Math.cbrt(1 - a * a) * (Math.cbrt(1 + a) + Math.cbrt(1 - a)), z2 = Math.sqrt(3 * a * a + z1 * z1);
+    return 3 + z2 - Math.sqrt((3 - z1) * (3 + z1 + 2 * z2));
+  }
+  var iscoPx = (s2) => RH + 34 * (iscoM(spinA(s2)) - 1) / 5;
+  var lv3 = (s2, id) => s2.b[id] || 0;
+  var diera = {
+    clumps: [],
+    spirals: [],
+    grab: null,
+    spawnT: 0,
+    flareT: 0,
+    flash: 0,
+    lastPerfect: -99,
+    tugT: 0,
+    streamT: 0,
+    botT: 0,
+    reset() {
+      this.clumps = [];
+      this.spirals = [];
+      this.grab = null;
+      this.spawnT = 0;
+      this.flash = 0;
+    },
+    idle() {
+      return this.clumps.filter((c) => c.st === "idle");
+    },
+    spawn() {
+      const a = rnd() * 6.283, r = 395 + rnd() * 70;
+      this.clumps.push({ x: CX3 + Math.cos(a) * r, y: CY3 + Math.sin(a) * r, vx: 0, vy: 0, st: "idle", age: 0, r0: r, a0: a, sz: 0.85 + rnd() * 0.35 });
+    },
+    at(x, y) {
+      let best = null, bd = 30;
+      for (const c of this.clumps) if (c.st === "idle") {
+        const d = Math.hypot(c.x - x, c.y - y);
+        if (d < bd) {
+          bd = d;
+          best = c;
+        }
+      }
+      return best;
+    },
+    /** Rychlost hodu z tahu myší (prak: táhneš od chuchvalce, letí opačně). */
+    vel(c, M5) {
+      let vx = (c.x - M5.x) * VK, vy = (c.y - M5.y) * VK;
+      const v = Math.hypot(vx, vy);
+      if (v > VMAX) {
+        vx *= VMAX / v;
+        vy *= VMAX / v;
+      }
+      return [vx, vy];
+    },
+    /** Kam se hmota usadí: poloměr kruhové dráhy se stejným momentem hybnosti. */
+    landing(s2, x, y, vx, vy) {
+      const rx = x - CX3, ry = y - CY3, h2 = rx * vy - ry * vx, rc = h2 * h2 / GM, I = iscoPx(s2);
+      const e2 = vx * vx + vy * vy - 2 * GM / Math.hypot(rx, ry);
+      if (e2 >= 0 && rc > RD) return { rc, k: "escape" };
+      if (rc < I) return { rc, k: "plunge" };
+      if (rc <= I * 1.9) return { rc, k: "perfect" };
+      if (rc <= RD) return { rc, k: "disk" };
+      return { rc, k: "outer" };
+    },
+    launch(c, vx, vy) {
+      c.st = "fly";
+      c.vx = vx;
+      c.vy = vy;
+      c.age = 0;
+    },
+    down(s2, M5) {
+      this.grab = this.at(M5.x, M5.y);
+    },
+    up(s2, M5) {
+      const c = this.grab;
+      this.grab = null;
+      if (!c || c.st !== "idle") return;
+      const [vx, vy] = this.vel(c, M5);
+      if (Math.hypot(vx, vy) < 8) return;
+      this.launch(c, vx, vy);
+    },
+    /** Chuchvalec dorazil do disku (nebo spadl / uletěl). */
+    land(s2, c) {
+      const L = this.landing(s2, c.x, c.y, c.vx, c.vy), Q = T3.q;
+      if (L.k === "escape") {
+        ftxt(c.x, c.y, "Ulet\u011Blo", "#9aa6bd");
+        return;
+      }
+      let q = Q[L.k], txt2 = L.k === "perfect" ? "Vnit\u0159n\xED prstenec" : L.k === "plunge" ? "Spadlo rovnou dovnit\u0159" : L.k === "outer" ? "Okraj disku" : "Do disku";
+      if (L.k === "perfect") {
+        s2.hole.combo = s2.t - this.lastPerfect < 6 ? Math.min(4, s2.hole.combo + 1) : 0;
+        this.lastPerfect = s2.t;
+        s2.hole.perfect++;
+        q *= 1 + 0.15 * s2.hole.combo;
+        if (s2.hole.combo) txt2 += ` \xB7 \u0159et\u011Bz ${s2.hole.combo + 1}\xD7`;
+      }
+      s2.hole.hits++;
+      const m = clumpMass(s2) * q * c.sz;
+      if (feed(s2, m)) this.flareUp(s2);
+      ftxt(c.x, c.y - 14, `${txt2} \xD7${(Math.round(q * 100) / 100).toString().replace(".", ",")}`, L.k === "perfect" ? "#8ef0c8" : L.k === "plunge" ? "#e98a8a" : "#f2c48a");
+      const rr2 = Math.max(RH + 2, Math.min(RD, L.rc));
+      this.spirals.push({ r: rr2, a: Math.atan2(c.y - CY3, c.x - CX3), t: 0, dur: L.k === "plunge" ? 0.6 : 2.6, col: L.k === "perfect" ? "255,236,190" : "255,190,130", w: 3 + 2 * c.sz });
+      if (L.k !== "plunge") sparks(c.x, c.y, 6, "#ffd9a8", 50);
+    },
+    flareUp(s2) {
+      if (s2.t - this.flareT > 3) {
+        ftxt(CX3, CY3 - RD - 30, "Eddingtonova mez \u2013 z\xE1\u0159en\xED odfouklo p\u0159ebytek", "#cfe0ff");
+        s2.hole.flares++;
+      }
+      this.flareT = s2.t;
+      this.flash = 1;
+    },
+    update(s2, dt, M5) {
+      if (s2.ch !== 3) return;
+      if (this.idle().length < poolCap(s2)) {
+        this.spawnT -= dt;
+        if (this.spawnT <= 0) {
+          this.spawn();
+          this.spawnT = respawnT(s2);
+        }
+      }
+      for (let i = this.clumps.length - 1; i >= 0; i--) {
+        const c = this.clumps[i];
+        c.age += dt;
+        if (c.st === "idle") {
+          if (c === this.grab) continue;
+          c.a0 += dt * 0.02;
+          c.x = CX3 + Math.cos(c.a0) * c.r0;
+          c.y = CY3 + Math.sin(c.a0) * c.r0;
+          continue;
+        }
+        const sub = 6, h2 = dt / sub;
+        let done = "";
+        for (let k = 0; k < sub && !done; k++) {
+          const rx = c.x - CX3, ry = c.y - CY3, r = Math.hypot(rx, ry), a = GM / (r * r * r);
+          c.vx -= rx * a * h2;
+          c.vy -= ry * a * h2;
+          c.x += c.vx * h2;
+          c.y += c.vy * h2;
+          if (r < RD) done = "in";
+          else if (r > 1100 || c.age > 14) done = "lost";
+        }
+        if (done === "in") this.land(s2, c);
+        else if (done === "lost") ftxt(Math.max(60, Math.min(1540, c.x)), Math.max(60, Math.min(940, c.y)), "Ulet\u011Blo", "#9aa6bd");
+        if (done) this.clumps.splice(i, 1);
+      }
+      for (let i = this.spirals.length - 1; i >= 0; i--) {
+        const p = this.spirals[i];
+        p.t += dt;
+        const I = iscoPx(s2);
+        p.a += dt * Math.sqrt(GM / Math.pow(Math.max(p.r, RH), 3)) * 0.35;
+        p.r = Math.max(RH, p.r - dt * (p.r - I * 0.8) / Math.max(0.3, p.dur - p.t + 0.4));
+        if (p.t > p.dur) this.spirals.splice(i, 1);
+      }
+      const tugs = lv3(s2, "tug");
+      if (tugs) {
+        this.tugT -= dt;
+        if (this.tugT <= 0) {
+          this.tugT = Math.max(0.25, T3.tugEvery / tugs);
+          this.spirals.push({ r: RD * (0.75 + rnd() * 0.25), a: rnd() * 6.283, t: 0, dur: 2.6, col: s2.r.guide ? "255,236,190" : "255,190,130", w: 3 });
+        }
+      }
+      if (s2.mis.tauris3 || s2.mis.star3) {
+        this.streamT -= dt;
+        if (this.streamT <= 0) {
+          this.streamT = s2.mis.star3 ? 0.08 : 0.3;
+          this.spirals.push({ r: RD, a: s2.mis.star3 ? 2.6 : -0.7, t: 0, dur: 3, col: s2.mis.star3 ? "210,230,255" : "200,215,255", w: 2 });
+        }
+      }
+      if (this.spirals.length > 260) this.spirals.splice(0, this.spirals.length - 260);
+      this.flash = Math.max(0, this.flash - dt * 1.5);
+    },
+    bot(s2, dt, M5) {
+      this.botT -= dt;
+      if (this.botT > 0) return;
+      this.botT = 1.4 + rnd() * 0.6;
+      const c = this.idle()[0];
+      if (!c) return;
+      const rx = c.x - CX3, ry = c.y - CY3, r = Math.hypot(rx, ry), I = iscoPx(s2);
+      const rc = I * (1.15 + rnd() * 0.9), vt = Math.sqrt(GM * rc) / r * (1 + (rnd() - 0.5) * 0.12);
+      this.launch(c, -ry / r * vt - rx / r * 25, rx / r * vt - ry / r * 25);
+    },
+    cursor(s2, M5) {
+      return this.grab ? "grabbing" : this.at(M5.x, M5.y) ? "grab" : "default";
+    },
+    draw(c, s2, v, M5) {
+      const T5 = v.T, P = power(s2), act = s2.ch === 3 && !v.passive;
+      const I = img("near3");
+      if (I) {
+        const k = 1.375;
+        c.save();
+        c.globalAlpha = 0.95;
+        c.drawImage(I, CX3 - 962 * k, CY3 - 545 * k, I.width * k, I.height * k);
+        c.restore();
+      }
+      const vg = c.createRadialGradient(CX3, CY3, 120, CX3, CY3, 360);
+      vg.addColorStop(0, "rgba(3,4,9,.75)");
+      vg.addColorStop(1, "rgba(3,4,9,0)");
+      c.fillStyle = vg;
+      c.beginPath();
+      c.arc(CX3, CY3, 360, 0, 7);
+      c.fill();
+      const lit2 = Math.max(0.25, Math.min(1, (Math.log10(Math.max(P, 1e26)) - 26) / 6.5)), Ip = iscoPx(s2), rIn = Math.max(RH + 1, Ip * 0.85);
+      c.save();
+      c.globalCompositeOperation = "lighter";
+      const halo = c.createRadialGradient(CX3, CY3, RD * 0.6, CX3, CY3, RD * 1.7);
+      halo.addColorStop(0, `rgba(255,150,80,${0.22 * lit2})`);
+      halo.addColorStop(1, "rgba(255,90,60,0)");
+      c.fillStyle = halo;
+      c.beginPath();
+      c.arc(CX3, CY3, RD * 1.7, 0, 7);
+      c.fill();
+      const g = c.createRadialGradient(CX3, CY3, rIn, CX3, CY3, RD);
+      g.addColorStop(0, `rgba(255,250,235,${0.95 * lit2})`);
+      g.addColorStop(0.12, `rgba(255,222,160,${0.8 * lit2})`);
+      g.addColorStop(0.4, `rgba(255,150,70,${0.5 * lit2})`);
+      g.addColorStop(0.75, `rgba(210,80,50,${0.22 * lit2})`);
+      g.addColorStop(1, "rgba(150,40,40,0)");
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(CX3, CY3, RD, 0, 7);
+      c.moveTo(CX3 + rIn, CY3);
+      c.arc(CX3, CY3, rIn, 0, 7, true);
+      c.fill();
+      for (let i = 0; i < 70; i++) {
+        const f = i * 61 % 100 / 100, rr2 = rIn + Math.pow(f, 1.4) * (RD - rIn) * 0.97, w = Math.sqrt(GM / (rr2 * rr2 * rr2)) * 0.35, a = T5 * w + i * 2.4;
+        const dop = 0.55 + 0.45 * Math.cos(a + 0.6 - Math.PI), q = 1 - (rr2 - rIn) / (RD - rIn);
+        c.strokeStyle = `rgba(255,${170 + 80 * q},${110 + 120 * q},${(0.1 + 0.35 * lit2) * (0.25 + 0.75 * q) * dop})`;
+        c.lineWidth = 0.8 + 2.2 * q;
+        c.beginPath();
+        c.arc(CX3, CY3, rr2, a, a + 0.5 + i % 4 * 0.35);
+        c.stroke();
+      }
+      const dg = c.createLinearGradient(CX3 - RD, CY3, CX3 + RD, CY3);
+      dg.addColorStop(0, `rgba(255,235,200,${0.16 * lit2})`);
+      dg.addColorStop(0.5, "rgba(255,235,200,0)");
+      c.fillStyle = dg;
+      c.beginPath();
+      c.arc(CX3, CY3, RD * 0.9, 0, 7);
+      c.moveTo(CX3 + rIn, CY3);
+      c.arc(CX3, CY3, rIn, 0, 7, true);
+      c.fill();
+      for (const p of this.spirals) {
+        const al = Math.min(1, p.t * 3) * Math.min(1, (p.dur - p.t) * 2);
+        c.fillStyle = `rgba(${p.col},${0.75 * al})`;
+        for (let k = 0; k < 4; k++) {
+          const aa = p.a - k * 0.09;
+          c.beginPath();
+          c.arc(CX3 + Math.cos(aa) * p.r, CY3 + Math.sin(aa) * p.r, p.w * (1 - k * 0.2), 0, 7);
+          c.fill();
+        }
+      }
+      if (s2.r.jets3) {
+        for (const sg of [-1, 1]) {
+          const jg = c.createLinearGradient(CX3, CY3, CX3, CY3 + sg * 480);
+          jg.addColorStop(0, `rgba(190,215,255,${0.55 * lit2})`);
+          jg.addColorStop(1, "rgba(120,160,255,0)");
+          c.fillStyle = jg;
+          c.beginPath();
+          c.moveTo(CX3 - 6, CY3);
+          c.lineTo(CX3 - 26, CY3 + sg * 480);
+          c.lineTo(CX3 + 26, CY3 + sg * 480);
+          c.lineTo(CX3 + 6, CY3);
+          c.fill();
+        }
+      }
+      if (this.flash > 0) {
+        c.strokeStyle = `rgba(220,235,255,${this.flash})`;
+        c.lineWidth = 6 * this.flash;
+        c.beginPath();
+        c.arc(CX3, CY3, RD + (1 - this.flash) * 120, 0, 7);
+        c.stroke();
+      }
+      c.restore();
+      c.fillStyle = "#000";
+      c.beginPath();
+      c.arc(CX3, CY3, RH, 0, 7);
+      c.fill();
+      c.strokeStyle = `rgba(255,235,200,${0.5 + 0.4 * lit2})`;
+      c.lineWidth = 1.6;
+      c.beginPath();
+      c.arc(CX3, CY3, RH + 1.5, 0, 7);
+      c.stroke();
+      c.setLineDash([4, 6]);
+      c.strokeStyle = "rgba(142,240,200,.45)";
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.arc(CX3, CY3, Ip, 0, 7);
+      c.stroke();
+      c.beginPath();
+      c.arc(CX3, CY3, Ip * 1.9, 0, 7);
+      c.stroke();
+      c.setLineDash([]);
+      const tugs = Math.min(lv3(s2, "tug"), 12);
+      for (let i = 0; i < tugs; i++) {
+        const a = T5 * 0.05 + i / tugs * 6.283, x = CX3 + Math.cos(a) * 470, y = CY3 + Math.sin(a) * 470;
+        c.save();
+        c.translate(x, y);
+        c.rotate(a + 1.57);
+        c.fillStyle = "#ffe2b0";
+        c.beginPath();
+        c.moveTo(0, -6);
+        c.lineTo(-4, 5);
+        c.lineTo(4, 5);
+        c.closePath();
+        c.fill();
+        c.restore();
+        c.fillStyle = "rgba(255,170,90,.6)";
+        c.beginPath();
+        c.arc(x - Math.cos(a) * 12, y - Math.sin(a) * 12, 4, 0, 7);
+        c.fill();
+      }
+      for (const k of this.clumps) {
+        const r = 13 * k.sz, pul = 0.75 + 0.25 * Math.sin(T5 * 3 + k.r0);
+        const cg = c.createRadialGradient(k.x, k.y, 0, k.x, k.y, r * 2.6);
+        cg.addColorStop(0, `rgba(255,240,245,${pul})`);
+        cg.addColorStop(0.25, `rgba(255,170,205,${0.8 * pul})`);
+        cg.addColorStop(0.6, "rgba(220,100,170,.3)");
+        cg.addColorStop(1, "rgba(120,200,220,0)");
+        c.fillStyle = cg;
+        c.beginPath();
+        c.arc(k.x, k.y, r * 2.6, 0, 7);
+        c.fill();
+        if (act && k.st === "idle") {
+          c.strokeStyle = `rgba(255,210,122,${0.35 + 0.35 * pul})`;
+          c.lineWidth = 1.5;
+          c.beginPath();
+          c.arc(k.x, k.y, r * 1.5, 0, 7);
+          c.stroke();
+        }
+      }
+      if (act && this.grab && this.grab.st === "idle") {
+        const k = this.grab, [vx, vy] = this.vel(k, M5), L = this.landing(s2, k.x, k.y, vx, vy);
+        c.strokeStyle = "rgba(255,226,176,.85)";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(k.x, k.y);
+        c.lineTo(M5.x, M5.y);
+        c.stroke();
+        c.fillStyle = "#ffe2b0";
+        c.beginPath();
+        c.arc(M5.x, M5.y, 4, 0, 7);
+        c.fill();
+        const col = L.k === "perfect" ? "142,240,200" : L.k === "disk" || L.k === "outer" ? "242,166,90" : L.k === "plunge" ? "233,138,138" : "154,166,189";
+        let x = k.x, y = k.y, ux = vx, uy = vy;
+        const steps = s2.r.aim ? 150 : 50;
+        c.fillStyle = `rgba(${col},.95)`;
+        for (let i = 0; i < steps; i++) {
+          const rx = x - CX3, ry = y - CY3, r = Math.hypot(rx, ry), a = GM / (r * r * r), h2 = 1 / 60;
+          ux -= rx * a * h2;
+          uy -= ry * a * h2;
+          x += ux * h2;
+          y += uy * h2;
+          if (r < RD || r > 1100) break;
+          if (i % 3 === 0) c.fillRect(x - 2, y - 2, 4, 4);
+        }
+        if (L.k !== "escape") {
+          c.strokeStyle = `rgba(${col},.95)`;
+          c.lineWidth = 3;
+          c.beginPath();
+          c.arc(CX3, CY3, Math.max(RH + 2, Math.min(RD + 40, L.rc)), 0, 7);
+          c.stroke();
+        }
+        c.font = `600 ${13 / Math.max(v.sx, 0.3)}px ${MONO}`;
+        c.textAlign = "left";
+        c.fillStyle = `rgb(${col})`;
+        c.fillText(L.k === "perfect" ? "Vnit\u0159n\xED prstenec \xD71,5" : L.k === "disk" ? "Do disku \xD71" : L.k === "outer" ? "Okraj disku \xD70,7" : L.k === "plunge" ? "Spadne rovnou \xD70,25" : "Ulet\xED", M5.x + 14, M5.y + 4);
+      }
+      const fs = 13 / Math.max(v.sx, 0.3);
+      c.font = `600 ${fs}px ${MONO}`;
+      c.textAlign = "center";
+      c.save();
+      c.lineJoin = "round";
+      c.lineWidth = fs * 0.32;
+      c.strokeStyle = "rgba(4,6,14,.88)";
+      const lab = `D\xEDra po Ald\u0159e \xB7 8 M\u2609`, ed = `Eddingtonova mez ${pct(P / eddMax(s2))}`;
+      c.strokeText(lab, CX3, CY3 + RD + 2.2 * fs);
+      c.strokeText(ed, CX3, CY3 + RD + 3.6 * fs);
+      c.restore();
+      c.fillStyle = "#d9dfec";
+      c.fillText(lab, CX3, CY3 + RD + 2.2 * fs);
+      c.fillStyle = P / eddMax(s2) > 0.8 ? "#cfe0ff" : "#9aa6bd";
+      c.fillText(ed, CX3, CY3 + RD + 3.6 * fs);
+      void mdot;
+      void count;
+    }
+  };
+
+  // src/mech/ch4.ts
   var GCX = 780;
   var GCY = 500;
   var RG = 600;
   var TILT = 0.6;
-  var lv3 = (s2, id) => s2.b[id] || 0;
+  var lv4 = (s2, id) => s2.b[id] || 0;
   var gsp = (n2) => [GCX + n2.x * RG, GCY + n2.y * RG * TILT];
   var need = (n2) => needOf(n2.stars);
   var tex2 = null;
@@ -2646,7 +3231,7 @@
       this.sweep = 0;
     },
     reachPx(s2) {
-      return RG * (T3.reach[0] + T3.reach[1] * lv3(s2, "reach"));
+      return RG * (T4.reach[0] + T4.reach[1] * lv4(s2, "reach"));
     },
     nearestOn(s2, x, y) {
       let best = null, bd = 1e9;
@@ -2680,28 +3265,28 @@
     down() {
       this.sweep = 0;
     },
-    up(s2, M4) {
+    up(s2, M5) {
       if (this.sweep > 1) {
-        ftxt(M4.x, M4.y - 18, `Os\xEDdleno ${this.sweep} soustav`, "#ffd27a");
+        ftxt(M5.x, M5.y - 18, `Os\xEDdleno ${this.sweep} soustav`, "#ffd27a");
         s2.stats.sweeps++;
       }
       this.sweep = 0;
     },
-    update(s2, dt, M4) {
+    update(s2, dt, M5) {
       const N = galaxyNodes(), P = power(s2);
       for (const n2 of N) n2.heat = Math.max(0, (n2.heat || 0) - dt * 2);
       this.beamOn = null;
-      if (M4.down) {
-        const o = this.nearestOn(s2, M4.x, M4.y), op = gsp(o), pl = (1 + 0.6 * lv3(s2, "power")) * (s2.r.brake ? 1.5 : 1);
-        const len = Math.min(Math.hypot(M4.x - op[0], M4.y - op[1]), this.reachPx(s2));
-        const drain = T3.beamDrain * P, ok2 = s2.res.energy > 0;
+      if (M5.down) {
+        const o = this.nearestOn(s2, M5.x, M5.y), op = gsp(o), pl = (1 + 0.6 * lv4(s2, "power")) * (s2.r.brake ? 1.5 : 1);
+        const len = Math.min(Math.hypot(M5.x - op[0], M5.y - op[1]), this.reachPx(s2));
+        const drain = T4.beamDrain * P, ok2 = s2.res.energy > 0;
         s2.res.energy = Math.max(0, s2.res.energy - drain * dt);
-        const ang = Math.atan2(M4.y - op[1], M4.x - op[0]);
+        const ang = Math.atan2(M5.y - op[1], M5.x - op[0]);
         this.beamOn = { o, ang, len, weak: !ok2 };
         this.beam(s2, o, ang, len, pl * (ok2 ? 1 : 0.15), dt, "beam");
       }
-      const pr = lv3(s2, "probe"), spreadR = RG * (0.1 + 0.03 * pr);
-      const chance = (0.01 + 0.01 * lv3(s2, "spread")) * (1 + T3.probe[0] * pr) * spreadMult(s2);
+      const pr = lv4(s2, "probe"), spreadR = RG * (0.1 + 0.03 * pr);
+      const chance = (0.01 + 0.01 * lv4(s2, "spread")) * (1 + T4.probe[0] * pr) * spreadMult(s2);
       if (this.threads.length < 60) {
         for (const n2 of N) {
           if (!isOn(s2, n2.i) || rnd() > chance * dt * 10) continue;
@@ -2727,7 +3312,7 @@
           th.b.claim = null;
           continue;
         }
-        const sp2 = (0.1 + 0.05 * lv3(s2, "spread")) * (1 + T3.probe[1] * pr) * spreadMult(s2);
+        const sp2 = (0.1 + 0.05 * lv4(s2, "spread")) * (1 + T4.probe[1] * pr) * spreadMult(s2);
         s2.prog[th.b.i] = (s2.prog[th.b.i] || 0) + dt * sp2 / need(th.b);
         if (s2.prog[th.b.i] >= 1) {
           this.found(s2, th.b, "spread");
@@ -2740,7 +3325,7 @@
         }
       }
       this.threads = this.threads.filter((t) => !t.done);
-      const nb = lv3(s2, "beacon"), vb = Math.min(nb, 16), kb = nb > 16 ? nb / 16 : 1;
+      const nb = lv4(s2, "beacon"), vb = Math.min(nb, 16), kb = nb > 16 ? nb / 16 : 1;
       while (this.beacons.length < vb) this.beacons.push({ n: null, t: 0, ang: null, base: 0 });
       for (const b of this.beacons) {
         if (!b.n || !isOn(s2, b.n.i)) {
@@ -2751,7 +3336,7 @@
         }
         b.t += dt;
         b.ang = b.base + Math.sin(b.t * 0.35) * 1.1;
-        this.beam(s2, b.n, b.ang, this.reachPx(s2) * 0.85, T3.beacon * (1 + 0.2 * lv3(s2, "power")) * Math.sqrt(kb), dt, "auto");
+        this.beam(s2, b.n, b.ang, this.reachPx(s2) * 0.85, T4.beacon * (1 + 0.2 * lv4(s2, "power")) * Math.sqrt(kb), dt, "auto");
         if (b.t > 14) b.n = null;
       }
       for (const t of this.trails) t.t += dt;
@@ -2760,17 +3345,17 @@
       this.hover = null;
       for (const n2 of N) {
         const p = gsp(n2);
-        if (Math.hypot(M4.x - p[0], M4.y - p[1]) < 12) {
+        if (Math.hypot(M5.x - p[0], M5.y - p[1]) < 12) {
           this.hover = n2;
           break;
         }
       }
     },
-    bot(s2, dt, M4) {
+    bot(s2, dt, M5) {
       if (s2.res.energy < power(s2) * 4) {
-        if (M4.down) {
-          M4.down = false;
-          this.up(s2, M4);
+        if (M5.down) {
+          M5.down = false;
+          this.up(s2, M5);
         }
         return;
       }
@@ -2790,27 +3375,27 @@
         this.botT = best ? { n: best } : null;
       }
       if (!this.botT) {
-        if (M4.down) {
-          M4.down = false;
-          this.up(s2, M4);
+        if (M5.down) {
+          M5.down = false;
+          this.up(s2, M5);
         }
         return;
       }
       const p = gsp(this.botT.n);
-      M4.px = M4.x;
-      M4.py = M4.y;
-      M4.x = p[0] + 3;
-      M4.y = p[1] + 3;
-      if (!M4.down) {
-        M4.down = true;
-        this.down(s2, M4);
+      M5.px = M5.x;
+      M5.py = M5.y;
+      M5.x = p[0] + 3;
+      M5.y = p[1] + 3;
+      if (!M5.down) {
+        M5.down = true;
+        this.down(s2, M5);
       }
     },
     cursor() {
       return "crosshair";
     },
-    draw(c, s2, v, M4) {
-      const N = galaxyNodes(), T4 = v.T;
+    draw(c, s2, v, M5) {
+      const N = galaxyNodes(), T5 = v.T;
       const GI = img("galaxy");
       if (GI) {
         const iw = RG / GIMG.R;
@@ -2869,8 +3454,8 @@
             c.fillStyle = jg;
             c.beginPath();
             c.moveTo(GCX - 3, GCY);
-            c.lineTo(GCX - 11 - 4 * Math.sin(T4 * 2), GCY + sd * L);
-            c.lineTo(GCX + 11 + 4 * Math.sin(T4 * 2), GCY + sd * L);
+            c.lineTo(GCX - 11 - 4 * Math.sin(T5 * 2), GCY + sd * L);
+            c.lineTo(GCX + 11 + 4 * Math.sin(T5 * 2), GCY + sd * L);
             c.lineTo(GCX + 3, GCY);
             c.fill();
           }
@@ -2916,7 +3501,7 @@
           }
           continue;
         }
-        const z = inZone(s2, n2.i), tw = (z ? 0.55 : 0.25) + 0.12 * Math.sin(T4 * 0.8 + n2.tw), h2 = n2.heat || 0;
+        const z = inZone(s2, n2.i), tw = (z ? 0.55 : 0.25) + 0.12 * Math.sin(T5 * 0.8 + n2.tw), h2 = n2.heat || 0;
         const rad = 1.4 + 0.45 * Math.log10(n2.stars / 1e4 + 1);
         if (z) {
           const g = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], rad * 3.2);
@@ -2961,7 +3546,7 @@
         c.stroke();
         c.restore();
         if (SL && a > 0.5) for (let j = 0; j < 3; j++) {
-          const f = (T4 * 0.45 + j / 3) % 1, x = op[0] + Math.cos(ang) * len * f, y = op[1] + Math.sin(ang) * len * f, sz = 9 * (1 - 0.5 * f);
+          const f = (T5 * 0.45 + j / 3) % 1, x = op[0] + Math.cos(ang) * len * f, y = op[1] + Math.sin(ang) * len * f, sz = 9 * (1 - 0.5 * f);
           c.globalAlpha = Math.min(1, (1 - f) * 3);
           c.drawImage(SL, x - sz / 2, y - sz / 2, sz, sz);
           c.globalAlpha = 1;
@@ -3005,8 +3590,8 @@
       c.arc(hp[0], hp[1], 3.5, 0, 7);
       c.fill();
       if (v.passive) return;
-      if (!M4.down && M4.inside) {
-        const o = this.nearestOn(s2, M4.x, M4.y), op = gsp(o);
+      if (!M5.down && M5.inside) {
+        const o = this.nearestOn(s2, M5.x, M5.y), op = gsp(o);
         c.strokeStyle = "rgba(255,215,150,.12)";
         c.setLineDash([2, 7]);
         c.lineWidth = 1;
@@ -3305,14 +3890,97 @@
 
   // src/i18n/cs3.ts
   var CS3 = {
-    name: "Galaxie",
-    title: "Kapitola 3 \xB7 Galaxie",
+    name: "D\xEDra",
+    title: "Kapitola 3 \xB7 D\xEDra",
     intro: {
-      h: "Po supernov\u011B",
+      h: "D\xEDra po Ald\u0159e",
       p: [
-        "Aldra explodovala. Roj p\u0159e\u017Eil jen d\xEDky tomu, \u017Ee ustoupil v\u010Das. Z hv\u011Bzdy zbyla \u010Dern\xE1 d\xEDra a kolem n\xED \u017Ehnouc\xED trosky.",
+        "Aldra se zhroutila. Z modr\xE9ho veleobra zbyla \u010Dern\xE1 d\xEDra o osmi Slunc\xEDch, obalen\xE1 rozervanou mlhovinou.",
+        "Roj ztratil sv\u011Btlo a v\xFDkon spadl na zlomek. Jedin\xFD zdroj energie je te\u010F to, co spadne do d\xEDry.",
+        "Chytni chuchvalec plynu na okraji mlhoviny, t\xE1hni ho jako prak a pus\u0165. Ho\u010F ho bokem, a\u0165 se usad\xED v disku. Kdy\u017E ho hod\xED\u0161 rovn\u011B na d\xEDru, spadne dovnit\u0159 bez u\u017Eitku."
+      ]
+    },
+    stages: ["St\xEDn po Ald\u0159e", "Disk se rozsv\u011Bc\xED", "Hust\xFD disk", "Rotace", "Eddingtonova mez", "V\xFDtrysky", "Svazek"],
+    indicator: "Eddingtonova mez",
+    ship: { who: "Vesper", send: "Vyslat Vesper", running: "Vesper let\xED", busy: "Vesper je na cest\u011B" },
+    card: { stage: "Stadium {n} z {of}", sub: "D\xEDra po Ald\u0159e \xB7 8 M\u2609", cut: "Disk z boku", spin: "Rotace d\xEDry", eta: "\xDA\u010Dinnost disku", flow: "P\u0159\xEDtok do d\xEDry", edd: "Eddingtonova mez", hor: "Horizont", isco: "Vnit\u0159n\xED prstenec", real: "Ve skute\u010Dnosti trv\xE1" },
+    phase: [
+      { n: "St\xEDn po Ald\u0159e", real: "dny", t: "Z hv\u011Bzdy zbyl horizont 47 km \u0161irok\xFD. Kolem n\u011Bj jen trosky, kter\xE9 je\u0161t\u011B nestihly spadnout." },
+      { n: "Disk se rozsv\u011Bc\xED", real: "t\xFDdny", t: "Ka\u017Ed\xFD chuchvalec, kter\xFD se usad\xED v disku, se roz\u017Ehav\xED na miliony stup\u0148\u016F a z\xE1\u0159\xED v rentgenu." },
+      { n: "Hust\xFD disk", real: "m\u011Bs\xEDce", t: "Disk je hust\xFD a sv\xEDt\xED s\xE1m. Hmota v n\u011Bm st\xE9k\xE1 po spir\xE1le dovnit\u0159 a cestou vyz\xE1\u0159\xED \u010D\xE1st sv\xE9 hmotnosti." },
+      { n: "Rotace", real: "roky", t: "Hmota, kter\xE1 p\u0159it\xE9k\xE1 po sm\u011Bru rotace, d\xEDru rozt\xE1\u010D\xED. \u010C\xEDm rychleji se to\u010D\xED, t\xEDm bl\xED\u017E k n\xED m\u016F\u017Ee disk sahat." },
+      { n: "Eddingtonova mez", real: "des\xEDtky let", t: "Z\xE1\u0159en\xED disku tla\u010D\xED plyn ven stejn\u011B siln\u011B, jako ho d\xEDra t\xE1hne dovnit\u0159. V\xEDc hmoty u\u017E nepom\u016F\u017Ee." },
+      { n: "V\xFDtrysky", real: "stovky let", t: "Magnetick\xE9 pole odn\xE1\u0161\xED energii z rotace d\xEDry ve dvou v\xFDtrysc\xEDch. Ty mez obejdou." },
+      { n: "Svazek", real: "stovky let", t: "D\xEDra sv\xEDt\xED v\xEDc ne\u017E Aldra za \u017Eivota. Energie sta\u010D\xED na svazek, kter\xFD dotla\u010D\xED plachty k ciz\xEDm hv\u011Bzd\xE1m." }
+    ],
+    hint: [
+      "Chytni chuchvalec na okraji mlhoviny, t\xE1hni ho od d\xEDry a pus\u0165. Kruh ukazuje, kde se hmota usad\xED: zelen\xFD je vnit\u0159n\xED prstenec, ten d\xE1 nejv\xEDc energie.",
+      "Ho\u010F v\xEDc chuchvalc\u016F za sebou do vnit\u0159n\xEDho prstence a vznikne \u0159et\u011Bz."
+    ],
+    b: {
+      lap: { n: "Lapa\u010D v\u011Btru", d: "Sb\xEDr\xE1 hmotu, kterou z hork\xE9ho disku odn\xE1\u0161\xED v\xEDtr. \u010C\xEDm v\xEDc krm\xED\u0161 disk, t\xEDm v\xEDc nasb\xEDr\xE1." },
+      clump: { n: "V\u011Bt\u0161\xED chuchvalce", d: "Vesper st\xE1hne z mlhoviny v\xEDc plynu najednou." },
+      xray: { n: "Rentgenov\xFD dalekohled", d: "Hork\xFD disk z\xE1\u0159\xED v rentgenu. D\xE1v\xE1 data." },
+      pool: { n: "Z\xE1sobn\xEDk", d: "V mlhovin\u011B je p\u0159ipraveno v\xEDc chuchvalc\u016F a p\u0159ib\xFDvaj\xED rychleji." },
+      ring3: { n: "Prstenec lapa\u010D\u016F", d: "Lapa\u010De spojen\xE9 do prstence zachyt\xED v\xEDc." },
+      tug: { n: "Remork\xE9r", d: "S\xE1m zah\xE1kne chuchvalec a hod\xED ho do disku." },
+      spin: { n: "Rozt\xE1\u010Den\xED d\xEDry", d: "Hmota p\u0159id\xE1van\xE1 po sm\u011Bru rotace d\xEDru rozt\xE1\u010D\xED. Vnit\u0159n\xED prstenec se p\u0159ibl\xED\u017E\xED a disk vyz\xE1\u0159\xED v\xEDc." },
+      field3: { n: "Magnetick\xE1 s\xED\u0165", d: "Zes\xEDl\xED pole disku, v\xFDtrysky unesou v\xEDc." }
+    },
+    r: {
+      aim: { n: "V\xFDpo\u010Det dr\xE1hy", d: "P\u0159edpov\u011B\u010F dr\xE1hy chuchvalce je t\u0159ikr\xE1t del\u0161\xED." },
+      qpo: { n: "Oscilace disku", d: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji." },
+      tugs: { n: "Remork\xE9ry", d: "Odemkne remork\xE9ry, kter\xE9 krm\xED disk samy." },
+      guide: { n: "Nav\xE1d\u011Bn\xED remork\xE9r\u016F", d: "Remork\xE9ry m\xED\u0159\xED do vnit\u0159n\xEDho prstence. Ka\u017Ed\xFD jejich hod d\xE1 1,5\xD7 v\xEDc." },
+      spinup: { n: "Rozt\xE1\u010Den\xED", d: "Odemkne rozt\xE1\u010Den\xED d\xEDry." },
+      jets3: { n: "V\xFDtrysky", d: "Pole disku vytvo\u0159\xED v\xFDtrysky. Strop v\xFDkonu je 4\xD7 v\xFD\u0161." },
+      beam3: { n: "Laserov\xFD svazek", d: "Postav\xED svazek, kter\xFD dotla\u010D\xED plachty k hv\u011Bzd\xE1m. Dokon\u010D\xED kapitolu." }
+    },
+    m: {
+      belt3: { n: "Zbytky p\xE1su", p: "Poz\u016Fstatek supernovy", r: "Chuchvalce maj\xED 2\xD7 v\xEDc hmoty" },
+      kelvar3: { n: "Kelvar", p: "Poz\u016Fstatek supernovy", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      tauris3: { n: "Tauris", p: "Poz\u016Fstatek supernovy", r: "Plyn z Taurise st\xE9k\xE1 do disku s\xE1m" },
+      ergo: { n: "Ergosf\xE9ra", p: "T\u011Bsn\u011B u d\xEDry", r: "Disk vyz\xE1\u0159\xED 1,3\xD7 v\xEDc energie" },
+      star3: { n: "Sousedn\xED hv\u011Bzda", p: "Okraj mlhoviny", r: "Roztr\u017Een\xE1 hv\u011Bzda krm\xED disk proudem plynu" }
+    },
+    jour: {
+      h3_start: "Aldra se zhroutila. Kde sv\xEDtila hv\u011Bzda, je te\u010F d\xEDra o osmi Slunc\xEDch a kolem n\xED rozervan\xE1 mlhovina. Roj nem\xE1 z \u010Deho br\xE1t.",
+      h3_first: "Prvn\xED chuchvalec se rozplynul v disku. Na okam\u017Eik zaz\xE1\u0159il jasn\u011Bji ne\u017E cel\xE1 mlhovina. Tohle je te\u010F moje hv\u011Bzda.",
+      f3_isco: "Kolem \u010Dern\xE9 d\xEDry je nejmen\u0161\xED stabiln\xED dr\xE1ha. Bl\xED\u017E u\u017E hmota ob\xEDhat nem\u016F\u017Ee a spadne dovnit\u0159. Nejv\xEDc energie vyz\xE1\u0159\xED plyn t\u011Bsn\u011B nad n\xED.",
+      h3_ten: "Deset z\xE1sah\u016F. Disk se ust\xE1lil a slab\u011B pulzuje s periodou 7,3 sekundy. Puls te\u010F vych\xE1z\xED p\u0159\xEDmo z d\xEDry.",
+      h3_belt: "Zbytky p\xE1su p\u0159e\u017Eily v\xFDbuch jako \u017Ehav\xFD prstenec trosek. Vesper je zah\xE1kl a st\xE1hl bl\xED\u017E. Te\u010F je z \u010Deho br\xE1t.",
+      h3_st1: "Disk sv\xEDt\xED jako mal\xE1 hv\u011Bzda. V rentgenu je vid\u011Bt ka\u017Ed\xFD chuchvalec, kter\xFD do n\u011Bj spadne. N\u011Bkter\xE9 z\xE1blesky p\u0159i\u0161ly d\u0159\xEDv, ne\u017E jsem hodil.",
+      f3_edd: "Eddingtonova mez je nejvy\u0161\u0161\xED sv\xEDtivost, p\u0159i kter\xE9 z\xE1\u0159en\xED je\u0161t\u011B neodfoukne padaj\xEDc\xED plyn. Pro d\xEDru o osmi Slunc\xEDch je to asi 10\xB3\xB2 W.",
+      h3_qpo: "Disk kmit\xE1 s periodou 7,3 sekundy. Astronomov\xE9 tomu \u0159\xEDkaj\xED kvaziperiodick\xE9 oscilace. U tohohle disku nejsou kvazi. Jsou p\u0159esn\xE9.",
+      h3_kelvar: "Pod rozt\xE1t\xFDm ledem Kelvaru le\u017E\xED \u0159ada dron\u016F. Nejsou z Vesper. V\u0161echny m\xED\u0159\xED k m\xEDstu, kde je te\u010F d\xEDra.",
+      h3_st2: "V\xFDkon roste rychleji, ne\u017E st\xEDh\xE1m h\xE1zet. Pot\u0159ebuju pomocn\xEDky, kte\u0159\xED budou krmit disk, i kdy\u017E sp\xEDm.",
+      h3_tug: "Prvn\xED remork\xE9r zah\xE1kl chuchvalec a hodil ho p\u0159esn\u011B jako j\xE1. D\xEDv\xE1m se na n\u011Bj a m\xE1m pocit, \u017Ee se d\xEDv\xE1m na sebe.",
+      h3_tauris: "Tauris pro\u0161el p\u0159\xEDli\u0161 bl\xEDzko. Slapy ho rozt\xE1hly do dlouh\xE9ho proudu plynu, kter\xFD te\u010F s\xE1m st\xE9k\xE1 do disku. Byl to kr\xE1sn\xFD obr.",
+      f3_hawking: "D\xEDra by m\u011Bla sama slab\u011B z\xE1\u0159it, je to Hawkingovo z\xE1\u0159en\xED. U d\xEDry o osmi Slunc\xEDch m\xE1 ale teplotu jen asi osm miliardtin kelvinu. Z reliktn\xEDho z\xE1\u0159en\xED pohlt\xED v\xEDc, ne\u017E vyz\xE1\u0159\xED.",
+      h3_st3: "Disk je hust\xFD a hork\xFD. Strop je bl\xEDzko, v\xEDc sv\u011Btla d\xEDra neunese. Mus\xEDm ji rozto\u010Dit.",
+      h3_spin: "D\xEDra se to\u010D\xED rychleji. Vnit\u0159n\xED okraj disku se k n\xED p\u0159ibl\xED\u017Eil a hmota z n\u011Bj te\u010F vyz\xE1\u0159\xED v\xEDc energie.",
+      f3_cyg: "Cygnus X-1 je skute\u010Dn\xE1 \u010Dern\xE1 d\xEDra o asi 21 Slunc\xEDch, kter\xE1 krade plyn sousedn\xED hv\u011Bzd\u011B. To\u010D\xED se skoro nejrychleji, jak je to mo\u017En\xE9.",
+      h3_ergo: "Vesper prolet\u011Bl ergosf\xE9rou. Tam se ned\xE1 st\xE1t na m\xEDst\u011B, prostor se to\u010D\xED s d\xEDrou. Ven jsme vylet\u011Bli s v\xEDc energi\xED, ne\u017E jsme m\u011Bli.",
+      h3_st4: "Disk narazil na Eddingtonovu mez. Z\xE1\u0159en\xED tla\u010D\xED hmotu ven stejn\u011B siln\u011B, jako ji d\xEDra t\xE1hne dovnit\u0159.",
+      h3_flare: "Disk vzplanul a odfoukl p\u0159ebytek. Mlhovina se na okam\u017Eik rozsv\xEDtila a\u017E k okraji. V tom z\xE1blesku byl puls dvakr\xE1t.",
+      h3_jets: "Magnetick\xE9 pole disku se zkroutilo do dvou v\xFDtrysk\u016F. Odn\xE1\u0161ej\xED energii z rotace d\xEDry a mez je najednou daleko.",
+      h3_star: "Hv\u011Bzda, kterou jsme sto\u010Dili k d\xED\u0159e, se roztrhla. Jej\xED plyn se kolem d\xEDry ov\xEDj\xED jako stuha. Tolik sv\u011Btla jsem nevid\u011Bl od Aldry.",
+      f3_tde: "Kdy\u017E se hv\u011Bzda dostane p\u0159\xEDli\u0161 bl\xEDzko k \u010Dern\xE9 d\xED\u0159e, slapy ji rozt\xE1hnou do tenk\xE9ho proudu. Takov\xE9 z\xE1blesky astronomov\xE9 zachytili v ciz\xEDch galaxi\xEDch.",
+      h3_st5: "D\xEDra sv\xEDt\xED siln\u011Bji ne\u017E Aldra za \u017Eivota. Kone\u010Dn\u011B je dost energie na laser, kter\xFD dotla\u010D\xED plachty a\u017E k jin\xFDm hv\u011Bzd\xE1m.",
+      h3_end: "Mlhovina je skoro pr\xE1zdn\xE1, d\xEDra sn\u011Bdla, co \u0161lo. Je \u010Das pod\xEDvat se d\xE1l ne\u017E k nejbli\u017E\u0161\xED hv\u011Bzd\u011B."
+    }
+  };
+
+  // src/i18n/cs4.ts
+  var CS4 = {
+    name: "Galaxie",
+    title: "Kapitola 4 \xB7 Galaxie",
+    intro: {
+      h: "Svazek",
+      p: [
+        "D\xEDra po Ald\u0159e je nakrmen\xE1 a sv\xEDt\xED siln\u011Bji ne\u017E hv\u011Bzda, ze kter\xE9 vznikla. Jej\xED energie te\u010F nap\xE1j\xED laserov\xFD svazek.",
         "Vesper zakotvil t\u011Bsn\u011B u d\xEDry. Tady ti \u010Das plyne pomaleji ne\u017E zbytku galaxie \u2013 zat\xEDmco pro tebe ub\u011Bhnou hodiny, plachty venku let\xED tis\xEDce let.",
-        "Jsi v rameni Persea, asi 6 000 sv\u011Bteln\xFDch let od Slunce. Energie d\xEDry sta\u010D\xED na laserov\xFD svazek, kter\xFD dotla\u010D\xED sv\u011Bteln\xE9 plachty a\u017E k ciz\xEDm hv\u011Bzd\xE1m.",
+        "Jsi v rameni Persea, asi 6 000 sv\u011Bteln\xFDch let od Slunce. Svazek dotla\u010D\xED sv\u011Bteln\xE9 plachty se z\xE1rodky koloni\xED a\u017E k ciz\xEDm hv\u011Bzd\xE1m.",
         "Dr\u017E my\u0161 a ze sv\xE9 nejbli\u017E\u0161\xED kolonie m\xED\u0159\xED svazek. P\u0159eje\u010F j\xEDm p\u0159es hv\u011Bzdy a chv\xEDli podr\u017E, dokud se krou\u017Eek nezapln\xED. Svazek bere energii."
       ]
     },
@@ -3369,7 +4037,7 @@
       fermi: { n: "Fermiho bubliny", p: "Nad j\xE1drem galaxie", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji a cesta ke st\u0159edu je otev\u0159en\xE1" }
     },
     jour: {
-      c3_start: "Aldra je pry\u010D. Na jej\xEDm m\xEDst\u011B je d\xEDra a puls te\u010F vych\xE1z\xED z n\xED. Jsme v rameni Persea, 6 000 sv\u011Bteln\xFDch let od Slunce.",
+      c3_start: "Svazek je hotov\xFD a m\xED\u0159\xED ven z mlhoviny. Jsme v rameni Persea, 6 000 sv\u011Bteln\xFDch let od Slunce. Puls se odsud \u0161\xED\u0159\xED do cel\xE9 galaxie.",
       c3_first: "Prvn\xED plachta dolet\u011Bla. Kolonie hl\xE1s\xED: hv\u011Bzda v po\u0159\xE1dku, planety tich\xE9. Stejn\u011B se mi ulev\xED.",
       f3_sail: "Sv\u011Bteln\xE1 plachta nepot\u0159ebuje palivo. Laser ze vzd\xE1len\xE9 stanice ji m\u016F\u017Ee rozpohybovat na des\xEDtky procent rychlosti sv\u011Btla.",
       c3_ten: "Deset koloni\xED. Mezi nimi b\u011B\u017E\xED zpr\xE1vy roky. Pro n\u011B je to dlouh\xE1 doba. Pro m\u011B, tady u d\xEDry, jen p\xE1r minut.",
@@ -3400,10 +4068,10 @@
   };
 
   // src/i18n/index.ts
-  var TX = { 1: CS1, 2: CS2, 3: CS3 };
+  var TX = { 1: CS1, 2: CS2, 3: CS3, 4: CS4 };
   var tx = (ch) => TX[ch];
   function find(kind, id) {
-    for (const k of [1, 2, 3]) {
+    for (const k of [1, 2, 3, 4]) {
       const v = TX[k][kind][id];
       if (v) return v;
     }
@@ -3411,7 +4079,7 @@
   }
   var UI = {
     game: "\u0160epot Horizontu",
-    res: { ore: "Ruda", plasma: "Plazma", sails: "Z\xE1rodky", energy: "Energie", data: "Data" },
+    res: { ore: "Ruda", plasma: "Plazma", mass: "Hmota", sails: "Z\xE1rodky", energy: "Energie", data: "Data" },
     tabs: { build: "Stavby", research: "V\xFDzkum", map: "Mapa", detail: "Detail" },
     ladderHole: "D\xEDra",
     awakeT: "Sagittarius A* se probudila",
@@ -3443,7 +4111,7 @@
     researchNone: "Te\u010F nen\xED co zkoumat. Dal\u0161\xED sm\u011Br se objev\xED s postupem.",
     researchReady: "P\u0159ipraveno",
     researchIn: (t) => `za ~${t}`,
-    detailNote: { 1: "\u010C\xEDm hloub\u011Bji laser \u0159e\u017Ee, t\xEDm bohat\u0161\xED ruda.", 2: "\u0158ez Aldrou ukazuje, co pr\xE1v\u011B ho\u0159\xED v j\xE1d\u0159e. S ka\u017Ed\xFDm stadiem se m\u011Bn\xED sv\u011Btlo i velikost hv\u011Bzdy.", 3: "Ml\xE9\u010Dn\xE1 dr\xE1ha z boku. Sv\u011Btla jsou tvoje kolonie, zelen\xFD p\xE1s ukazuje, kam z\xE1rodky zat\xEDm dolet\xED." },
+    detailNote: { 1: "\u010C\xEDm hloub\u011Bji laser \u0159e\u017Ee, t\xEDm bohat\u0161\xED ruda.", 2: "\u0158ez Aldrou ukazuje, co pr\xE1v\u011B ho\u0159\xED v j\xE1d\u0159e. S ka\u017Ed\xFDm stadiem se m\u011Bn\xED sv\u011Btlo i velikost hv\u011Bzdy.", 3: "Disk d\xEDry z boku. \u010C\xEDm rychleji se d\xEDra to\u010D\xED, t\xEDm bl\xED\u017E k n\xED sah\xE1 vnit\u0159n\xED prstenec.", 4: "Ml\xE9\u010Dn\xE1 dr\xE1ha z boku. Sv\u011Btla jsou tvoje kolonie, zelen\xFD p\xE1s ukazuje, kam z\xE1rodky zat\xEDm dolet\xED." },
     missionsDone: "Spln\u011Bn\xE9 mise",
     send: "Vyslat Vesper",
     running: "Vesper let\xED",
@@ -3478,7 +4146,7 @@
     passiveView: "Pohled \u2013 hraje se jinde",
     next: "Dal\u0161\xED kapitola",
     theEnd: "Konec dostupn\xE9ho obsahu",
-    theEndBody: "Kapitola 4 se p\u0159ipravuje. Galaxie d\xE1l sv\xEDt\xED a m\u016F\u017Ee\u0161 osidlovat d\xE1l.",
+    theEndBody: "Kapitola 5 se p\u0159ipravuje. Galaxie d\xE1l sv\xEDt\xED a m\u016F\u017Ee\u0161 osidlovat d\xE1l.",
     ktitle: "Karda\u0161evova \u0161k\xE1la",
     kbody: "M\u011B\u0159\xED civilizaci podle v\xFDkonu, kter\xFD vyu\u017E\xEDv\xE1. K = (log\u2081\u2080 P \u2212 6) / 10. V\xFDkon je ve wattech (W), ulo\u017Een\xE1 energie v joulech (J): 1 W = 1 J za sekundu.",
     types: {
@@ -3487,7 +4155,7 @@
       3: "Typ III \u2013 v\xFDkon cel\xE9 galaxie, zhruba 5\xB710\xB3\u2076 W pro Ml\xE9\u010Dnou dr\xE1hu."
     },
     kmore: "Dal\u0161\xED typy se uk\xE1\u017Eou, a\u017E se k nim p\u0159ibl\xED\u017E\xED\u0161.",
-    detail: { 1: "\u0158ez asteroidem", 2: "\u017Divot Aldry", 3: "\u0158ez galaxi\xED" }
+    detail: { 1: "\u0158ez asteroidem", 2: "\u017Divot Aldry", 3: "\u0158ez diskem", 4: "\u0158ez galaxi\xED" }
   };
 
   // src/ui/views.ts
@@ -3624,7 +4292,7 @@
     }
     return r;
   }
-  function drawSystem(c, s2, T4) {
+  function drawSystem(c, s2, T5) {
     const [cx, cy] = SYS.aldra;
     let aldraR = 22;
     const I3 = s2.ch >= 3 ? soft("system3") : null;
@@ -3642,7 +4310,7 @@
         c.beginPath();
         c.arc(cx, cy, 34, 0, 7);
         c.fill();
-        drawHole(c, cx, cy, 12, T4);
+        drawHole(c, cx, cy, 12, T5);
       } else if (s2.ch === 2) aldraR = aldraOnMap(c, s2, cx, cy, 1);
     } else {
       c.strokeStyle = "rgba(140,160,210,.13)";
@@ -3654,7 +4322,7 @@
       }
       const rr2 = mulberry(9);
       for (let i = 0; i < 420; i++) {
-        const a = rr2() * 6.283 + T4 * 0.01, r = 330 + (rr2() - 0.5) * 40, p = orbit(r, a);
+        const a = rr2() * 6.283 + T5 * 0.01, r = 330 + (rr2() - 0.5) * 40, p = orbit(r, a);
         c.fillStyle = `rgba(200,190,175,${0.25 + rr2() * 0.4})`;
         c.fillRect(p[0], p[1], 1.6, 1.6);
       }
@@ -3671,7 +4339,7 @@
         c.beginPath();
         c.arc(cx, cy, 22, 0, 7);
         c.fill();
-      } else drawHole(c, cx, cy, 16, T4);
+      } else drawHole(c, cx, cy, 16, T5);
       planet(c, SYS.chthon[0], SYS.chthon[1], 7, "#8a5a46");
       planet(c, SYS.tauris[0], SYS.tauris[1], 26, "#c89a6a", true);
       planet(c, SYS.kelvar[0], SYS.kelvar[1], 5, "#dfe8f0");
@@ -3681,7 +4349,7 @@
       c.save();
       c.globalCompositeOperation = "lighter";
       for (let i = 0; i < 260 * vis; i++) {
-        const a = i * 2.39996 + T4 * 0.05, r = Math.max(80, aldraR + 38) + i % 3 * 16, p = orbit(r, a, 0.5);
+        const a = i * 2.39996 + T5 * 0.05, r = Math.max(80, aldraR + 38) + i % 3 * 16, p = orbit(r, a, 0.5);
         c.fillStyle = "rgba(255,215,150,.7)";
         c.fillRect(p[0], p[1], 1.8, 1.8);
       }
@@ -3694,7 +4362,7 @@
     c.fill();
     c.strokeStyle = "rgba(242,166,90,.5)";
     c.beginPath();
-    c.arc(px, py, 9 + Math.sin(T4 * 2) * 1.5, 0, 7);
+    c.arc(px, py, 9 + Math.sin(T5 * 2) * 1.5, 0, 7);
     c.stroke();
     label(c, px + 12, py + 16, "VESPER-7", "#f2a65a");
     label(c, SYS.tauris[0] + 30, SYS.tauris[1] - 42, "Tauris");
@@ -3726,7 +4394,7 @@
       c.restore();
     }
   }
-  function drawHole(c, x, y, R2, T4) {
+  function drawHole(c, x, y, R2, T5) {
     c.save();
     c.globalCompositeOperation = "lighter";
     for (let i = 0; i < 3; i++) {
@@ -3748,12 +4416,12 @@
     c.beginPath();
     c.arc(x, y, R2, 0, 7);
     c.fill();
-    void T4;
+    void T5;
   }
-  function drawRemnant(c, T4) {
+  function drawRemnant(c, T5) {
     const H2 = img("hole3");
     if (H2) {
-      const sz = 980 * (1 + 6e-3 * Math.sin(T4 * 0.4));
+      const sz = 980 * (1 + 6e-3 * Math.sin(T5 * 0.4));
       c.save();
       c.globalCompositeOperation = "screen";
       c.drawImage(H2, 800 - sz / 2, 500 - sz / 2, sz, sz);
@@ -3769,10 +4437,10 @@
       c.fillRect(800 + Math.cos(a) * d, 500 + Math.sin(a) * d * 0.9, 2, 2);
     }
     c.restore();
-    drawHole(c, 800, 500, 40, T4);
+    drawHole(c, 800, 500, 40, T5);
   }
   var NEAR = { aldra: at(0.5, 0.485), remnant: at(0.74, 0.25) };
-  function drawNear(c, s2, T4) {
+  function drawNear(c, s2, T5) {
     const I3 = s2.ch >= 3 ? soft("near3") : null;
     if (I3) {
       c.drawImage(I3, 0, IY, 1600, IH);
@@ -3788,7 +4456,7 @@
         c.beginPath();
         c.arc(ax, ay, 22, 0, 7);
         c.fill();
-        drawHole(c, ax, ay, 8, T4);
+        drawHole(c, ax, ay, 8, T5);
       } else if (s2.ch === 2) aldraOnMap(c, s2, ax, ay, 0.5);
       return label(c, ax + 34, ay - 28, s2.ch <= 2 ? "Aldra" : "D\xEDra po Ald\u0159e");
     }
@@ -3829,7 +4497,7 @@
       c.beginPath();
       c.arc(800, 500, 60, 0, 7);
       c.fill();
-    } else drawHole(c, 800, 500, 9, T4);
+    } else drawHole(c, 800, 500, 9, T5);
     label(c, 830, 470, s2.ch <= 2 ? "Aldra" : "D\xEDra po Ald\u0159e");
   }
   function missionPos(id) {
@@ -3842,12 +4510,12 @@
     return m.at;
   }
   var ORIGIN = { system: SYS.platform, near: NEAR.aldra, galaxy: [0, 0] };
-  function drawMissions(c, s2, view2, T4, sx2, hover) {
+  function drawMissions(c, s2, view2, T5, sx2, hover) {
     const fs = 13 / Math.max(sx2, 0.3);
     for (const m of MISSIONS) {
       if (m.ch !== s2.ch || m.view !== view2 || !mVisible(s2, m.id)) continue;
       const [x, y] = missionPos(m.id), done = !!s2.mis[m.id], run = s2.run?.id === m.id;
-      const pul = 0.6 + 0.4 * Math.sin(T4 * 2 + x);
+      const pul = 0.6 + 0.4 * Math.sin(T5 * 2 + x);
       c.strokeStyle = done ? "rgba(142,240,200,.7)" : run ? "rgba(242,166,90,.9)" : `rgba(242,166,90,${0.45 + 0.4 * pul})`;
       c.lineWidth = 1.6;
       c.beginPath();
@@ -3863,7 +4531,7 @@
     }
     if (s2.run && MMAP[s2.run.id].view === view2) {
       const [tx2, ty] = missionPos(s2.run.id);
-      let [ox, oy] = ORIGIN[view2];
+      let [ox, oy] = view2 === "system" && s2.ch >= 3 ? SYS.aldra : ORIGIN[view2];
       if (view2 === "galaxy") {
         const h2 = gsp(galaxyNodes()[0]);
         ox = h2[0];
@@ -3922,7 +4590,7 @@
   }
 
   // src/ui/detail.ts
-  function drawDetail(cv, s2, T4) {
+  function drawDetail(cv, s2, T5) {
     const dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, hh = cv.clientHeight;
     if (!w || !hh) return;
     if (cv.width !== Math.round(w * dpr)) {
@@ -3936,11 +4604,75 @@
     c.font = `13px ${MONO}`;
     c.textAlign = "left";
     c.fillStyle = "#9aa6bd";
-    if (s2.ch === 1) cutaway(c, s2, T4, w, hh, X);
-    else if (s2.ch === 2) starCut(c, s2, T4, w, hh, X);
-    else galaxyCut(c, s2, T4, w, hh, X);
+    if (s2.ch === 1) cutaway(c, s2, T5, w, hh, X);
+    else if (s2.ch === 2) starCut(c, s2, T5, w, hh, X);
+    else if (s2.ch === 3) holeCut(c, s2, T5, w, hh, X);
+    else galaxyCut(c, s2, T5, w, hh, X);
   }
-  function galaxyCut(c, s2, T4, w, hh, X) {
+  var RS = null;
+  function roundSoft(I) {
+    if (!I) return null;
+    if (RS) return RS;
+    const cv = document.createElement("canvas");
+    cv.width = I.width;
+    cv.height = I.height;
+    const g = cv.getContext("2d");
+    g.drawImage(I, 0, 0);
+    g.globalCompositeOperation = "destination-in";
+    const w = I.width / 2, gr = g.createRadialGradient(w, w, w * 0.55, w, w, w);
+    gr.addColorStop(0, "#000");
+    gr.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gr;
+    g.fillRect(0, 0, I.width, I.height);
+    return RS = cv;
+  }
+  function holeCut(c, s2, T5, w, hh, X) {
+    const st = Math.min(s2.stage, X.phase.length - 1), P = X.phase[st], S = X.card;
+    const sz = Math.min(w * 0.55, hh - 30), x0 = 20, y0 = (hh - sz) / 2, cx = x0 + sz / 2, cy = y0 + sz / 2;
+    const im = roundSoft(img("hole3"));
+    if (im) {
+      c.save();
+      c.globalCompositeOperation = "screen";
+      c.globalAlpha = 0.45 + 0.55 * Math.min(1, Math.max(0, (Math.log10(Math.max(power(s2), 1e26)) - 26) / 6));
+      c.drawImage(im, x0, y0, sz, sz);
+      c.restore();
+    }
+    const a = spinA(s2), Mkm = 11.8, rh = sz * 0.04, isco = rh * iscoM(a) / 2;
+    c.strokeStyle = "rgba(255,210,122,.75)";
+    c.setLineDash([4, 5]);
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.ellipse(cx, cy, isco, isco * 0.28, 0, 0, 7);
+    c.stroke();
+    c.setLineDash([]);
+    c.font = `13px ${MONO}`;
+    c.textBaseline = "middle";
+    c.textAlign = "left";
+    const lab = (t, x, y, tx2, ty, col) => {
+      c.strokeStyle = col.replace(")", ",.45)").replace("rgb", "rgba");
+      c.beginPath();
+      c.moveTo(x, y);
+      c.lineTo(tx2 - 4, ty);
+      c.stroke();
+      c.fillStyle = col;
+      c.fillText(t, tx2, ty);
+    };
+    lab(`${S.hor} ${Math.round(2 * Mkm * (1 + Math.sqrt(1 - a * a)))} km`, cx + rh * 0.7, cy - rh * 0.7, cx + sz * 0.22, cy - sz * 0.3, "rgb(207,224,255)");
+    lab(`${S.isco} ${Math.round(Mkm * iscoM(a))} km`, cx + isco, cy, cx + sz * 0.3, cy + sz * 0.26, "rgb(255,210,122)");
+    c.textAlign = "left";
+    c.font = `600 11px ${SANS}`;
+    c.fillStyle = "rgba(176,181,212,.9)";
+    c.fillText(S.cut.toUpperCase(), 20, 24);
+    const ix = x0 + sz + 40, cw = Math.min(380, w - ix - 20);
+    if (cw < 200) {
+      c.textBaseline = "alphabetic";
+      return;
+    }
+    stageCard(c, s2, X, st, S.sub, [[S.spin, a.toFixed(3).replace(".", ",")], [S.eta, pct(eta(s2))], [S.flow, mass(mdot(s2)) + "/s"], [S.edd, pct(power(s2) / eddMax(s2))], [S.real, P.real]], P.t, ix, Math.max(40, hh / 2 - 150), cw, S.stage);
+    c.textBaseline = "alphabetic";
+    void T5;
+  }
+  function galaxyCut(c, s2, T5, w, hh, X) {
     const st = Math.min(s2.stage, X.phase.length - 1), P = X.phase[st], S = X.card;
     const iw = Math.min(w * 0.62, (hh - 40) * 1.79), ih = iw / 1.79, x0 = 10, y0 = (hh - ih) / 2;
     const cx = x0 + iw * 0.49, cy = y0 + ih * 0.49, half = iw * 0.44;
@@ -4005,7 +4737,7 @@
     c.strokeStyle = "rgba(255,210,122,.9)";
     c.lineWidth = 1.2;
     c.beginPath();
-    c.arc(hx, hy, 6 + Math.sin(T4 * 2) * 1.2, 0, 7);
+    c.arc(hx, hy, 6 + Math.sin(T5 * 2) * 1.2, 0, 7);
     c.stroke();
     c.textBaseline = "middle";
     c.font = `13px ${MONO}`;
@@ -4139,7 +4871,7 @@
     const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
     return x - Math.floor(x);
   }
-  function cutaway(c, s2, T4, w, hh, X) {
+  function cutaway(c, s2, T5, w, hh, X) {
     const li = layerIdx(s2), R2 = Math.min(w * 0.2, hh * 0.34), cx = Math.min(w * 0.36, R2 * 1.3 + 70), cy = hh * 0.52;
     const A0 = -Math.PI / 2, A1 = 0.12;
     const halo = c.createRadialGradient(cx, cy, R2 * 0.6, cx, cy, R2 * 1.6);
@@ -4188,7 +4920,7 @@
       c.fillStyle = L.sp;
       for (let k = 0; k < 26; k++) {
         const a = A0 + (A1 - A0) * rnd2(i * 97 + k), r = r1 + (r0 - r1) * (0.15 + 0.7 * rnd2(i * 31 + k * 7));
-        const tw = open ? 0.55 + 0.45 * Math.sin(T4 * 2 + k) : 0.25;
+        const tw = open ? 0.55 + 0.45 * Math.sin(T5 * 2 + k) : 0.25;
         c.globalAlpha = tw * (i === li ? 1 : 0.6);
         c.beginPath();
         c.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 1 + rnd2(k + i) * 1.6, 0, 7);
@@ -4211,7 +4943,7 @@
     c.lineTo(cx, cy);
     c.lineTo(cx + Math.cos(A1) * R2 * 1.04, cy + Math.sin(A1) * R2 * 1.04);
     c.stroke();
-    const rc = R2 * edge(li), pulse = 0.6 + 0.4 * Math.sin(T4 * 3);
+    const rc = R2 * edge(li), pulse = 0.6 + 0.4 * Math.sin(T5 * 3);
     c.save();
     c.shadowColor = "#ffb85a";
     c.shadowBlur = 14 * pulse;
@@ -4222,7 +4954,7 @@
     c.stroke();
     c.restore();
     const aL = A0 + (A1 - A0) * 0.42, tx0 = cx + Math.cos(aL) * R2 * 1.55, ty0 = cy + Math.sin(aL) * R2 * 1.55;
-    const tx1 = cx + Math.cos(aL) * rc, ty1 = cy + Math.sin(aL) * rc, fl = 0.75 + 0.25 * Math.sin(T4 * 37) * Math.sin(T4 * 13);
+    const tx1 = cx + Math.cos(aL) * rc, ty1 = cy + Math.sin(aL) * rc, fl = 0.75 + 0.25 * Math.sin(T5 * 37) * Math.sin(T5 * 13);
     c.save();
     c.globalCompositeOperation = "lighter";
     c.strokeStyle = `rgba(255,120,60,${0.35 * fl})`;
@@ -4246,7 +4978,7 @@
     c.arc(tx1, ty1, 18, 0, 7);
     c.fill();
     for (let k = 0; k < 7; k++) {
-      const ph = (T4 * 1.7 + k / 7) % 1, a = aL + Math.PI + (rnd2(k) - 0.5) * 1.8, d = ph * 34;
+      const ph = (T5 * 1.7 + k / 7) % 1, a = aL + Math.PI + (rnd2(k) - 0.5) * 1.8, d = ph * 34;
       c.fillStyle = `rgba(255,${180 + 60 * rnd2(k + 3)},120,${1 - ph})`;
       c.beginPath();
       c.arc(tx1 + Math.cos(a) * d, ty1 + Math.sin(a) * d, 1.4, 0, 7);
@@ -4310,11 +5042,11 @@
     if (line) c.fillText(line, x, y);
     return y + lh;
   }
-  function starCut(c, s2, T4, w, hh, X) {
+  function starCut(c, s2, T5, w, hh, X) {
     const st = Math.min(s2.stage, SHELLS.length - 1), Ls = SHELLS[st], Lk = LOOK[st], P = X.phase[st], S = X.star;
     const R2 = Math.min(w * 0.19, hh * 0.36), cx = Math.min(w * 0.3, R2 * 1.45 + 60), cy = hh * 0.52;
     const A0 = -Math.PI / 2, A1 = 0, gl = Lk.glow.join(","), hot = [255, 238, 205];
-    const fin = st === 6 ? 1 + 0.03 * Math.sin(T4 * 9) : 1;
+    const fin = st === 6 ? 1 + 0.03 * Math.sin(T5 * 9) : 1;
     const halo = c.createRadialGradient(cx, cy, R2 * 0.8, cx, cy, R2 * 2.1);
     halo.addColorStop(0, `rgba(${gl},.42)`);
     halo.addColorStop(0.35, `rgba(${gl},.1)`);
@@ -4329,7 +5061,7 @@
     c.arc(cx, cy, R2 * 2, A1, A0 + Math.PI * 2);
     c.closePath();
     c.clip();
-    const sp2 = starSprite(st, R2, T4);
+    const sp2 = starSprite(st, R2, T5);
     if (sp2) {
       c.globalCompositeOperation = "screen";
       c.drawImage(sp2, cx - sp2.width / 2, cy - sp2.height / 2);
@@ -4365,7 +5097,7 @@
     c.clip();
     const env0 = Ls.length > 1 ? Ls[1][1] : 0;
     for (let j = 0; j < 9; j++) {
-      const rr2 = R2 * (env0 + (1 - env0) * ((j + 0.5) / 9)), sh = Math.sin(T4 * 0.3 + j * 1.7) * 0.08;
+      const rr2 = R2 * (env0 + (1 - env0) * ((j + 0.5) / 9)), sh = Math.sin(T5 * 0.3 + j * 1.7) * 0.08;
       c.strokeStyle = "rgba(255,255,255,.06)";
       c.lineWidth = 1;
       c.beginPath();
@@ -4379,7 +5111,7 @@
       c.arc(cx, cy, R2 * fr, A0, A1);
       c.stroke();
     }
-    const cr = R2 * Ls[Ls.length - 1][1] * (1 + 0.04 * Math.sin(T4 * 0.9)) * fin;
+    const cr = R2 * Ls[Ls.length - 1][1] * (1 + 0.04 * Math.sin(T5 * 0.9)) * fin;
     const cg = c.createRadialGradient(cx, cy, 0, cx, cy, cr * 1.6);
     cg.addColorStop(0, "rgba(255,255,245,.85)");
     cg.addColorStop(0.35, "rgba(255,230,190,.35)");
@@ -4696,7 +5428,7 @@
     return e;
   };
   var s;
-  var MECH = { 1: kamen, 2: hvezda, 3: galaxie };
+  var MECH = { 1: kamen, 2: hvezda, 3: diera, 4: galaxie };
   var VIEWS = ["body", "star", "system", "near", "galaxy", "group", "laniakea"];
   var lastCuts = 0;
   var lastCrack = 0;
@@ -4713,7 +5445,7 @@
   var hoverMis = null;
   var trans = 0;
   function fmtCur(cur, v) {
-    if (cur === "ore" || cur === "plasma") return mass(v);
+    if (cur === "ore" || cur === "plasma" || cur === "mass") return mass(v);
     if (cur === "energy") return si(v, "J");
     if (cur === "data") return si(v, "B");
     return count(v);
@@ -4739,6 +5471,8 @@
     preload();
     window.sepot = { get s() {
       return s;
+    }, get geo() {
+      return geo;
     }, E: engine_exports, MECH, inp };
     setFx(s.opt.fx !== 0);
     view = chOf(s).view;
@@ -4898,11 +5632,12 @@
     const passive2 = view !== chOf(s).view, V = { T, sx: geo.sx * k, passive: passive2, fx: s.opt.fx };
     if (view === "body") kamen.draw(c, s, { ...V, passive: s.ch !== 1 || passive2 }, inp);
     else if (view === "star") {
-      if (s.ch >= 3) drawRemnant(c, T);
+      if (s.ch === 3) diera.draw(c, s, { ...V, passive: passive2 }, inp);
+      else if (s.ch >= 4) drawRemnant(c, T);
       else hvezda.draw(c, s, { ...V, passive: s.ch !== 2 || passive2 }, inp);
     } else if (view === "system") drawSystem(c, s, T);
     else if (view === "near") drawNear(c, s, T);
-    else if (view === "galaxy") galaxie.draw(c, s, { ...V, passive: s.ch !== 3 || passive2 }, inp);
+    else if (view === "galaxy") galaxie.draw(c, s, { ...V, passive: s.ch !== 4 || passive2 }, inp);
     if (["system", "near", "galaxy"].includes(view)) {
       hoverMis = missionAt(s, view, inp.x, inp.y);
       drawMissions(c, s, view, T, geo.sx, hoverMis);
@@ -4922,7 +5657,7 @@
     if (v === "system") return s.ch >= 3;
     if (v === "star") return s.ch >= 2;
     if (v === "near") return false;
-    if (v === "galaxy") return s.ch >= 3;
+    if (v === "galaxy") return s.ch >= 4;
     return false;
   }
   function setView(v) {
@@ -5016,6 +5751,10 @@
     if (s.ch === 2) {
       const cv = coverage(s);
       return `<div class="ind"><span>${X.indicator}</span><b class="mono">${pct(cv)}</b><div class="bar"><b style="width:${Math.max(0.5, (Math.log10(Math.max(cv, 1e-14)) + 14) / 14 * 100)}%"></b></div><small>Kolektory: ${count(s.n)}</small></div>`;
+    }
+    if (s.ch === 3) {
+      const f = power(s) / eddMax(s);
+      return `<div class="ind"><span>${X.indicator}</span><b class="mono">${pct(f)}</b><div class="bar"><b style="width:${Math.max(0.5, Math.min(1, (Math.log10(Math.max(f, 1e-6)) + 6) / 6)) * 100}%"></b></div><small>\xDA\u010Dinnost disku ${pct(eta(s))} \xB7 rotace ${fixed(spinA(s), 3)}</small></div>`;
     }
     const so = starsOn(s).v;
     return `<div class="ind"><span>${X.indicator}</span><b class="mono">${count(so)} z 100 G</b><div class="bar"><b style="width:${Math.max(0.5, (Math.log10(Math.max(so, 1)) - 4) / 7 * 100)}%"></b></div><small>Kolonie: ${colCount(s)} \xB7 zachycen\xED sv\u011Btla ${pct(capture(s))}</small></div>`;
@@ -5295,8 +6034,8 @@
     if (e.type === "theend") modal(UI.theEnd, `<p>${UI.theEndBody}</p>`, false);
   }
   function startTransition() {
-    if (s.ch >= 3) {
-      s.done = 3;
+    if (s.ch >= 4) {
+      s.done = 4;
       view = "galaxy";
       setTab("build");
       boom();
