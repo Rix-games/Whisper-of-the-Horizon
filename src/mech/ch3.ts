@@ -10,8 +10,8 @@ import type { State } from "../core/state";
 
 export const CX = 800, CY = 500;
 const GM = 9.7e6;           // px³/s² – kruhová rychlost na okraji mlhoviny ~150 px/s
-const RH = 38;              // stín díry (px)
-const RD = 230;             // vnější okraj disku (px)
+const RH = 50;              // stín díry (px) – sedí na obrázek kap3-disk (stín 20,8 % šířky)
+const RD = 210;             // vnější okraj disku (px)
 const VK = 1.0;             // rychlost hodu = délka tahu × VK
 const VMAX = 320;
 /** Vnitřní prstenec (ISCO) se s rotací díry zmenšuje: r_isco/M od 6 (a = 0) k ~1,24 (a = 0,998). */
@@ -150,11 +150,16 @@ export const diera: Mech & any = {
     const halo = c.createRadialGradient(CX, CY, RD * 0.6, CX, CY, RD * 1.7);
     halo.addColorStop(0, `rgba(255,150,80,${0.22 * lit})`); halo.addColorStop(1, "rgba(255,90,60,0)");
     c.fillStyle = halo; c.beginPath(); c.arc(CX, CY, RD * 1.7, 0, 7); c.fill();
+    const DI = img("disk3");
+    if (DI) {   // disk z obrázku: pomalu se otáčí, jas podle výkonu
+      const W = (2 * RH) / 0.208;
+      c.save(); c.globalAlpha = 0.3 + 0.7 * lit; c.translate(CX, CY); c.rotate(-T * 0.04); c.drawImage(DI, -W / 2, -W / 2, W, W); c.restore();
+    }
     const g = c.createRadialGradient(CX, CY, rIn, CX, CY, RD);
     g.addColorStop(0, `rgba(255,250,235,${0.95 * lit})`); g.addColorStop(0.12, `rgba(255,222,160,${0.8 * lit})`);
     g.addColorStop(0.4, `rgba(255,150,70,${0.5 * lit})`); g.addColorStop(0.75, `rgba(210,80,50,${0.22 * lit})`); g.addColorStop(1, "rgba(150,40,40,0)");
-    c.fillStyle = g; c.beginPath(); c.arc(CX, CY, RD, 0, 7); c.moveTo(CX + rIn, CY); c.arc(CX, CY, rIn, 0, 7, true); c.fill();
-    for (let i = 0; i < 70; i++) {   // pruhy disku: vnitřní obíhají rychleji (Kepler)
+    if (!DI) { c.fillStyle = g; c.beginPath(); c.arc(CX, CY, RD, 0, 7); c.moveTo(CX + rIn, CY); c.arc(CX, CY, rIn, 0, 7, true); c.fill(); }
+    for (let i = 0; i < (DI ? 24 : 70); i++) {   // pruhy disku: vnitřní obíhají rychleji (Kepler)
       const f = ((i * 61) % 100) / 100, rr = rIn + Math.pow(f, 1.4) * (RD - rIn) * 0.97, w = Math.sqrt(GM / (rr * rr * rr)) * 0.35, a = T * w + i * 2.4;
       const dop = 0.55 + 0.45 * Math.cos(a + 0.6 - Math.PI), q = 1 - (rr - rIn) / (RD - rIn);
       c.strokeStyle = `rgba(255,${170 + 80 * q},${110 + 120 * q},${(0.1 + 0.35 * lit) * (0.25 + 0.75 * q) * dop})`; c.lineWidth = 0.8 + 2.2 * q;
@@ -162,7 +167,8 @@ export const diera: Mech & any = {
     }
     const dg = c.createLinearGradient(CX - RD, CY, CX + RD, CY);   // Dopplerovo zjasnění levé strany
     dg.addColorStop(0, `rgba(255,235,200,${0.16 * lit})`); dg.addColorStop(0.5, "rgba(255,235,200,0)");
-    c.fillStyle = dg; c.beginPath(); c.arc(CX, CY, RD * 0.9, 0, 7); c.moveTo(CX + rIn, CY); c.arc(CX, CY, rIn, 0, 7, true); c.fill();
+    if (!DI) c.fillStyle = dg; else c.fillStyle = "rgba(0,0,0,0)";
+    c.beginPath(); c.arc(CX, CY, RD * 0.9, 0, 7); c.moveTo(CX + rIn, CY); c.arc(CX, CY, rIn, 0, 7, true); c.fill();
     // hmota stéká po spirále
     for (const p of this.spirals as Spiral[]) {
       const al = Math.min(1, p.t * 3) * Math.min(1, (p.dur - p.t) * 2);
@@ -188,12 +194,21 @@ export const diera: Mech & any = {
     const tugs = Math.min(lv(s, "tug"), 12);
     for (let i = 0; i < tugs; i++) {
       const a = T * 0.05 + (i / tugs) * 6.283, x = CX + Math.cos(a) * 470, y = CY + Math.sin(a) * 470;
-      c.save(); c.translate(x, y); c.rotate(a + 1.57); c.fillStyle = "#ffe2b0"; c.beginPath(); c.moveTo(0, -6); c.lineTo(-4, 5); c.lineTo(4, 5); c.closePath(); c.fill(); c.restore();
+      const TG = img("tug3");
+      c.save(); c.translate(x, y); c.rotate(a + 1.57);
+      if (TG) c.drawImage(TG, -14, -14, 28, 28); else { c.fillStyle = "#ffe2b0"; c.beginPath(); c.moveTo(0, -6); c.lineTo(-4, 5); c.lineTo(4, 5); c.closePath(); c.fill(); }
+      c.restore();
       c.fillStyle = "rgba(255,170,90,.6)"; c.beginPath(); c.arc(x - Math.cos(a) * 12, y - Math.sin(a) * 12, 4, 0, 7); c.fill();
     }
     // chuchvalce
     for (const k of this.clumps as Clump[]) {
       const r = 13 * k.sz, pul = 0.75 + 0.25 * Math.sin(T * 3 + k.r0);
+      const CI = img("clump3");
+      if (CI) {   // chuchvalec z obrázku (černé pozadí → lighter)
+        const W = r * 4.4; c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = pul; c.translate(k.x, k.y); c.rotate(k.r0 + T * 0.1); c.drawImage(CI, -W / 2, -W / 2, W, W); c.restore();
+        if (act && k.st === "idle") { c.strokeStyle = `rgba(255,210,122,${0.35 + 0.35 * pul})`; c.lineWidth = 1.5; c.beginPath(); c.arc(k.x, k.y, r * 1.7, 0, 7); c.stroke(); }
+        continue;
+      }
       const cg = c.createRadialGradient(k.x, k.y, 0, k.x, k.y, r * 2.6);
       cg.addColorStop(0, `rgba(255,240,245,${pul})`); cg.addColorStop(0.25, `rgba(255,170,205,${0.8 * pul})`); cg.addColorStop(0.6, "rgba(220,100,170,.3)"); cg.addColorStop(1, "rgba(120,200,220,0)");
       c.fillStyle = cg; c.beginPath(); c.arc(k.x, k.y, r * 2.6, 0, 7); c.fill();

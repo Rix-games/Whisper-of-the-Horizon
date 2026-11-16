@@ -1415,6 +1415,10 @@
     // hrací plocha (uzly podle core/galaxy.ts GIMG)
     galaxySide: "kap3-galaxie-bok.webp",
     hole3: "kap3-dira.webp",
+    disk3: "kap3-disk.webp",
+    // Kap. 3 Díra: disk shora (stín = 20,8 % šířky)
+    clump3: "kap3-chuchvalec.webp",
+    tug3: "kap3-remorker.webp",
     system3: "kap3-soustava.webp",
     near3: "kap3-okoli.webp",
     sgra: "kap3-sgr-a.webp",
@@ -2814,8 +2818,8 @@
   var CX3 = 800;
   var CY3 = 500;
   var GM = 97e5;
-  var RH = 38;
-  var RD = 230;
+  var RH = 50;
+  var RD = 210;
   var VK = 1;
   var VMAX = 320;
   function iscoM(a) {
@@ -3028,19 +3032,31 @@
       c.beginPath();
       c.arc(CX3, CY3, RD * 1.7, 0, 7);
       c.fill();
+      const DI = img("disk3");
+      if (DI) {
+        const W2 = 2 * RH / 0.208;
+        c.save();
+        c.globalAlpha = 0.3 + 0.7 * lit2;
+        c.translate(CX3, CY3);
+        c.rotate(-T5 * 0.04);
+        c.drawImage(DI, -W2 / 2, -W2 / 2, W2, W2);
+        c.restore();
+      }
       const g = c.createRadialGradient(CX3, CY3, rIn, CX3, CY3, RD);
       g.addColorStop(0, `rgba(255,250,235,${0.95 * lit2})`);
       g.addColorStop(0.12, `rgba(255,222,160,${0.8 * lit2})`);
       g.addColorStop(0.4, `rgba(255,150,70,${0.5 * lit2})`);
       g.addColorStop(0.75, `rgba(210,80,50,${0.22 * lit2})`);
       g.addColorStop(1, "rgba(150,40,40,0)");
-      c.fillStyle = g;
-      c.beginPath();
-      c.arc(CX3, CY3, RD, 0, 7);
-      c.moveTo(CX3 + rIn, CY3);
-      c.arc(CX3, CY3, rIn, 0, 7, true);
-      c.fill();
-      for (let i = 0; i < 70; i++) {
+      if (!DI) {
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(CX3, CY3, RD, 0, 7);
+        c.moveTo(CX3 + rIn, CY3);
+        c.arc(CX3, CY3, rIn, 0, 7, true);
+        c.fill();
+      }
+      for (let i = 0; i < (DI ? 24 : 70); i++) {
         const f = i * 61 % 100 / 100, rr2 = rIn + Math.pow(f, 1.4) * (RD - rIn) * 0.97, w = Math.sqrt(GM / (rr2 * rr2 * rr2)) * 0.35, a = T5 * w + i * 2.4;
         const dop = 0.55 + 0.45 * Math.cos(a + 0.6 - Math.PI), q = 1 - (rr2 - rIn) / (RD - rIn);
         c.strokeStyle = `rgba(255,${170 + 80 * q},${110 + 120 * q},${(0.1 + 0.35 * lit2) * (0.25 + 0.75 * q) * dop})`;
@@ -3052,7 +3068,8 @@
       const dg = c.createLinearGradient(CX3 - RD, CY3, CX3 + RD, CY3);
       dg.addColorStop(0, `rgba(255,235,200,${0.16 * lit2})`);
       dg.addColorStop(0.5, "rgba(255,235,200,0)");
-      c.fillStyle = dg;
+      if (!DI) c.fillStyle = dg;
+      else c.fillStyle = "rgba(0,0,0,0)";
       c.beginPath();
       c.arc(CX3, CY3, RD * 0.9, 0, 7);
       c.moveTo(CX3 + rIn, CY3);
@@ -3112,16 +3129,20 @@
       const tugs = Math.min(lv3(s2, "tug"), 12);
       for (let i = 0; i < tugs; i++) {
         const a = T5 * 0.05 + i / tugs * 6.283, x = CX3 + Math.cos(a) * 470, y = CY3 + Math.sin(a) * 470;
+        const TG = img("tug3");
         c.save();
         c.translate(x, y);
         c.rotate(a + 1.57);
-        c.fillStyle = "#ffe2b0";
-        c.beginPath();
-        c.moveTo(0, -6);
-        c.lineTo(-4, 5);
-        c.lineTo(4, 5);
-        c.closePath();
-        c.fill();
+        if (TG) c.drawImage(TG, -14, -14, 28, 28);
+        else {
+          c.fillStyle = "#ffe2b0";
+          c.beginPath();
+          c.moveTo(0, -6);
+          c.lineTo(-4, 5);
+          c.lineTo(4, 5);
+          c.closePath();
+          c.fill();
+        }
         c.restore();
         c.fillStyle = "rgba(255,170,90,.6)";
         c.beginPath();
@@ -3130,6 +3151,25 @@
       }
       for (const k of this.clumps) {
         const r = 13 * k.sz, pul = 0.75 + 0.25 * Math.sin(T5 * 3 + k.r0);
+        const CI = img("clump3");
+        if (CI) {
+          const W2 = r * 4.4;
+          c.save();
+          c.globalCompositeOperation = "lighter";
+          c.globalAlpha = pul;
+          c.translate(k.x, k.y);
+          c.rotate(k.r0 + T5 * 0.1);
+          c.drawImage(CI, -W2 / 2, -W2 / 2, W2, W2);
+          c.restore();
+          if (act && k.st === "idle") {
+            c.strokeStyle = `rgba(255,210,122,${0.35 + 0.35 * pul})`;
+            c.lineWidth = 1.5;
+            c.beginPath();
+            c.arc(k.x, k.y, r * 1.7, 0, 7);
+            c.stroke();
+          }
+          continue;
+        }
         const cg = c.createRadialGradient(k.x, k.y, 0, k.x, k.y, r * 2.6);
         cg.addColorStop(0, `rgba(255,240,245,${pul})`);
         cg.addColorStop(0.25, `rgba(255,170,205,${0.8 * pul})`);
