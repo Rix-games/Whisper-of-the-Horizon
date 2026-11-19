@@ -1,7 +1,15 @@
 # Novinky
 
-## Připravuje se
+## 1.0.0-alfa.2 – Kapitola 3 Díra, Galaxie jako Kapitola 4
 
+- Nová Kapitola 3 Díra: magnetické pasti, horká skvrna v disku, souzvuk, řetěz a výbuch disku
+- Akreční injektory a automatické ventily, roztáčení díry, výtrysky, Eddingtonova mez
+- Nové mise kolem díry a deník Kapitoly 3
+- Galaxie posunuta na Kapitolu 4, navazuje na díru
+- Žebřík dole ukazuje kapitoly hry, mapy jen přes záložku Mapa
+- Surovina Galaxie přejmenována na Zárodky
+- Čitelnější popisky na mapě, Sgr A* a Fermiho bubliny až později
+- Korektura textů Kapitol 1–4
 - Kapitola 3: obrázky galaxie, díry po Aldře, soustavy, okolí, Sgr A* a úvodu
 - Kolonie, plachty a majáky jako ikony na mapě galaxie
 - Hvězdy galaxie rozmístěné podle ramen na obrázku

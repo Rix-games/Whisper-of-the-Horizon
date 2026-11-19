@@ -53,7 +53,8 @@ Hru vydávám po kapitolách. Od verze 1.0 jde o předělávku celé hry; ulože
 | 0.3.3 | Tryskové lapače posilují sběr, poctivější karta injektoru | vydáno |
 | 0.3.4 | Orbitální montovna, opravy karty injektoru | vydáno |
 | 1.0.0-alfa | Předělávka: nové mechaniky, obrázky, Kapitoly 1–3 | vydáno |
-| 1.0 | Předělávka: Kapitoly 4–5, konce, anglická verze | ve vývoji |
+| 1.0.0-alfa.2 | Nová Kapitola 3: Díra, Galaxie jako Kapitola 4, korektura textů | vydáno |
+| 1.0 | Předělávka: Kapitoly 5–6, konce, anglická verze | ve vývoji |
 | později | nekonečný mód, verze pro mobil | v plánu |
 
 Co je nového v jednotlivých verzích, najdeš v [CHANGELOG.md](CHANGELOG.md).
