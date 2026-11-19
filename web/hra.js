@@ -3045,14 +3045,7 @@
         if (f >= 1) this.spirals.splice(i, 1);
       }
       const inj = lv3(s2, "tug");
-      if (inj) {
-        this.injT -= dt;
-        if (this.injT <= 0) {
-          this.injT = Math.max(0.12, 1.2 / inj);
-          const ni = Math.min(inj, 12), a = Math.floor(rnd() * ni) / ni * 6.283 + 0.3;
-          this.spirals.push({ r: 400, r1: RD * 0.8, a, t: 0, dur: 2.2, col: s2.r.guide ? "220,255,240" : "255,200,150", w: 2.2 });
-        }
-      }
+      void inj;
       if (s2.mis.tauris3 || s2.mis.star3) {
         this.streamT -= dt;
         if (this.streamT <= 0) {
@@ -3259,35 +3252,32 @@
         }
       }
       const inj = Math.min(lv3(s2, "tug"), 12);
-      for (let i = 0; i < inj; i++) {
-        const a = i / Math.max(inj, 1) * 6.283 + 0.3, ca = Math.cos(a), sa2 = Math.sin(a), x = CX3 + ca * 410, y = CY3 + sa2 * 410;
-        const sg2 = c.createLinearGradient(x, y, CX3 + ca * RD, CY3 + sa2 * RD);
-        sg2.addColorStop(0, "rgba(255,200,150,.35)");
-        sg2.addColorStop(1, "rgba(255,200,150,0)");
-        c.strokeStyle = sg2;
-        c.lineWidth = 2;
-        c.beginPath();
-        c.moveTo(x - ca * 10, y - sa2 * 10);
-        c.lineTo(CX3 + ca * RD, CY3 + sa2 * RD);
-        c.stroke();
+      if (inj) {
         c.save();
-        c.translate(x, y);
-        c.rotate(a);
-        c.fillStyle = "#3a4152";
-        c.strokeStyle = "rgba(242,166,90,.9)";
-        c.lineWidth = 1.5;
-        c.beginPath();
-        c.moveTo(9, -7);
-        c.lineTo(9, 7);
-        c.lineTo(-9, 3.5);
-        c.lineTo(-9, -3.5);
-        c.closePath();
-        c.fill();
-        c.stroke();
-        c.fillStyle = `rgba(255,214,160,${0.7 + 0.3 * Math.sin(T5 * 4 + i)})`;
-        c.beginPath();
-        c.arc(-10, 0, 2.6, 0, 7);
-        c.fill();
+        c.globalCompositeOperation = "lighter";
+        c.lineCap = "round";
+        for (let i = 0; i < inj; i++) {
+          const a0 = i / inj * 6.283 + 0.3, path2 = [];
+          for (let k2 = 0; k2 <= 32; k2++) {
+            const f = k2 / 32, r = 470 - f * (470 - RD * 0.92), a = a0 + Math.pow(f, 1.6) * 1.5;
+            path2.push([CX3 + Math.cos(a) * r, CY3 + Math.sin(a) * r]);
+          }
+          const c0 = "235,120,170", c1 = s2.r.guide ? "200,245,230" : "255,205,150";
+          for (const [w, al, dash] of [[10, 0.045, 0], [3, 0.1, 0], [2.6, 0.22, 1]]) {
+            c.lineWidth = w;
+            c.setLineDash(dash ? [2, 11] : []);
+            c.lineDashOffset = -T5 * 32 - i * 7;
+            const gr = c.createLinearGradient(path2[0][0], path2[0][1], path2[32][0], path2[32][1]);
+            gr.addColorStop(0, `rgba(${c0},0)`);
+            gr.addColorStop(0.4, `rgba(${c0},${al})`);
+            gr.addColorStop(1, `rgba(${c1},${al * 1.5})`);
+            c.strokeStyle = gr;
+            c.beginPath();
+            path2.forEach(([x, y], k2) => k2 ? c.lineTo(x, y) : c.moveTo(x, y));
+            c.stroke();
+          }
+        }
+        c.setLineDash([]);
         c.restore();
       }
       if (this.boom > 0) {
