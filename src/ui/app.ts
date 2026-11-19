@@ -118,8 +118,10 @@ function buildShell() {
     b.onclick = () => setTab(t); $("tabs").appendChild(b);
   }
   // žebřík
-  VIEWS.forEach((v, i) => { if (v === "near") return;   // Okolí jen přes Mapu v Kap. 2, na žebříku není
-    const b = h("button", "", UI.ladder[i]); b.dataset.v = v; if (v === "system") b.classList.add("sub"); b.onclick = () => setView(v); $("ladder").appendChild(b); });
+  // žebřík = kapitoly hry (pohled, popisek, kapitola); Soustava a Okolí jen přes záložku Mapa
+  UI.ladderCh.forEach((lab: string, i: number) => {
+    const v = ["body", "star", "star", "galaxy", "", ""][i];
+    const b = h("button", "", lab); b.dataset.v = v; b.dataset.ch = String(i + 1); b.onclick = () => setView(v); $("ladder").appendChild(b); });
   $("kblock").onclick = showK;
   $("setBtn").onclick = showSettings;
   $("sndBtn").onclick = () => { s.opt.sound = !s.opt.sound; Audio.setSound(s.opt.sound, s.ch >= 1); $("sndBtn").classList.toggle("on", s.opt.sound); };
@@ -172,7 +174,6 @@ function render() {
 
 // ---------- pohledy ----------
 /** Popisek na žebříku (v Kap. 3+ je místo hvězdy díra). */
-function ladderName(v: string) { return v === "star" && s.ch >= 3 ? UI.ladderHole : UI.ladder[VIEWS.indexOf(v)]; }
 function viewOpen(v: string) {
   if (v === "body") return s.ch < 3;   // asteroid zanikl se supernovou
   if (v === "system") return s.ch >= 3;   // v Kap. 1–2 je soustava jen na záložce Mapa
@@ -243,7 +244,7 @@ function updateUI() {
   $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
   journal();
   // žebřík
-  document.querySelectorAll("#ladder button").forEach((b: any) => { const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3; setHTML(b, o || gone ? ladderName(b.dataset.v) : "???"); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
+  document.querySelectorAll("#ladder button").forEach((b: any) => { const ch = +b.dataset.ch, o = !!b.dataset.v && viewOpen(b.dataset.v) && (ch === s.ch || (ch === 1 && s.ch === 2)), gone = ch < s.ch; setHTML(b, o || gone ? UI.ladderCh[ch - 1] : "???"); b.disabled = !o; b.classList.toggle("on", o && b.dataset.v === view); b.title = o ? "" : UI.locked; });
   // tečky na záložkách
   const newer = (pre: string) => Object.entries(s.unl).some(([k, t]) => k.startsWith(pre) && t > (s.seen["tab_" + ({ b_: "build", r_: "research", m_: "map" } as any)[pre]] ?? -1));
   const dots: Record<string, boolean> = {

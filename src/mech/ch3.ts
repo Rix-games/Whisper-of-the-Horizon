@@ -1,19 +1,20 @@
-// Kapitola 3 – Díra: prak. Chuchvalce plynu z pozůstatku supernovy se házejí do díry.
-// Hod bokem = hmota se usadí v disku a vyzáří energii (nejvíc u vnitřního prstence ISCO). Hod rovně = spadne bez užitku.
+// Kapitola 3 – Díra: magnetické pasti a ventil. Pasti kolem disku sbírají plyn z mlhoviny, hráč je pouští do disku.
+// Horká skvrna v disku oběhne jednou za puls (7,3 s). Pustit past, když je skvrna pod ní = souzvuk ×2 a článek řetězu.
+// Plná řada řetězu = výbuch disku (energie a data). Automatika: injektory (stálý přítok) a automatické ventily.
 import { Mech, Input, View, ftxt, sparks, MONO } from "./fx";
 import { rnd } from "../core/rng";
-import { power } from "../core/engine";
-import { T3, clumpMass, poolCap, respawnT, feed, spinA, eddMax, mdot } from "../chapters/ch3";
+import { power, dataRate } from "../core/engine";
+import { T3, PERIOD, trapRate, trapCap, traps, win, comboMax, comboMult, feed, spinA, eddMax } from "../chapters/ch3";
 import { img } from "../ui/img";
-import { count, pct } from "../core/format";
+import { mass, pct, fixed } from "../core/format";
 import type { State } from "../core/state";
 
 export const CX = 800, CY = 500;
-const GM = 9.7e6;           // px³/s² – kruhová rychlost na okraji mlhoviny ~150 px/s
+const GM = 9.7e6;           // px³/s² – jen pro rychlost pruhů disku
 const RH = 50;              // stín díry (px) – sedí na obrázek kap3-disk (stín 20,8 % šířky)
 const RD = 210;             // vnější okraj disku (px)
-const VK = 1.0;             // rychlost hodu = délka tahu × VK
-const VMAX = 320;
+const RT = 330;             // poloměr, na kterém stojí pasti
+const TR = 30;              // poloměr pasti (px)
 /** Vnitřní prstenec (ISCO) se s rotací díry zmenšuje: r_isco/M od 6 (a = 0) k ~1,24 (a = 0,998). */
 export function iscoM(a: number) {
   const z1 = 1 + Math.cbrt(1 - a * a) * (Math.cbrt(1 + a) + Math.cbrt(1 - a)), z2 = Math.sqrt(3 * a * a + z1 * z1);
@@ -21,120 +22,90 @@ export function iscoM(a: number) {
 }
 export const iscoPx = (s: State) => RH + 34 * (iscoM(spinA(s)) - 1) / 5;
 const lv = (s: State, id: string) => s.b[id] || 0;
+/** Úhel horké skvrny (oběhne jednou za puls, po směru hodinových ručiček, start nahoře). */
+export const spotA = (s: State) => -Math.PI / 2 + ((s.t % PERIOD) / PERIOD) * Math.PI * 2;
+const trapA = (i: number, k: number) => -Math.PI / 2 + (i / k) * Math.PI * 2 + (k > 1 ? Math.PI / k : 0.6);
+/** Úhlová vzdálenost (−π…π). */
+const dA = (a: number, b: number) => { let d = (a - b) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; };
 
-type Clump = { x: number; y: number; vx: number; vy: number; st: "idle" | "fly"; age: number; r0: number; a0: number; sz: number };
-type Spiral = { r: number; a: number; t: number; dur: number; col: string; w: number };
+type Spiral = { r: number; a: number; t: number; dur: number; col: string; w: number; r1?: number };
 
 export const diera: Mech & any = {
-  clumps: [] as Clump[], spirals: [] as Spiral[], grab: null as Clump | null, spawnT: 0, flareT: 0, flash: 0, lastPerfect: -99, tugT: 0, streamT: 0, botT: 0,
-  reset() { this.clumps = []; this.spirals = []; this.grab = null; this.spawnT = 0; this.flash = 0; },
-  idle() { return this.clumps.filter((c: Clump) => c.st === "idle"); },
-  spawn() {
-    const a = rnd() * 6.283, r = 395 + rnd() * 70;
-    this.clumps.push({ x: CX + Math.cos(a) * r, y: CY + Math.sin(a) * r, vx: 0, vy: 0, st: "idle", age: 0, r0: r, a0: a, sz: 0.85 + rnd() * 0.35 });
+  fill: [] as number[], last: [] as number[], spirals: [] as Spiral[], lastRes: -99, flash: 0, boom: 0, flareT: -99, injT: 0, streamT: 0,
+  reset() { this.fill = []; this.last = []; this.spirals = []; this.flash = 0; this.boom = 0; },
+  pos(s: State, i: number) { const a = trapA(i, traps(s)); return { a, x: CX + Math.cos(a) * RT, y: CY + Math.sin(a) * RT }; },
+  at(s: State, x: number, y: number) {
+    for (let i = 0; i < traps(s); i++) { const p = this.pos(s, i); if (Math.hypot(p.x - x, p.y - y) < TR + 14) return i; }
+    return -1;
   },
-  at(x: number, y: number) {
-    let best: Clump | null = null, bd = 30;
-    for (const c of this.clumps) if (c.st === "idle") { const d = Math.hypot(c.x - x, c.y - y); if (d < bd) { bd = d; best = c; } }
-    return best;
-  },
-  /** Rychlost hodu z tahu myší (prak: táhneš od chuchvalce, letí opačně). */
-  vel(c: Clump, M: Input) {
-    let vx = (c.x - M.x) * VK, vy = (c.y - M.y) * VK;
-    const v = Math.hypot(vx, vy); if (v > VMAX) { vx *= VMAX / v; vy *= VMAX / v; }
-    return [vx, vy];
-  },
-  /** Kam se hmota usadí: poloměr kruhové dráhy se stejným momentem hybnosti. */
-  landing(s: State, x: number, y: number, vx: number, vy: number) {
-    const rx = x - CX, ry = y - CY, h = rx * vy - ry * vx, rc = (h * h) / GM, I = iscoPx(s);
-    const e2 = vx * vx + vy * vy - (2 * GM) / Math.hypot(rx, ry);   // > 0 = uletí
-    if (e2 >= 0 && rc > RD) return { rc, k: "escape" };
-    if (rc < I) return { rc, k: "plunge" };
-    if (rc <= I * 1.9) return { rc, k: "perfect" };
-    if (rc <= RD) return { rc, k: "disk" };
-    return { rc, k: "outer" };
-  },
-  launch(c: Clump, vx: number, vy: number) { c.st = "fly"; c.vx = vx; c.vy = vy; c.age = 0; },
-  down(s: State, M: Input) { this.grab = this.at(M.x, M.y); },
-  up(s: State, M: Input) {
-    const c = this.grab; this.grab = null;
-    if (!c || c.st !== "idle") return;
-    const [vx, vy] = this.vel(c, M);
-    if (Math.hypot(vx, vy) < 8) return;   // jen klik – nic
-    this.launch(c, vx, vy);
-  },
-  /** Chuchvalec dorazil do disku (nebo spadl / uletěl). */
-  land(s: State, c: Clump) {
-    const L = this.landing(s, c.x, c.y, c.vx, c.vy), Q = T3.q as any;
-    if (L.k === "escape") { ftxt(c.x, c.y, "Uletělo", "#9aa6bd"); return; }
-    let q = Q[L.k], txt = L.k === "perfect" ? "Vnitřní prstenec" : L.k === "plunge" ? "Spadlo rovnou dovnitř" : L.k === "outer" ? "Okraj disku" : "Do disku";
-    if (L.k === "perfect") {
-      s.hole.combo = s.t - this.lastPerfect < 6 ? Math.min(4, s.hole.combo + 1) : 0;
-      this.lastPerfect = s.t; s.hole.perfect++;
-      q *= 1 + 0.15 * s.hole.combo;
-      if (s.hole.combo) txt += ` · řetěz ${s.hole.combo + 1}×`;
+  inWin(s: State, i: number, k = 1) { return Math.abs(dA(spotA(s), this.pos(s, i).a)) < win(s) * k; },
+  /** Vypustí past i do disku. */
+  release(s: State, i: number, auto = false) {
+    const m = this.fill[i] || 0, cap = trapCap(s);
+    if (m < cap * 0.05) { if (!auto) ftxt(this.pos(s, i).x, this.pos(s, i).y - 40, "Past je prázdná", "#9aa6bd"); return; }
+    const p = this.pos(s, i), res = this.inWin(s, i), full = m >= cap * 0.95;
+    let q = full ? T3.full : 1, txt = "";
+    if (res) {
+      s.hole.combo = Math.min(comboMax(s), s.hole.combo + 1); s.hole.perfect++; this.lastRes = s.t;
+      q *= T3.res * comboMult(s.hole.combo);
+      txt = `Souzvuk ×${fixed(T3.res * comboMult(s.hole.combo) * (full ? T3.full : 1), 2)}`;
+    } else {
+      if (s.hole.combo > 0 && !auto) ftxt(CX, CY + RD + 40, "Řetěz přerušen", "#e98a8a");
+      s.hole.combo = 0; txt = full ? "Přetlak ×1,25" : "Mimo souzvuk";
     }
-    s.hole.hits++;
-    const m = clumpMass(s) * q * c.sz;
-    if (feed(s, m)) this.flareUp(s);
-    ftxt(c.x, c.y - 14, `${txt} ×${(Math.round(q * 100) / 100).toString().replace(".", ",")}`, L.k === "perfect" ? "#8ef0c8" : L.k === "plunge" ? "#e98a8a" : "#f2c48a");
-    const rr = Math.max(RH + 2, Math.min(RD, L.rc));
-    this.spirals.push({ r: rr, a: Math.atan2(c.y - CY, c.x - CX), t: 0, dur: L.k === "plunge" ? 0.6 : 2.6, col: L.k === "perfect" ? "255,236,190" : "255,190,130", w: 3 + 2 * c.sz });
-    if (L.k !== "plunge") sparks(c.x, c.y, 6, "#ffd9a8", 50);
+    s.hole.hits++; this.fill[i] = 0; this.last[i] = s.t;
+    if (feed(s, m * q)) this.flareUp(s);
+    if (!auto || res) ftxt(p.x, p.y - 42, txt, res ? "#8ef0c8" : "#f2c48a");
+    for (let k = 0; k < 9; k++) this.spirals.push({ r: RT - 6, r1: RD * 0.55, a: p.a - k * 0.05, t: -k * 0.06, dur: 1.6, col: res ? "220,255,240" : "255,200,150", w: 3.2 - k * 0.15 });
+    sparks(p.x, p.y, 8, res ? "#8ef0c8" : "#ffd9a8", 60);
+    if (res && s.hole.combo >= comboMax(s)) this.explode(s);
+  },
+  explode(s: State) {
+    const P = power(s), E = P * T3.boomS, D = dataRate(s) * T3.boomS;
+    s.res.energy += E; s.res.data += D; s.hole.booms = (s.hole.booms || 0) + 1; s.hole.combo = 0;
+    this.boom = 1;
+    ftxt(CX, CY - RD - 40, `Výbuch disku! Energie a data za ${T3.boomS} s výroby`, "#fff1d6"); void E; void D; void mass;
   },
   flareUp(s: State) {
-    if (s.t - this.flareT > 3) { ftxt(CX, CY - RD - 30, "Eddingtonova mez – záření odfouklo přebytek", "#cfe0ff"); s.hole.flares++; }
+    if (s.t - this.flareT > 3) { ftxt(CX, CY - RD - 70, "Eddingtonova mez – záření odfouklo přebytek", "#cfe0ff"); s.hole.flares++; }
     this.flareT = s.t; this.flash = 1;
   },
+  down(s: State, M: Input) { const i = this.at(s, M.x, M.y); if (i >= 0) this.release(s, i); },
   update(s: State, dt: number, M: Input) {
     if (s.ch !== 3) return;
-    // nové chuchvalce v mlhovině
-    if (this.idle().length < poolCap(s)) { this.spawnT -= dt; if (this.spawnT <= 0) { this.spawn(); this.spawnT = respawnT(s); } }
-    // pomalé unášení na okraji, let k díře
-    for (let i = this.clumps.length - 1; i >= 0; i--) {
-      const c: Clump = this.clumps[i];
-      c.age += dt;
-      if (c.st === "idle") {
-        if (c === this.grab) continue;
-        c.a0 += dt * 0.02; c.x = CX + Math.cos(c.a0) * c.r0; c.y = CY + Math.sin(c.a0) * c.r0;
-        continue;
-      }
-      const sub = 6, h = dt / sub;
-      let done = "";
-      for (let k = 0; k < sub && !done; k++) {
-        const rx = c.x - CX, ry = c.y - CY, r = Math.hypot(rx, ry), a = GM / (r * r * r);
-        c.vx -= rx * a * h; c.vy -= ry * a * h; c.x += c.vx * h; c.y += c.vy * h;
-        if (r < RD) done = "in"; else if (r > 1100 || c.age > 14) done = "lost";
-      }
-      if (done === "in") this.land(s, c);
-      else if (done === "lost") ftxt(Math.max(60, Math.min(1540, c.x)), Math.max(60, Math.min(940, c.y)), "Uletělo", "#9aa6bd");
-      if (done) this.clumps.splice(i, 1);
+    const k = traps(s), cap = trapCap(s), r = trapRate(s), auto = lv(s, "auto3");
+    for (let i = 0; i < k; i++) {
+      this.fill[i] = Math.min(cap, (this.fill[i] || 0) + r * dt);
+      // automatický ventil pustí past, když je skvrna přímo pod ní
+      if (i < auto && this.inWin(s, i, 0.35) && s.t - (this.last[i] ?? -99) > 2) this.release(s, i, true);
     }
-    // stékání disku (jen obraz)
+    if (s.hole.combo > 0 && s.t - this.lastRes > PERIOD * 1.15) { s.hole.combo = 0; ftxt(CX, CY + RD + 40, "Řetěz vyprchal", "#9aa6bd"); }
     for (let i = this.spirals.length - 1; i >= 0; i--) {
       const p: Spiral = this.spirals[i]; p.t += dt;
-      const I = iscoPx(s); p.a += dt * Math.sqrt(GM / Math.pow(Math.max(p.r, RH), 3)) * 0.35;
-      p.r = Math.max(RH, p.r - dt * (p.r - I * 0.8) / Math.max(0.3, p.dur - p.t + 0.4));
-      if (p.t > p.dur) this.spirals.splice(i, 1);
+      if (p.t < 0) continue;
+      const I = iscoPx(s), f = Math.min(1, p.t / p.dur);
+      if (p.r1 != null) { p.r = p.r + (p.r1 - p.r) * Math.min(1, dt * 3.2); if (Math.abs(p.r - p.r1) < 4) { delete p.r1; } }
+      else p.r = Math.max(RH, p.r - dt * (p.r - I * 0.8) * 1.5);
+      p.a += dt * Math.sqrt(GM / Math.pow(Math.max(p.r, RH), 3)) * 0.35;
+      if (f >= 1) this.spirals.splice(i, 1);
     }
-    // remorkéry a proudy – jen obraz, hmotu přidává kapitola (autos)
-    const tugs = lv(s, "tug");
-    if (tugs) { this.tugT -= dt; if (this.tugT <= 0) { this.tugT = Math.max(0.25, T3.tugEvery / tugs); this.spirals.push({ r: RD * (0.75 + rnd() * 0.25), a: rnd() * 6.283, t: 0, dur: 2.6, col: s.r.guide ? "255,236,190" : "255,190,130", w: 3 }); } }
-    if (s.mis.tauris3 || s.mis.star3) { this.streamT -= dt; if (this.streamT <= 0) { this.streamT = s.mis.star3 ? 0.08 : 0.3; this.spirals.push({ r: RD, a: s.mis.star3 ? 2.6 : -0.7, t: 0, dur: 3, col: s.mis.star3 ? "210,230,255" : "200,215,255", w: 2 }); } }
-    if (this.spirals.length > 260) this.spirals.splice(0, this.spirals.length - 260);
-    this.flash = Math.max(0, this.flash - dt * 1.5);
+    // injektory a proudy – jen obraz, hmotu přidává kapitola (autos)
+    const inj = lv(s, "tug");
+    if (inj) { this.injT -= dt; if (this.injT <= 0) { this.injT = Math.max(0.12, 1.2 / inj); const a = rnd() * 6.283; this.spirals.push({ r: 400, r1: RD * 0.8, a, t: 0, dur: 2.2, col: s.r.guide ? "220,255,240" : "255,200,150", w: 2.2 }); } }
+    if (s.mis.tauris3 || s.mis.star3) { this.streamT -= dt; if (this.streamT <= 0) { this.streamT = s.mis.star3 ? 0.08 : 0.3; this.spirals.push({ r: 430, r1: RD, a: s.mis.star3 ? 2.6 : -0.7, t: 0, dur: 3, col: s.mis.star3 ? "210,230,255" : "200,215,255", w: 2 }); } }
+    if (this.spirals.length > 320) this.spirals.splice(0, this.spirals.length - 320);
+    this.flash = Math.max(0, this.flash - dt * 1.5); this.boom = Math.max(0, this.boom - dt * 0.6);
   },
   bot(s: State, dt: number, M: Input) {
-    this.botT -= dt;
-    if (this.botT > 0) return;
-    this.botT = 1.4 + rnd() * 0.6;
-    const c: Clump | undefined = this.idle()[0];
-    if (!c) return;
-    const rx = c.x - CX, ry = c.y - CY, r = Math.hypot(rx, ry), I = iscoPx(s);
-    const rc = I * (1.15 + rnd() * 0.9), vt = Math.sqrt(GM * rc) / r * (1 + (rnd() - 0.5) * 0.12);
-    this.launch(c, (-ry / r) * vt - (rx / r) * 25, (rx / r) * vt - (ry / r) * 25);
+    const k = traps(s), cap = trapCap(s), auto = lv(s, "auto3");
+    for (let i = auto; i < k; i++) {
+      if (!this.inWin(s, i, 0.6) || s.t - (this.last[i] ?? -99) < 2) continue;
+      if ((this.fill[i] || 0) < cap * 0.4) continue;
+      if (rnd() < 0.12) { this.last[i] = s.t; continue; }   // hráč občas nestihne
+      this.release(s, i);
+    }
   },
-  cursor(s: State, M: Input) { return this.grab ? "grabbing" : this.at(M.x, M.y) ? "grab" : "default"; },
+  cursor(s: State, M: Input) { return this.at(s, M.x, M.y) >= 0 ? "pointer" : "default"; },
 
   draw(c: CanvasRenderingContext2D, s: State, v: View, M: Input) {
     const T = v.T, P = power(s), act = s.ch === 3 && !v.passive;
@@ -169,12 +140,21 @@ export const diera: Mech & any = {
     dg.addColorStop(0, `rgba(255,235,200,${0.16 * lit})`); dg.addColorStop(0.5, "rgba(255,235,200,0)");
     if (!DI) c.fillStyle = dg; else c.fillStyle = "rgba(0,0,0,0)";
     c.beginPath(); c.arc(CX, CY, RD * 0.9, 0, 7); c.moveTo(CX + rIn, CY); c.arc(CX, CY, rIn, 0, 7, true); c.fill();
-    // hmota stéká po spirále
+    // hmota stéká do disku
     for (const p of this.spirals as Spiral[]) {
-      const al = Math.min(1, p.t * 3) * Math.min(1, (p.dur - p.t) * 2);
-      c.fillStyle = `rgba(${p.col},${0.75 * al})`;
-      for (let k = 0; k < 4; k++) { const aa = p.a - k * 0.09; c.beginPath(); c.arc(CX + Math.cos(aa) * p.r, CY + Math.sin(aa) * p.r, p.w * (1 - k * 0.2), 0, 7); c.fill(); }
+      if (p.t < 0) continue;
+      const al = Math.min(1, p.t * 4) * Math.min(1, (p.dur - p.t) * 2);
+      c.fillStyle = `rgba(${p.col},${0.8 * al})`;
+      for (let k = 0; k < 3; k++) { const aa = p.a - k * 0.05; c.beginPath(); c.arc(CX + Math.cos(aa) * p.r, CY + Math.sin(aa) * p.r, Math.max(0.6, p.w * (1 - k * 0.25)), 0, 7); c.fill(); }
     }
+    // horká skvrna obíhá disk jednou za puls; ručička ukazuje, ke které pasti míří
+    const sa = spotA(s), sr = (Ip + RD) * 0.5, sx = CX + Math.cos(sa) * sr, sy = CY + Math.sin(sa) * sr;
+    for (let k = 0; k < 14; k++) { const aa = sa - k * 0.06; c.fillStyle = `rgba(255,240,210,${0.5 * (1 - k / 14)})`; c.beginPath(); c.arc(CX + Math.cos(aa) * sr, CY + Math.sin(aa) * sr, 7 - k * 0.35, 0, 7); c.fill(); }
+    const sg = c.createRadialGradient(sx, sy, 0, sx, sy, 22); sg.addColorStop(0, "rgba(255,255,245,.95)"); sg.addColorStop(1, "rgba(255,220,160,0)");
+    c.fillStyle = sg; c.beginPath(); c.arc(sx, sy, 22, 0, 7); c.fill();
+    const hand = c.createLinearGradient(sx, sy, CX + Math.cos(sa) * (RT + 40), CY + Math.sin(sa) * (RT + 40));
+    hand.addColorStop(0, "rgba(255,235,190,.35)"); hand.addColorStop(1, "rgba(255,235,190,0)");
+    c.strokeStyle = hand; c.lineWidth = 3; c.beginPath(); c.moveTo(sx, sy); c.lineTo(CX + Math.cos(sa) * (RT + 40), CY + Math.sin(sa) * (RT + 40)); c.stroke();
     // výtrysky (po výzkumu) – svislé, jas podle výkonu
     if (s.r.jets3) {
       for (const sg of [-1, 1]) {
@@ -187,58 +167,36 @@ export const diera: Mech & any = {
     // stín a fotonový prstenec
     c.fillStyle = "#000"; c.beginPath(); c.arc(CX, CY, RH, 0, 7); c.fill();
     c.strokeStyle = `rgba(255,235,200,${0.5 + 0.4 * lit})`; c.lineWidth = 1.6; c.beginPath(); c.arc(CX, CY, RH + 1.5, 0, 7); c.stroke();
-    // vnitřní prstenec ISCO (čárkovaně) – cíl hodu
-    c.setLineDash([4, 6]); c.strokeStyle = "rgba(142,240,200,.45)"; c.lineWidth = 1.2;
-    c.beginPath(); c.arc(CX, CY, Ip, 0, 7); c.stroke(); c.beginPath(); c.arc(CX, CY, Ip * 1.9, 0, 7); c.stroke(); c.setLineDash([]);
-    // remorkéry na okraji
-    const tugs = Math.min(lv(s, "tug"), 12);
-    for (let i = 0; i < tugs; i++) {
-      const a = T * 0.05 + (i / tugs) * 6.283, x = CX + Math.cos(a) * 470, y = CY + Math.sin(a) * 470;
-      const TG = img("tug3");
-      c.save(); c.translate(x, y); c.rotate(a + 1.57);
-      if (TG) c.drawImage(TG, -14, -14, 28, 28); else { c.fillStyle = "#ffe2b0"; c.beginPath(); c.moveTo(0, -6); c.lineTo(-4, 5); c.lineTo(4, 5); c.closePath(); c.fill(); }
+    // magnetické pasti: klec, plyn uvnitř roste s náplní, oblouk náplně; zeleně = teď je souzvuk
+    const k = traps(s), cap = trapCap(s), CI = img("clump3"), auto = lv(s, "auto3");
+    for (let i = 0; i < k; i++) {
+      const p = this.pos(s, i), f = Math.min(1, (this.fill[i] || 0) / cap), inw = this.inWin(s, i), full = f >= 0.95;
+      if (inw) { const gg = c.createRadialGradient(p.x, p.y, TR * 0.6, p.x, p.y, TR * 2.2); gg.addColorStop(0, "rgba(142,240,200,.35)"); gg.addColorStop(1, "rgba(142,240,200,0)"); c.fillStyle = gg; c.beginPath(); c.arc(p.x, p.y, TR * 2.2, 0, 7); c.fill(); }
+      const W = TR * 2.4 * (0.25 + 0.75 * Math.sqrt(f));
+      c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 0.35 + 0.65 * f;
+      if (CI) { c.translate(p.x, p.y); c.rotate(T * 0.3 + i); c.drawImage(CI, -W / 2, -W / 2, W, W); }
+      else { c.fillStyle = "rgba(255,170,205,.8)"; c.beginPath(); c.arc(p.x, p.y, W * 0.3, 0, 7); c.fill(); }
       c.restore();
-      c.fillStyle = "rgba(255,170,90,.6)"; c.beginPath(); c.arc(x - Math.cos(a) * 12, y - Math.sin(a) * 12, 4, 0, 7); c.fill();
+      c.strokeStyle = "rgba(180,190,210,.55)"; c.lineWidth = 2; c.beginPath(); c.arc(p.x, p.y, TR, 0, 7); c.stroke();
+      for (let j = 0; j < 6; j++) { const a = T * 0.4 * (i % 2 ? 1 : -1) + (j / 6) * 6.283; c.beginPath(); c.moveTo(p.x + Math.cos(a) * (TR - 5), p.y + Math.sin(a) * (TR - 5)); c.lineTo(p.x + Math.cos(a) * (TR + 4), p.y + Math.sin(a) * (TR + 4)); c.stroke(); }
+      c.strokeStyle = inw ? "#8ef0c8" : full ? `rgba(255,240,215,${0.6 + 0.4 * Math.sin(T * 6)})` : "#f2a65a"; c.lineWidth = 3.5;
+      c.beginPath(); c.arc(p.x, p.y, TR + 8, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); c.stroke();
+      if (i < auto) { c.fillStyle = "#8ef0c8"; c.beginPath(); c.arc(p.x + TR * 0.75, p.y - TR * 0.75, 5, 0, 7); c.fill(); }
     }
-    // chuchvalce
-    for (const k of this.clumps as Clump[]) {
-      const r = 13 * k.sz, pul = 0.75 + 0.25 * Math.sin(T * 3 + k.r0);
-      const CI = img("clump3");
-      if (CI) {   // chuchvalec z obrázku (černé pozadí → lighter)
-        const W = r * 4.4; c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = pul; c.translate(k.x, k.y); c.rotate(k.r0 + T * 0.1); c.drawImage(CI, -W / 2, -W / 2, W, W); c.restore();
-        if (act && k.st === "idle") { c.strokeStyle = `rgba(255,210,122,${0.35 + 0.35 * pul})`; c.lineWidth = 1.5; c.beginPath(); c.arc(k.x, k.y, r * 1.7, 0, 7); c.stroke(); }
-        continue;
-      }
-      const cg = c.createRadialGradient(k.x, k.y, 0, k.x, k.y, r * 2.6);
-      cg.addColorStop(0, `rgba(255,240,245,${pul})`); cg.addColorStop(0.25, `rgba(255,170,205,${0.8 * pul})`); cg.addColorStop(0.6, "rgba(220,100,170,.3)"); cg.addColorStop(1, "rgba(120,200,220,0)");
-      c.fillStyle = cg; c.beginPath(); c.arc(k.x, k.y, r * 2.6, 0, 7); c.fill();
-      if (act && k.st === "idle") { c.strokeStyle = `rgba(255,210,122,${0.35 + 0.35 * pul})`; c.lineWidth = 1.5; c.beginPath(); c.arc(k.x, k.y, r * 1.5, 0, 7); c.stroke(); }
+    // injektory na okraji: stálý přítok
+    const inj = Math.min(lv(s, "tug"), 12), TG = img("tug3");
+    for (let i = 0; i < inj; i++) {
+      const a = (i / Math.max(inj, 1)) * 6.283 + 0.3, x = CX + Math.cos(a) * 410, y = CY + Math.sin(a) * 410;
+      c.save(); c.translate(x, y); c.rotate(a - Math.PI / 2);
+      if (TG) c.drawImage(TG, -14, -14, 28, 28); else { c.fillStyle = "#ffe2b0"; c.beginPath(); c.moveTo(0, 6); c.lineTo(-4, -5); c.lineTo(4, -5); c.closePath(); c.fill(); }
+      c.restore();
     }
-    // míření: tah praku, předpověď dráhy a kam se hmota usadí
-    if (act && this.grab && this.grab.st === "idle") {
-      const k: Clump = this.grab, [vx, vy] = this.vel(k, M), L = this.landing(s, k.x, k.y, vx, vy);
-      c.strokeStyle = "rgba(255,226,176,.85)"; c.lineWidth = 2; c.beginPath(); c.moveTo(k.x, k.y); c.lineTo(M.x, M.y); c.stroke(); c.fillStyle = "#ffe2b0"; c.beginPath(); c.arc(M.x, M.y, 4, 0, 7); c.fill();
-      const col = L.k === "perfect" ? "142,240,200" : L.k === "disk" || L.k === "outer" ? "242,166,90" : L.k === "plunge" ? "233,138,138" : "154,166,189";
-      let x = k.x, y = k.y, ux = vx, uy = vy;
-      const steps = s.r.aim ? 150 : 50;
-      c.fillStyle = `rgba(${col},.95)`;
-      for (let i = 0; i < steps; i++) {
-        const rx = x - CX, ry = y - CY, r = Math.hypot(rx, ry), a = GM / (r * r * r), h = 1 / 60;
-        ux -= rx * a * h; uy -= ry * a * h; x += ux * h; y += uy * h;
-        if (r < RD || r > 1100) break;
-        if (i % 3 === 0) c.fillRect(x - 2, y - 2, 4, 4);
-      }
-      if (L.k !== "escape") { c.strokeStyle = `rgba(${col},.95)`; c.lineWidth = 3; c.beginPath(); c.arc(CX, CY, Math.max(RH + 2, Math.min(RD + 40, L.rc)), 0, 7); c.stroke(); }
-      c.font = `600 ${13 / Math.max(v.sx, 0.3)}px ${MONO}`; c.textAlign = "left"; c.fillStyle = `rgb(${col})`;
-      c.fillText(L.k === "perfect" ? "Vnitřní prstenec ×1,5" : L.k === "disk" ? "Do disku ×1" : L.k === "outer" ? "Okraj disku ×0,7" : L.k === "plunge" ? "Spadne rovnou ×0,25" : "Uletí", M.x + 14, M.y + 4);
-    }
-    // popisky
-    const fs = 13 / Math.max(v.sx, 0.3);
-    c.font = `600 ${fs}px ${MONO}`; c.textAlign = "center";
-    c.save(); c.lineJoin = "round"; c.lineWidth = fs * 0.32; c.strokeStyle = "rgba(4,6,14,.88)";
-    const lab = `Díra po Aldře · 8 M☉`, ed = `Eddingtonova mez ${pct(P / eddMax(s))}`;
-    c.strokeText(lab, CX, CY + RD + 2.2 * fs); c.strokeText(ed, CX, CY + RD + 3.6 * fs); c.restore();
-    c.fillStyle = "#d9dfec"; c.fillText(lab, CX, CY + RD + 2.2 * fs); c.fillStyle = P / eddMax(s) > 0.8 ? "#cfe0ff" : "#9aa6bd"; c.fillText(ed, CX, CY + RD + 3.6 * fs);
-    void mdot; void count;
+    if (this.boom > 0) { c.save(); c.globalCompositeOperation = "lighter"; const b = this.boom; c.strokeStyle = `rgba(255,245,220,${b})`; c.lineWidth = 14 * b; c.beginPath(); c.arc(CX, CY, RD + (1 - b) * 420, 0, 7); c.stroke(); c.fillStyle = `rgba(255,235,200,${0.35 * b})`; c.beginPath(); c.arc(CX, CY, RD * 1.3, 0, 7); c.fill(); c.restore(); }
+    // popisky: díra, mez, řetěz
+    const fs = 13 / Math.max(v.sx, 0.3), lines: [string, string][] = [[`Díra po Aldře · 8 M☉`, "#d9dfec"], [`Eddingtonova mez ${pct(P / eddMax(s))}`, P / eddMax(s) > 0.8 ? "#cfe0ff" : "#9aa6bd"]];
+    if (s.hole.combo > 0) lines.push([`Řetěz ${s.hole.combo}/${comboMax(s)} · ×${fixed(comboMult(s.hole.combo), 1)}`, "#8ef0c8"]);
+    c.font = `600 ${fs}px ${MONO}`; c.textAlign = "center"; c.lineJoin = "round";
+    lines.forEach(([tx, col], j) => { const y = CY + RT + TR + 24 + (1.4 * j) * fs; c.lineWidth = fs * 0.32; c.strokeStyle = "rgba(4,6,14,.88)"; c.strokeText(tx, CX, y); c.fillStyle = col; c.fillText(tx, CX, y); });
+    void act; void M;
   },
 };

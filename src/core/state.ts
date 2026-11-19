@@ -29,7 +29,7 @@ export interface State {
   // Kap. 2: kolektory roje
   n: number;
   // Kap. 3: disk díry (kg), rotace (úroveň), zásoby chuchvalců
-  hole: { D: number; combo: number; flares: number; hits: number; perfect: number };
+  hole: { D: number; combo: number; flares: number; hits: number; perfect: number; booms: number };
   // Kap. 4: osídlené uzly galaxie (bitová mapa v řetězci "0/1")
   col: string;
   gv: number;                       // verze rozmístění uzlů galaxie
@@ -47,7 +47,7 @@ export function newState(): State {
     v: SAVE_VERSION, ch: 1, stage: 0, t: 0, chT: 0, stT: 0,
     res: { ore: 0, plasma: 0, mass: 0, sails: 0, energy: 0, data: 0 },
     tot: { ore: 0, plasma: 0, mass: 0, sails: 0 },
-    hole: { D: 0, combo: 0, flares: 0, hits: 0, perfect: 0 },
+    hole: { D: 0, combo: 0, flares: 0, hits: 0, perfect: 0, booms: 0 },
     b: {}, r: {}, mis: {}, run: null, unl: {}, seen: {}, log: [],
     base: 0, auto: {}, bank: {}, n: 0, col: "", gv: GV, prog: {},
     best: { chainHand: 0, reson: 0 },

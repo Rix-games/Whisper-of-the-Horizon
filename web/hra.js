@@ -75,7 +75,7 @@
       stT: 0,
       res: { ore: 0, plasma: 0, mass: 0, sails: 0, energy: 0, data: 0 },
       tot: { ore: 0, plasma: 0, mass: 0, sails: 0 },
-      hole: { D: 0, combo: 0, flares: 0, hits: 0, perfect: 0 },
+      hole: { D: 0, combo: 0, flares: 0, hits: 0, perfect: 0, booms: 0 },
       b: {},
       r: {},
       mis: {},
@@ -679,25 +679,36 @@
 
   // src/chapters/ch3.ts
   var C2 = 8988e13;
+  var PERIOD = 7.3;
   var T3 = {
-    goals: [3e28, 25e28, 4e30, 4e31, 95e30, 3e32],
+    goals: [3e28, 25e28, 4e30, 4e31, 95e30, 18e31],
     // 6 stadií; Eddingtonova mez 1e32, výtrysky ji prolomí
     tau: 30,
     // s – doba, za kterou disk steče do díry (vyhlazení výkonu)
     edd: 1e32,
     // W – Eddingtonova mez díry 8 M☉
-    clump: 4e12,
-    // kg – chuchvalec na začátku
-    clumpUp: 1.6,
-    // ×hmota chuchvalce za úroveň
-    pool: [3, 1],
-    // chuchvalců v mlhovině: základ + za úroveň Zásobníku
-    respawn: [2.2, 0.75],
-    // s mezi novými chuchvalci, ×za úroveň Zásobníku
-    q: { perfect: 1.5, disk: 1, outer: 0.7, plunge: 0.25 },
-    // výnos podle toho, kam chuchvalec dopadne
-    tugEvery: 8,
-    // s – jeden remorkér hodí chuchvalec
+    trap0: 6e11,
+    // kg/s – jak rychle se plní jedna magnetická past na začátku
+    fillUp: 1.6,
+    // ×plnění za úroveň Silnějšího sběru
+    fillT: 10,
+    // s – za jak dlouho se past naplní
+    period: 7.3,
+    // s – horká skvrna oběhne disk jednou za puls
+    win: [0.32, 0.52],
+    // rad – polovina okna souzvuku (18°, po výzkumu 30°)
+    res: 2,
+    // ×výnos při vypuštění v souzvuku se skvrnou
+    full: 1.25,
+    // ×výnos z plné pasti (přetlak)
+    combo: 0.2,
+    // +20 % za každý článek řetězu
+    comboMax: [8, 12],
+    // řetěz končí výbuchem disku
+    boomS: 30,
+    // výbuch disku = energie a data za 30 s výroby
+    inj: 0.25,
+    // injektor dodá ¼ plnění pasti, stále
     wind: 0.02,
     // lapač zachytí 2 % přítoku (vítr z disku)
     windFloor: 2e9,
@@ -717,20 +728,25 @@
   };
   var B3 = (o) => ({ ch: 3, ...o });
   var BUILD3 = [
-    // 1. úroveň – hráč hází chuchvalce prakem
+    // 1. úroveň – hráč pouští magnetické pasti do disku v souzvuku s horkou skvrnou
     B3({ id: "lap", tier: 1, kind: "gen", cur: "mass", c0: 5e11, g: 1.2, req: () => true }),
-    B3({ id: "clump", tier: 1, kind: "up", cur: "mass", c0: 2e12, g: 5, max: 14, maxAt: (s2) => 3 + 2 * s2.stage, req: (s2) => n(s2, "lap") >= 2 }),
+    B3({ id: "clump", tier: 1, kind: "up", cur: "mass", c0: 2e12, g: 5, max: 14, maxAt: (s2) => 4 + 2 * s2.stage, req: (s2) => n(s2, "lap") >= 2 }),
+    // Silnější sběr
     B3({ id: "xray", tier: 1, kind: "data", cur: "mass", c0: 1e12, g: 1.45, d: 4e9, req: (s2) => n(s2, "clump") >= 1 }),
-    B3({ id: "pool", tier: 1, kind: "up", cur: "mass", c0: 6e12, g: 2.8, max: 5, req: (s2) => n(s2, "xray") >= 1 && s2.hole.hits >= 12 }),
+    B3({ id: "pool", tier: 1, kind: "up", cur: "mass", c0: 1e13, g: 3.2, max: 5, req: (s2) => n(s2, "xray") >= 1 && s2.hole.hits >= 8 }),
+    // další past (max 6)
     B3({ id: "ring3", tier: 1, kind: "mult", cur: "mass", c0: 3e13, g: 1.6, req: (s2) => n(s2, "lap") >= 8 && n(s2, "pool") >= 1 }),
     // 2. úroveň – automatika: remorkéry hází samy, rotace zvedá účinnost, magnetické pole prorazí mez
     B3({ id: "tug", tier: 2, kind: "unit", cur: "mass", c0: 2e15, g: 1.3, req: R("tugs") }),
-    B3({ id: "spin", tier: 2, kind: "up", cur: "mass", c0: 4e16, g: 3.6, max: 6, maxAt: (s2) => Math.max(0, s2.stage - 1), req: R("spinup") }),
+    // akreční injektor
+    B3({ id: "auto3", tier: 2, kind: "up", cur: "mass", c0: 5e15, g: 2.4, max: 6, maxAt: (s2) => traps(s2), req: (s2) => has(s2, "tugs") && n(s2, "tug") >= 2 }),
+    // automatický ventil
+    B3({ id: "spin", tier: 2, kind: "up", cur: "mass", c0: 4e16, g: 3.6, max: 6, maxAt: (s2) => s2.stage, req: R("spinup") }),
     B3({ id: "field3", tier: 2, kind: "mult", cur: "mass", c0: 2e18, g: 2.2, max: 5, req: R("jets3") })
   ];
   var Rr3 = (o) => ({ ch: 3, ...o });
   var RESEARCH3 = [
-    Rr3({ id: "aim", cost: 1e12, req: (s2) => s2.hole.hits >= 5 }),
+    Rr3({ id: "aim", cost: 1e12, req: (s2) => s2.hole.perfect >= 5 }),
     // delší předpověď dráhy
     Rr3({ id: "qpo", cost: 3e12, req: ST(1) }),
     // data ×2
@@ -739,7 +755,8 @@
     Rr3({ id: "guide", cost: 2e13, req: (s2) => n(s2, "tug") >= 3 }),
     // remorkéry míří do vnitřního prstence
     Rr3({ id: "spinup", cost: 5e13, req: ST(3) }),
-    // roztáčení díry
+    Rr3({ id: "chain3", cost: 3e13, req: (s2) => s2.hole.booms >= 2 }),
+    // delší řetěz                                    // roztáčení díry
     Rr3({ id: "jets3", cost: 12e13, req: ST(4) }),
     // výtrysky ×4 mez
     Rr3({ id: "beam3", cost: 2e14, req: (s2) => s2.stage >= 6, final: true })
@@ -747,14 +764,14 @@
   var M3 = (o) => ({ ch: 3, view: "system", ...o });
   var MISSIONS3 = [
     M3({ id: "belt3", cost: 2e33, dur: 90, req: () => true, at: [1060, 640] }),
-    // chuchvalce ×2
+    // pasti ×2
     M3({ id: "kelvar3", cost: 3e33, dur: 110, req: ST(1), at: [560, 380] }),
     // data ×2
     M3({ id: "tauris3", cost: 4e33, dur: 140, req: ST(2), at: [1150, 330] }),
     // proud z Taurise
     M3({ id: "ergo", cost: 5e33, dur: 140, req: ST(3), at: [800, 470] }),
     // η ×1,3 (Penroseův proces)
-    M3({ id: "star3", cost: 6e34, dur: 160, req: ST(4), at: [380, 700] })
+    M3({ id: "star3", cost: 6e34, dur: 160, req: ST(5), at: [380, 700] })
     // roztržená hvězda: velký proud
   ];
   var J3 = (id, when, kind) => ({ id, ch: 3, when, kind });
@@ -762,7 +779,7 @@
     J3("h3_start", () => true),
     J3("h3_first", (s2) => s2.hole.hits >= 1),
     J3("f3_isco", (s2) => s2.hole.perfect >= 1, "fact"),
-    J3("h3_ten", (s2) => s2.hole.hits >= 10),
+    J3("h3_ten", (s2) => s2.hole.perfect >= 3),
     J3("h3_belt", (s2) => did(s2, "belt3")),
     J3("h3_st1", (s2) => s2.stage >= 1),
     J3("f3_edd", (s2) => s2.stage >= 1 && s2.stT > 90, "fact"),
@@ -770,6 +787,8 @@
     J3("h3_kelvar", (s2) => did(s2, "kelvar3")),
     J3("h3_st2", (s2) => s2.stage >= 2),
     J3("h3_tug", (s2) => n(s2, "tug") >= 1),
+    J3("h3_boom", (s2) => s2.hole.booms >= 1),
+    J3("h3_auto", (s2) => n(s2, "auto3") >= 1),
     J3("h3_tauris", (s2) => did(s2, "tauris3")),
     J3("f3_hawking", (s2) => s2.stage >= 2 && s2.stT > 150, "fact"),
     J3("h3_st3", (s2) => s2.stage >= 3),
@@ -789,16 +808,19 @@
   var eddMax = (s2) => T3.edd * (has(s2, "jets3") ? T3.jets : 1) * Math.pow(T3.field, n(s2, "field3"));
   var mdot = (s2) => s2.hole.D / T3.tau;
   var holePower = (s2) => eta(s2) * C2 * mdot(s2);
-  var clumpMass = (s2) => T3.clump * Math.pow(T3.clumpUp, n(s2, "clump")) * (did(s2, "belt3") ? 2 : 1);
-  var poolCap = (s2) => T3.pool[0] + T3.pool[1] * n(s2, "pool");
-  var respawnT = (s2) => T3.respawn[0] * Math.pow(T3.respawn[1], n(s2, "pool"));
+  var trapRate = (s2) => T3.trap0 * Math.pow(T3.fillUp, n(s2, "clump")) * (did(s2, "belt3") ? 2 : 1);
+  var trapCap = (s2) => trapRate(s2) * T3.fillT;
+  var traps = (s2) => 1 + n(s2, "pool");
+  var win = (s2) => T3.win[has(s2, "aim") ? 1 : 0];
+  var comboMax = (s2) => T3.comboMax[has(s2, "chain3") ? 1 : 0];
+  var comboMult = (k) => 1 + T3.combo * k;
   function streams(s2) {
     let f = 0;
-    if (did(s2, "tauris3")) f += 0.25 * clumpMass(s2);
-    if (did(s2, "star3")) f += 2 * clumpMass(s2);
+    if (did(s2, "tauris3")) f += 0.5 * trapRate(s2);
+    if (did(s2, "star3")) f += 4 * trapRate(s2);
     return f;
   }
-  var tugRate = (s2) => n(s2, "tug") / T3.tugEvery * clumpMass(s2) * (has(s2, "guide") ? T3.q.perfect : T3.q.disk);
+  var injRate = (s2) => n(s2, "tug") * T3.inj * trapRate(s2) * (has(s2, "guide") ? 1.5 : 1);
   var lapRate = (s2) => (T3.wind * mdot(s2) + T3.windFloor) * Math.pow(T3.ring, n(s2, "ring3"));
   function feed(s2, kg) {
     s2.hole.D += kg;
@@ -826,7 +848,7 @@
     dataMult: (s2) => (has(s2, "qpo") ? 2 : 1) * (did(s2, "kelvar3") ? 2 : 1),
     autos(s2, dt) {
       s2.hole.D -= mdot(s2) * dt;
-      const f = (tugRate(s2) + streams(s2)) * dt;
+      const f = (injRate(s2) + streams(s2)) * dt;
       if (f > 0 && feed(s2, f)) {
         RT.flare = (RT.flare || 0) + dt;
       }
@@ -839,10 +861,11 @@
     effect(s2, id) {
       const lv5 = n(s2, id);
       if (id === "lap") return `+${mass(lapRate(s2))}/s za kus`;
-      if (id === "clump") return `Chuchvalec ${mass(clumpMass(s2))} \u2192 ${mass(clumpMass(s2) * T3.clumpUp)}`;
-      if (id === "pool") return `Chuchvalc\u016F v mlhovin\u011B ${poolCap(s2)} \u2192 ${poolCap(s2) + T3.pool[1]}, rychleji p\u0159ib\xFDvaj\xED`;
+      if (id === "clump") return `Pln\u011Bn\xED pasti ${mass(trapRate(s2))}/s \u2192 ${mass(trapRate(s2) * T3.fillUp)}/s`;
+      if (id === "pool") return `Past\xED ${traps(s2)} \u2192 ${traps(s2) + 1}`;
       if (id === "ring3") return `Ka\u017Ed\xFD lapa\u010D zachyt\xED o 12 % v\xEDc`;
-      if (id === "tug") return !lv5 ? "Prvn\xED remork\xE9r za\u010Dne h\xE1zet s\xE1m" : `Remork\xE9r\u016F ${count(lv5)} \xB7 +${mass(tugRate(s2) / Math.max(lv5, 1))}/s za kus`;
+      if (id === "tug") return `Injektor\u016F ${count(lv5)} \xB7 +${mass(T3.inj * trapRate(s2) * (has(s2, "guide") ? 1.5 : 1))}/s za kus`;
+      if (id === "auto3") return `Automaticky: ${lv5} z ${traps(s2)} past\xED`;
       if (id === "spin") return `Rotace ${fixed(spinA(s2), 3)} \u2192 ${fixed(T3.spinA[Math.min(lv5 + 1, 6)], 3)} \xB7 \xFA\u010Dinnost ${pct(eta(s2))} \u2192 ${pct(T3.spinEta[Math.min(lv5 + 1, 6)] * (did(s2, "ergo") ? 1.3 : 1))}`;
       if (id === "field3") return `Strop v\xFDkonu \xD7${fixed(T3.field, 2)}`;
       return void 0;
@@ -2820,199 +2843,174 @@
   var GM = 97e5;
   var RH = 50;
   var RD = 210;
-  var VK = 1;
-  var VMAX = 320;
+  var RT2 = 330;
+  var TR = 30;
   function iscoM(a) {
     const z1 = 1 + Math.cbrt(1 - a * a) * (Math.cbrt(1 + a) + Math.cbrt(1 - a)), z2 = Math.sqrt(3 * a * a + z1 * z1);
     return 3 + z2 - Math.sqrt((3 - z1) * (3 + z1 + 2 * z2));
   }
   var iscoPx = (s2) => RH + 34 * (iscoM(spinA(s2)) - 1) / 5;
   var lv3 = (s2, id) => s2.b[id] || 0;
+  var spotA = (s2) => -Math.PI / 2 + s2.t % PERIOD / PERIOD * Math.PI * 2;
+  var trapA = (i, k) => -Math.PI / 2 + i / k * Math.PI * 2 + (k > 1 ? Math.PI / k : 0.6);
+  var dA = (a, b) => {
+    let d = (a - b) % (Math.PI * 2);
+    if (d > Math.PI) d -= Math.PI * 2;
+    if (d < -Math.PI) d += Math.PI * 2;
+    return d;
+  };
   var diera = {
-    clumps: [],
+    fill: [],
+    last: [],
     spirals: [],
-    grab: null,
-    spawnT: 0,
-    flareT: 0,
+    lastRes: -99,
     flash: 0,
-    lastPerfect: -99,
-    tugT: 0,
+    boom: 0,
+    flareT: -99,
+    injT: 0,
     streamT: 0,
-    botT: 0,
     reset() {
-      this.clumps = [];
+      this.fill = [];
+      this.last = [];
       this.spirals = [];
-      this.grab = null;
-      this.spawnT = 0;
       this.flash = 0;
+      this.boom = 0;
     },
-    idle() {
-      return this.clumps.filter((c) => c.st === "idle");
+    pos(s2, i) {
+      const a = trapA(i, traps(s2));
+      return { a, x: CX3 + Math.cos(a) * RT2, y: CY3 + Math.sin(a) * RT2 };
     },
-    spawn() {
-      const a = rnd() * 6.283, r = 395 + rnd() * 70;
-      this.clumps.push({ x: CX3 + Math.cos(a) * r, y: CY3 + Math.sin(a) * r, vx: 0, vy: 0, st: "idle", age: 0, r0: r, a0: a, sz: 0.85 + rnd() * 0.35 });
-    },
-    at(x, y) {
-      let best = null, bd = 30;
-      for (const c of this.clumps) if (c.st === "idle") {
-        const d = Math.hypot(c.x - x, c.y - y);
-        if (d < bd) {
-          bd = d;
-          best = c;
-        }
+    at(s2, x, y) {
+      for (let i = 0; i < traps(s2); i++) {
+        const p = this.pos(s2, i);
+        if (Math.hypot(p.x - x, p.y - y) < TR + 14) return i;
       }
-      return best;
+      return -1;
     },
-    /** Rychlost hodu z tahu myší (prak: táhneš od chuchvalce, letí opačně). */
-    vel(c, M5) {
-      let vx = (c.x - M5.x) * VK, vy = (c.y - M5.y) * VK;
-      const v = Math.hypot(vx, vy);
-      if (v > VMAX) {
-        vx *= VMAX / v;
-        vy *= VMAX / v;
-      }
-      return [vx, vy];
+    inWin(s2, i, k = 1) {
+      return Math.abs(dA(spotA(s2), this.pos(s2, i).a)) < win(s2) * k;
     },
-    /** Kam se hmota usadí: poloměr kruhové dráhy se stejným momentem hybnosti. */
-    landing(s2, x, y, vx, vy) {
-      const rx = x - CX3, ry = y - CY3, h2 = rx * vy - ry * vx, rc = h2 * h2 / GM, I = iscoPx(s2);
-      const e2 = vx * vx + vy * vy - 2 * GM / Math.hypot(rx, ry);
-      if (e2 >= 0 && rc > RD) return { rc, k: "escape" };
-      if (rc < I) return { rc, k: "plunge" };
-      if (rc <= I * 1.9) return { rc, k: "perfect" };
-      if (rc <= RD) return { rc, k: "disk" };
-      return { rc, k: "outer" };
-    },
-    launch(c, vx, vy) {
-      c.st = "fly";
-      c.vx = vx;
-      c.vy = vy;
-      c.age = 0;
-    },
-    down(s2, M5) {
-      this.grab = this.at(M5.x, M5.y);
-    },
-    up(s2, M5) {
-      const c = this.grab;
-      this.grab = null;
-      if (!c || c.st !== "idle") return;
-      const [vx, vy] = this.vel(c, M5);
-      if (Math.hypot(vx, vy) < 8) return;
-      this.launch(c, vx, vy);
-    },
-    /** Chuchvalec dorazil do disku (nebo spadl / uletěl). */
-    land(s2, c) {
-      const L = this.landing(s2, c.x, c.y, c.vx, c.vy), Q = T3.q;
-      if (L.k === "escape") {
-        ftxt(c.x, c.y, "Ulet\u011Blo", "#9aa6bd");
+    /** Vypustí past i do disku. */
+    release(s2, i, auto = false) {
+      const m = this.fill[i] || 0, cap = trapCap(s2);
+      if (m < cap * 0.05) {
+        if (!auto) ftxt(this.pos(s2, i).x, this.pos(s2, i).y - 40, "Past je pr\xE1zdn\xE1", "#9aa6bd");
         return;
       }
-      let q = Q[L.k], txt2 = L.k === "perfect" ? "Vnit\u0159n\xED prstenec" : L.k === "plunge" ? "Spadlo rovnou dovnit\u0159" : L.k === "outer" ? "Okraj disku" : "Do disku";
-      if (L.k === "perfect") {
-        s2.hole.combo = s2.t - this.lastPerfect < 6 ? Math.min(4, s2.hole.combo + 1) : 0;
-        this.lastPerfect = s2.t;
+      const p = this.pos(s2, i), res = this.inWin(s2, i), full = m >= cap * 0.95;
+      let q = full ? T3.full : 1, txt2 = "";
+      if (res) {
+        s2.hole.combo = Math.min(comboMax(s2), s2.hole.combo + 1);
         s2.hole.perfect++;
-        q *= 1 + 0.15 * s2.hole.combo;
-        if (s2.hole.combo) txt2 += ` \xB7 \u0159et\u011Bz ${s2.hole.combo + 1}\xD7`;
+        this.lastRes = s2.t;
+        q *= T3.res * comboMult(s2.hole.combo);
+        txt2 = `Souzvuk \xD7${fixed(T3.res * comboMult(s2.hole.combo) * (full ? T3.full : 1), 2)}`;
+      } else {
+        if (s2.hole.combo > 0 && !auto) ftxt(CX3, CY3 + RD + 40, "\u0158et\u011Bz p\u0159eru\u0161en", "#e98a8a");
+        s2.hole.combo = 0;
+        txt2 = full ? "P\u0159etlak \xD71,25" : "Mimo souzvuk";
       }
       s2.hole.hits++;
-      const m = clumpMass(s2) * q * c.sz;
-      if (feed(s2, m)) this.flareUp(s2);
-      ftxt(c.x, c.y - 14, `${txt2} \xD7${(Math.round(q * 100) / 100).toString().replace(".", ",")}`, L.k === "perfect" ? "#8ef0c8" : L.k === "plunge" ? "#e98a8a" : "#f2c48a");
-      const rr2 = Math.max(RH + 2, Math.min(RD, L.rc));
-      this.spirals.push({ r: rr2, a: Math.atan2(c.y - CY3, c.x - CX3), t: 0, dur: L.k === "plunge" ? 0.6 : 2.6, col: L.k === "perfect" ? "255,236,190" : "255,190,130", w: 3 + 2 * c.sz });
-      if (L.k !== "plunge") sparks(c.x, c.y, 6, "#ffd9a8", 50);
+      this.fill[i] = 0;
+      this.last[i] = s2.t;
+      if (feed(s2, m * q)) this.flareUp(s2);
+      if (!auto || res) ftxt(p.x, p.y - 42, txt2, res ? "#8ef0c8" : "#f2c48a");
+      for (let k = 0; k < 9; k++) this.spirals.push({ r: RT2 - 6, r1: RD * 0.55, a: p.a - k * 0.05, t: -k * 0.06, dur: 1.6, col: res ? "220,255,240" : "255,200,150", w: 3.2 - k * 0.15 });
+      sparks(p.x, p.y, 8, res ? "#8ef0c8" : "#ffd9a8", 60);
+      if (res && s2.hole.combo >= comboMax(s2)) this.explode(s2);
+    },
+    explode(s2) {
+      const P = power(s2), E = P * T3.boomS, D = dataRate(s2) * T3.boomS;
+      s2.res.energy += E;
+      s2.res.data += D;
+      s2.hole.booms = (s2.hole.booms || 0) + 1;
+      s2.hole.combo = 0;
+      this.boom = 1;
+      ftxt(CX3, CY3 - RD - 40, `V\xFDbuch disku! Energie a data za ${T3.boomS} s v\xFDroby`, "#fff1d6");
+      void E;
+      void D;
+      void mass;
     },
     flareUp(s2) {
       if (s2.t - this.flareT > 3) {
-        ftxt(CX3, CY3 - RD - 30, "Eddingtonova mez \u2013 z\xE1\u0159en\xED odfouklo p\u0159ebytek", "#cfe0ff");
+        ftxt(CX3, CY3 - RD - 70, "Eddingtonova mez \u2013 z\xE1\u0159en\xED odfouklo p\u0159ebytek", "#cfe0ff");
         s2.hole.flares++;
       }
       this.flareT = s2.t;
       this.flash = 1;
     },
+    down(s2, M5) {
+      const i = this.at(s2, M5.x, M5.y);
+      if (i >= 0) this.release(s2, i);
+    },
     update(s2, dt, M5) {
       if (s2.ch !== 3) return;
-      if (this.idle().length < poolCap(s2)) {
-        this.spawnT -= dt;
-        if (this.spawnT <= 0) {
-          this.spawn();
-          this.spawnT = respawnT(s2);
-        }
+      const k = traps(s2), cap = trapCap(s2), r = trapRate(s2), auto = lv3(s2, "auto3");
+      for (let i = 0; i < k; i++) {
+        this.fill[i] = Math.min(cap, (this.fill[i] || 0) + r * dt);
+        if (i < auto && this.inWin(s2, i, 0.35) && s2.t - (this.last[i] ?? -99) > 2) this.release(s2, i, true);
       }
-      for (let i = this.clumps.length - 1; i >= 0; i--) {
-        const c = this.clumps[i];
-        c.age += dt;
-        if (c.st === "idle") {
-          if (c === this.grab) continue;
-          c.a0 += dt * 0.02;
-          c.x = CX3 + Math.cos(c.a0) * c.r0;
-          c.y = CY3 + Math.sin(c.a0) * c.r0;
-          continue;
-        }
-        const sub = 6, h2 = dt / sub;
-        let done = "";
-        for (let k = 0; k < sub && !done; k++) {
-          const rx = c.x - CX3, ry = c.y - CY3, r = Math.hypot(rx, ry), a = GM / (r * r * r);
-          c.vx -= rx * a * h2;
-          c.vy -= ry * a * h2;
-          c.x += c.vx * h2;
-          c.y += c.vy * h2;
-          if (r < RD) done = "in";
-          else if (r > 1100 || c.age > 14) done = "lost";
-        }
-        if (done === "in") this.land(s2, c);
-        else if (done === "lost") ftxt(Math.max(60, Math.min(1540, c.x)), Math.max(60, Math.min(940, c.y)), "Ulet\u011Blo", "#9aa6bd");
-        if (done) this.clumps.splice(i, 1);
+      if (s2.hole.combo > 0 && s2.t - this.lastRes > PERIOD * 1.15) {
+        s2.hole.combo = 0;
+        ftxt(CX3, CY3 + RD + 40, "\u0158et\u011Bz vyprchal", "#9aa6bd");
       }
       for (let i = this.spirals.length - 1; i >= 0; i--) {
         const p = this.spirals[i];
         p.t += dt;
-        const I = iscoPx(s2);
+        if (p.t < 0) continue;
+        const I = iscoPx(s2), f = Math.min(1, p.t / p.dur);
+        if (p.r1 != null) {
+          p.r = p.r + (p.r1 - p.r) * Math.min(1, dt * 3.2);
+          if (Math.abs(p.r - p.r1) < 4) {
+            delete p.r1;
+          }
+        } else p.r = Math.max(RH, p.r - dt * (p.r - I * 0.8) * 1.5);
         p.a += dt * Math.sqrt(GM / Math.pow(Math.max(p.r, RH), 3)) * 0.35;
-        p.r = Math.max(RH, p.r - dt * (p.r - I * 0.8) / Math.max(0.3, p.dur - p.t + 0.4));
-        if (p.t > p.dur) this.spirals.splice(i, 1);
+        if (f >= 1) this.spirals.splice(i, 1);
       }
-      const tugs = lv3(s2, "tug");
-      if (tugs) {
-        this.tugT -= dt;
-        if (this.tugT <= 0) {
-          this.tugT = Math.max(0.25, T3.tugEvery / tugs);
-          this.spirals.push({ r: RD * (0.75 + rnd() * 0.25), a: rnd() * 6.283, t: 0, dur: 2.6, col: s2.r.guide ? "255,236,190" : "255,190,130", w: 3 });
+      const inj = lv3(s2, "tug");
+      if (inj) {
+        this.injT -= dt;
+        if (this.injT <= 0) {
+          this.injT = Math.max(0.12, 1.2 / inj);
+          const a = rnd() * 6.283;
+          this.spirals.push({ r: 400, r1: RD * 0.8, a, t: 0, dur: 2.2, col: s2.r.guide ? "220,255,240" : "255,200,150", w: 2.2 });
         }
       }
       if (s2.mis.tauris3 || s2.mis.star3) {
         this.streamT -= dt;
         if (this.streamT <= 0) {
           this.streamT = s2.mis.star3 ? 0.08 : 0.3;
-          this.spirals.push({ r: RD, a: s2.mis.star3 ? 2.6 : -0.7, t: 0, dur: 3, col: s2.mis.star3 ? "210,230,255" : "200,215,255", w: 2 });
+          this.spirals.push({ r: 430, r1: RD, a: s2.mis.star3 ? 2.6 : -0.7, t: 0, dur: 3, col: s2.mis.star3 ? "210,230,255" : "200,215,255", w: 2 });
         }
       }
-      if (this.spirals.length > 260) this.spirals.splice(0, this.spirals.length - 260);
+      if (this.spirals.length > 320) this.spirals.splice(0, this.spirals.length - 320);
       this.flash = Math.max(0, this.flash - dt * 1.5);
+      this.boom = Math.max(0, this.boom - dt * 0.6);
     },
     bot(s2, dt, M5) {
-      this.botT -= dt;
-      if (this.botT > 0) return;
-      this.botT = 1.4 + rnd() * 0.6;
-      const c = this.idle()[0];
-      if (!c) return;
-      const rx = c.x - CX3, ry = c.y - CY3, r = Math.hypot(rx, ry), I = iscoPx(s2);
-      const rc = I * (1.15 + rnd() * 0.9), vt = Math.sqrt(GM * rc) / r * (1 + (rnd() - 0.5) * 0.12);
-      this.launch(c, -ry / r * vt - rx / r * 25, rx / r * vt - ry / r * 25);
+      const k = traps(s2), cap = trapCap(s2), auto = lv3(s2, "auto3");
+      for (let i = auto; i < k; i++) {
+        if (!this.inWin(s2, i, 0.6) || s2.t - (this.last[i] ?? -99) < 2) continue;
+        if ((this.fill[i] || 0) < cap * 0.4) continue;
+        if (rnd() < 0.12) {
+          this.last[i] = s2.t;
+          continue;
+        }
+        this.release(s2, i);
+      }
     },
     cursor(s2, M5) {
-      return this.grab ? "grabbing" : this.at(M5.x, M5.y) ? "grab" : "default";
+      return this.at(s2, M5.x, M5.y) >= 0 ? "pointer" : "default";
     },
     draw(c, s2, v, M5) {
       const T5 = v.T, P = power(s2), act = s2.ch === 3 && !v.passive;
       const I = img("near3");
       if (I) {
-        const k = 1.375;
+        const k2 = 1.375;
         c.save();
         c.globalAlpha = 0.95;
-        c.drawImage(I, CX3 - 962 * k, CY3 - 545 * k, I.width * k, I.height * k);
+        c.drawImage(I, CX3 - 962 * k2, CY3 - 545 * k2, I.width * k2, I.height * k2);
         c.restore();
       }
       const vg = c.createRadialGradient(CX3, CY3, 120, CX3, CY3, 360);
@@ -3076,25 +3074,50 @@
       c.arc(CX3, CY3, rIn, 0, 7, true);
       c.fill();
       for (const p of this.spirals) {
-        const al = Math.min(1, p.t * 3) * Math.min(1, (p.dur - p.t) * 2);
-        c.fillStyle = `rgba(${p.col},${0.75 * al})`;
-        for (let k = 0; k < 4; k++) {
-          const aa = p.a - k * 0.09;
+        if (p.t < 0) continue;
+        const al = Math.min(1, p.t * 4) * Math.min(1, (p.dur - p.t) * 2);
+        c.fillStyle = `rgba(${p.col},${0.8 * al})`;
+        for (let k2 = 0; k2 < 3; k2++) {
+          const aa = p.a - k2 * 0.05;
           c.beginPath();
-          c.arc(CX3 + Math.cos(aa) * p.r, CY3 + Math.sin(aa) * p.r, p.w * (1 - k * 0.2), 0, 7);
+          c.arc(CX3 + Math.cos(aa) * p.r, CY3 + Math.sin(aa) * p.r, Math.max(0.6, p.w * (1 - k2 * 0.25)), 0, 7);
           c.fill();
         }
       }
+      const sa = spotA(s2), sr = (Ip + RD) * 0.5, sx2 = CX3 + Math.cos(sa) * sr, sy = CY3 + Math.sin(sa) * sr;
+      for (let k2 = 0; k2 < 14; k2++) {
+        const aa = sa - k2 * 0.06;
+        c.fillStyle = `rgba(255,240,210,${0.5 * (1 - k2 / 14)})`;
+        c.beginPath();
+        c.arc(CX3 + Math.cos(aa) * sr, CY3 + Math.sin(aa) * sr, 7 - k2 * 0.35, 0, 7);
+        c.fill();
+      }
+      const sg = c.createRadialGradient(sx2, sy, 0, sx2, sy, 22);
+      sg.addColorStop(0, "rgba(255,255,245,.95)");
+      sg.addColorStop(1, "rgba(255,220,160,0)");
+      c.fillStyle = sg;
+      c.beginPath();
+      c.arc(sx2, sy, 22, 0, 7);
+      c.fill();
+      const hand = c.createLinearGradient(sx2, sy, CX3 + Math.cos(sa) * (RT2 + 40), CY3 + Math.sin(sa) * (RT2 + 40));
+      hand.addColorStop(0, "rgba(255,235,190,.35)");
+      hand.addColorStop(1, "rgba(255,235,190,0)");
+      c.strokeStyle = hand;
+      c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(sx2, sy);
+      c.lineTo(CX3 + Math.cos(sa) * (RT2 + 40), CY3 + Math.sin(sa) * (RT2 + 40));
+      c.stroke();
       if (s2.r.jets3) {
-        for (const sg of [-1, 1]) {
-          const jg = c.createLinearGradient(CX3, CY3, CX3, CY3 + sg * 480);
+        for (const sg2 of [-1, 1]) {
+          const jg = c.createLinearGradient(CX3, CY3, CX3, CY3 + sg2 * 480);
           jg.addColorStop(0, `rgba(190,215,255,${0.55 * lit2})`);
           jg.addColorStop(1, "rgba(120,160,255,0)");
           c.fillStyle = jg;
           c.beginPath();
           c.moveTo(CX3 - 6, CY3);
-          c.lineTo(CX3 - 26, CY3 + sg * 480);
-          c.lineTo(CX3 + 26, CY3 + sg * 480);
+          c.lineTo(CX3 - 26, CY3 + sg2 * 480);
+          c.lineTo(CX3 + 26, CY3 + sg2 * 480);
           c.lineTo(CX3 + 6, CY3);
           c.fill();
         }
@@ -3116,131 +3139,105 @@
       c.beginPath();
       c.arc(CX3, CY3, RH + 1.5, 0, 7);
       c.stroke();
-      c.setLineDash([4, 6]);
-      c.strokeStyle = "rgba(142,240,200,.45)";
-      c.lineWidth = 1.2;
-      c.beginPath();
-      c.arc(CX3, CY3, Ip, 0, 7);
-      c.stroke();
-      c.beginPath();
-      c.arc(CX3, CY3, Ip * 1.9, 0, 7);
-      c.stroke();
-      c.setLineDash([]);
-      const tugs = Math.min(lv3(s2, "tug"), 12);
-      for (let i = 0; i < tugs; i++) {
-        const a = T5 * 0.05 + i / tugs * 6.283, x = CX3 + Math.cos(a) * 470, y = CY3 + Math.sin(a) * 470;
-        const TG = img("tug3");
+      const k = traps(s2), cap = trapCap(s2), CI = img("clump3"), auto = lv3(s2, "auto3");
+      for (let i = 0; i < k; i++) {
+        const p = this.pos(s2, i), f = Math.min(1, (this.fill[i] || 0) / cap), inw = this.inWin(s2, i), full = f >= 0.95;
+        if (inw) {
+          const gg = c.createRadialGradient(p.x, p.y, TR * 0.6, p.x, p.y, TR * 2.2);
+          gg.addColorStop(0, "rgba(142,240,200,.35)");
+          gg.addColorStop(1, "rgba(142,240,200,0)");
+          c.fillStyle = gg;
+          c.beginPath();
+          c.arc(p.x, p.y, TR * 2.2, 0, 7);
+          c.fill();
+        }
+        const W2 = TR * 2.4 * (0.25 + 0.75 * Math.sqrt(f));
+        c.save();
+        c.globalCompositeOperation = "lighter";
+        c.globalAlpha = 0.35 + 0.65 * f;
+        if (CI) {
+          c.translate(p.x, p.y);
+          c.rotate(T5 * 0.3 + i);
+          c.drawImage(CI, -W2 / 2, -W2 / 2, W2, W2);
+        } else {
+          c.fillStyle = "rgba(255,170,205,.8)";
+          c.beginPath();
+          c.arc(p.x, p.y, W2 * 0.3, 0, 7);
+          c.fill();
+        }
+        c.restore();
+        c.strokeStyle = "rgba(180,190,210,.55)";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(p.x, p.y, TR, 0, 7);
+        c.stroke();
+        for (let j = 0; j < 6; j++) {
+          const a = T5 * 0.4 * (i % 2 ? 1 : -1) + j / 6 * 6.283;
+          c.beginPath();
+          c.moveTo(p.x + Math.cos(a) * (TR - 5), p.y + Math.sin(a) * (TR - 5));
+          c.lineTo(p.x + Math.cos(a) * (TR + 4), p.y + Math.sin(a) * (TR + 4));
+          c.stroke();
+        }
+        c.strokeStyle = inw ? "#8ef0c8" : full ? `rgba(255,240,215,${0.6 + 0.4 * Math.sin(T5 * 6)})` : "#f2a65a";
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.arc(p.x, p.y, TR + 8, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2);
+        c.stroke();
+        if (i < auto) {
+          c.fillStyle = "#8ef0c8";
+          c.beginPath();
+          c.arc(p.x + TR * 0.75, p.y - TR * 0.75, 5, 0, 7);
+          c.fill();
+        }
+      }
+      const inj = Math.min(lv3(s2, "tug"), 12), TG = img("tug3");
+      for (let i = 0; i < inj; i++) {
+        const a = i / Math.max(inj, 1) * 6.283 + 0.3, x = CX3 + Math.cos(a) * 410, y = CY3 + Math.sin(a) * 410;
         c.save();
         c.translate(x, y);
-        c.rotate(a + 1.57);
+        c.rotate(a - Math.PI / 2);
         if (TG) c.drawImage(TG, -14, -14, 28, 28);
         else {
           c.fillStyle = "#ffe2b0";
           c.beginPath();
-          c.moveTo(0, -6);
-          c.lineTo(-4, 5);
-          c.lineTo(4, 5);
+          c.moveTo(0, 6);
+          c.lineTo(-4, -5);
+          c.lineTo(4, -5);
           c.closePath();
           c.fill();
         }
         c.restore();
-        c.fillStyle = "rgba(255,170,90,.6)";
-        c.beginPath();
-        c.arc(x - Math.cos(a) * 12, y - Math.sin(a) * 12, 4, 0, 7);
-        c.fill();
       }
-      for (const k of this.clumps) {
-        const r = 13 * k.sz, pul = 0.75 + 0.25 * Math.sin(T5 * 3 + k.r0);
-        const CI = img("clump3");
-        if (CI) {
-          const W2 = r * 4.4;
-          c.save();
-          c.globalCompositeOperation = "lighter";
-          c.globalAlpha = pul;
-          c.translate(k.x, k.y);
-          c.rotate(k.r0 + T5 * 0.1);
-          c.drawImage(CI, -W2 / 2, -W2 / 2, W2, W2);
-          c.restore();
-          if (act && k.st === "idle") {
-            c.strokeStyle = `rgba(255,210,122,${0.35 + 0.35 * pul})`;
-            c.lineWidth = 1.5;
-            c.beginPath();
-            c.arc(k.x, k.y, r * 1.7, 0, 7);
-            c.stroke();
-          }
-          continue;
-        }
-        const cg = c.createRadialGradient(k.x, k.y, 0, k.x, k.y, r * 2.6);
-        cg.addColorStop(0, `rgba(255,240,245,${pul})`);
-        cg.addColorStop(0.25, `rgba(255,170,205,${0.8 * pul})`);
-        cg.addColorStop(0.6, "rgba(220,100,170,.3)");
-        cg.addColorStop(1, "rgba(120,200,220,0)");
-        c.fillStyle = cg;
+      if (this.boom > 0) {
+        c.save();
+        c.globalCompositeOperation = "lighter";
+        const b = this.boom;
+        c.strokeStyle = `rgba(255,245,220,${b})`;
+        c.lineWidth = 14 * b;
         c.beginPath();
-        c.arc(k.x, k.y, r * 2.6, 0, 7);
-        c.fill();
-        if (act && k.st === "idle") {
-          c.strokeStyle = `rgba(255,210,122,${0.35 + 0.35 * pul})`;
-          c.lineWidth = 1.5;
-          c.beginPath();
-          c.arc(k.x, k.y, r * 1.5, 0, 7);
-          c.stroke();
-        }
-      }
-      if (act && this.grab && this.grab.st === "idle") {
-        const k = this.grab, [vx, vy] = this.vel(k, M5), L = this.landing(s2, k.x, k.y, vx, vy);
-        c.strokeStyle = "rgba(255,226,176,.85)";
-        c.lineWidth = 2;
-        c.beginPath();
-        c.moveTo(k.x, k.y);
-        c.lineTo(M5.x, M5.y);
+        c.arc(CX3, CY3, RD + (1 - b) * 420, 0, 7);
         c.stroke();
-        c.fillStyle = "#ffe2b0";
+        c.fillStyle = `rgba(255,235,200,${0.35 * b})`;
         c.beginPath();
-        c.arc(M5.x, M5.y, 4, 0, 7);
+        c.arc(CX3, CY3, RD * 1.3, 0, 7);
         c.fill();
-        const col = L.k === "perfect" ? "142,240,200" : L.k === "disk" || L.k === "outer" ? "242,166,90" : L.k === "plunge" ? "233,138,138" : "154,166,189";
-        let x = k.x, y = k.y, ux = vx, uy = vy;
-        const steps = s2.r.aim ? 150 : 50;
-        c.fillStyle = `rgba(${col},.95)`;
-        for (let i = 0; i < steps; i++) {
-          const rx = x - CX3, ry = y - CY3, r = Math.hypot(rx, ry), a = GM / (r * r * r), h2 = 1 / 60;
-          ux -= rx * a * h2;
-          uy -= ry * a * h2;
-          x += ux * h2;
-          y += uy * h2;
-          if (r < RD || r > 1100) break;
-          if (i % 3 === 0) c.fillRect(x - 2, y - 2, 4, 4);
-        }
-        if (L.k !== "escape") {
-          c.strokeStyle = `rgba(${col},.95)`;
-          c.lineWidth = 3;
-          c.beginPath();
-          c.arc(CX3, CY3, Math.max(RH + 2, Math.min(RD + 40, L.rc)), 0, 7);
-          c.stroke();
-        }
-        c.font = `600 ${13 / Math.max(v.sx, 0.3)}px ${MONO}`;
-        c.textAlign = "left";
-        c.fillStyle = `rgb(${col})`;
-        c.fillText(L.k === "perfect" ? "Vnit\u0159n\xED prstenec \xD71,5" : L.k === "disk" ? "Do disku \xD71" : L.k === "outer" ? "Okraj disku \xD70,7" : L.k === "plunge" ? "Spadne rovnou \xD70,25" : "Ulet\xED", M5.x + 14, M5.y + 4);
+        c.restore();
       }
-      const fs = 13 / Math.max(v.sx, 0.3);
+      const fs = 13 / Math.max(v.sx, 0.3), lines = [[`D\xEDra po Ald\u0159e \xB7 8 M\u2609`, "#d9dfec"], [`Eddingtonova mez ${pct(P / eddMax(s2))}`, P / eddMax(s2) > 0.8 ? "#cfe0ff" : "#9aa6bd"]];
+      if (s2.hole.combo > 0) lines.push([`\u0158et\u011Bz ${s2.hole.combo}/${comboMax(s2)} \xB7 \xD7${fixed(comboMult(s2.hole.combo), 1)}`, "#8ef0c8"]);
       c.font = `600 ${fs}px ${MONO}`;
       c.textAlign = "center";
-      c.save();
       c.lineJoin = "round";
-      c.lineWidth = fs * 0.32;
-      c.strokeStyle = "rgba(4,6,14,.88)";
-      const lab = `D\xEDra po Ald\u0159e \xB7 8 M\u2609`, ed = `Eddingtonova mez ${pct(P / eddMax(s2))}`;
-      c.strokeText(lab, CX3, CY3 + RD + 2.2 * fs);
-      c.strokeText(ed, CX3, CY3 + RD + 3.6 * fs);
-      c.restore();
-      c.fillStyle = "#d9dfec";
-      c.fillText(lab, CX3, CY3 + RD + 2.2 * fs);
-      c.fillStyle = P / eddMax(s2) > 0.8 ? "#cfe0ff" : "#9aa6bd";
-      c.fillText(ed, CX3, CY3 + RD + 3.6 * fs);
-      void mdot;
-      void count;
+      lines.forEach(([tx2, col], j) => {
+        const y = CY3 + RT2 + TR + 24 + 1.4 * j * fs;
+        c.lineWidth = fs * 0.32;
+        c.strokeStyle = "rgba(4,6,14,.88)";
+        c.strokeText(tx2, CX3, y);
+        c.fillStyle = col;
+        c.fillText(tx2, CX3, y);
+      });
+      void act;
+      void M5;
     }
   };
 
@@ -3937,7 +3934,7 @@
       p: [
         "Aldra se zhroutila. Z jej\xEDho j\xE1dra vznikla \u010Dern\xE1 d\xEDra o hmotnosti osmi Slunc\xED a kolem n\xED se rozp\xEDn\xE1 rozervan\xE1 mlhovina, zbytek hv\u011Bzdy po v\xFDbuchu.",
         "Roj ztratil sv\u011Btlo a v\xFDkon spadl na zlomek. Jedin\xFD zdroj energie je te\u010F to, co spadne do d\xEDry.",
-        "Chytni chuchvalec plynu na okraji mlhoviny, t\xE1hni ho jako prak a pus\u0165. Ho\u010F ho bokem, a\u0165 se usad\xED v disku. Kdy\u017E ho hod\xED\u0161 rovn\u011B na d\xEDru, spadne dovnit\u0159 bez u\u017Eitku."
+        "Magnetick\xE1 past u disku sb\xEDr\xE1 plyn z mlhoviny. Klikni na ni a pust\xED\u0161 ho do disku. V disku ob\xEDh\xE1 hork\xE1 skvrna, jednou za puls. Kdy\u017E pust\xED\u0161 past ve chv\xEDli, kdy je skvrna pod n\xED, d\xE1 to dvakr\xE1t v\xEDc a za\u010Dne \u0159et\u011Bz."
       ]
     },
     stages: ["St\xEDn po Ald\u0159e", "Disk se rozsv\u011Bc\xED", "Hust\xFD disk", "Rotace", "Eddingtonova mez", "V\xFDtrysky", "Svazek"],
@@ -3946,7 +3943,7 @@
     card: { stage: "Stadium {n} z {of}", sub: "D\xEDra po Ald\u0159e \xB7 8 M\u2609", cut: "Disk z boku", spin: "Rotace d\xEDry", eta: "\xDA\u010Dinnost disku", flow: "P\u0159\xEDtok do d\xEDry", edd: "Eddingtonova mez", hor: "Horizont", isco: "Vnit\u0159n\xED prstenec", real: "Ve skute\u010Dnosti trv\xE1" },
     phase: [
       { n: "St\xEDn po Ald\u0159e", real: "dny", t: "Z ob\u0159\xED hv\u011Bzdy zbyla d\xEDra, jej\xED\u017E horizont m\u011B\u0159\xED nap\u0159\xED\u010D jen 47 km. Kolem n\xED krou\u017E\xED trosky, kter\xE9 je\u0161t\u011B nestihly spadnout." },
-      { n: "Disk se rozsv\u011Bc\xED", real: "t\xFDdny", t: "Ka\u017Ed\xFD chuchvalec, kter\xFD se usad\xED v disku, se roz\u017Ehav\xED na miliony stup\u0148\u016F a z\xE1\u0159\xED v rentgenu." },
+      { n: "Disk se rozsv\u011Bc\xED", real: "t\xFDdny", t: "Ka\u017Ed\xE1 d\xE1vka plynu, kter\xE1 se usad\xED v disku, se roz\u017Ehav\xED na miliony stup\u0148\u016F a z\xE1\u0159\xED v rentgenu." },
       { n: "Hust\xFD disk", real: "m\u011Bs\xEDce", t: "Disk je hust\xFD a sv\xEDt\xED s\xE1m. Hmota v n\u011Bm st\xE9k\xE1 po spir\xE1le dovnit\u0159 a cestou prom\u011Bn\xED \u010D\xE1st sv\xE9 hmotnosti ve sv\u011Btlo." },
       { n: "Rotace", real: "roky", t: "Hmota, kter\xE1 p\u0159it\xE9k\xE1 po sm\u011Bru rotace, d\xEDru rozt\xE1\u010D\xED. \u010C\xEDm rychleji se to\u010D\xED, t\xEDm bl\xED\u017E k n\xED m\u016F\u017Ee disk sahat." },
       { n: "Eddingtonova mez", real: "des\xEDtky let", t: "Z\xE1\u0159en\xED disku tla\u010D\xED plyn ven stejn\u011B siln\u011B, jako ho d\xEDra t\xE1hne dovnit\u0159. V\xEDc hmoty u\u017E nepom\u016F\u017Ee." },
@@ -3954,30 +3951,32 @@
       { n: "Svazek", real: "stovky let", t: "D\xEDra sv\xEDt\xED v\xEDc ne\u017E Aldra za \u017Eivota. Energie sta\u010D\xED na svazek, kter\xFD dotla\u010D\xED plachty k ciz\xEDm hv\u011Bzd\xE1m." }
     ],
     hint: [
-      "Chytni chuchvalec na okraji mlhoviny, t\xE1hni ho od d\xEDry a pus\u0165. Kruh ukazuje, kde se hmota usad\xED: zelen\xFD je vnit\u0159n\xED prstenec, ten d\xE1 nejv\xEDc energie.",
-      "Kdy\u017E hod\xED\u0161 n\u011Bkolik chuchvalc\u016F rychle za sebou do vnit\u0159n\xEDho prstence, vznikne \u0159et\u011Bz a ka\u017Ed\xFD dal\u0161\xED hod d\xE1 v\xEDc."
+      "Klikni na past, kdy\u017E se rozsv\xEDt\xED zelen\u011B. Hork\xE1 skvrna v disku je pr\xE1v\u011B pod n\xED. Souzvuk d\xE1 2\xD7 v\xEDc a prodlou\u017E\xED \u0159et\u011Bz.",
+      "\u0158et\u011Bz roste s ka\u017Ed\xFDm souzvukem a ka\u017Ed\xFD dal\u0161\xED d\xE1 v\xEDc. Kdy\u017E ho dot\xE1hne\u0161 do konce, disk vybuchne. Pln\xE1 past d\xE1 nav\xEDc p\u0159etlak \xD71,25, ale kdy\u017E je pln\xE1 dlouho, plyn p\u0159ich\xE1z\xED nazmar."
     ],
     b: {
       lap: { n: "Lapa\u010D v\u011Btru", d: "Sb\xEDr\xE1 hmotu, kterou z hork\xE9ho disku odn\xE1\u0161\xED v\xEDtr. \u010C\xEDm v\xEDc krm\xED\u0161 disk, t\xEDm v\xEDc nasb\xEDr\xE1." },
-      clump: { n: "V\u011Bt\u0161\xED chuchvalce", d: "Vesper st\xE1hne z mlhoviny v\xEDc plynu najednou." },
+      clump: { n: "Siln\u011Bj\u0161\xED sb\u011Br", d: "Pasti stahuj\xED plyn z mlhoviny rychleji." },
       xray: { n: "Rentgenov\xFD dalekohled", d: "Hork\xFD disk z\xE1\u0159\xED v rentgenu. D\xE1v\xE1 data." },
-      pool: { n: "Z\xE1sobn\xEDk", d: "V mlhovin\u011B je p\u0159ipraveno v\xEDc chuchvalc\u016F a p\u0159ib\xFDvaj\xED rychleji." },
+      pool: { n: "Dal\u0161\xED past", d: "Nov\xE1 magnetick\xE1 past u disku. V\xEDc past\xED = v\xEDc souzvuk\u016F za jeden ob\u011Bh skvrny." },
       ring3: { n: "Prstenec lapa\u010D\u016F", d: "Lapa\u010De spojen\xE9 do prstence zachyt\xED v\xEDc." },
-      tug: { n: "Remork\xE9r", d: "S\xE1m zah\xE1kne chuchvalec a hod\xED ho do disku." },
+      tug: { n: "Akre\u010Dn\xED injektor", d: "Remork\xE9r na okraji mlhoviny, kter\xFD s\xE1m a bez p\u0159est\xE1n\xED vh\xE1n\xED plyn do disku." },
+      auto3: { n: "Automatick\xFD ventil", d: "Past se sama otev\u0159e, kdy\u017E je pod n\xED hork\xE1 skvrna. \u0158et\u011Bz pokra\u010Duje i bez tebe." },
       spin: { n: "Rozt\xE1\u010Den\xED d\xEDry", d: "Hmota p\u0159id\xE1van\xE1 po sm\u011Bru rotace d\xEDru rozt\xE1\u010D\xED. Vnit\u0159n\xED prstenec se p\u0159ibl\xED\u017E\xED a disk vyz\xE1\u0159\xED v\xEDc." },
       field3: { n: "Magnetick\xE1 s\xED\u0165", d: "Zes\xEDl\xED pole disku, v\xFDtrysky unesou v\xEDc." }
     },
     r: {
-      aim: { n: "V\xFDpo\u010Det dr\xE1hy", d: "P\u0159edpov\u011B\u010F dr\xE1hy chuchvalce je t\u0159ikr\xE1t del\u0161\xED." },
+      aim: { n: "\u0160ir\u0161\xED souzvuk", d: "Okno souzvuku se roz\u0161\xED\u0159\xED z 18\xB0 na 30\xB0." },
+      chain3: { n: "Del\u0161\xED \u0159et\u011Bz", d: "\u0158et\u011Bz vydr\u017E\xED a\u017E 12 \u010Dl\xE1nk\u016F, ne\u017E disk vybuchne. Ka\u017Ed\xFD \u010Dl\xE1nek d\xE1l p\u0159id\xE1v\xE1." },
       qpo: { n: "Oscilace disku", d: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji." },
-      tugs: { n: "Remork\xE9ry", d: "Odemkne remork\xE9ry, kter\xE9 krm\xED disk samy." },
-      guide: { n: "Nav\xE1d\u011Bn\xED remork\xE9r\u016F", d: "Remork\xE9ry m\xED\u0159\xED do vnit\u0159n\xEDho prstence. Ka\u017Ed\xFD jejich hod d\xE1 1,5\xD7 v\xEDc." },
+      tugs: { n: "Injektory a ventily", d: "Odemkne akre\u010Dn\xED injektory a automatick\xE9 ventily." },
+      guide: { n: "Nav\xE1d\u011Bn\xED injektor\u016F", d: "Injektory vh\xE1n\u011Bj\xED plyn p\u0159\xEDmo k vnit\u0159n\xEDmu okraji disku. Ka\u017Ed\xFD d\xE1 1,5\xD7 v\xEDc." },
       spinup: { n: "Rozt\xE1\u010Den\xED", d: "Odemkne rozt\xE1\u010Den\xED d\xEDry." },
       jets3: { n: "V\xFDtrysky", d: "Pole disku vytvo\u0159\xED v\xFDtrysky. Strop v\xFDkonu je 4\xD7 v\xFD\u0161." },
       beam3: { n: "Laserov\xFD svazek", d: "Postav\xED svazek, kter\xFD dotla\u010D\xED plachty k hv\u011Bzd\xE1m. Dokon\u010D\xED kapitolu." }
     },
     m: {
-      belt3: { n: "Zbytky p\xE1su", p: "Poz\u016Fstatek supernovy", r: "Chuchvalce maj\xED 2\xD7 v\xEDc hmoty" },
+      belt3: { n: "Zbytky p\xE1su", p: "Poz\u016Fstatek supernovy", r: "Pasti se pln\xED 2\xD7 rychleji" },
       kelvar3: { n: "Kelvar", p: "Poz\u016Fstatek supernovy", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
       tauris3: { n: "Trosky Taurise", p: "Poz\u016Fstatek supernovy", r: "Plyn z Taurise st\xE9k\xE1 do disku s\xE1m" },
       ergo: { n: "Ergosf\xE9ra", p: "T\u011Bsn\u011B u d\xEDry", r: "Disk vyz\xE1\u0159\xED 1,3\xD7 v\xEDc energie" },
@@ -3985,16 +3984,18 @@
     },
     jour: {
       h3_start: "Aldra se zhroutila. Kde sv\xEDtila hv\u011Bzda, je te\u010F \u010Dern\xE1 d\xEDra t\u011B\u017Ek\xE1 jako osm Slunc\xED a kolem n\xED rozervan\xE1 mlhovina. Roj nem\xE1 z \u010Deho br\xE1t.",
-      h3_first: "Prvn\xED chuchvalec se rozplynul v disku. Na okam\u017Eik zaz\xE1\u0159il jasn\u011Bji ne\u017E cel\xE1 mlhovina. Tohle je te\u010F moje hv\u011Bzda.",
+      h3_first: "Prvn\xED d\xE1vka plynu se rozplynula v disku. Na okam\u017Eik zaz\xE1\u0159ila jasn\u011Bji ne\u017E cel\xE1 mlhovina. Tohle je te\u010F moje hv\u011Bzda.",
       f3_isco: "Kolem \u010Dern\xE9 d\xEDry je nejmen\u0161\xED stabiln\xED dr\xE1ha. Bl\xED\u017E u\u017E hmota ob\xEDhat nem\u016F\u017Ee a spadne dovnit\u0159. Nejv\xEDc energie vyz\xE1\u0159\xED plyn t\u011Bsn\u011B nad n\xED.",
-      h3_ten: "Deset z\xE1sah\u016F. Disk se ust\xE1lil a slab\u011B pulzuje s periodou 7,3 sekundy. Puls te\u010F vych\xE1z\xED p\u0159\xEDmo z d\xEDry.",
-      h3_belt: "Zbytky p\xE1su p\u0159e\u017Eily v\xFDbuch jako \u017Ehav\xFD prstenec trosek. Vesper je zah\xE1kl a st\xE1hl bl\xED\u017E. Te\u010F je z \u010Deho br\xE1t.",
-      h3_st1: "Disk sv\xEDt\xED jako mal\xE1 hv\u011Bzda. V rentgenu je vid\u011Bt ka\u017Ed\xFD chuchvalec, kter\xFD do n\u011Bj spadne. N\u011Bkter\xE9 z\xE1blesky p\u0159i\u0161ly d\u0159\xEDv, ne\u017E jsem hodil.",
+      h3_ten: "Hork\xE1 skvrna ob\u011Bhne disk p\u0159esn\u011B za 7,3 sekundy. Stejn\u011B dlouho trv\xE1 puls. Puls te\u010F vych\xE1z\xED p\u0159\xEDmo z d\xEDry.",
+      h3_belt: "Zbytky p\xE1su p\u0159e\u017Eily v\xFDbuch jako \u017Ehav\xFD prstenec trosek. Vesper je st\xE1hl bl\xED\u017E k past\xEDm. Te\u010F je z \u010Deho br\xE1t.",
+      h3_st1: "Disk sv\xEDt\xED jako mal\xE1 hv\u011Bzda. V rentgenu je vid\u011Bt ka\u017Ed\xE1 d\xE1vka, kter\xE1 do n\u011Bj spadne. N\u011Bkter\xE9 z\xE1blesky p\u0159i\u0161ly d\u0159\xEDv, ne\u017E jsem past otev\u0159el.",
       f3_edd: "Eddingtonova mez je nejvy\u0161\u0161\xED sv\xEDtivost, p\u0159i kter\xE9 z\xE1\u0159en\xED je\u0161t\u011B neodfoukne padaj\xEDc\xED plyn. Pro d\xEDru t\u011B\u017Ekou jako osm Slunc\xED je to asi 10\xB3\xB2 W.",
       h3_qpo: "Disk kmit\xE1 s periodou 7,3 sekundy. Astronomov\xE9 tomu \u0159\xEDkaj\xED kvaziperiodick\xE9 oscilace. U tohohle disku nejsou kvazi. Jsou p\u0159esn\xE9.",
       h3_kelvar: "Pod rozt\xE1t\xFDm ledem Kelvaru le\u017E\xED \u0159ada ciz\xEDch dron\u016F. Jejich pam\u011Bti jsou pln\xE9 m\u011B\u0159en\xED, kter\xE1 jsme nikdy ned\u011Blali. V\u0161echny m\xED\u0159\xED k m\xEDstu, kde je te\u010F d\xEDra.",
-      h3_st2: "V\xFDkon roste rychleji, ne\u017E st\xEDh\xE1m h\xE1zet. Pot\u0159ebuju pomocn\xEDky, kte\u0159\xED budou krmit disk, i kdy\u017E sp\xEDm.",
-      h3_tug: "Prvn\xED remork\xE9r zah\xE1kl chuchvalec a hodil ho p\u0159esn\u011B jako j\xE1. D\xEDv\xE1m se na n\u011Bj a m\xE1m pocit, \u017Ee se d\xEDv\xE1m na sebe.",
+      h3_st2: "V\xFDkon roste rychleji, ne\u017E st\xEDh\xE1m otv\xEDrat pasti. Pot\u0159ebuju pomocn\xEDky, kte\u0159\xED budou krmit disk, i kdy\u017E sp\xEDm.",
+      h3_tug: "Prvn\xED injektor vh\xE1n\xED plyn do disku bez p\u0159est\xE1n\xED. Tenk\xFD proud sv\u011Btla, kter\xFD u\u017E nepot\u0159ebuje moji ruku.",
+      h3_boom: "\u0158et\u011Bz se uzav\u0159el a disk vybuchl. Na okam\u017Eik byl jasn\u011Bj\u0161\xED ne\u017E Aldra. Ozv\u011Bna v\xFDbuchu se vr\xE1tila v rytmu pulsu.",
+      h3_auto: "Ventil se otev\u0159el s\xE1m, p\u0159esn\u011B ve chv\xEDli, kdy bych ho otev\u0159el j\xE1. D\xEDv\xE1m se na n\u011Bj a m\xE1m pocit, \u017Ee se d\xEDv\xE1m na sebe.",
       h3_tauris: "Supernova strhla Taurisu plynn\xFD obal. Jeho zbytky jsme sto\u010Dili k d\xED\u0159e a te\u010F z nich do disku s\xE1m st\xE9k\xE1 dlouh\xFD proud plynu. Byl to kr\xE1sn\xFD obr.",
       f3_hawking: "D\xEDra by m\u011Bla sama slab\u011B z\xE1\u0159it, je to Hawkingovo z\xE1\u0159en\xED. U d\xEDry t\u011B\u017Ek\xE9 jako osm Slunc\xED m\xE1 ale teplotu jen asi osm miliardtin kelvinu. Z reliktn\xEDho z\xE1\u0159en\xED pohlt\xED v\xEDc, ne\u017E vyz\xE1\u0159\xED.",
       h3_st3: "Disk je hust\xFD a hork\xFD, ale d\xEDra z n\u011Bj bere jen p\xE1r procent. Kdy\u017E ji rozto\u010D\xEDm, vyt\u011B\u017E\xED z ka\u017Ed\xE9ho kilogramu v\xEDc.",
@@ -4122,6 +4123,8 @@
     res: { ore: "Ruda", plasma: "Plazma", mass: "Hmota", sails: "Z\xE1rodky", energy: "Energie", data: "Data" },
     tabs: { build: "Stavby", research: "V\xFDzkum", map: "Mapa", detail: "Detail" },
     ladderHole: "D\xEDra",
+    ladderCh: ["Asteroid", "Hv\u011Bzda", "D\xEDra", "Galaxie", "M\xEDstn\xED skupina", "Laniakea"],
+    // žebřík = kapitoly
     awakeT: "Sagittarius A* se probudila",
     awake: ["V\xFDtrysky ze st\u0159edu galaxie zas\xE1hly v\u0161echna ramena. Ka\u017Ed\xE1 kolonie je zachytila ve stejnou chv\xEDli.", "Pak se puls vr\xE1til. Tentokr\xE1t nep\u0159ich\xE1z\xED z d\xEDry po Ald\u0159e, ale p\u0159\xEDmo ze st\u0159edu galaxie."],
     ladder: ["Asteroid", "Hv\u011Bzda", "Soustava", "Okol\xED", "Galaxie", "M\xEDstn\xED skupina", "Laniakea"],
@@ -5469,7 +5472,6 @@
   };
   var s;
   var MECH = { 1: kamen, 2: hvezda, 3: diera, 4: galaxie };
-  var VIEWS = ["body", "star", "system", "near", "galaxy", "group", "laniakea"];
   var lastCuts = 0;
   var lastCrack = 0;
   var view = "body";
@@ -5620,11 +5622,11 @@
       b.onclick = () => setTab(t);
       $("tabs").appendChild(b);
     }
-    VIEWS.forEach((v, i) => {
-      if (v === "near") return;
-      const b = h("button", "", UI.ladder[i]);
+    UI.ladderCh.forEach((lab, i) => {
+      const v = ["body", "star", "star", "galaxy", "", ""][i];
+      const b = h("button", "", lab);
       b.dataset.v = v;
-      if (v === "system") b.classList.add("sub");
+      b.dataset.ch = String(i + 1);
       b.onclick = () => setView(v);
       $("ladder").appendChild(b);
     });
@@ -5688,9 +5690,6 @@
     if (cv.style.cursor !== cur) cv.style.cursor = cur;
     const dc = document.getElementById("detc");
     if (tab === "detail" && dc) drawDetail(dc, s, T);
-  }
-  function ladderName(v) {
-    return v === "star" && s.ch >= 3 ? UI.ladderHole : UI.ladder[VIEWS.indexOf(v)];
   }
   function viewOpen(v) {
     if (v === "body") return s.ch < 3;
@@ -5763,8 +5762,8 @@
     $("hint").hidden = view !== C.view || s.chT > 900 && s.stage >= C.lvl2 + 1;
     journal();
     document.querySelectorAll("#ladder button").forEach((b) => {
-      const o = viewOpen(b.dataset.v), gone = b.dataset.v === "body" && s.ch >= 3;
-      setHTML(b, o || gone ? ladderName(b.dataset.v) : "???");
+      const ch = +b.dataset.ch, o = !!b.dataset.v && viewOpen(b.dataset.v) && (ch === s.ch || ch === 1 && s.ch === 2), gone = ch < s.ch;
+      setHTML(b, o || gone ? UI.ladderCh[ch - 1] : "???");
       b.disabled = !o;
       b.classList.toggle("on", o && b.dataset.v === view);
       b.title = o ? "" : UI.locked;

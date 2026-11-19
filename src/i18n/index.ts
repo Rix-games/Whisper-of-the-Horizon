@@ -17,6 +17,7 @@ export const UI = {
   res: { ore: "Ruda", plasma: "Plazma", mass: "Hmota", sails: "Zárodky", energy: "Energie", data: "Data" } as Record<string, string>,
   tabs: { build: "Stavby", research: "Výzkum", map: "Mapa", detail: "Detail" } as Record<string, string>,
   ladderHole: "Díra",
+  ladderCh: ["Asteroid", "Hvězda", "Díra", "Galaxie", "Místní skupina", "Laniakea"],   // žebřík = kapitoly
   awakeT: "Sagittarius A* se probudila",
   awake: ["Výtrysky ze středu galaxie zasáhly všechna ramena. Každá kolonie je zachytila ve stejnou chvíli.", "Pak se puls vrátil. Tentokrát nepřichází z díry po Aldře, ale přímo ze středu galaxie."],
   ladder: ["Asteroid", "Hvězda", "Soustava", "Okolí", "Galaxie", "Místní skupina", "Laniakea"],
