@@ -23,7 +23,7 @@ button { font:inherit; color:inherit; }
 #kprogw .bar { height:5px; }
 #res { display:flex; gap:8px; flex-wrap:nowrap; position:absolute; left:50%; transform:translateX(-50%); }
 @media (max-width: 1250px) { #res { position:static; transform:none; } }
-body[data-ch="2"] { --cur:#ff9a72; } body[data-ch="3"] { --cur:#c9b6ff; }
+body[data-ch="2"] { --cur:#ff9a72; } body[data-ch="3"] { --cur:#c9b6ff; } body[data-ch="5"] { --cur:#f5c98a; }
 .chip { --tint:transparent; background:linear-gradient(90deg, var(--tint), var(--pan) 70%); }
 .chip.c-cur { --tint:color-mix(in srgb, var(--cur) 18%, var(--pan)); } .chip.c-cur .l { color:var(--cur); }
 .chip.c-energy { --tint:color-mix(in srgb, var(--en) 16%, var(--pan)); } .chip.c-energy .l { color:var(--en); }

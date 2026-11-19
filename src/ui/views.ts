@@ -6,6 +6,7 @@ import { mVisible } from "../core/engine";
 import { coverage } from "../chapters/ch2";
 import { hvezda, LOOK, starSprite } from "../mech/ch2";
 import { GAL_SITES } from "../chapters/ch4";
+import { GX, GY } from "../mech/ch5";
 import { gsp } from "../mech/ch4";
 import { galaxyNodes } from "../core/galaxy";
 import { MONO, SANS } from "../mech/fx";
@@ -229,8 +230,8 @@ export function missionPos(id: string): [number, number] {
   if (m.view === "galaxy") { const p = GAL_SITES[id]; const q = gsp({ x: p[0], y: p[1] }); return [q[0], q[1]]; }
   return m.at;
 }
-const ORIGIN: Record<string, [number, number]> = { system: SYS.platform, near: NEAR.aldra, galaxy: [0, 0] };
-export function drawMissions(c: CanvasRenderingContext2D, s: State, view: string, T: number, sx: number, hover: string | null) {
+const ORIGIN: Record<string, [number, number]> = { system: SYS.platform, near: NEAR.aldra, galaxy: [0, 0], group: [GX, GY] };
+export function drawMissions(c: CanvasRenderingContext2D, s: State, view: string, T: number, sx: number, hover: string | null, names = true) {
   const fs = 13 / Math.max(sx, 0.3);
   for (const m of MISSIONS) {
     if (m.ch !== s.ch || m.view !== view || !mVisible(s, m.id)) continue;
@@ -239,7 +240,7 @@ export function drawMissions(c: CanvasRenderingContext2D, s: State, view: string
     c.strokeStyle = done ? "rgba(142,240,200,.7)" : run ? "rgba(242,166,90,.9)" : `rgba(242,166,90,${0.45 + 0.4 * pul})`;
     c.lineWidth = 1.6; c.beginPath(); c.arc(x, y, 9 + (done ? 0 : pul * 3), 0, 7); c.stroke();
     if (done) { c.fillStyle = "rgba(142,240,200,.8)"; c.beginPath(); c.arc(x, y, 3, 0, 7); c.fill(); }
-    if (!done || hover === m.id) label(c, x + 14, y + 26, find("m", m.id).n, done ? "#8ef0c8" : "#f2c48a", fs);
+    if ((!done && names) || hover === m.id) label(c, x + 14, y + 26, find("m", m.id).n, done ? "#8ef0c8" : "#f2c48a", fs);
   }
   if (s.run && MMAP[s.run.id].view === view) {
     const [tx, ty] = missionPos(s.run.id);

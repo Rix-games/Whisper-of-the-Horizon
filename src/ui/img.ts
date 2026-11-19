@@ -26,7 +26,14 @@ const FILES = {
   beacon: "kap3-majak.webp",
   sail: "kap3-plachta.webp",
   intro4: "kap3-uvod.webp",
-  intro3: "kap3-dira-uvod.webp",   // zatím chybí – úvod Kap. 3 Díra
+  intro3: "kap3-dira-uvod.webp",
+  bg5: "kap5-pozadi.webp",          // Kap. 5: pozadí scény (Mléčná dráha se kreslí z kap3-galaxie)
+  m31: "kap5-m31.webp",
+  m33: "kap5-m33.webp",
+  dwarf: "kap5-trpaslik.webp",
+  cloud: "kap5-mracno.webp",
+  stream5: "kap5-proud.webp",       // Detail
+  intro5: "kap5-uvod.webp",
 };
 export type ImgKey = keyof typeof FILES;
 const cache: Partial<Record<ImgKey, HTMLImageElement>> = {};

@@ -11,6 +11,7 @@ import { kamen } from "../src/mech/ch1";
 import { hvezda } from "../src/mech/ch2";
 import { diera } from "../src/mech/ch3";
 import { galaxie } from "../src/mech/ch4";
+import { skupina } from "../src/mech/ch5";
 import { fxUpdate, setFx } from "../src/mech/fx";
 
 const env = (k: string, d: number) => (process.env[k] ? Number(process.env[k]) : d);
@@ -18,7 +19,7 @@ const SEED = env("SEED", 1), LIMIT = env("LIMIT", 6 * 3600), TL = env("TL", 0), 
 seedRnd(SEED); setFx(false);
 const s = newState();
 if (ONLY > 1) { s.ch = ONLY; CHAPTERS[ONLY - 1].simStart?.(s); CHAPTERS[ONLY - 1].onStart?.(s); }
-const mechs: any = { 1: kamen, 2: hvezda, 3: diera, 4: galaxie };
+const mechs: any = { 1: kamen, 2: hvezda, 3: diera, 4: galaxie, 5: skupina };
 const M = { x: 800, y: 500, px: 800, py: 500, down: false, inside: true };
 let mech = mechs[s.ch]; mech.reset();
 const ev: [number, string][] = [];

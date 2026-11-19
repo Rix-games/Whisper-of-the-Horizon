@@ -8,13 +8,14 @@ import { eta, spinA, eddMax, mdot } from "../chapters/ch3";
 import { iscoM } from "../mech/ch3";
 import { power } from "../core/engine";
 import { galaxyNodes } from "../core/galaxy";
-import { count, pct, mass } from "../core/format";
+import { count, pct, mass, num } from "../core/format";
 import { MONO, SANS } from "../mech/fx";
 import { img } from "./img";
 import { did } from "../core/bus";
 import { soft } from "./views";
 import { LOOK, PIC, starSprite } from "../mech/ch2";
 import { stagesOf } from "../core/defs";
+import { joined, tapped, cap5, SATS, live } from "../chapters/ch5";
 
 const COLS = ["#6d655c", "#5c4a3e", "#8a7a55", "#9aa3ad", "#8a6fd0"];
 
@@ -28,6 +29,7 @@ export function drawDetail(cv: HTMLCanvasElement, s: State, T: number) {
   if (s.ch === 1) cutaway(c, s, T, w, hh, X);
   else if (s.ch === 2) starCut(c, s, T, w, hh, X);
   else if (s.ch === 3) holeCut(c, s, T, w, hh, X);
+  else if (s.ch === 5) groupCut(c, s, T, w, hh, X);
   else galaxyCut(c, s, T, w, hh, X);
 }
 
@@ -66,6 +68,39 @@ function holeCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh
   if (cw < 200) { c.textBaseline = "alphabetic"; return; }
   stageCard(c, s, X, st, S.sub, [[S.spin, a.toFixed(3).replace(".", ",")], [S.eta, pct(eta(s))], [S.flow, mass(mdot(s)) + "/s"], [S.edd, pct(power(s) / eddMax(s))], [S.real, P.real]], P.t, ix, Math.max(40, hh / 2 - 150), cw, S.stage);
   c.textBaseline = "alphabetic"; void T;
+}
+
+// ---------- Kap. 5: trpasličí galaxii roztahují slapy do proudu ----------
+const SOFT: Record<string, HTMLCanvasElement> = {};
+/** Čtvercový obrázek s černým pozadím přes měkkou kruhovou masku (sdílená cache podle klíče). */
+function softSq(k: string, I: HTMLImageElement | null, r0 = 0.6) {
+  if (!I) return null;
+  if (SOFT[k]) return SOFT[k];
+  const cv = document.createElement("canvas"); cv.width = I.width; cv.height = I.height;
+  const g = cv.getContext("2d")!; g.drawImage(I, 0, 0); g.globalCompositeOperation = "destination-in";
+  const w = I.width / 2, gr = g.createRadialGradient(w, w, w * r0, w, w, w);
+  gr.addColorStop(0, "#000"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, I.width, I.height);
+  return (SOFT[k] = cv);
+}
+function groupCut(c: CanvasRenderingContext2D, s: State, T: number, w: number, hh: number, X: any) {
+  const st = Math.min(s.stage, X.phase.length - 1), P = X.phase[st], S = X.card;
+  const sz = Math.min(w * 0.55, hh - 30), x0 = 20, y0 = (hh - sz) / 2;
+  const im = softSq("stream5", img("stream5"));
+  if (im) { c.save(); c.globalCompositeOperation = "screen"; c.drawImage(im, x0, y0, sz, sz); c.restore(); }
+  // jiskry v proudu – sklizeň běží (relé nebo ruka)
+  c.save(); c.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 40; i++) {
+    const f = ((T * 0.06 + i / 40) % 1), side = i % 2 ? 1 : -1, u = 0.5 + side * f * 0.42;
+    const x = x0 + sz * (0.56 + (u - 0.5) * 0.95), y = y0 + sz * (0.47 + (u - 0.5) * 0.7 + 0.04 * Math.sin(f * 9 + i));
+    c.globalAlpha = (1 - f) * 0.7; c.fillStyle = i % 3 ? "#ffe2b0" : "#f2a65a"; c.fillRect(x - 1, y - 1, 2, 2);
+  }
+  c.restore(); c.globalAlpha = 1;
+  c.textAlign = "left"; c.font = `600 11px ${SANS}`; c.fillStyle = "rgba(176,181,212,.9)"; c.fillText(S.cut.toUpperCase(), 20, 24);
+  const ix = x0 + sz + 40, cw = Math.min(380, w - ix - 20);
+  if (cw < 200) return;
+  const left = SATS.filter((d) => live(s, d)).length;
+  stageCard(c, s, X, st, P.n, [[S.where, P.where], [S.joined, `${tapped(s)} z ${SATS.length}`], [S.orbit, String(joined(s))], [S.stars, `${num(s.prog.S5 || 0)} M☉`], [S.cap, pct(cap5(s))], [S.real, P.real]], P.t, ix, Math.max(40, hh / 2 - 170), cw, S.stage);
+  c.textBaseline = "alphabetic";
 }
 
 // ---------- Kap. 4: Mléčná dráha z boku (jen aktuální stadium) ----------

@@ -3,19 +3,19 @@ import { GV, remapColonies } from "./galaxy";
 export const SAVE_KEY = "sepot-horizontu-1";
 export const SAVE_VERSION = 2;
 
-export type Cur = "ore" | "plasma" | "mass" | "sails";
+export type Cur = "ore" | "plasma" | "mass" | "sails" | "streams";
 
 export interface LogEntry { t: number; k: string; kind: "story" | "fact" | "report"; }
 
 export interface State {
   v: number;
-  ch: number;            // 1..4 (zatím)
+  ch: number;            // 1..5 (zatím)
   stage: number;         // index stadia v kapitole
   t: number;             // celkový herní čas (s)
   chT: number;           // čas v kapitole (s)
   stT: number;           // čas ve stadiu (s)
-  res: { ore: number; plasma: number; mass: number; sails: number; energy: number; data: number };
-  tot: { ore: number; plasma: number; mass: number; sails: number };
+  res: { ore: number; plasma: number; mass: number; sails: number; streams: number; energy: number; data: number };
+  tot: { ore: number; plasma: number; mass: number; sails: number; streams: number };
   b: Record<string, number>;        // stavby a vylepšení (počty / úrovně)
   r: Record<string, number>;        // hotový výzkum (1)
   mis: Record<string, number>;      // hotové mise (1)
@@ -33,6 +33,8 @@ export interface State {
   // Kap. 4: osídlené uzly galaxie (bitová mapa v řetězci "0/1")
   col: string;
   gv: number;                       // verze rozmístění uzlů galaxie
+  // Kap. 5: satelitní galaxie (výstřednost e, střední anomálie M, zbývající hvězdy st 0–1, g: 0 obíhá, 1 pohlcena, 2 splynula)
+  sat: Record<string, { e: number; M: number; st: number; g: number }>;
   prog: Record<string, number>;
   best: { chainHand: number; reson: number };
   stats: { cuts: number; full: number; flares: number; perfect: number; cme: number; sweeps: number };
@@ -45,11 +47,11 @@ export interface State {
 export function newState(): State {
   return {
     v: SAVE_VERSION, ch: 1, stage: 0, t: 0, chT: 0, stT: 0,
-    res: { ore: 0, plasma: 0, mass: 0, sails: 0, energy: 0, data: 0 },
-    tot: { ore: 0, plasma: 0, mass: 0, sails: 0 },
+    res: { ore: 0, plasma: 0, mass: 0, sails: 0, streams: 0, energy: 0, data: 0 },
+    tot: { ore: 0, plasma: 0, mass: 0, sails: 0, streams: 0 },
     hole: { D: 0, combo: 0, flares: 0, hits: 0, perfect: 0, booms: 0 },
     b: {}, r: {}, mis: {}, run: null, unl: {}, seen: {}, log: [],
-    base: 0, auto: {}, bank: {}, n: 0, col: "", gv: GV, prog: {},
+    base: 0, auto: {}, bank: {}, n: 0, col: "", gv: GV, sat: {}, prog: {},
     best: { chainHand: 0, reson: 0 },
     stats: { cuts: 0, full: 0, flares: 0, perfect: 0, cme: 0, sweeps: 0 },
     done: 0, last: Date.now(),

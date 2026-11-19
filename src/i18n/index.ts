@@ -3,18 +3,19 @@ import { CS1 } from "./cs1";
 import { CS2 } from "./cs2";
 import { CS3 } from "./cs3";
 import { CS4 } from "./cs4";
+import { CS5 } from "./cs5";
 
-export const TX: Record<number, typeof CS1 & { layer?: string[] }> = { 1: CS1, 2: CS2 as any, 3: CS3 as any, 4: CS4 as any };
+export const TX: Record<number, typeof CS1 & { layer?: string[] }> = { 1: CS1, 2: CS2 as any, 3: CS3 as any, 4: CS4 as any, 5: CS5 as any };
 export const tx = (ch: number) => TX[ch];
 /** Najde text stavby/výzkumu/mise/útržku v libovolné kapitole. */
-export function find(kind: "b" | "r" | "m" | "jour", id: string): any {
-  for (const k of [1, 2, 3, 4]) { const v = (TX[k] as any)[kind][id]; if (v) return v; }
+export function find(kind: "b" | "r" | "m" | "jour" | "sat", id: string): any {
+  for (const k of [1, 2, 3, 4, 5]) { const v = (TX[k] as any)[kind]?.[id]; if (v) return v; }
   return null;
 }
 
 export const UI = {
   game: "Šepot Horizontu",
-  res: { ore: "Ruda", plasma: "Plazma", mass: "Hmota", sails: "Zárodky", energy: "Energie", data: "Data" } as Record<string, string>,
+  res: { ore: "Ruda", plasma: "Plazma", mass: "Hmota", sails: "Zárodky", streams: "Hvězdné proudy", energy: "Energie", data: "Data" } as Record<string, string>,
   tabs: { build: "Stavby", research: "Výzkum", map: "Mapa", detail: "Detail" } as Record<string, string>,
   ladderHole: "Díra",
   ladderCh: ["Asteroid", "Hvězda", "Díra", "Galaxie", "Místní skupina", "Laniakea"],   // žebřík = kapitoly
@@ -30,7 +31,7 @@ export const UI = {
   unitsTip: "Zásoba energie je v joulech (J) a platí se z ní mise. Výkon ve wattech (W) říká, kolik energie přibude za sekundu: 1 W = 1 J za sekundu.",
   noiseVol: "Šum vesmíru",
   kBelow: "K < 0",
-  toType: (k: number, n: { big: boolean; v: string }) => `Do Typu ${["", "I", "II", "III"][k] || k}: ${n.big ? `potřeba ${n.v} větší výkon` : `chybí ${n.v} výkonu`}`,
+  toType: (k: number, n: { big: boolean; v: string }) => `Do Typu ${["", "I", "II", "III", "IV"][k] || k}: ${n.big ? `potřeba ${n.v} větší výkon` : `chybí ${n.v} výkonu`}`,
   typeMax: "Typ III dosažen",
   needMore: (n: { big: boolean; v: string }) => (n.big ? `Potřebuješ ${n.v} větší výkon` : `Do cíle chybí ${n.v} výkonu`),
   perPiece: "za kus",
@@ -44,8 +45,9 @@ export const UI = {
   researchNone: "Teď není co zkoumat. Další směr se objeví s postupem.",
   researchReady: "Připraveno",
   researchIn: (t: string) => `za ~${t}`,
-  detailNote: { 1: "Čím hlouběji laser řeže, tím bohatší ruda.", 2: "Řez Aldrou ukazuje, co právě hoří v jádře. S každým stadiem se mění světlo i velikost hvězdy.", 3: "Disk díry z boku. Čím rychleji se díra točí, tím blíž k ní sahá vnitřní prstenec.", 4: "Mléčná dráha z boku. Světla jsou tvoje kolonie, zelený pás ukazuje, kam zárodky zatím doletí." } as Record<number, string>,
+  detailNote: { 1: "Čím hlouběji laser řeže, tím bohatší ruda.", 2: "Řez Aldrou ukazuje, co právě hoří v jádře. S každým stadiem se mění světlo i velikost hvězdy.", 3: "Disk díry z boku. Čím rychleji se díra točí, tím blíž k ní sahá vnitřní prstenec.", 4: "Mléčná dráha z boku. Světla jsou tvoje kolonie, zelený pás ukazuje, kam zárodky zatím doletí.", 5: "Slapy velké galaxie roztahují trpasličí galaxii do dlouhého proudu hvězd. Tak vypadá každá sklizeň." } as Record<number, string>,
   missionsDone: "Splněné mise",
+  missionsNone: "Teď není kam letět. Nové cíle se objeví s postupem.",
   send: "Vyslat Vesper", running: "Vesper letí", busy: "Vesper je na cestě",
   duration: "Let",
   autoOn: "Zapnuto", autoOff: "Vypnuto",
@@ -70,14 +72,18 @@ export const UI = {
   passiveView: "Pohled – hraje se jinde",
   next: "Další kapitola",
   theEnd: "Konec dostupného obsahu",
-  theEndBody: "Kapitola 5 se připravuje. Galaxie dál svítí a můžeš osidlovat dál.",
+  theEndBody: "Kapitola 6 se připravuje. Místní skupina dál svítí a můžeš sklízet dál.",
+  mergeT: "Mlékomeda",
+  merge: ["Andromeda a Mléčná dráha splynuly v jednu velkou eliptickou galaxii. Obě černé díry se k sobě pomalu stáčejí.", "Pak se puls ozval znovu. Silnější a z dálky, ze směru souhvězdí Panny."],
+  awakeNext: "Pokračovat",
   ktitle: "Kardaševova škála",
   kbody: "Měří civilizaci podle výkonu, který využívá. K = (log₁₀ P − 6) / 10. Výkon je ve wattech (W), uložená energie v joulech (J): 1 W = 1 J za sekundu.",
   types: {
     1: "Typ I – výkon celé planety, všechno světlo, které na ni dopadá (~10¹⁶ W).",
     2: "Typ II – výkon celé hvězdy. Slunce vyzařuje 3,8·10²⁶ W.",
     3: "Typ III – výkon celé galaxie, zhruba 5·10³⁶ W pro Mléčnou dráhu.",
+    4: "Typ IV – 10⁴⁶ W, světlo zhruba dvou miliard galaxií jako Mléčná dráha. Na této úrovni už se počítá celý vesmír.",
   } as Record<number, string>,
   kmore: "Další typy se ukážou, až se k nim přiblížíš.",
-  detail: { 1: "Řez asteroidem", 2: "Život Aldry", 3: "Řez diskem", 4: "Řez galaxií" } as Record<number, string>,
+  detail: { 1: "Řez asteroidem", 2: "Život Aldry", 3: "Řez diskem", 4: "Řez galaxií", 5: "Slapový proud" } as Record<number, string>,
 };

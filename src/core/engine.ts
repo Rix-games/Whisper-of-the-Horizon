@@ -120,6 +120,7 @@ export function nextChapter(s: State) {
   const P = power(s);
   s.done = Math.max(s.done, s.ch);
   if (s.ch >= LAST_CH) { emit("theend"); return; }
+  if (s.run) { s.mis[s.run.id] = 1; s.run = null; }   // rozletěná mise minulé kapitoly doletí hned
   s.base = P; s.ch++; s.stage = 0; s.chT = 0; s.stT = 0;
   s.res.energy = Math.min(s.res.energy, P * 300);
   chOf(s).onStart?.(s);
@@ -134,7 +135,7 @@ export function tick(s: State, dt: number) {
   s.res.data += dataRate(s) * dt;
   const ps = C.passive(s);
   if (ps > 0) gain(s, C.cur, ps * dt);
-  for (const c of ["ore", "plasma", "mass", "sails"] as Cur[]) {   // klouzavý průměr příjmu
+  for (const c of ["ore", "plasma", "mass", "sails", "streams"] as Cur[]) {   // klouzavý průměr příjmu
     const k = Math.min(1, dt * 0.35);
     RT.rate[c] = RT.rate[c] * (1 - k) + (RT.inc[c] / Math.max(dt, 1e-3)) * k;
     RT.inc[c] = 0;

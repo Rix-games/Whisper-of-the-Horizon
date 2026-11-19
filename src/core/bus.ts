@@ -8,8 +8,8 @@ export function emit(type: string, id?: string, v?: any) { for (const f of liste
 
 /** Běhové (neukládané) hodnoty. */
 export const RT = {
-  inc: { ore: 0, plasma: 0, mass: 0, sails: 0 } as Record<Cur, number>,
-  rate: { ore: 0, plasma: 0, mass: 0, sails: 0 } as Record<Cur, number>,
+  inc: { ore: 0, plasma: 0, mass: 0, sails: 0, streams: 0 } as Record<Cur, number>,
+  rate: { ore: 0, plasma: 0, mass: 0, sails: 0, streams: 0 } as Record<Cur, number>,
   P: 0, jt: 0, flare: 0,
 };
 export const n = (s: State, id: string) => s.b[id] || 0;

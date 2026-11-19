@@ -5,8 +5,9 @@ import { CH1 } from "../chapters/ch1";
 import { CH2 } from "../chapters/ch2";
 import { CH3 } from "../chapters/ch3";
 import { CH4 } from "../chapters/ch4";
+import { CH5 } from "../chapters/ch5";
 
-export const CHAPTERS: ChapterDef[] = [CH1, CH2, CH3, CH4];
+export const CHAPTERS: ChapterDef[] = [CH1, CH2, CH3, CH4, CH5];
 export const LAST_CH = CHAPTERS.length;
 /** Počet stadií kapitoly = počet cílů; po posledním následuje závěrečný výzkum. */
 export const stagesOf = (s: State) => chOf(s).goals(s).length;
@@ -28,5 +29,6 @@ export const KTYPES = [
   { k: 1, ch: 1, w: 1e16 },
   { k: 2, ch: 2, w: 3.8e26 },
   { k: 3, ch: 4, w: 5e36 },
+  { k: 4, ch: 5, w: 1e46 },
 ];
 export type { BDef, RDef, MDef, JDef };
