@@ -146,7 +146,7 @@ export const diera: Mech & any = {
     }
     // injektory a proudy – jen obraz, hmotu přidává kapitola (autos)
     const inj = lv(s, "tug");
-    if (inj) { this.injT -= dt; if (this.injT <= 0) { this.injT = Math.max(0.12, 1.2 / inj); const a = rnd() * 6.283; this.spirals.push({ r: 400, r1: RD * 0.8, a, t: 0, dur: 2.2, col: s.r.guide ? "220,255,240" : "255,200,150", w: 2.2 }); } }
+    if (inj) { this.injT -= dt; if (this.injT <= 0) { this.injT = Math.max(0.12, 1.2 / inj); const ni = Math.min(inj, 12), a = (Math.floor(rnd() * ni) / ni) * 6.283 + 0.3; this.spirals.push({ r: 400, r1: RD * 0.8, a, t: 0, dur: 2.2, col: s.r.guide ? "220,255,240" : "255,200,150", w: 2.2 }); } }
     if (s.mis.tauris3 || s.mis.star3) { this.streamT -= dt; if (this.streamT <= 0) { this.streamT = s.mis.star3 ? 0.08 : 0.3; this.spirals.push({ r: 430, r1: RD, a: s.mis.star3 ? 2.6 : -0.7, t: 0, dur: 3, col: s.mis.star3 ? "210,230,255" : "200,215,255", w: 2 }); } }
     if (this.spirals.length > 320) this.spirals.splice(0, this.spirals.length - 320);
     this.flash = Math.max(0, this.flash - dt * 1.5); this.boom = Math.max(0, this.boom - dt * 0.6);
@@ -236,12 +236,17 @@ export const diera: Mech & any = {
       c.beginPath(); c.arc(p.x, p.y, TR + 8, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); c.stroke();
       if (i < auto) { c.fillStyle = "#8ef0c8"; c.beginPath(); c.arc(p.x + TR * 0.75, p.y - TR * 0.75, 5, 0, 7); c.fill(); }
     }
-    // injektory na okraji: stálý přítok
-    const inj = Math.min(lv(s, "tug"), 12), TG = img("tug3");
+    // injektory na okraji: malé trysky mířící k díře, od každé vede slabý proud plynu do disku
+    const inj = Math.min(lv(s, "tug"), 12);
     for (let i = 0; i < inj; i++) {
-      const a = (i / Math.max(inj, 1)) * 6.283 + 0.3, x = CX + Math.cos(a) * 410, y = CY + Math.sin(a) * 410;
-      c.save(); c.translate(x, y); c.rotate(a - Math.PI / 2);
-      if (TG) c.drawImage(TG, -14, -14, 28, 28); else { c.fillStyle = "#ffe2b0"; c.beginPath(); c.moveTo(0, 6); c.lineTo(-4, -5); c.lineTo(4, -5); c.closePath(); c.fill(); }
+      const a = (i / Math.max(inj, 1)) * 6.283 + 0.3, ca = Math.cos(a), sa2 = Math.sin(a), x = CX + ca * 410, y = CY + sa2 * 410;
+      const sg2 = c.createLinearGradient(x, y, CX + ca * RD, CY + sa2 * RD);
+      sg2.addColorStop(0, "rgba(255,200,150,.35)"); sg2.addColorStop(1, "rgba(255,200,150,0)");
+      c.strokeStyle = sg2; c.lineWidth = 2; c.beginPath(); c.moveTo(x - ca * 10, y - sa2 * 10); c.lineTo(CX + ca * RD, CY + sa2 * RD); c.stroke();
+      c.save(); c.translate(x, y); c.rotate(a);
+      c.fillStyle = "#3a4152"; c.strokeStyle = "rgba(242,166,90,.9)"; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(9, -7); c.lineTo(9, 7); c.lineTo(-9, 3.5); c.lineTo(-9, -3.5); c.closePath(); c.fill(); c.stroke();   // trychtýř ústím k díře
+      c.fillStyle = `rgba(255,214,160,${0.7 + 0.3 * Math.sin(T * 4 + i)})`; c.beginPath(); c.arc(-10, 0, 2.6, 0, 7); c.fill();
       c.restore();
     }
     if (this.boom > 0) { c.save(); c.globalCompositeOperation = "lighter"; const b = this.boom; c.strokeStyle = `rgba(255,245,220,${b})`; c.lineWidth = 14 * b; c.beginPath(); c.arc(CX, CY, RD + (1 - b) * 420, 0, 7); c.stroke(); c.fillStyle = `rgba(255,235,200,${0.35 * b})`; c.beginPath(); c.arc(CX, CY, RD * 1.3, 0, 7); c.fill(); c.restore(); }

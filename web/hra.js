@@ -1441,7 +1441,6 @@
     disk3: "kap3-disk.webp",
     // Kap. 3 Díra: disk shora (stín = 20,8 % šířky)
     clump3: "kap3-chuchvalec.webp",
-    tug3: "kap3-remorker.webp",
     system3: "kap3-soustava.webp",
     near3: "kap3-okoli.webp",
     sgra: "kap3-sgr-a.webp",
@@ -3050,7 +3049,7 @@
         this.injT -= dt;
         if (this.injT <= 0) {
           this.injT = Math.max(0.12, 1.2 / inj);
-          const a = rnd() * 6.283;
+          const ni = Math.min(inj, 12), a = Math.floor(rnd() * ni) / ni * 6.283 + 0.3;
           this.spirals.push({ r: 400, r1: RD * 0.8, a, t: 0, dur: 2.2, col: s2.r.guide ? "220,255,240" : "255,200,150", w: 2.2 });
         }
       }
@@ -3259,22 +3258,36 @@
           c.fill();
         }
       }
-      const inj = Math.min(lv3(s2, "tug"), 12), TG = img("tug3");
+      const inj = Math.min(lv3(s2, "tug"), 12);
       for (let i = 0; i < inj; i++) {
-        const a = i / Math.max(inj, 1) * 6.283 + 0.3, x = CX3 + Math.cos(a) * 410, y = CY3 + Math.sin(a) * 410;
+        const a = i / Math.max(inj, 1) * 6.283 + 0.3, ca = Math.cos(a), sa2 = Math.sin(a), x = CX3 + ca * 410, y = CY3 + sa2 * 410;
+        const sg2 = c.createLinearGradient(x, y, CX3 + ca * RD, CY3 + sa2 * RD);
+        sg2.addColorStop(0, "rgba(255,200,150,.35)");
+        sg2.addColorStop(1, "rgba(255,200,150,0)");
+        c.strokeStyle = sg2;
+        c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(x - ca * 10, y - sa2 * 10);
+        c.lineTo(CX3 + ca * RD, CY3 + sa2 * RD);
+        c.stroke();
         c.save();
         c.translate(x, y);
-        c.rotate(a - Math.PI / 2);
-        if (TG) c.drawImage(TG, -14, -14, 28, 28);
-        else {
-          c.fillStyle = "#ffe2b0";
-          c.beginPath();
-          c.moveTo(0, 6);
-          c.lineTo(-4, -5);
-          c.lineTo(4, -5);
-          c.closePath();
-          c.fill();
-        }
+        c.rotate(a);
+        c.fillStyle = "#3a4152";
+        c.strokeStyle = "rgba(242,166,90,.9)";
+        c.lineWidth = 1.5;
+        c.beginPath();
+        c.moveTo(9, -7);
+        c.lineTo(9, 7);
+        c.lineTo(-9, 3.5);
+        c.lineTo(-9, -3.5);
+        c.closePath();
+        c.fill();
+        c.stroke();
+        c.fillStyle = `rgba(255,214,160,${0.7 + 0.3 * Math.sin(T5 * 4 + i)})`;
+        c.beginPath();
+        c.arc(-10, 0, 2.6, 0, 7);
+        c.fill();
         c.restore();
       }
       if (this.boom > 0) {

@@ -19,7 +19,6 @@ const FILES = {
   hole3: "kap3-dira.webp",
   disk3: "kap3-disk.webp",          // Kap. 3 Díra: disk shora (stín = 20,8 % šířky)
   clump3: "kap3-chuchvalec.webp",
-  tug3: "kap3-remorker.webp",
   system3: "kap3-soustava.webp",
   near3: "kap3-okoli.webp",
   sgra: "kap3-sgr-a.webp",
