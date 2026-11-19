@@ -840,9 +840,9 @@
       const lv5 = n(s2, id);
       if (id === "lap") return `+${mass(lapRate(s2))}/s za kus`;
       if (id === "clump") return `Chuchvalec ${mass(clumpMass(s2))} \u2192 ${mass(clumpMass(s2) * T3.clumpUp)}`;
-      if (id === "pool") return `V mlhovin\u011B ${poolCap(s2)} \u2192 ${poolCap(s2) + T3.pool[1]} chuchvalc\u016F, rychleji p\u0159ib\xFDvaj\xED`;
+      if (id === "pool") return `Chuchvalc\u016F v mlhovin\u011B ${poolCap(s2)} \u2192 ${poolCap(s2) + T3.pool[1]}, rychleji p\u0159ib\xFDvaj\xED`;
       if (id === "ring3") return `Ka\u017Ed\xFD lapa\u010D zachyt\xED o 12 % v\xEDc`;
-      if (id === "tug") return !lv5 ? "Prvn\xED remork\xE9r za\u010Dne h\xE1zet s\xE1m" : `${count(lv5)} remork\xE9r\u016F \xB7 +${mass(tugRate(s2) / Math.max(lv5, 1))}/s za kus`;
+      if (id === "tug") return !lv5 ? "Prvn\xED remork\xE9r za\u010Dne h\xE1zet s\xE1m" : `Remork\xE9r\u016F ${count(lv5)} \xB7 +${mass(tugRate(s2) / Math.max(lv5, 1))}/s za kus`;
       if (id === "spin") return `Rotace ${fixed(spinA(s2), 3)} \u2192 ${fixed(T3.spinA[Math.min(lv5 + 1, 6)], 3)} \xB7 \xFA\u010Dinnost ${pct(eta(s2))} \u2192 ${pct(T3.spinEta[Math.min(lv5 + 1, 6)] * (did(s2, "ergo") ? 1.3 : 1))}`;
       if (id === "field3") return `Strop v\xFDkonu \xD7${fixed(T3.field, 2)}`;
       return void 0;
@@ -3935,7 +3935,7 @@
     intro: {
       h: "D\xEDra po Ald\u0159e",
       p: [
-        "Aldra se zhroutila. Z modr\xE9ho veleobra zbyla \u010Dern\xE1 d\xEDra o osmi Slunc\xEDch, obalen\xE1 rozervanou mlhovinou.",
+        "Aldra se zhroutila. Z jej\xEDho j\xE1dra vznikla \u010Dern\xE1 d\xEDra o hmotnosti osmi Slunc\xED a kolem n\xED se rozp\xEDn\xE1 rozervan\xE1 mlhovina, zbytek hv\u011Bzdy po v\xFDbuchu.",
         "Roj ztratil sv\u011Btlo a v\xFDkon spadl na zlomek. Jedin\xFD zdroj energie je te\u010F to, co spadne do d\xEDry.",
         "Chytni chuchvalec plynu na okraji mlhoviny, t\xE1hni ho jako prak a pus\u0165. Ho\u010F ho bokem, a\u0165 se usad\xED v disku. Kdy\u017E ho hod\xED\u0161 rovn\u011B na d\xEDru, spadne dovnit\u0159 bez u\u017Eitku."
       ]
@@ -3945,9 +3945,9 @@
     ship: { who: "Vesper", send: "Vyslat Vesper", running: "Vesper let\xED", busy: "Vesper je na cest\u011B" },
     card: { stage: "Stadium {n} z {of}", sub: "D\xEDra po Ald\u0159e \xB7 8 M\u2609", cut: "Disk z boku", spin: "Rotace d\xEDry", eta: "\xDA\u010Dinnost disku", flow: "P\u0159\xEDtok do d\xEDry", edd: "Eddingtonova mez", hor: "Horizont", isco: "Vnit\u0159n\xED prstenec", real: "Ve skute\u010Dnosti trv\xE1" },
     phase: [
-      { n: "St\xEDn po Ald\u0159e", real: "dny", t: "Z hv\u011Bzdy zbyl horizont 47 km \u0161irok\xFD. Kolem n\u011Bj jen trosky, kter\xE9 je\u0161t\u011B nestihly spadnout." },
+      { n: "St\xEDn po Ald\u0159e", real: "dny", t: "Z ob\u0159\xED hv\u011Bzdy zbyla d\xEDra, jej\xED\u017E horizont m\u011B\u0159\xED nap\u0159\xED\u010D jen 47 km. Kolem n\xED krou\u017E\xED trosky, kter\xE9 je\u0161t\u011B nestihly spadnout." },
       { n: "Disk se rozsv\u011Bc\xED", real: "t\xFDdny", t: "Ka\u017Ed\xFD chuchvalec, kter\xFD se usad\xED v disku, se roz\u017Ehav\xED na miliony stup\u0148\u016F a z\xE1\u0159\xED v rentgenu." },
-      { n: "Hust\xFD disk", real: "m\u011Bs\xEDce", t: "Disk je hust\xFD a sv\xEDt\xED s\xE1m. Hmota v n\u011Bm st\xE9k\xE1 po spir\xE1le dovnit\u0159 a cestou vyz\xE1\u0159\xED \u010D\xE1st sv\xE9 hmotnosti." },
+      { n: "Hust\xFD disk", real: "m\u011Bs\xEDce", t: "Disk je hust\xFD a sv\xEDt\xED s\xE1m. Hmota v n\u011Bm st\xE9k\xE1 po spir\xE1le dovnit\u0159 a cestou prom\u011Bn\xED \u010D\xE1st sv\xE9 hmotnosti ve sv\u011Btlo." },
       { n: "Rotace", real: "roky", t: "Hmota, kter\xE1 p\u0159it\xE9k\xE1 po sm\u011Bru rotace, d\xEDru rozt\xE1\u010D\xED. \u010C\xEDm rychleji se to\u010D\xED, t\xEDm bl\xED\u017E k n\xED m\u016F\u017Ee disk sahat." },
       { n: "Eddingtonova mez", real: "des\xEDtky let", t: "Z\xE1\u0159en\xED disku tla\u010D\xED plyn ven stejn\u011B siln\u011B, jako ho d\xEDra t\xE1hne dovnit\u0159. V\xEDc hmoty u\u017E nepom\u016F\u017Ee." },
       { n: "V\xFDtrysky", real: "stovky let", t: "Magnetick\xE9 pole odn\xE1\u0161\xED energii z rotace d\xEDry ve dvou v\xFDtrysc\xEDch. Ty mez obejdou." },
@@ -3955,7 +3955,7 @@
     ],
     hint: [
       "Chytni chuchvalec na okraji mlhoviny, t\xE1hni ho od d\xEDry a pus\u0165. Kruh ukazuje, kde se hmota usad\xED: zelen\xFD je vnit\u0159n\xED prstenec, ten d\xE1 nejv\xEDc energie.",
-      "Ho\u010F v\xEDc chuchvalc\u016F za sebou do vnit\u0159n\xEDho prstence a vznikne \u0159et\u011Bz."
+      "Kdy\u017E hod\xED\u0161 n\u011Bkolik chuchvalc\u016F rychle za sebou do vnit\u0159n\xEDho prstence, vznikne \u0159et\u011Bz a ka\u017Ed\xFD dal\u0161\xED hod d\xE1 v\xEDc."
     ],
     b: {
       lap: { n: "Lapa\u010D v\u011Btru", d: "Sb\xEDr\xE1 hmotu, kterou z hork\xE9ho disku odn\xE1\u0161\xED v\xEDtr. \u010C\xEDm v\xEDc krm\xED\u0161 disk, t\xEDm v\xEDc nasb\xEDr\xE1." },
@@ -3979,34 +3979,34 @@
     m: {
       belt3: { n: "Zbytky p\xE1su", p: "Poz\u016Fstatek supernovy", r: "Chuchvalce maj\xED 2\xD7 v\xEDc hmoty" },
       kelvar3: { n: "Kelvar", p: "Poz\u016Fstatek supernovy", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
-      tauris3: { n: "Tauris", p: "Poz\u016Fstatek supernovy", r: "Plyn z Taurise st\xE9k\xE1 do disku s\xE1m" },
+      tauris3: { n: "Trosky Taurise", p: "Poz\u016Fstatek supernovy", r: "Plyn z Taurise st\xE9k\xE1 do disku s\xE1m" },
       ergo: { n: "Ergosf\xE9ra", p: "T\u011Bsn\u011B u d\xEDry", r: "Disk vyz\xE1\u0159\xED 1,3\xD7 v\xEDc energie" },
       star3: { n: "Sousedn\xED hv\u011Bzda", p: "Okraj mlhoviny", r: "Roztr\u017Een\xE1 hv\u011Bzda krm\xED disk proudem plynu" }
     },
     jour: {
-      h3_start: "Aldra se zhroutila. Kde sv\xEDtila hv\u011Bzda, je te\u010F d\xEDra o osmi Slunc\xEDch a kolem n\xED rozervan\xE1 mlhovina. Roj nem\xE1 z \u010Deho br\xE1t.",
+      h3_start: "Aldra se zhroutila. Kde sv\xEDtila hv\u011Bzda, je te\u010F \u010Dern\xE1 d\xEDra t\u011B\u017Ek\xE1 jako osm Slunc\xED a kolem n\xED rozervan\xE1 mlhovina. Roj nem\xE1 z \u010Deho br\xE1t.",
       h3_first: "Prvn\xED chuchvalec se rozplynul v disku. Na okam\u017Eik zaz\xE1\u0159il jasn\u011Bji ne\u017E cel\xE1 mlhovina. Tohle je te\u010F moje hv\u011Bzda.",
       f3_isco: "Kolem \u010Dern\xE9 d\xEDry je nejmen\u0161\xED stabiln\xED dr\xE1ha. Bl\xED\u017E u\u017E hmota ob\xEDhat nem\u016F\u017Ee a spadne dovnit\u0159. Nejv\xEDc energie vyz\xE1\u0159\xED plyn t\u011Bsn\u011B nad n\xED.",
       h3_ten: "Deset z\xE1sah\u016F. Disk se ust\xE1lil a slab\u011B pulzuje s periodou 7,3 sekundy. Puls te\u010F vych\xE1z\xED p\u0159\xEDmo z d\xEDry.",
       h3_belt: "Zbytky p\xE1su p\u0159e\u017Eily v\xFDbuch jako \u017Ehav\xFD prstenec trosek. Vesper je zah\xE1kl a st\xE1hl bl\xED\u017E. Te\u010F je z \u010Deho br\xE1t.",
       h3_st1: "Disk sv\xEDt\xED jako mal\xE1 hv\u011Bzda. V rentgenu je vid\u011Bt ka\u017Ed\xFD chuchvalec, kter\xFD do n\u011Bj spadne. N\u011Bkter\xE9 z\xE1blesky p\u0159i\u0161ly d\u0159\xEDv, ne\u017E jsem hodil.",
-      f3_edd: "Eddingtonova mez je nejvy\u0161\u0161\xED sv\xEDtivost, p\u0159i kter\xE9 z\xE1\u0159en\xED je\u0161t\u011B neodfoukne padaj\xEDc\xED plyn. Pro d\xEDru o osmi Slunc\xEDch je to asi 10\xB3\xB2 W.",
+      f3_edd: "Eddingtonova mez je nejvy\u0161\u0161\xED sv\xEDtivost, p\u0159i kter\xE9 z\xE1\u0159en\xED je\u0161t\u011B neodfoukne padaj\xEDc\xED plyn. Pro d\xEDru t\u011B\u017Ekou jako osm Slunc\xED je to asi 10\xB3\xB2 W.",
       h3_qpo: "Disk kmit\xE1 s periodou 7,3 sekundy. Astronomov\xE9 tomu \u0159\xEDkaj\xED kvaziperiodick\xE9 oscilace. U tohohle disku nejsou kvazi. Jsou p\u0159esn\xE9.",
-      h3_kelvar: "Pod rozt\xE1t\xFDm ledem Kelvaru le\u017E\xED \u0159ada dron\u016F. Nejsou z Vesper. V\u0161echny m\xED\u0159\xED k m\xEDstu, kde je te\u010F d\xEDra.",
+      h3_kelvar: "Pod rozt\xE1t\xFDm ledem Kelvaru le\u017E\xED \u0159ada ciz\xEDch dron\u016F. Jejich pam\u011Bti jsou pln\xE9 m\u011B\u0159en\xED, kter\xE1 jsme nikdy ned\u011Blali. V\u0161echny m\xED\u0159\xED k m\xEDstu, kde je te\u010F d\xEDra.",
       h3_st2: "V\xFDkon roste rychleji, ne\u017E st\xEDh\xE1m h\xE1zet. Pot\u0159ebuju pomocn\xEDky, kte\u0159\xED budou krmit disk, i kdy\u017E sp\xEDm.",
       h3_tug: "Prvn\xED remork\xE9r zah\xE1kl chuchvalec a hodil ho p\u0159esn\u011B jako j\xE1. D\xEDv\xE1m se na n\u011Bj a m\xE1m pocit, \u017Ee se d\xEDv\xE1m na sebe.",
-      h3_tauris: "Tauris pro\u0161el p\u0159\xEDli\u0161 bl\xEDzko. Slapy ho rozt\xE1hly do dlouh\xE9ho proudu plynu, kter\xFD te\u010F s\xE1m st\xE9k\xE1 do disku. Byl to kr\xE1sn\xFD obr.",
-      f3_hawking: "D\xEDra by m\u011Bla sama slab\u011B z\xE1\u0159it, je to Hawkingovo z\xE1\u0159en\xED. U d\xEDry o osmi Slunc\xEDch m\xE1 ale teplotu jen asi osm miliardtin kelvinu. Z reliktn\xEDho z\xE1\u0159en\xED pohlt\xED v\xEDc, ne\u017E vyz\xE1\u0159\xED.",
-      h3_st3: "Disk je hust\xFD a hork\xFD. Strop je bl\xEDzko, v\xEDc sv\u011Btla d\xEDra neunese. Mus\xEDm ji rozto\u010Dit.",
+      h3_tauris: "Supernova strhla Taurisu plynn\xFD obal. Jeho zbytky jsme sto\u010Dili k d\xED\u0159e a te\u010F z nich do disku s\xE1m st\xE9k\xE1 dlouh\xFD proud plynu. Byl to kr\xE1sn\xFD obr.",
+      f3_hawking: "D\xEDra by m\u011Bla sama slab\u011B z\xE1\u0159it, je to Hawkingovo z\xE1\u0159en\xED. U d\xEDry t\u011B\u017Ek\xE9 jako osm Slunc\xED m\xE1 ale teplotu jen asi osm miliardtin kelvinu. Z reliktn\xEDho z\xE1\u0159en\xED pohlt\xED v\xEDc, ne\u017E vyz\xE1\u0159\xED.",
+      h3_st3: "Disk je hust\xFD a hork\xFD, ale d\xEDra z n\u011Bj bere jen p\xE1r procent. Kdy\u017E ji rozto\u010D\xEDm, vyt\u011B\u017E\xED z ka\u017Ed\xE9ho kilogramu v\xEDc.",
       h3_spin: "D\xEDra se to\u010D\xED rychleji. Vnit\u0159n\xED okraj disku se k n\xED p\u0159ibl\xED\u017Eil a hmota z n\u011Bj te\u010F vyz\xE1\u0159\xED v\xEDc energie.",
-      f3_cyg: "Cygnus X-1 je skute\u010Dn\xE1 \u010Dern\xE1 d\xEDra o asi 21 Slunc\xEDch, kter\xE1 krade plyn sousedn\xED hv\u011Bzd\u011B. To\u010D\xED se skoro nejrychleji, jak je to mo\u017En\xE9.",
+      f3_cyg: "Cygnus X-1 je skute\u010Dn\xE1 \u010Dern\xE1 d\xEDra t\u011B\u017Ek\xE1 asi jako 21 Slunc\xED, kter\xE1 krade plyn sousedn\xED hv\u011Bzd\u011B. To\u010D\xED se skoro nejrychleji, jak je to mo\u017En\xE9.",
       h3_ergo: "Vesper prolet\u011Bl ergosf\xE9rou. Tam se ned\xE1 st\xE1t na m\xEDst\u011B, prostor se to\u010D\xED s d\xEDrou. Ven jsme vylet\u011Bli s v\xEDc energi\xED, ne\u017E jsme m\u011Bli.",
       h3_st4: "Disk narazil na Eddingtonovu mez. Z\xE1\u0159en\xED tla\u010D\xED hmotu ven stejn\u011B siln\u011B, jako ji d\xEDra t\xE1hne dovnit\u0159.",
       h3_flare: "Disk vzplanul a odfoukl p\u0159ebytek. Mlhovina se na okam\u017Eik rozsv\xEDtila a\u017E k okraji. V tom z\xE1blesku byl puls dvakr\xE1t.",
       h3_jets: "Magnetick\xE9 pole disku se zkroutilo do dvou v\xFDtrysk\u016F. Odn\xE1\u0161ej\xED energii z rotace d\xEDry a mez je najednou daleko.",
-      h3_star: "Hv\u011Bzda, kterou jsme sto\u010Dili k d\xED\u0159e, se roztrhla. Jej\xED plyn se kolem d\xEDry ov\xEDj\xED jako stuha. Tolik sv\u011Btla jsem nevid\u011Bl od Aldry.",
+      h3_star: "Sousedn\xED hv\u011Bzda prol\xE9tala bl\xEDzko a sta\u010Dilo ji trochu postr\u010Dit. D\xEDra ji roztrhla a jej\xED plyn se kolem ov\xEDj\xED jako stuha. Tolik sv\u011Btla jsem nevid\u011Bl od Aldry.",
       f3_tde: "Kdy\u017E se hv\u011Bzda dostane p\u0159\xEDli\u0161 bl\xEDzko k \u010Dern\xE9 d\xED\u0159e, slapy ji rozt\xE1hnou do tenk\xE9ho proudu. Takov\xE9 z\xE1blesky astronomov\xE9 zachytili v ciz\xEDch galaxi\xEDch.",
-      h3_st5: "D\xEDra sv\xEDt\xED siln\u011Bji ne\u017E Aldra za \u017Eivota. Kone\u010Dn\u011B je dost energie na laser, kter\xFD dotla\u010D\xED plachty a\u017E k jin\xFDm hv\u011Bzd\xE1m.",
+      h3_st5: "D\xEDra sv\xEDt\xED siln\u011Bji ne\u017E Aldra za \u017Eivota. Kone\u010Dn\u011B je dost energie na laser, kter\xFD dotla\u010D\xED sv\u011Bteln\xE9 plachty a\u017E k jin\xFDm hv\u011Bzd\xE1m.",
       h3_end: "Mlhovina je skoro pr\xE1zdn\xE1, d\xEDra sn\u011Bdla, co \u0161lo. Je \u010Das pod\xEDvat se d\xE1l ne\u017E k nejbli\u017E\u0161\xED hv\u011Bzd\u011B."
     }
   };

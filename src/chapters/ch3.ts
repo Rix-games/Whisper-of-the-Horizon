@@ -143,9 +143,9 @@ export const CH3: ChapterDef = {
     const lv = n(s, id);
     if (id === "lap") return `+${mass(lapRate(s))}/s za kus`;
     if (id === "clump") return `Chuchvalec ${mass(clumpMass(s))} → ${mass(clumpMass(s) * T3.clumpUp)}`;
-    if (id === "pool") return `V mlhovině ${poolCap(s)} → ${poolCap(s) + T3.pool[1]} chuchvalců, rychleji přibývají`;
+    if (id === "pool") return `Chuchvalců v mlhovině ${poolCap(s)} → ${poolCap(s) + T3.pool[1]}, rychleji přibývají`;
     if (id === "ring3") return `Každý lapač zachytí o 12 % víc`;
-    if (id === "tug") return !lv ? "První remorkér začne házet sám" : `${count(lv)} remorkérů · +${mass(tugRate(s) / Math.max(lv, 1))}/s za kus`;
+    if (id === "tug") return !lv ? "První remorkér začne házet sám" : `Remorkérů ${count(lv)} · +${mass(tugRate(s) / Math.max(lv, 1))}/s za kus`;
     if (id === "spin") return `Rotace ${fixed(spinA(s), 3)} → ${fixed(T3.spinA[Math.min(lv + 1, 6)], 3)} · účinnost ${pct(eta(s))} → ${pct(T3.spinEta[Math.min(lv + 1, 6)] * (did(s, "ergo") ? 1.3 : 1))}`;
     if (id === "field3") return `Strop výkonu ×${fixed(T3.field, 2)}`;
     return undefined;
