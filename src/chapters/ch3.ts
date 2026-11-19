@@ -156,7 +156,7 @@ export const CH3: ChapterDef = {
     const lv = n(s, id);
     if (id === "lap") return `+${mass(lapRate(s))}/s za kus`;
     if (id === "clump") return `Plnění pasti ${mass(trapRate(s))}/s → ${mass(trapRate(s) * T3.fillUp)}/s`;
-    if (id === "pool") return `Pastí ${traps(s)} → ${traps(s) + 1}`;
+    if (id === "pool") return lv >= 5 ? `Pastí ${traps(s)}` : `Pastí ${traps(s)} → ${traps(s) + 1}`;
     if (id === "ring3") return `Každý lapač zachytí o 12 % víc`;
     if (id === "tug") return `Injektorů ${count(lv)} · +${mass(T3.inj * trapRate(s) * (has(s, "guide") ? 1.5 : 1))}/s za kus`;
     if (id === "auto3") return `Automaticky: ${lv} z ${traps(s)} pastí`;

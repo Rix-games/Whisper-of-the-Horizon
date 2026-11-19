@@ -65,6 +65,24 @@ function diskLayers() {
   DL = Object.assign(out, { k }); return DL;
 }
 
+let HZ: HTMLCanvasElement | null = null;
+/** Jemný opar mlhoviny (růžovofialový, místy tyrkysový), u díry prázdno. Generuje se jednou. */
+function hazeTex() {
+  if (HZ) return HZ;
+  const N = 450, cv = document.createElement("canvas"); cv.width = cv.height = N;
+  const g = cv.getContext("2d")!, im = g.createImageData(N, N), d = im.data;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = (x / N) * 2 - 1, dy = (y / N) * 2 - 1, r = Math.hypot(dx, dy) * 900;
+    let n = 0, a = 0.6, f = 1;
+    for (let o = 0; o < 5; o++) { n += a * vnoise((x / N) * 6 * f + 7, (y / N) * 6 * f + 3, 1e6); a *= 0.5; f *= 2; }
+    const m = vnoise((x / N) * 3 + 11, (y / N) * 3 + 5, 1e6);
+    const v = Math.pow(Math.max(0, n - 0.35), 1.8) * ss(240, 520, r) * (1 - ss(820, 900, r)) * 2.8;
+    const o4 = (y * N + x) * 4;
+    d[o4] = Math.min(255, v * (150 - 70 * m)); d[o4 + 1] = Math.min(255, v * (55 + 120 * m * m)); d[o4 + 2] = Math.min(255, v * (120 + 40 * m)); d[o4 + 3] = 255;
+  }
+  g.putImageData(im, 0, 0); return (HZ = cv);
+}
+
 type Spiral = { r: number; a: number; t: number; dur: number; col: string; w: number; r1?: number };
 
 export const diera: Mech & any = {
@@ -147,8 +165,8 @@ export const diera: Mech & any = {
   draw(c: CanvasRenderingContext2D, s: State, v: View, M: Input) {
     const T = v.T, P = power(s), act = s.ch === 3 && !v.passive;
     // pozůstatek supernovy (obrázek okolí, prstenec mlhoviny = místo, odkud se berou chuchvalce)
-    const I = img("near3");
-    if (I) { const k = 1.375; c.save(); c.globalAlpha = 0.95; c.drawImage(I, CX - 962 * k, CY - 545 * k, I.width * k, I.height * k); c.restore(); }
+    // řídká mlhovina z trosek Aldry – jen jemný opar kolem, střed čistý
+    { const H = hazeTex(); c.save(); c.globalCompositeOperation = "lighter"; c.globalAlpha = 0.9; c.translate(CX, CY); c.rotate(T * 0.004); c.drawImage(H, -900, -900, 1800, 1800); c.restore(); }
     const vg = c.createRadialGradient(CX, CY, 120, CX, CY, 360);   // ztlumit střed obrázku pod diskem (měkce, bez hrany)
     vg.addColorStop(0, "rgba(3,4,9,.75)"); vg.addColorStop(1, "rgba(3,4,9,0)");
     c.fillStyle = vg; c.beginPath(); c.arc(CX, CY, 360, 0, 7); c.fill();
@@ -159,16 +177,22 @@ export const diera: Mech & any = {
     halo.addColorStop(0, `rgba(255,150,80,${0.22 * lit})`); halo.addColorStop(1, "rgba(255,90,60,0)");
     c.fillStyle = halo; c.beginPath(); c.arc(CX, CY, RD * 1.7, 0, 7); c.fill();
     // disk – textura z kódu (spirální vlákna plynu), tři prstence se otáčí různě rychle (vnitřní nejrychleji)
-    const L = diskLayers();
-    c.save(); c.globalAlpha = 0.35 + 0.65 * lit;
-    L.forEach((cv, j) => { const w = cv.width / L.k; c.save(); c.translate(CX, CY); c.rotate(T * [0.22, 0.12, 0.075][j]); c.drawImage(cv, -w / 2, -w / 2, w, w); c.restore(); });
-    c.restore();
+    const DI = img("disk3");
+    if (DI) {   // disk z obrázku (Gemini): pomalu se otáčí, jas podle výkonu
+      const W = (2 * RH) / 0.208;
+      c.save(); c.globalAlpha = 0.3 + 0.7 * lit; c.translate(CX, CY); c.rotate(-T * 0.04); c.drawImage(DI, -W / 2, -W / 2, W, W); c.restore();
+    } else {
+      const L = diskLayers();
+      c.save(); c.globalAlpha = 0.35 + 0.65 * lit;
+      L.forEach((cv, j) => { const w = cv.width / L.k; c.save(); c.translate(CX, CY); c.rotate(T * [0.22, 0.12, 0.075][j]); c.drawImage(cv, -w / 2, -w / 2, w, w); c.restore(); });
+      c.restore();
+    }
     const ig = c.createRadialGradient(CX, CY, Ip * 0.8, CX, CY, Ip * 1.35);   // žhavý vnitřní okraj (s rotací se přibližuje)
     ig.addColorStop(0, "rgba(255,250,240,0)"); ig.addColorStop(0.4, `rgba(255,248,232,${0.35 * lit})`); ig.addColorStop(1, "rgba(255,220,170,0)");
-    c.fillStyle = ig; c.beginPath(); c.arc(CX, CY, Ip * 1.35, 0, 7); c.fill();
+    if (!DI) { c.fillStyle = ig; c.beginPath(); c.arc(CX, CY, Ip * 1.35, 0, 7); c.fill(); }
     const dg = c.createLinearGradient(CX - RD, CY, CX + RD, CY);   // Dopplerovo zjasnění: strana, která letí k nám
     dg.addColorStop(0, `rgba(255,236,205,${0.14 * lit})`); dg.addColorStop(0.55, "rgba(255,236,205,0)");
-    c.fillStyle = dg; c.beginPath(); c.arc(CX, CY, RD * 0.95, 0, 7); c.moveTo(CX + RH, CY); c.arc(CX, CY, RH, 0, 7, true); c.fill();
+    if (!DI) { c.fillStyle = dg; c.beginPath(); c.arc(CX, CY, RD * 0.95, 0, 7); c.moveTo(CX + RH, CY); c.arc(CX, CY, RH, 0, 7, true); c.fill(); }
     // hmota stéká do disku
     for (const p of this.spirals as Spiral[]) {
       if (p.t < 0) continue;

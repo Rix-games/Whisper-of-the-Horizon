@@ -862,7 +862,7 @@
       const lv5 = n(s2, id);
       if (id === "lap") return `+${mass(lapRate(s2))}/s za kus`;
       if (id === "clump") return `Pln\u011Bn\xED pasti ${mass(trapRate(s2))}/s \u2192 ${mass(trapRate(s2) * T3.fillUp)}/s`;
-      if (id === "pool") return `Past\xED ${traps(s2)} \u2192 ${traps(s2) + 1}`;
+      if (id === "pool") return lv5 >= 5 ? `Past\xED ${traps(s2)}` : `Past\xED ${traps(s2)} \u2192 ${traps(s2) + 1}`;
       if (id === "ring3") return `Ka\u017Ed\xFD lapa\u010D zachyt\xED o 12 % v\xEDc`;
       if (id === "tug") return `Injektor\u016F ${count(lv5)} \xB7 +${mass(T3.inj * trapRate(s2) * (has(s2, "guide") ? 1.5 : 1))}/s za kus`;
       if (id === "auto3") return `Automaticky: ${lv5} z ${traps(s2)} past\xED`;
@@ -1438,6 +1438,8 @@
     // hrací plocha (uzly podle core/galaxy.ts GIMG)
     galaxySide: "kap3-galaxie-bok.webp",
     hole3: "kap3-dira.webp",
+    disk3: "kap3-disk.webp",
+    // Kap. 3 Díra: disk shora (stín = 20,8 % šířky)
     clump3: "kap3-chuchvalec.webp",
     tug3: "kap3-remorker.webp",
     system3: "kap3-soustava.webp",
@@ -2909,6 +2911,31 @@
     DL = Object.assign(out, { k });
     return DL;
   }
+  var HZ = null;
+  function hazeTex() {
+    if (HZ) return HZ;
+    const N = 450, cv = document.createElement("canvas");
+    cv.width = cv.height = N;
+    const g = cv.getContext("2d"), im = g.createImageData(N, N), d = im.data;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const dx = x / N * 2 - 1, dy = y / N * 2 - 1, r = Math.hypot(dx, dy) * 900;
+      let n2 = 0, a = 0.6, f = 1;
+      for (let o = 0; o < 5; o++) {
+        n2 += a * vnoise(x / N * 6 * f + 7, y / N * 6 * f + 3, 1e6);
+        a *= 0.5;
+        f *= 2;
+      }
+      const m = vnoise(x / N * 3 + 11, y / N * 3 + 5, 1e6);
+      const v = Math.pow(Math.max(0, n2 - 0.35), 1.8) * ss(240, 520, r) * (1 - ss(820, 900, r)) * 2.8;
+      const o4 = (y * N + x) * 4;
+      d[o4] = Math.min(255, v * (150 - 70 * m));
+      d[o4 + 1] = Math.min(255, v * (55 + 120 * m * m));
+      d[o4 + 2] = Math.min(255, v * (120 + 40 * m));
+      d[o4 + 3] = 255;
+    }
+    g.putImageData(im, 0, 0);
+    return HZ = cv;
+  }
   var diera = {
     fill: [],
     last: [],
@@ -3055,12 +3082,14 @@
     },
     draw(c, s2, v, M5) {
       const T5 = v.T, P = power(s2), act = s2.ch === 3 && !v.passive;
-      const I = img("near3");
-      if (I) {
-        const k2 = 1.375;
+      {
+        const H2 = hazeTex();
         c.save();
-        c.globalAlpha = 0.95;
-        c.drawImage(I, CX3 - 962 * k2, CY3 - 545 * k2, I.width * k2, I.height * k2);
+        c.globalCompositeOperation = "lighter";
+        c.globalAlpha = 0.9;
+        c.translate(CX3, CY3);
+        c.rotate(T5 * 4e-3);
+        c.drawImage(H2, -900, -900, 1800, 1800);
         c.restore();
       }
       const vg = c.createRadialGradient(CX3, CY3, 120, CX3, CY3, 360);
@@ -3080,35 +3109,50 @@
       c.beginPath();
       c.arc(CX3, CY3, RD * 1.7, 0, 7);
       c.fill();
-      const L = diskLayers();
-      c.save();
-      c.globalAlpha = 0.35 + 0.65 * lit2;
-      L.forEach((cv, j) => {
-        const w = cv.width / L.k;
+      const DI = img("disk3");
+      if (DI) {
+        const W2 = 2 * RH / 0.208;
         c.save();
+        c.globalAlpha = 0.3 + 0.7 * lit2;
         c.translate(CX3, CY3);
-        c.rotate(T5 * [0.22, 0.12, 0.075][j]);
-        c.drawImage(cv, -w / 2, -w / 2, w, w);
+        c.rotate(-T5 * 0.04);
+        c.drawImage(DI, -W2 / 2, -W2 / 2, W2, W2);
         c.restore();
-      });
-      c.restore();
+      } else {
+        const L = diskLayers();
+        c.save();
+        c.globalAlpha = 0.35 + 0.65 * lit2;
+        L.forEach((cv, j) => {
+          const w = cv.width / L.k;
+          c.save();
+          c.translate(CX3, CY3);
+          c.rotate(T5 * [0.22, 0.12, 0.075][j]);
+          c.drawImage(cv, -w / 2, -w / 2, w, w);
+          c.restore();
+        });
+        c.restore();
+      }
       const ig = c.createRadialGradient(CX3, CY3, Ip * 0.8, CX3, CY3, Ip * 1.35);
       ig.addColorStop(0, "rgba(255,250,240,0)");
       ig.addColorStop(0.4, `rgba(255,248,232,${0.35 * lit2})`);
       ig.addColorStop(1, "rgba(255,220,170,0)");
-      c.fillStyle = ig;
-      c.beginPath();
-      c.arc(CX3, CY3, Ip * 1.35, 0, 7);
-      c.fill();
+      if (!DI) {
+        c.fillStyle = ig;
+        c.beginPath();
+        c.arc(CX3, CY3, Ip * 1.35, 0, 7);
+        c.fill();
+      }
       const dg = c.createLinearGradient(CX3 - RD, CY3, CX3 + RD, CY3);
       dg.addColorStop(0, `rgba(255,236,205,${0.14 * lit2})`);
       dg.addColorStop(0.55, "rgba(255,236,205,0)");
-      c.fillStyle = dg;
-      c.beginPath();
-      c.arc(CX3, CY3, RD * 0.95, 0, 7);
-      c.moveTo(CX3 + RH, CY3);
-      c.arc(CX3, CY3, RH, 0, 7, true);
-      c.fill();
+      if (!DI) {
+        c.fillStyle = dg;
+        c.beginPath();
+        c.arc(CX3, CY3, RD * 0.95, 0, 7);
+        c.moveTo(CX3 + RH, CY3);
+        c.arc(CX3, CY3, RH, 0, 7, true);
+        c.fill();
+      }
       for (const p of this.spirals) {
         if (p.t < 0) continue;
         const al = Math.min(1, p.t * 4) * Math.min(1, (p.dur - p.t) * 2);
