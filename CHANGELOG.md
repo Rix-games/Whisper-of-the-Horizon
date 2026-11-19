@@ -1,5 +1,15 @@
 # Novinky
 
+## Připravuje se
+
+- Nová Kapitola 5 Místní skupina: slapová sklizeň v pericentru, gravitační prak, splynutí
+- Surovina Hvězdné proudy, roje z proudů kolem Mléčné dráhy
+- Automatika: mezigalaktická relé, proudy v halu, navaděče drah
+- Magellanova mračna, Galaxie v Trojúhelníku, Andromeda a finále Mlékomeda
+- Mise, výzkum a deník Kapitoly 5, Detail se slapovým proudem
+- Kardaševova škála ukazuje cestu k Typu IV
+- Rozletěná mise doletí při přechodu kapitoly
+
 ## 1.0.0-alfa.2 – Kapitola 3 Díra, Galaxie jako Kapitola 4
 
 - Nová Kapitola 3 Díra: magnetické pasti, horká skvrna v disku, souzvuk, řetěz a výbuch disku
