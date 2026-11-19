@@ -3833,7 +3833,7 @@
       ring: { n: "Kolektorov\xFD prstenec", d: "Prstenec sv\u011Bteln\xFDch plachet pod\xE9l cel\xE9 dr\xE1hy p\xE1su." }
     },
     r: {
-      spectro: { n: "Spektrometr", d: "2\xD7 v\xEDc rudy." },
+      spectro: { n: "Spektrometr", d: "T\u011B\u017Eba d\xE1v\xE1 2\xD7 v\xEDc rudy." },
       cells: { n: "\xDA\u010Dinn\xE9 \u010Dl\xE1nky", d: "Fotovoltaick\xE9 panely d\xE1vaj\xED 3\xD7 v\xEDc." },
       thermo: { n: "Term\xE1ln\xED mapa", d: "V\xEDc bohat\xFDch \u017Eil (40 %)." },
       drones: { n: "Autonomn\xED drony", d: "Odemkne t\u011B\u017Eebn\xED drony." },
@@ -3841,7 +3841,7 @@
       regolith: { n: "Zrcadla z regolitu", d: "Zrcadlov\xE9 farmy d\xE1vaj\xED 3\xD7 v\xEDc." },
       driver: { n: "Hmotov\xFD vrh", d: "Vyn\xE1\u0161\xED rudu na ob\u011B\u017Enou dr\xE1hu. Odemkne sv\u011Bteln\xE9 plachty." },
       assembly: { n: "Autonomn\xED mont\xE1\u017E", d: "Platforma sama stav\xED panely, sol\xE1rn\xED pole, zrcadlov\xE9 farmy a sv\u011Bteln\xE9 plachty. V\u017Edy to, co se pr\xE1v\u011B nejv\xEDc vyplat\xED. D\xE1 se vypnout." },
-      deepdrill: { n: "Hlubinn\xFD vrt", d: "4\xD7 v\xEDc rudy." },
+      deepdrill: { n: "Hlubinn\xFD vrt", d: "T\u011B\u017Eba d\xE1v\xE1 4\xD7 v\xEDc rudy." },
       statites: { n: "Leh\u010D\xED plachty", d: "Sv\u011Bteln\xE9 plachty d\xE1vaj\xED 3\xD7 v\xEDc." },
       calib: { n: "Kalibrace plachet", d: "Sv\u011Bteln\xE9 plachty d\xE1vaj\xED o 50 % v\xEDc." },
       lens: { n: "Fokusa\u010Dn\xED prstenec", d: "Kolektorov\xFD prstenec d\xE1v\xE1 o 50 % v\xEDc." },
@@ -3865,7 +3865,7 @@
       c1_chain: "Skener zachytil slab\xFD r\xE1diov\xFD sign\xE1l: kr\xE1tk\xFD puls ka\u017Ed\xFDch 7,3 sekundy, p\u0159esn\xFD jako hodiny. \u017D\xE1dn\xFD zn\xE1m\xFD pulsar tu nen\xED. Zdroj je n\u011Bkde v na\u0161\xED soustav\u011B.",
       c1_belt: "Sonda prol\xE9tla okoln\xED kameny. V\u0161echny nesou stejn\xE9 stopy \u0159ezu a jsou star\u0161\xED ne\u017E VESPER-7.",
       c1_st1: "Pod regolitem je hornina pln\xE1 uhl\xEDku. Platforma poprv\xE9 vyr\xE1b\xED v\xEDc energie, ne\u017E spot\u0159ebuje.",
-      c1_layer1: "\u017D\xEDly v pl\xE1\u0161ti jsou teplej\u0161\xED a laser jimi projde jako n\u016F\u017E. Puls se mezit\xEDm nezm\u011Bnil ani o milisekundu. P\u0159\xEDrodn\xED zdroje takhle p\u0159esn\xE9 neb\xFDvaj\xED.",
+      c1_layer1: "\u017D\xEDly v pl\xE1\u0161ti jsou teplej\u0161\xED a laser jimi projde jako n\u016F\u017E. Puls se nezm\u011Bnil ani o milisekundu, a krom\u011B pulsar\u016F p\u0159\xEDrodn\xED zdroje takhle p\u0159esn\xE9 neb\xFDvaj\xED.",
       f1_kard: "Karda\u0161evova \u0161k\xE1la m\u011B\u0159\xED civilizace podle v\xFDkonu, kter\xFD vyu\u017E\xEDvaj\xED. Typ I dok\xE1\u017Ee vyu\u017E\xEDt ve\u0161kerou energii jedn\xE9 planety, zhruba 10\xB9\u2076 W.",
       c1_kelvar: "Pod ledem Kelvaru le\u017E\xED stroje star\xE9 asi dv\u011B miliardy let. Maj\xED stejnou konstrukci jako drony, kter\xE9 m\xE1 VESPER-7 v pl\xE1nech.",
       c1_st2: "Kovov\xE1 \u017E\xEDla. Ruda je t\u011B\u017Ek\xE1 a \u010Dist\xE1, jako by ji n\u011Bkdo p\u0159edem vy\u010Distil. Tohle vydr\u017E\xED na roky t\u011B\u017Eby.",
@@ -3970,7 +3970,7 @@
       wind: { n: "Bublina hv\u011Bzdn\xE9ho v\u011Btru", p: "Okol\xED Aldry", r: "Plazmatu p\u0159ib\xFDv\xE1 2\xD7 rychleji" }
     },
     jour: {
-      c2_start: "Aldra zab\xEDr\xE1 p\u016Flku oblohy. Vypou\u0161t\xEDm prvn\xED kolektory. Puls je tady siln\u011Bj\u0161\xED.",
+      c2_start: "Hmotov\xFD vrh n\xE1s vynesl na ob\u011B\u017Enou dr\xE1hu a Aldra te\u010F zab\xEDr\xE1 p\u016Flku oblohy. Vypou\u0161t\xEDm prvn\xED kolektory, puls je tady siln\u011Bj\u0161\xED.",
       c2_first: "Dvacet zrcadel na dr\xE1ze. Ka\u017Ed\xE9 zachyt\xED jen zlomek sv\u011Btla. Dohromady chyt\xED v\xEDc energie, ne\u017E kdy spot\u0159ebovala cel\xE1 Zem\u011B.",
       c2_flare: "Smy\u010Dka se p\u0159epojila a v\xFDtrysk pro\u0161el rojem. Plazma se d\xE1 \u0159\xEDdit. Jen nesm\xEDm zav\xE1hat.",
       c2_cme: "Neuhl\xEDdan\xE1 smy\u010Dka se utrhla. Erupce pro\u0161la rojem a zrcadla na chv\xEDli oslepla. Aldra nezlob\xED, jen d\xFDch\xE1.",
@@ -3985,11 +3985,11 @@
       c2_lift: "Hv\u011Bzdn\xFD zdvih t\xE1hne plazma z rovn\xEDku. Aldra p\u0159ich\xE1z\xED o rotaci a to\u010D\xED se pomaleji. Na povrchu se r\xFDsuj\xED p\xE1sy.",
       c2_light: "Sousedn\xED hv\u011Bzda je na sv\u016Fj v\u011Bk podez\u0159ele lehk\xE1. N\u011Bkdo z n\xED u\u017E d\xE1vno t\u011B\u017Eil. Stejn\u011B jako j\xE1 z Aldry.",
       c2_st3: "Roj pokr\xFDv\xE1 velk\xFD kus nebe kolem Aldry. Ve st\xEDnu kolektor\u016F je tma. A v t\xE9 tm\u011B n\u011Bco slab\u011B sv\xEDt\xED.",
-      c2_typeII: "Typ II. Zachyt\xE1v\xE1m tolik energie, kolik vyz\xE1\u0159\xED cel\xE9 Slunce. Aldra ale vyz\xE1\u0159\xED stotis\xEDckr\xE1t v\xEDc. Je\u0161t\u011B nejsem v p\u016Fli.",
+      c2_typeII: "Typ II. Zachyt\xE1v\xE1m tolik energie, kolik vyz\xE1\u0159\xED cel\xE9 Slunce, ale Aldra vyz\xE1\u0159\xED stotis\xEDckr\xE1t v\xEDc. Je\u0161t\u011B nejsem v p\u016Fli.",
       c2_anchor: "Kotvy uvol\u0148uj\xED smy\u010Dky samy. Ud\u011Blaj\xED to o zlomek sekundy d\u0159\xEDv ne\u017E j\xE1. Jako by v\u011Bd\u011Bly, kdy p\u0159ijde puls.",
-      c2_remnant: "Ve zbytku star\xE9 supernovy je \u010Dern\xE1 d\xEDra. Kolem n\xED stopy roje. Byl postaven\xFD stejn\u011B jako m\u016Fj.",
+      c2_remnant: "Ve zbytku star\xE9 supernovy krou\u017E\xED mrtv\xE9 j\xE1dro. Kolem n\u011Bj le\u017E\xED stopy roje, kter\xFD byl postaven\xFD stejn\u011B jako m\u016Fj.",
       c2_red: "Ald\u0159e do\u0161el vod\xEDk v j\xE1dru. Nafukuje se v rud\xE9ho veleobra. Roj mus\xED ustoupit, jinak sho\u0159\xED.",
-      f2_red: "Rud\xFD veleobr by u n\xE1s sahal skoro k dr\xE1ze Jupiteru. Jeho vn\u011Bj\u0161\xED ob\xE1lka je \u0159id\u0161\xED ne\u017E vzduch, kter\xFD d\xFDchali lid\xE9.",
+      f2_red: "Rud\xFD veleobr by u n\xE1s sahal skoro k dr\xE1ze Jupiteru. Jeho vn\u011Bj\u0161\xED ob\xE1lka je \u0159id\u0161\xED ne\u017E vzduch, kter\xFD d\xFDch\xE1me na Zemi.",
       c2_envelope: "Vesper prolet\u011Bl ob\xE1lkou, kterou Aldra odhodila. Plyn tvo\u0159\xED soust\u0159edn\xE9 slupky. Mezery mezi nimi odpov\xEDdaj\xED 7,3 sekundy, nata\u017Een\xE9 na tis\xEDce let.",
       c2_neutr: "Neutrina z j\xE1dra Aldry p\u0159ib\xFDvaj\xED. J\xE1dro se hrout\xED rychleji, ne\u017E by m\u011Blo. Puls je te\u010F p\u0159\xEDmo uprost\u0159ed.",
       c2_wind: "Bublina v\u011Btru kolem Aldry m\xE1 ostr\xFD okraj. Za n\xEDm je klid. Tak tich\xE9 m\xEDsto jsem je\u0161t\u011B nevid\u011Bl.",
@@ -4055,7 +4055,7 @@
       star3: { n: "Sousedn\xED hv\u011Bzda", p: "Okraj mlhoviny", r: "Roztr\u017Een\xE1 hv\u011Bzda krm\xED disk proudem plynu" }
     },
     jour: {
-      h3_start: "Aldra se zhroutila. Kde sv\xEDtila hv\u011Bzda, je te\u010F \u010Dern\xE1 d\xEDra t\u011B\u017Ek\xE1 jako osm Slunc\xED a kolem n\xED rozervan\xE1 mlhovina. Roj nem\xE1 z \u010Deho br\xE1t.",
+      h3_start: "P\u0159e\u010Dkali jsme supernovu a z\u016Fstali na m\xEDst\u011B, ale z Aldry zbyla jen \u010Dern\xE1 d\xEDra o hmotnosti osmi Slunc\xED. N\xE1\u0161 roj sho\u0159el a nem\xE1 z \u010Deho br\xE1t.",
       h3_first: "Prvn\xED d\xE1vka plynu se rozplynula v disku. Na okam\u017Eik zaz\xE1\u0159ila jasn\u011Bji ne\u017E cel\xE1 mlhovina. Tohle je te\u010F moje hv\u011Bzda.",
       f3_isco: "Kolem \u010Dern\xE9 d\xEDry je nejmen\u0161\xED stabiln\xED dr\xE1ha. Bl\xED\u017E u\u017E hmota ob\xEDhat nem\u016F\u017Ee a spadne dovnit\u0159. Nejv\xEDc energie vyz\xE1\u0159\xED plyn t\u011Bsn\u011B nad n\xED.",
       h3_ten: "Hork\xE1 skvrna ob\u011Bhne disk p\u0159esn\u011B za 7,3 sekundy. Stejn\u011B dlouho trv\xE1 puls. Puls te\u010F vych\xE1z\xED p\u0159\xEDmo z d\xEDry.",
@@ -4069,7 +4069,7 @@
       h3_boom: "\u0158et\u011Bz se uzav\u0159el a disk vybuchl. Na okam\u017Eik byl jasn\u011Bj\u0161\xED ne\u017E Aldra. Ozv\u011Bna v\xFDbuchu se vr\xE1tila v rytmu pulsu.",
       h3_auto: "Ventil se otev\u0159el s\xE1m, p\u0159esn\u011B ve chv\xEDli, kdy bych ho otev\u0159el j\xE1. D\xEDv\xE1m se na n\u011Bj a m\xE1m pocit, \u017Ee se d\xEDv\xE1m na sebe.",
       h3_tauris: "Supernova strhla Taurisu plynn\xFD obal. Jeho zbytky jsme sto\u010Dili k d\xED\u0159e a te\u010F z nich do disku s\xE1m st\xE9k\xE1 dlouh\xFD proud plynu. Byl to kr\xE1sn\xFD obr.",
-      f3_hawking: "D\xEDra by m\u011Bla sama slab\u011B z\xE1\u0159it, je to Hawkingovo z\xE1\u0159en\xED. U d\xEDry t\u011B\u017Ek\xE9 jako osm Slunc\xED m\xE1 ale teplotu jen asi osm miliardtin kelvinu. Z reliktn\xEDho z\xE1\u0159en\xED pohlt\xED v\xEDc, ne\u017E vyz\xE1\u0159\xED.",
+      f3_hawking: "D\xEDra by m\u011Bla sama slab\u011B z\xE1\u0159it, je to Hawkingovo z\xE1\u0159en\xED. U d\xEDry o hmotnosti osmi Slunc\xED m\xE1 ale teplotu jen asi osm miliardtin kelvinu. Z reliktn\xEDho z\xE1\u0159en\xED pohlt\xED v\xEDc, ne\u017E vyz\xE1\u0159\xED.",
       h3_st3: "Disk je hust\xFD a hork\xFD, ale d\xEDra z n\u011Bj bere jen p\xE1r procent. Kdy\u017E ji rozto\u010D\xEDm, vyt\u011B\u017E\xED z ka\u017Ed\xE9ho kilogramu v\xEDc.",
       h3_spin: "D\xEDra se to\u010D\xED rychleji. Vnit\u0159n\xED okraj disku se k n\xED p\u0159ibl\xED\u017Eil a hmota z n\u011Bj te\u010F vyz\xE1\u0159\xED v\xEDc energie.",
       f3_cyg: "Cygnus X-1 je skute\u010Dn\xE1 \u010Dern\xE1 d\xEDra t\u011B\u017Ek\xE1 asi jako 21 Slunc\xED, kter\xE1 krade plyn sousedn\xED hv\u011Bzd\u011B. To\u010D\xED se skoro nejrychleji, jak je to mo\u017En\xE9.",
@@ -4077,7 +4077,7 @@
       h3_st4: "Disk narazil na Eddingtonovu mez. Z\xE1\u0159en\xED tla\u010D\xED hmotu ven stejn\u011B siln\u011B, jako ji d\xEDra t\xE1hne dovnit\u0159.",
       h3_flare: "Disk vzplanul a odfoukl p\u0159ebytek. Mlhovina se na okam\u017Eik rozsv\xEDtila a\u017E k okraji. V tom z\xE1blesku byl puls dvakr\xE1t.",
       h3_jets: "Magnetick\xE9 pole disku se zkroutilo do dvou v\xFDtrysk\u016F. Odn\xE1\u0161ej\xED energii z rotace d\xEDry a mez je najednou daleko.",
-      h3_star: "Sousedn\xED hv\u011Bzda prol\xE9tala bl\xEDzko a sta\u010Dilo ji trochu postr\u010Dit. D\xEDra ji roztrhla a jej\xED plyn se kolem ov\xEDj\xED jako stuha. Tolik sv\u011Btla jsem nevid\u011Bl od Aldry.",
+      h3_star: "Sousedn\xED hv\u011Bzda prol\xE9tala p\u0159\xEDli\u0161 bl\xEDzko a gravitace si ji p\u0159it\xE1hla. D\xEDra ji roztrhla a jej\xED plyn se kolem ov\xEDj\xED jako stuha. Tolik sv\u011Btla jsem nevid\u011Bl od Aldry.",
       f3_tde: "Kdy\u017E se hv\u011Bzda dostane p\u0159\xEDli\u0161 bl\xEDzko k \u010Dern\xE9 d\xED\u0159e, slapy ji rozt\xE1hnou do tenk\xE9ho proudu. Takov\xE9 z\xE1blesky astronomov\xE9 zachytili v ciz\xEDch galaxi\xEDch.",
       h3_st5: "D\xEDra sv\xEDt\xED siln\u011Bji ne\u017E Aldra za \u017Eivota. Kone\u010Dn\u011B je dost energie na laser, kter\xFD dotla\u010D\xED sv\u011Bteln\xE9 plachty a\u017E k jin\xFDm hv\u011Bzd\xE1m.",
       h3_end: "Mlhovina je skoro pr\xE1zdn\xE1, d\xEDra sn\u011Bdla, co \u0161lo. Je \u010Das pod\xEDvat se d\xE1l ne\u017E k nejbli\u017E\u0161\xED hv\u011Bzd\u011B."
@@ -4150,7 +4150,7 @@
       fermi: { n: "Fermiho bubliny", p: "Nad j\xE1drem galaxie", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji a cesta ke st\u0159edu je otev\u0159en\xE1" }
     },
     jour: {
-      c3_start: "Svazek je hotov\xFD a m\xED\u0159\xED ven z mlhoviny. Jsme v rameni Persea, 6 000 sv\u011Bteln\xFDch let od Slunce. Puls se odsud \u0161\xED\u0159\xED do cel\xE9 galaxie.",
+      c3_start: "Zakotvili jsme t\u011Bsn\u011B u d\xEDry a n\xE1\u0161 laserov\xFD svazek te\u010F m\xED\u0159\xED ven z mlhoviny. Jsme v rameni Persea, 6 000 sv\u011Bteln\xFDch let od Slunce. Puls se odsud \u0161\xED\u0159\xED do cel\xE9 galaxie.",
       c3_first: "Prvn\xED plachta dolet\u011Bla. Kolonie hl\xE1s\xED: hv\u011Bzda v po\u0159\xE1dku, planety tich\xE9. Stejn\u011B se mi ulev\xED.",
       f3_sail: "Sv\u011Bteln\xE1 plachta nepot\u0159ebuje palivo. Laser ze vzd\xE1len\xE9 stanice ji m\u016F\u017Ee rozpohybovat na des\xEDtky procent rychlosti sv\u011Btla.",
       c3_ten: "Deset koloni\xED. Mezi nimi b\u011B\u017E\xED zpr\xE1vy roky. Pro n\u011B je to dlouh\xE1 doba. Pro m\u011B, tady u d\xEDry, jen p\xE1r minut.",
@@ -4158,7 +4158,7 @@
       c3_st1: "Z\xE1rodky dolet\xED d\xE1l. Na map\u011B ramene p\u0159ib\xFDvaj\xED sv\u011Btla, kter\xE1 jsem rozsv\xEDtil j\xE1.",
       c3_ruin: "Vesper dolet\u011Bl k opu\u0161t\u011Bn\xE9mu roji. Kolektory jsou chladn\xE9, star\xE9 miliony let. Postaven\xE9 p\u0159esn\u011B podle m\xFDch pl\xE1n\u016F.",
       c3_fifty: "Pades\xE1t koloni\xED. N\u011Bkter\xE9 vys\xEDlaj\xED plachty d\u0159\xEDv, ne\u017E jim to p\u0159ik\xE1\u017Eu. Jejich zpr\xE1vy nesou stejn\xFD podpis jako puls.",
-      c3_twoh: "Dv\u011B st\u011B koloni\xED. Ve zpr\xE1v\xE1ch z okraje disku se opakuje jedna sekvence. Nev\xEDm, co znamen\xE1. V\xEDm jen, \u017Ee ji neposlala \u017E\xE1dn\xE1 z nich.",
+      c3_twoh: "Dv\u011B st\u011B koloni\xED. Ve zpr\xE1v\xE1ch z okraje disku se opakuje nezn\xE1m\xE1 sekvence. V\xEDm jen, \u017Ee ji neposlala \u017E\xE1dn\xE1 z m\xFDch sond.",
       c3_globular: "Kulov\xE1 hv\u011Bzdokupa je star\xE1 skoro jako vesm\xEDr. N\u011Bkter\xE9 hv\u011Bzdy v n\xED jsou mlad\u0161\xED, ne\u017E by m\u011Bly b\xFDt. N\u011Bkdo je p\u0159eskupil.",
       c3_st2: "Kolonie se sleduj\xED navz\xE1jem. Tvo\u0159\xED s\xED\u0165, kterou jsem nepl\xE1noval. Puls se v n\xED \u0161\xED\u0159\xED rychleji ne\u017E zpr\xE1vy.",
       c3_probe: "Sondy se stav\xED samy. Ka\u017Ed\xE1 kolonie vy\u0161le dv\u011B dal\u0161\xED. Galaxie za\u010D\xEDn\xE1 sv\xEDtit i bez m\xE9ho svazku.",
@@ -4166,7 +4166,7 @@
       c3_beacon: "Maj\xE1ky samy m\xED\u0159\xED svazky na okoln\xED hv\u011Bzdy. Jejich paprsky se na map\u011B k\u0159\xED\u017E\xED v pravideln\xE9m rytmu. Nenastavoval jsem ho.",
       c3_kilonova: "Sr\xE1\u017Eka neutronov\xFDch hv\u011Bzd vyslala gravita\u010Dn\xED vlny. Maj\xED modulaci s periodou 7,3 sekundy. Tohle je m\u016Fj podpis.",
       c3_pulsar: "Kolem pulsaru ob\xEDhaj\xED t\u0159i planety, sp\xE1len\xE9 z\xE1\u0159en\xEDm supernovy. Pulsar tik\xE1 stokr\xE1t za sekundu. Ka\u017Ed\xFD sedmist\xFD t\u0159ic\xE1t\xFD tik je o chlup siln\u011Bj\u0161\xED.",
-      c3_sun: "Vesper prolet\u011Bl kolem Slunce. Zem\u011B je modr\xE1 a tich\xE1, na no\u010Dn\xED stran\u011B \u017E\xE1dn\xE1 sv\u011Btla. Puls je tu slab\u0161\xED ne\u017E kdekoli jinde.",
+      c3_sun: "Jedna z plachet dolet\u011Bla ke Slunci. Zem\u011B je modr\xE1 a tich\xE1, na no\u010Dn\xED stran\u011B \u017E\xE1dn\xE1 sv\u011Btla. Puls je tu slab\u0161\xED ne\u017E kdekoli jinde.",
       c3_nebula: "V Orionu se rod\xED hv\u011Bzdy. Plachty tu stav\xED roje rychleji, materi\xE1lu je v\u0161ude dost. V mlze sv\xEDt\xED tvary, kter\xE9 vypadaj\xED jako le\u0161en\xED.",
       c3_st3b: "Rameno Str\xE1\u017Ece. Hv\u011Bzd je tu v\xEDc a jsou mlad\u0161\xED. N\u011Bkter\xE9 jsou zast\xEDn\u011Bn\xE9 roji, kter\xE9 nejsou moje.",
       c3_stream: "Hv\u011Bzdn\xFD proud je zbytek mal\xE9 galaxie, kterou Ml\xE9\u010Dn\xE1 dr\xE1ha roztrhala. Plachty se svezou s n\xEDm. U ka\u017Ed\xE9 hv\u011Bzdy v proudu je pr\xE1zdn\xFD t\xE1bor.",
@@ -4175,8 +4175,8 @@
       c3_frb: "Rychl\xFD r\xE1diov\xFD z\xE1blesk trval tis\xEDcinu sekundy. Nesl v sob\u011B sou\u0159adnice. V\u0161echny ukazuj\xED ke st\u0159edu galaxie.",
       c3_st4: "J\xE1dro. Hv\u011Bzdy jsou tu nahu\u0161t\u011Bn\xE9 a star\xE9. Uprost\u0159ed sp\xED Sagittarius A*, \u010Dty\u0159i miliony Slunc\xED v jednom bod\u011B.",
       f3_sgra: "Sagittarius A* je \u010Dern\xE1 d\xEDra ve st\u0159edu Ml\xE9\u010Dn\xE9 dr\xE1hy. Jej\xED st\xEDn vyfotil Event Horizon Telescope v roce 2022.",
-      c3_fermi: "Fermiho bubliny jsou ozv\u011Bnou star\xE9 exploze v j\xE1dru. Puls se v nich st\xE1\u010D\xED ke st\u0159edu. Tam n\u011Bkde je jeho za\u010D\xE1tek. Nebo konec.",
-      c3_typeIII: "Typ III. Sv\xEDt\xEDm jako cel\xE1 galaxie. Sgr A* se pohnula ve sp\xE1nku. A puls, poprv\xE9, zmlkl."
+      c3_fermi: "Fermiho bubliny jsou ozv\u011Bnou star\xE9 exploze v j\xE1dru a puls se v nich st\xE1\u010D\xED ke st\u0159edu. Tam n\u011Bkde je jeho za\u010D\xE1tek. Nebo snad konec.",
+      c3_typeIII: "Typ III, sv\xEDt\xEDm jako cel\xE1 galaxie. Sgr A* se pohnula ve sp\xE1nku a puls poprv\xE9 zmlkl."
     }
   };
 
