@@ -28,6 +28,43 @@ const trapA = (i: number, k: number) => -Math.PI / 2 + (i / k) * Math.PI * 2 + (
 /** Úhlová vzdálenost (−π…π). */
 const dA = (a: number, b: number) => { let d = (a - b) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; };
 
+// ---------- textura disku (generuje se jednou) ----------
+function hash(i: number, j: number) { let h = (i * 374761393 + j * 668265263) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
+function vnoise(x: number, y: number, P: number) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const w = (a: number) => ((a % P) + P) % P, a = hash(w(xi), yi), b = hash(w(xi + 1), yi), c = hash(w(xi), yi + 1), d = hash(w(xi + 1), yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+const ss = (a: number, b: number, x: number) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+let DL: (HTMLCanvasElement[] & { k: number }) | null = null;
+/** Tři prstence disku (vnitřní, střední, vnější) – vlákna stočená do spirály, barva podle teploty (vnitřek bílý, okraj rudý). */
+function diskLayers() {
+  if (DL) return DL;
+  const k = 1.5, R = RD * 1.08, N = Math.ceil(2 * R * k), I0 = 84;
+  const pal = [[255, 251, 242], [255, 226, 168], [255, 176, 96], [236, 112, 62], [170, 56, 48]];
+  const out = [0, 1, 2].map(() => { const cv = document.createElement("canvas"); cv.width = cv.height = N; return cv; });
+  const imgs = out.map((cv) => cv.getContext("2d")!.createImageData(N, N));
+  for (let py = 0; py < N; py++) for (let px = 0; px < N; px++) {
+    const dx = (px + 0.5) / k - R, dy = (py + 0.5) / k - R, r = Math.hypot(dx, dy);
+    if (r > R || r < RH * 0.9) continue;
+    const th = Math.atan2(dy, dx) / (Math.PI * 2) + 0.5, lr = Math.log(r / RD);
+    // vlákna: pomalu podél oběhu, rychle napříč – stočená do spirály
+    let n = 0, amp = 0.55, fr = 1;
+    for (let o = 0; o < 4; o++) { n += amp * vnoise((th * 10 + lr * 2.2) * fr, r * 0.11 * fr, 10 * fr); amp *= 0.5; fr *= 2; }
+    const fil = 0.12 + 2.1 * Math.pow(Math.max(0, n), 2.2);
+    const prof = ss(RH, I0 * 1.05, r) * Math.pow(I0 / Math.max(r, I0), 0.95) * (1 - ss(RD * 0.72, R, r));
+    const x = Math.max(0, Math.min(0.999, (r - I0) / (RD - I0))) * (pal.length - 1), i0 = Math.floor(x), f = x - i0, c0 = pal[i0], c1 = pal[Math.min(i0 + 1, pal.length - 1)];
+    const wIn = 1 - ss(108, 140, r), wOut = ss(150, 182, r), wMid = Math.max(0, 1 - wIn - wOut), W = [wIn, wMid, wOut];
+    for (let L = 0; L < 3; L++) {
+      if (W[L] <= 0) continue;
+      const q = prof * fil * W[L] * 1.5, o4 = (py * N + px) * 4, d = imgs[L].data;
+      d[o4] = Math.min(255, (c0[0] + (c1[0] - c0[0]) * f) * q); d[o4 + 1] = Math.min(255, (c0[1] + (c1[1] - c0[1]) * f) * q); d[o4 + 2] = Math.min(255, (c0[2] + (c1[2] - c0[2]) * f) * q); d[o4 + 3] = 255;
+    }
+  }
+  out.forEach((cv, L) => cv.getContext("2d")!.putImageData(imgs[L], 0, 0));
+  DL = Object.assign(out, { k }); return DL;
+}
+
 type Spiral = { r: number; a: number; t: number; dur: number; col: string; w: number; r1?: number };
 
 export const diera: Mech & any = {
@@ -121,25 +158,17 @@ export const diera: Mech & any = {
     const halo = c.createRadialGradient(CX, CY, RD * 0.6, CX, CY, RD * 1.7);
     halo.addColorStop(0, `rgba(255,150,80,${0.22 * lit})`); halo.addColorStop(1, "rgba(255,90,60,0)");
     c.fillStyle = halo; c.beginPath(); c.arc(CX, CY, RD * 1.7, 0, 7); c.fill();
-    const DI = img("disk3");
-    if (DI) {   // disk z obrázku: pomalu se otáčí, jas podle výkonu
-      const W = (2 * RH) / 0.208;
-      c.save(); c.globalAlpha = 0.3 + 0.7 * lit; c.translate(CX, CY); c.rotate(-T * 0.04); c.drawImage(DI, -W / 2, -W / 2, W, W); c.restore();
-    }
-    const g = c.createRadialGradient(CX, CY, rIn, CX, CY, RD);
-    g.addColorStop(0, `rgba(255,250,235,${0.95 * lit})`); g.addColorStop(0.12, `rgba(255,222,160,${0.8 * lit})`);
-    g.addColorStop(0.4, `rgba(255,150,70,${0.5 * lit})`); g.addColorStop(0.75, `rgba(210,80,50,${0.22 * lit})`); g.addColorStop(1, "rgba(150,40,40,0)");
-    if (!DI) { c.fillStyle = g; c.beginPath(); c.arc(CX, CY, RD, 0, 7); c.moveTo(CX + rIn, CY); c.arc(CX, CY, rIn, 0, 7, true); c.fill(); }
-    for (let i = 0; i < (DI ? 24 : 70); i++) {   // pruhy disku: vnitřní obíhají rychleji (Kepler)
-      const f = ((i * 61) % 100) / 100, rr = rIn + Math.pow(f, 1.4) * (RD - rIn) * 0.97, w = Math.sqrt(GM / (rr * rr * rr)) * 0.35, a = T * w + i * 2.4;
-      const dop = 0.55 + 0.45 * Math.cos(a + 0.6 - Math.PI), q = 1 - (rr - rIn) / (RD - rIn);
-      c.strokeStyle = `rgba(255,${170 + 80 * q},${110 + 120 * q},${(0.1 + 0.35 * lit) * (0.25 + 0.75 * q) * dop})`; c.lineWidth = 0.8 + 2.2 * q;
-      c.beginPath(); c.arc(CX, CY, rr, a, a + 0.5 + (i % 4) * 0.35); c.stroke();
-    }
-    const dg = c.createLinearGradient(CX - RD, CY, CX + RD, CY);   // Dopplerovo zjasnění levé strany
-    dg.addColorStop(0, `rgba(255,235,200,${0.16 * lit})`); dg.addColorStop(0.5, "rgba(255,235,200,0)");
-    if (!DI) c.fillStyle = dg; else c.fillStyle = "rgba(0,0,0,0)";
-    c.beginPath(); c.arc(CX, CY, RD * 0.9, 0, 7); c.moveTo(CX + rIn, CY); c.arc(CX, CY, rIn, 0, 7, true); c.fill();
+    // disk – textura z kódu (spirální vlákna plynu), tři prstence se otáčí různě rychle (vnitřní nejrychleji)
+    const L = diskLayers();
+    c.save(); c.globalAlpha = 0.35 + 0.65 * lit;
+    L.forEach((cv, j) => { const w = cv.width / L.k; c.save(); c.translate(CX, CY); c.rotate(T * [0.22, 0.12, 0.075][j]); c.drawImage(cv, -w / 2, -w / 2, w, w); c.restore(); });
+    c.restore();
+    const ig = c.createRadialGradient(CX, CY, Ip * 0.8, CX, CY, Ip * 1.35);   // žhavý vnitřní okraj (s rotací se přibližuje)
+    ig.addColorStop(0, "rgba(255,250,240,0)"); ig.addColorStop(0.4, `rgba(255,248,232,${0.35 * lit})`); ig.addColorStop(1, "rgba(255,220,170,0)");
+    c.fillStyle = ig; c.beginPath(); c.arc(CX, CY, Ip * 1.35, 0, 7); c.fill();
+    const dg = c.createLinearGradient(CX - RD, CY, CX + RD, CY);   // Dopplerovo zjasnění: strana, která letí k nám
+    dg.addColorStop(0, `rgba(255,236,205,${0.14 * lit})`); dg.addColorStop(0.55, "rgba(255,236,205,0)");
+    c.fillStyle = dg; c.beginPath(); c.arc(CX, CY, RD * 0.95, 0, 7); c.moveTo(CX + RH, CY); c.arc(CX, CY, RH, 0, 7, true); c.fill();
     // hmota stéká do disku
     for (const p of this.spirals as Spiral[]) {
       if (p.t < 0) continue;
@@ -147,14 +176,14 @@ export const diera: Mech & any = {
       c.fillStyle = `rgba(${p.col},${0.8 * al})`;
       for (let k = 0; k < 3; k++) { const aa = p.a - k * 0.05; c.beginPath(); c.arc(CX + Math.cos(aa) * p.r, CY + Math.sin(aa) * p.r, Math.max(0.6, p.w * (1 - k * 0.25)), 0, 7); c.fill(); }
     }
-    // horká skvrna obíhá disk jednou za puls; ručička ukazuje, ke které pasti míří
-    const sa = spotA(s), sr = (Ip + RD) * 0.5, sx = CX + Math.cos(sa) * sr, sy = CY + Math.sin(sa) * sr;
-    for (let k = 0; k < 14; k++) { const aa = sa - k * 0.06; c.fillStyle = `rgba(255,240,210,${0.5 * (1 - k / 14)})`; c.beginPath(); c.arc(CX + Math.cos(aa) * sr, CY + Math.sin(aa) * sr, 7 - k * 0.35, 0, 7); c.fill(); }
-    const sg = c.createRadialGradient(sx, sy, 0, sx, sy, 22); sg.addColorStop(0, "rgba(255,255,245,.95)"); sg.addColorStop(1, "rgba(255,220,160,0)");
-    c.fillStyle = sg; c.beginPath(); c.arc(sx, sy, 22, 0, 7); c.fill();
-    const hand = c.createLinearGradient(sx, sy, CX + Math.cos(sa) * (RT + 40), CY + Math.sin(sa) * (RT + 40));
-    hand.addColorStop(0, "rgba(255,235,190,.35)"); hand.addColorStop(1, "rgba(255,235,190,0)");
-    c.strokeStyle = hand; c.lineWidth = 3; c.beginPath(); c.moveTo(sx, sy); c.lineTo(CX + Math.cos(sa) * (RT + 40), CY + Math.sin(sa) * (RT + 40)); c.stroke();
+    // horká skvrna: světlejší výseč disku obíhá jednou za puls (kvaziperiodická oscilace)
+    const sa = spotA(s), cg = (c as any).createConicGradient(sa - Math.PI, CX, CY);
+    const pk = 0.4 + 0.25 * lit;
+    [[0, 0], [0.38, 0], [0.44, 0.12], [0.475, 0.45], [0.495, 0.9], [0.5, 1], [0.507, 0.45], [0.52, 0], [1, 0]].forEach(([p, a]) => cg.addColorStop(p, `rgba(255,246,228,${a * pk})`));
+    c.fillStyle = cg;
+    [[Ip * 0.9, Ip * 1.6, 1], [Ip * 1.6, (Ip + RD) * 0.6, 0.65], [(Ip + RD) * 0.6, RD * 0.95, 0.3]].forEach(([r0, r1, al]) => {
+      c.globalAlpha = al; c.beginPath(); c.arc(CX, CY, r1, 0, 7); c.moveTo(CX + r0, CY); c.arc(CX, CY, r0, 0, 7, true); c.fill(); });
+    c.globalAlpha = 1;
     // výtrysky (po výzkumu) – svislé, jas podle výkonu
     if (s.r.jets3) {
       for (const sg of [-1, 1]) {

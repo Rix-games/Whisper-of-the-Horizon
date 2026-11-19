@@ -1438,8 +1438,6 @@
     // hrací plocha (uzly podle core/galaxy.ts GIMG)
     galaxySide: "kap3-galaxie-bok.webp",
     hole3: "kap3-dira.webp",
-    disk3: "kap3-disk.webp",
-    // Kap. 3 Díra: disk shora (stín = 20,8 % šířky)
     clump3: "kap3-chuchvalec.webp",
     tug3: "kap3-remorker.webp",
     system3: "kap3-soustava.webp",
@@ -2859,6 +2857,58 @@
     if (d < -Math.PI) d += Math.PI * 2;
     return d;
   };
+  function hash2(i, j) {
+    let h2 = i * 374761393 + j * 668265263 | 0;
+    h2 = Math.imul(h2 ^ h2 >>> 13, 1274126177);
+    return ((h2 ^ h2 >>> 16) >>> 0) / 4294967295;
+  }
+  function vnoise(x, y, P) {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    const w = (a2) => (a2 % P + P) % P, a = hash2(w(xi), yi), b = hash2(w(xi + 1), yi), c = hash2(w(xi), yi + 1), d = hash2(w(xi + 1), yi + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  }
+  var ss = (a, b, x) => {
+    const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+  };
+  var DL = null;
+  function diskLayers() {
+    if (DL) return DL;
+    const k = 1.5, R2 = RD * 1.08, N = Math.ceil(2 * R2 * k), I0 = 84;
+    const pal = [[255, 251, 242], [255, 226, 168], [255, 176, 96], [236, 112, 62], [170, 56, 48]];
+    const out = [0, 1, 2].map(() => {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = N;
+      return cv;
+    });
+    const imgs = out.map((cv) => cv.getContext("2d").createImageData(N, N));
+    for (let py = 0; py < N; py++) for (let px = 0; px < N; px++) {
+      const dx = (px + 0.5) / k - R2, dy = (py + 0.5) / k - R2, r = Math.hypot(dx, dy);
+      if (r > R2 || r < RH * 0.9) continue;
+      const th = Math.atan2(dy, dx) / (Math.PI * 2) + 0.5, lr = Math.log(r / RD);
+      let n2 = 0, amp = 0.55, fr = 1;
+      for (let o = 0; o < 4; o++) {
+        n2 += amp * vnoise((th * 10 + lr * 2.2) * fr, r * 0.11 * fr, 10 * fr);
+        amp *= 0.5;
+        fr *= 2;
+      }
+      const fil = 0.12 + 2.1 * Math.pow(Math.max(0, n2), 2.2);
+      const prof = ss(RH, I0 * 1.05, r) * Math.pow(I0 / Math.max(r, I0), 0.95) * (1 - ss(RD * 0.72, R2, r));
+      const x = Math.max(0, Math.min(0.999, (r - I0) / (RD - I0))) * (pal.length - 1), i0 = Math.floor(x), f = x - i0, c0 = pal[i0], c1 = pal[Math.min(i0 + 1, pal.length - 1)];
+      const wIn = 1 - ss(108, 140, r), wOut = ss(150, 182, r), wMid = Math.max(0, 1 - wIn - wOut), W2 = [wIn, wMid, wOut];
+      for (let L = 0; L < 3; L++) {
+        if (W2[L] <= 0) continue;
+        const q = prof * fil * W2[L] * 1.5, o4 = (py * N + px) * 4, d = imgs[L].data;
+        d[o4] = Math.min(255, (c0[0] + (c1[0] - c0[0]) * f) * q);
+        d[o4 + 1] = Math.min(255, (c0[1] + (c1[1] - c0[1]) * f) * q);
+        d[o4 + 2] = Math.min(255, (c0[2] + (c1[2] - c0[2]) * f) * q);
+        d[o4 + 3] = 255;
+      }
+    }
+    out.forEach((cv, L) => cv.getContext("2d").putImageData(imgs[L], 0, 0));
+    DL = Object.assign(out, { k });
+    return DL;
+  }
   var diera = {
     fill: [],
     last: [],
@@ -3030,48 +3080,34 @@
       c.beginPath();
       c.arc(CX3, CY3, RD * 1.7, 0, 7);
       c.fill();
-      const DI = img("disk3");
-      if (DI) {
-        const W2 = 2 * RH / 0.208;
+      const L = diskLayers();
+      c.save();
+      c.globalAlpha = 0.35 + 0.65 * lit2;
+      L.forEach((cv, j) => {
+        const w = cv.width / L.k;
         c.save();
-        c.globalAlpha = 0.3 + 0.7 * lit2;
         c.translate(CX3, CY3);
-        c.rotate(-T5 * 0.04);
-        c.drawImage(DI, -W2 / 2, -W2 / 2, W2, W2);
+        c.rotate(T5 * [0.22, 0.12, 0.075][j]);
+        c.drawImage(cv, -w / 2, -w / 2, w, w);
         c.restore();
-      }
-      const g = c.createRadialGradient(CX3, CY3, rIn, CX3, CY3, RD);
-      g.addColorStop(0, `rgba(255,250,235,${0.95 * lit2})`);
-      g.addColorStop(0.12, `rgba(255,222,160,${0.8 * lit2})`);
-      g.addColorStop(0.4, `rgba(255,150,70,${0.5 * lit2})`);
-      g.addColorStop(0.75, `rgba(210,80,50,${0.22 * lit2})`);
-      g.addColorStop(1, "rgba(150,40,40,0)");
-      if (!DI) {
-        c.fillStyle = g;
-        c.beginPath();
-        c.arc(CX3, CY3, RD, 0, 7);
-        c.moveTo(CX3 + rIn, CY3);
-        c.arc(CX3, CY3, rIn, 0, 7, true);
-        c.fill();
-      }
-      for (let i = 0; i < (DI ? 24 : 70); i++) {
-        const f = i * 61 % 100 / 100, rr2 = rIn + Math.pow(f, 1.4) * (RD - rIn) * 0.97, w = Math.sqrt(GM / (rr2 * rr2 * rr2)) * 0.35, a = T5 * w + i * 2.4;
-        const dop = 0.55 + 0.45 * Math.cos(a + 0.6 - Math.PI), q = 1 - (rr2 - rIn) / (RD - rIn);
-        c.strokeStyle = `rgba(255,${170 + 80 * q},${110 + 120 * q},${(0.1 + 0.35 * lit2) * (0.25 + 0.75 * q) * dop})`;
-        c.lineWidth = 0.8 + 2.2 * q;
-        c.beginPath();
-        c.arc(CX3, CY3, rr2, a, a + 0.5 + i % 4 * 0.35);
-        c.stroke();
-      }
-      const dg = c.createLinearGradient(CX3 - RD, CY3, CX3 + RD, CY3);
-      dg.addColorStop(0, `rgba(255,235,200,${0.16 * lit2})`);
-      dg.addColorStop(0.5, "rgba(255,235,200,0)");
-      if (!DI) c.fillStyle = dg;
-      else c.fillStyle = "rgba(0,0,0,0)";
+      });
+      c.restore();
+      const ig = c.createRadialGradient(CX3, CY3, Ip * 0.8, CX3, CY3, Ip * 1.35);
+      ig.addColorStop(0, "rgba(255,250,240,0)");
+      ig.addColorStop(0.4, `rgba(255,248,232,${0.35 * lit2})`);
+      ig.addColorStop(1, "rgba(255,220,170,0)");
+      c.fillStyle = ig;
       c.beginPath();
-      c.arc(CX3, CY3, RD * 0.9, 0, 7);
-      c.moveTo(CX3 + rIn, CY3);
-      c.arc(CX3, CY3, rIn, 0, 7, true);
+      c.arc(CX3, CY3, Ip * 1.35, 0, 7);
+      c.fill();
+      const dg = c.createLinearGradient(CX3 - RD, CY3, CX3 + RD, CY3);
+      dg.addColorStop(0, `rgba(255,236,205,${0.14 * lit2})`);
+      dg.addColorStop(0.55, "rgba(255,236,205,0)");
+      c.fillStyle = dg;
+      c.beginPath();
+      c.arc(CX3, CY3, RD * 0.95, 0, 7);
+      c.moveTo(CX3 + RH, CY3);
+      c.arc(CX3, CY3, RH, 0, 7, true);
       c.fill();
       for (const p of this.spirals) {
         if (p.t < 0) continue;
@@ -3084,40 +3120,29 @@
           c.fill();
         }
       }
-      const sa = spotA(s2), sr = (Ip + RD) * 0.5, sx2 = CX3 + Math.cos(sa) * sr, sy = CY3 + Math.sin(sa) * sr;
-      for (let k2 = 0; k2 < 14; k2++) {
-        const aa = sa - k2 * 0.06;
-        c.fillStyle = `rgba(255,240,210,${0.5 * (1 - k2 / 14)})`;
+      const sa = spotA(s2), cg = c.createConicGradient(sa - Math.PI, CX3, CY3);
+      const pk = 0.4 + 0.25 * lit2;
+      [[0, 0], [0.38, 0], [0.44, 0.12], [0.475, 0.45], [0.495, 0.9], [0.5, 1], [0.507, 0.45], [0.52, 0], [1, 0]].forEach(([p, a]) => cg.addColorStop(p, `rgba(255,246,228,${a * pk})`));
+      c.fillStyle = cg;
+      [[Ip * 0.9, Ip * 1.6, 1], [Ip * 1.6, (Ip + RD) * 0.6, 0.65], [(Ip + RD) * 0.6, RD * 0.95, 0.3]].forEach(([r0, r1, al]) => {
+        c.globalAlpha = al;
         c.beginPath();
-        c.arc(CX3 + Math.cos(aa) * sr, CY3 + Math.sin(aa) * sr, 7 - k2 * 0.35, 0, 7);
+        c.arc(CX3, CY3, r1, 0, 7);
+        c.moveTo(CX3 + r0, CY3);
+        c.arc(CX3, CY3, r0, 0, 7, true);
         c.fill();
-      }
-      const sg = c.createRadialGradient(sx2, sy, 0, sx2, sy, 22);
-      sg.addColorStop(0, "rgba(255,255,245,.95)");
-      sg.addColorStop(1, "rgba(255,220,160,0)");
-      c.fillStyle = sg;
-      c.beginPath();
-      c.arc(sx2, sy, 22, 0, 7);
-      c.fill();
-      const hand = c.createLinearGradient(sx2, sy, CX3 + Math.cos(sa) * (RT2 + 40), CY3 + Math.sin(sa) * (RT2 + 40));
-      hand.addColorStop(0, "rgba(255,235,190,.35)");
-      hand.addColorStop(1, "rgba(255,235,190,0)");
-      c.strokeStyle = hand;
-      c.lineWidth = 3;
-      c.beginPath();
-      c.moveTo(sx2, sy);
-      c.lineTo(CX3 + Math.cos(sa) * (RT2 + 40), CY3 + Math.sin(sa) * (RT2 + 40));
-      c.stroke();
+      });
+      c.globalAlpha = 1;
       if (s2.r.jets3) {
-        for (const sg2 of [-1, 1]) {
-          const jg = c.createLinearGradient(CX3, CY3, CX3, CY3 + sg2 * 480);
+        for (const sg of [-1, 1]) {
+          const jg = c.createLinearGradient(CX3, CY3, CX3, CY3 + sg * 480);
           jg.addColorStop(0, `rgba(190,215,255,${0.55 * lit2})`);
           jg.addColorStop(1, "rgba(120,160,255,0)");
           c.fillStyle = jg;
           c.beginPath();
           c.moveTo(CX3 - 6, CY3);
-          c.lineTo(CX3 - 26, CY3 + sg2 * 480);
-          c.lineTo(CX3 + 26, CY3 + sg2 * 480);
+          c.lineTo(CX3 - 26, CY3 + sg * 480);
+          c.lineTo(CX3 + 26, CY3 + sg * 480);
           c.lineTo(CX3 + 6, CY3);
           c.fill();
         }

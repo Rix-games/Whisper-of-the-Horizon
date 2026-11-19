@@ -17,7 +17,6 @@ const FILES = {
   galaxy: "kap3-galaxie.webp",       // hrací plocha (uzly podle core/galaxy.ts GIMG)
   galaxySide: "kap3-galaxie-bok.webp",
   hole3: "kap3-dira.webp",
-  disk3: "kap3-disk.webp",          // Kap. 3 Díra: disk shora (stín = 20,8 % šířky)
   clump3: "kap3-chuchvalec.webp",
   tug3: "kap3-remorker.webp",
   system3: "kap3-soustava.webp",
