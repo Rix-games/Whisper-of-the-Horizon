@@ -1,6 +1,6 @@
 # Novinky
 
-## Připravuje se
+## 1.0.0-alfa.3 – Kapitola 5 Místní skupina
 
 - Nová Kapitola 5 Místní skupina: slapová sklizeň v pericentru, gravitační prak, splynutí
 - Surovina Hvězdné proudy, roje z proudů kolem Mléčné dráhy
@@ -9,6 +9,7 @@
 - Mise, výzkum a deník Kapitoly 5, Detail se slapovým proudem
 - Kardaševova škála ukazuje cestu k Typu IV
 - Rozletěná mise doletí při přechodu kapitoly
+- Korektura textů Kapitoly 5
 
 ## 1.0.0-alfa.2 – Kapitola 3 Díra, Galaxie jako Kapitola 4
 
