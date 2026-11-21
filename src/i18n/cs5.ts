@@ -5,8 +5,8 @@ export const CS5 = {
   intro: {
     h: "Slapy",
     p: [
-      "Sagittarius A* se probudila a puls teď přichází ze středu galaxie. Vesper k ní doletěl po proudu jejích výtrysků.",
-      "Visíš těsně nad horizontem díry, která váží čtyři miliony Sluncí. Tady ti uběhnou vteřiny, zatímco venku miliony let. Poprvé vidíš, že kolem Mléčné dráhy obíhají celé galaxie.",
+      "Sagittarius A* se probudila a puls teď přichází ze středu galaxie. Vesper k ní doletěl proti proudu jejích výtrysků.",
+      "Visíš těsně nad horizontem díry, která má hmotnost čtyř milionů Sluncí. Tady ti uběhnou vteřiny, zatímco venku miliony let. Poprvé vidíš, že kolem Mléčné dráhy obíhají celé galaxie.",
       "Když se trpasličí galaxie dostane nejblíž (pericentrum), slapy z ní trhají hvězdy do dlouhých proudů. Z proudů stavíš nové roje kolem hvězd Mléčné dráhy.",
       "Galaxie se zeleným kroužkem je v pericentru: drž na ní myš a sklízej. Jindy ji můžeš táhnout a změnit její dráhu. Blíž ke středu dá víc hvězd, ale příliš blízko splyne s Mléčnou dráhou.",
     ],
@@ -18,15 +18,15 @@ export const CS5 = {
   phase: [
     { n: "Nad horizontem Sgr A*", where: "Střed Mléčné dráhy", real: "stovky milionů let", t: "Nejbližší satelity oběhnou Mléčnou dráhu za stovky milionů let. Odsud, zpomalený u díry, vidíš, jak kroužejí." },
     { n: "Staré malé galaxie", where: "Halo Mléčné dráhy", real: "miliardy let", t: "Trpasličí galaxie v halu jsou skoro tak staré jako vesmír. Nemají plyn a některé mají méně hvězd než jedna hvězdokupa." },
-    { n: "Dvě mračna", where: "160 000 ly od Slunce", real: "miliardy let", t: "Největší satelity Mléčné dráhy. Za sebou táhnou proud plynu, který se klene přes půl jižní oblohy." },
-    { n: "Osamělé galaxie", where: "Okraj Místní skupiny", real: "miliardy let", t: "Trpasličí galaxie na okraji skupiny. Do Mléčné dráhy možná ještě nikdy nespadly." },
+    { n: "Dvě mračna", where: "160 000–200 000 ly od Slunce", real: "miliardy let", t: "Největší satelity Mléčné dráhy. Za sebou táhnou proud plynu, který se klene přes půl jižní oblohy." },
+    { n: "Osamělé galaxie", where: "Okraj Místní skupiny", real: "miliardy let", t: "Trpasličí galaxie na okraji skupiny. K Mléčné dráze se možná ještě nikdy nepřiblížily." },
     { n: "Třetí spirála", where: "2,7 milionu ly", real: "miliardy let", t: "Galaxie v Trojúhelníku je třetí největší ve skupině. Spirála bez výrazné výdutě, plná mladých modrých hvězd." },
     { n: "Velká sousedka", where: "2,5 milionu ly", real: "asi 4,5 miliardy let", t: "Andromeda má kolem bilionu hvězd a blíží se k nám rychlostí 110 km/s. Ve skutečnosti se srazíme asi za 4,5 miliardy let." },
     { n: "Celá skupina", where: "Místní skupina", real: "miliardy let", t: "Svítíš jako celá Místní skupina. Zbývá spojit Andromedu s Mléčnou dráhou." },
   ],
   hint: [
     "Galaxie se zeleným kroužkem je v pericentru: drž na ní myš a sklízej proud hvězd. Mimo pericentrum ji táhni – blíž ke středu dá víc hvězd, příliš blízko splyne.",
-    "Relé sklízejí samy na největších galaxiích. Ty sklízej ostatní a vzdálené dráhy stahuj prakem blíž.",
+    "Relé sklízejí sama na největších galaxiích. Ty sklízej ostatní a vzdálené dráhy stahuj prakem blíž.",
   ],
   sat: {
     sgr: "Trpasličí galaxie ve Střelci", dra: "Trpasličí galaxie v Drakovi", umi: "Trpasličí galaxie v Malé medvědici", scl: "Trpasličí galaxie v Sochaři",
@@ -58,12 +58,12 @@ export const CS5 = {
   } as Record<string, { n: string; d: string }>,
   m: {
     sgrs: { n: "Proud Střelce", p: "Halo Mléčné dráhy", r: "Sklizeň dá 1,5× víc hvězd" },
-    leot: { n: "Leo T", p: "Za okrajem hala", r: "Dat přibývá 2× rychleji" },
+    leot: { n: "Lev T", p: "Za okrajem hala", r: "Dat přibývá 2× rychleji" },
     smith: { n: "Smithův oblak", p: "Pod diskem Mléčné dráhy", r: "Roje zachytí o 20 % víc světla" },
     mag: { n: "Magellanův proud", p: "Za Magellanovými mračny", r: "Magellanova mračna se dostanou na dráhu a sklizeň dá 2× víc hvězd" },
     bary: { n: "Těžiště skupiny", p: "Mezi Mléčnou dráhou a Andromedou", r: "Dat přibývá 2× rychleji" },
     tri: { n: "Galaxie v Trojúhelníku", p: "2,7 milionu ly", r: "Galaxie v Trojúhelníku se dostane na dráhu" },
-    void5: { n: "Místní prázdnota", p: "Za okrajem skupiny", r: "Proudy v halu dávají 2× víc" },
+    void5: { n: "Místní prázdnota", p: "Za okrajem skupiny", r: "Proudy v halu dávají 2× víc hvězd" },
     gss: { n: "Obří proud Andromedy", p: "Halo Andromedy", r: "Roje zachytí o 20 % víc světla" },
     and: { n: "Jádro Andromedy", p: "2,5 milionu ly", r: "Dat přibývá 2× rychleji" },
   } as Record<string, { n: string; p: string; r: string }>,
@@ -76,7 +76,7 @@ export const CS5 = {
     g_sgrs: "Proud Střelce je plný starých hvězd. Kolem jedné obíhá chladný roj. Jeho kolektory nesou naše výrobní čísla.",
     g_st1: "Dosáhli jsme na trpasličí galaxie v halu. Jsou skoro tak staré jako vesmír. Ve všech je slyšet puls.",
     f_dm: "Kolem Mléčné dráhy známe přes šedesát satelitních galaxií. Ty nejmenší mají jen pár tisíc hvězd.",
-    g_leot: "Leo T ještě má plyn a rodí hvězdy. K Mléčné dráze se nejspíš nikdy nepřiblížila. Puls tam přesto dorazil dřív než my.",
+    g_leot: "Lev T ještě má plyn a rodí hvězdy. K Mléčné dráze se nejspíš nikdy nepřiblížil. Puls tam přesto dorazil dřív než my.",
     g_five: "Z pěti galaxií už vedou proudy. Halo Mléčné dráhy se plní smyčkami hvězd. Z dálky vypadají jako písmo.",
     g_smith: "Smithův oblak je mrak plynu, který padá na disk Mléčné dráhy. Vesper v něm naměřil puls. Přišel o zlomek vteřiny dřív než ze středu.",
     g_st2: "Magellanova mračna. Z jižní polokoule Země jsou vidět pouhým okem. Táhnou za sebou proud plynu přes půl oblohy.",

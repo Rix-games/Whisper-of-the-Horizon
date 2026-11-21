@@ -72,7 +72,7 @@ export const UI = {
   passiveView: "Pohled – hraje se jinde",
   next: "Další kapitola",
   theEnd: "Konec dostupného obsahu",
-  theEndBody: "Kapitola 6 se připravuje. Místní skupina dál svítí a můžeš sklízet dál.",
+  theEndBody: "Kapitola 6 se připravuje. Místní skupina dál svítí a můžeš pokračovat ve sklizni.",
   mergeT: "Mlékomeda",
   merge: ["Andromeda a Mléčná dráha splynuly v jednu velkou eliptickou galaxii. Obě černé díry se k sobě pomalu stáčejí.", "Pak se puls ozval znovu. Silnější a z dálky, ze směru souhvězdí Panny."],
   awakeNext: "Pokračovat",

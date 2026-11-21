@@ -269,11 +269,11 @@ export const CH5: ChapterDef = {
     for (const d of SATS) sat(s, d);
   },
   effect(s, id) {
-    const lv = n(s, id), x = (v: number) => "×" + (Math.round(v * 10) / 10).toString().replace(".", ",");
+    const lv = n(s, id), x = (v: number) => (Math.round(v * 10) / 10).toString().replace(".", ",") + "×";
     if (id === "swarm5") return `Zachycené světlo ${pct(cap5(s))} → ${pct(Math.min(T5.capMax, cap5(s) * T5.swarm))}`;
     if (id === "net5") return `Sklizeň ${x(1 + 0.5 * lv)} → ${x(1 + 0.5 * (lv + 1))}`;
     if (id === "wide5") return `Okno sklizně ${pct(T5.zone[0] + T5.zone[1] * lv)} dráhy → ${pct(T5.zone[0] + T5.zone[1] * (lv + 1))}`;
-    if (id === "relay5") return !lv ? "První relé začne sklízet samo" : `${lv} relé ${lv === 1 ? "sklízí samo" : lv < 5 ? "sklízejí samy" : "sklízí samo"} · další na ${lv + 1}. galaxii`;
+    if (id === "relay5") return !lv ? "První relé začne sklízet samo" : `${lv} relé ${lv === 1 ? "sklízí samo" : lv < 5 ? "sklízejí sama" : "sklízí samo"} · další na ${lv + 1}. galaxii`;
     if (id === "tails5") return `+${num(tailRate(s) / (1 + lv))} M☉/s z proudů kolem galaxie`;
     if (id === "pilot5") return !lv ? "Navaděč začne srovnávat dráhy" : `Dráhy srovnává ${lv}× rychleji → ${lv + 1}×`;
     return undefined;

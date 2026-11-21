@@ -1422,11 +1422,11 @@
       for (const d of SATS) sat(s2, d);
     },
     effect(s2, id) {
-      const lv6 = n(s2, id), x = (v) => "\xD7" + (Math.round(v * 10) / 10).toString().replace(".", ",");
+      const lv6 = n(s2, id), x = (v) => (Math.round(v * 10) / 10).toString().replace(".", ",") + "\xD7";
       if (id === "swarm5") return `Zachycen\xE9 sv\u011Btlo ${pct(cap5(s2))} \u2192 ${pct(Math.min(T5.capMax, cap5(s2) * T5.swarm))}`;
       if (id === "net5") return `Sklize\u0148 ${x(1 + 0.5 * lv6)} \u2192 ${x(1 + 0.5 * (lv6 + 1))}`;
       if (id === "wide5") return `Okno sklizn\u011B ${pct(T5.zone[0] + T5.zone[1] * lv6)} dr\xE1hy \u2192 ${pct(T5.zone[0] + T5.zone[1] * (lv6 + 1))}`;
-      if (id === "relay5") return !lv6 ? "Prvn\xED rel\xE9 za\u010Dne skl\xEDzet samo" : `${lv6} rel\xE9 ${lv6 === 1 ? "skl\xEDz\xED samo" : lv6 < 5 ? "skl\xEDzej\xED samy" : "skl\xEDz\xED samo"} \xB7 dal\u0161\xED na ${lv6 + 1}. galaxii`;
+      if (id === "relay5") return !lv6 ? "Prvn\xED rel\xE9 za\u010Dne skl\xEDzet samo" : `${lv6} rel\xE9 ${lv6 === 1 ? "skl\xEDz\xED samo" : lv6 < 5 ? "skl\xEDzej\xED sama" : "skl\xEDz\xED samo"} \xB7 dal\u0161\xED na ${lv6 + 1}. galaxii`;
       if (id === "tails5") return `+${num(tailRate(s2) / (1 + lv6))} M\u2609/s z proud\u016F kolem galaxie`;
       if (id === "pilot5") return !lv6 ? "Navad\u011B\u010D za\u010Dne srovn\xE1vat dr\xE1hy" : `Dr\xE1hy srovn\xE1v\xE1 ${lv6}\xD7 rychleji \u2192 ${lv6 + 1}\xD7`;
       return void 0;
@@ -4535,8 +4535,8 @@
     intro: {
       h: "Slapy",
       p: [
-        "Sagittarius A* se probudila a puls te\u010F p\u0159ich\xE1z\xED ze st\u0159edu galaxie. Vesper k n\xED dolet\u011Bl po proudu jej\xEDch v\xFDtrysk\u016F.",
-        "Vis\xED\u0161 t\u011Bsn\u011B nad horizontem d\xEDry, kter\xE1 v\xE1\u017E\xED \u010Dty\u0159i miliony Slunc\xED. Tady ti ub\u011Bhnou vte\u0159iny, zat\xEDmco venku miliony let. Poprv\xE9 vid\xED\u0161, \u017Ee kolem Ml\xE9\u010Dn\xE9 dr\xE1hy ob\xEDhaj\xED cel\xE9 galaxie.",
+        "Sagittarius A* se probudila a puls te\u010F p\u0159ich\xE1z\xED ze st\u0159edu galaxie. Vesper k n\xED dolet\u011Bl proti proudu jej\xEDch v\xFDtrysk\u016F.",
+        "Vis\xED\u0161 t\u011Bsn\u011B nad horizontem d\xEDry, kter\xE1 m\xE1 hmotnost \u010Dty\u0159 milion\u016F Slunc\xED. Tady ti ub\u011Bhnou vte\u0159iny, zat\xEDmco venku miliony let. Poprv\xE9 vid\xED\u0161, \u017Ee kolem Ml\xE9\u010Dn\xE9 dr\xE1hy ob\xEDhaj\xED cel\xE9 galaxie.",
         "Kdy\u017E se trpasli\u010D\xED galaxie dostane nejbl\xED\u017E (pericentrum), slapy z n\xED trhaj\xED hv\u011Bzdy do dlouh\xFDch proud\u016F. Z proud\u016F stav\xED\u0161 nov\xE9 roje kolem hv\u011Bzd Ml\xE9\u010Dn\xE9 dr\xE1hy.",
         "Galaxie se zelen\xFDm krou\u017Ekem je v pericentru: dr\u017E na n\xED my\u0161 a skl\xEDzej. Jindy ji m\u016F\u017Ee\u0161 t\xE1hnout a zm\u011Bnit jej\xED dr\xE1hu. Bl\xED\u017E ke st\u0159edu d\xE1 v\xEDc hv\u011Bzd, ale p\u0159\xEDli\u0161 bl\xEDzko splyne s Ml\xE9\u010Dnou dr\xE1hou."
       ]
@@ -4548,15 +4548,15 @@
     phase: [
       { n: "Nad horizontem Sgr A*", where: "St\u0159ed Ml\xE9\u010Dn\xE9 dr\xE1hy", real: "stovky milion\u016F let", t: "Nejbli\u017E\u0161\xED satelity ob\u011Bhnou Ml\xE9\u010Dnou dr\xE1hu za stovky milion\u016F let. Odsud, zpomalen\xFD u d\xEDry, vid\xED\u0161, jak krou\u017Eej\xED." },
       { n: "Star\xE9 mal\xE9 galaxie", where: "Halo Ml\xE9\u010Dn\xE9 dr\xE1hy", real: "miliardy let", t: "Trpasli\u010D\xED galaxie v halu jsou skoro tak star\xE9 jako vesm\xEDr. Nemaj\xED plyn a n\u011Bkter\xE9 maj\xED m\xE9n\u011B hv\u011Bzd ne\u017E jedna hv\u011Bzdokupa." },
-      { n: "Dv\u011B mra\u010Dna", where: "160 000 ly od Slunce", real: "miliardy let", t: "Nejv\u011Bt\u0161\xED satelity Ml\xE9\u010Dn\xE9 dr\xE1hy. Za sebou t\xE1hnou proud plynu, kter\xFD se klene p\u0159es p\u016Fl ji\u017En\xED oblohy." },
-      { n: "Osam\u011Bl\xE9 galaxie", where: "Okraj M\xEDstn\xED skupiny", real: "miliardy let", t: "Trpasli\u010D\xED galaxie na okraji skupiny. Do Ml\xE9\u010Dn\xE9 dr\xE1hy mo\u017En\xE1 je\u0161t\u011B nikdy nespadly." },
+      { n: "Dv\u011B mra\u010Dna", where: "160 000\u2013200 000 ly od Slunce", real: "miliardy let", t: "Nejv\u011Bt\u0161\xED satelity Ml\xE9\u010Dn\xE9 dr\xE1hy. Za sebou t\xE1hnou proud plynu, kter\xFD se klene p\u0159es p\u016Fl ji\u017En\xED oblohy." },
+      { n: "Osam\u011Bl\xE9 galaxie", where: "Okraj M\xEDstn\xED skupiny", real: "miliardy let", t: "Trpasli\u010D\xED galaxie na okraji skupiny. K Ml\xE9\u010Dn\xE9 dr\xE1ze se mo\u017En\xE1 je\u0161t\u011B nikdy nep\u0159ibl\xED\u017Eily." },
       { n: "T\u0159et\xED spir\xE1la", where: "2,7 milionu ly", real: "miliardy let", t: "Galaxie v Troj\xFAheln\xEDku je t\u0159et\xED nejv\u011Bt\u0161\xED ve skupin\u011B. Spir\xE1la bez v\xFDrazn\xE9 v\xFDdut\u011B, pln\xE1 mlad\xFDch modr\xFDch hv\u011Bzd." },
       { n: "Velk\xE1 sousedka", where: "2,5 milionu ly", real: "asi 4,5 miliardy let", t: "Andromeda m\xE1 kolem bilionu hv\u011Bzd a bl\xED\u017E\xED se k n\xE1m rychlost\xED 110 km/s. Ve skute\u010Dnosti se sraz\xEDme asi za 4,5 miliardy let." },
       { n: "Cel\xE1 skupina", where: "M\xEDstn\xED skupina", real: "miliardy let", t: "Sv\xEDt\xED\u0161 jako cel\xE1 M\xEDstn\xED skupina. Zb\xFDv\xE1 spojit Andromedu s Ml\xE9\u010Dnou dr\xE1hou." }
     ],
     hint: [
       "Galaxie se zelen\xFDm krou\u017Ekem je v pericentru: dr\u017E na n\xED my\u0161 a skl\xEDzej proud hv\u011Bzd. Mimo pericentrum ji t\xE1hni \u2013 bl\xED\u017E ke st\u0159edu d\xE1 v\xEDc hv\u011Bzd, p\u0159\xEDli\u0161 bl\xEDzko splyne.",
-      "Rel\xE9 skl\xEDzej\xED samy na nejv\u011Bt\u0161\xEDch galaxi\xEDch. Ty skl\xEDzej ostatn\xED a vzd\xE1len\xE9 dr\xE1hy stahuj prakem bl\xED\u017E."
+      "Rel\xE9 skl\xEDzej\xED sama na nejv\u011Bt\u0161\xEDch galaxi\xEDch. Ty skl\xEDzej ostatn\xED a vzd\xE1len\xE9 dr\xE1hy stahuj prakem bl\xED\u017E."
     ],
     sat: {
       sgr: "Trpasli\u010D\xED galaxie ve St\u0159elci",
@@ -4604,12 +4604,12 @@
     },
     m: {
       sgrs: { n: "Proud St\u0159elce", p: "Halo Ml\xE9\u010Dn\xE9 dr\xE1hy", r: "Sklize\u0148 d\xE1 1,5\xD7 v\xEDc hv\u011Bzd" },
-      leot: { n: "Leo T", p: "Za okrajem hala", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
+      leot: { n: "Lev T", p: "Za okrajem hala", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
       smith: { n: "Smith\u016Fv oblak", p: "Pod diskem Ml\xE9\u010Dn\xE9 dr\xE1hy", r: "Roje zachyt\xED o 20 % v\xEDc sv\u011Btla" },
       mag: { n: "Magellan\u016Fv proud", p: "Za Magellanov\xFDmi mra\u010Dny", r: "Magellanova mra\u010Dna se dostanou na dr\xE1hu a sklize\u0148 d\xE1 2\xD7 v\xEDc hv\u011Bzd" },
       bary: { n: "T\u011B\u017Ei\u0161t\u011B skupiny", p: "Mezi Ml\xE9\u010Dnou dr\xE1hou a Andromedou", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" },
       tri: { n: "Galaxie v Troj\xFAheln\xEDku", p: "2,7 milionu ly", r: "Galaxie v Troj\xFAheln\xEDku se dostane na dr\xE1hu" },
-      void5: { n: "M\xEDstn\xED pr\xE1zdnota", p: "Za okrajem skupiny", r: "Proudy v halu d\xE1vaj\xED 2\xD7 v\xEDc" },
+      void5: { n: "M\xEDstn\xED pr\xE1zdnota", p: "Za okrajem skupiny", r: "Proudy v halu d\xE1vaj\xED 2\xD7 v\xEDc hv\u011Bzd" },
       gss: { n: "Ob\u0159\xED proud Andromedy", p: "Halo Andromedy", r: "Roje zachyt\xED o 20 % v\xEDc sv\u011Btla" },
       and: { n: "J\xE1dro Andromedy", p: "2,5 milionu ly", r: "Dat p\u0159ib\xFDv\xE1 2\xD7 rychleji" }
     },
@@ -4622,7 +4622,7 @@
       g_sgrs: "Proud St\u0159elce je pln\xFD star\xFDch hv\u011Bzd. Kolem jedn\xE9 ob\xEDh\xE1 chladn\xFD roj. Jeho kolektory nesou na\u0161e v\xFDrobn\xED \u010D\xEDsla.",
       g_st1: "Dos\xE1hli jsme na trpasli\u010D\xED galaxie v halu. Jsou skoro tak star\xE9 jako vesm\xEDr. Ve v\u0161ech je sly\u0161et puls.",
       f_dm: "Kolem Ml\xE9\u010Dn\xE9 dr\xE1hy zn\xE1me p\u0159es \u0161edes\xE1t satelitn\xEDch galaxi\xED. Ty nejmen\u0161\xED maj\xED jen p\xE1r tis\xEDc hv\u011Bzd.",
-      g_leot: "Leo T je\u0161t\u011B m\xE1 plyn a rod\xED hv\u011Bzdy. K Ml\xE9\u010Dn\xE9 dr\xE1ze se nejsp\xED\u0161 nikdy nep\u0159ibl\xED\u017Eila. Puls tam p\u0159esto dorazil d\u0159\xEDv ne\u017E my.",
+      g_leot: "Lev T je\u0161t\u011B m\xE1 plyn a rod\xED hv\u011Bzdy. K Ml\xE9\u010Dn\xE9 dr\xE1ze se nejsp\xED\u0161 nikdy nep\u0159ibl\xED\u017Eil. Puls tam p\u0159esto dorazil d\u0159\xEDv ne\u017E my.",
       g_five: "Z p\u011Bti galaxi\xED u\u017E vedou proudy. Halo Ml\xE9\u010Dn\xE9 dr\xE1hy se pln\xED smy\u010Dkami hv\u011Bzd. Z d\xE1lky vypadaj\xED jako p\xEDsmo.",
       g_smith: "Smith\u016Fv oblak je mrak plynu, kter\xFD pad\xE1 na disk Ml\xE9\u010Dn\xE9 dr\xE1hy. Vesper v n\u011Bm nam\u011B\u0159il puls. P\u0159i\u0161el o zlomek vte\u0159iny d\u0159\xEDv ne\u017E ze st\u0159edu.",
       g_st2: "Magellanova mra\u010Dna. Z ji\u017En\xED polokoule Zem\u011B jsou vid\u011Bt pouh\xFDm okem. T\xE1hnou za sebou proud plynu p\u0159es p\u016Fl oblohy.",
@@ -4729,7 +4729,7 @@
     passiveView: "Pohled \u2013 hraje se jinde",
     next: "Dal\u0161\xED kapitola",
     theEnd: "Konec dostupn\xE9ho obsahu",
-    theEndBody: "Kapitola 6 se p\u0159ipravuje. M\xEDstn\xED skupina d\xE1l sv\xEDt\xED a m\u016F\u017Ee\u0161 skl\xEDzet d\xE1l.",
+    theEndBody: "Kapitola 6 se p\u0159ipravuje. M\xEDstn\xED skupina d\xE1l sv\xEDt\xED a m\u016F\u017Ee\u0161 pokra\u010Dovat ve sklizni.",
     mergeT: "Ml\xE9komeda",
     merge: ["Andromeda a Ml\xE9\u010Dn\xE1 dr\xE1ha splynuly v jednu velkou eliptickou galaxii. Ob\u011B \u010Dern\xE9 d\xEDry se k sob\u011B pomalu st\xE1\u010Dej\xED.", "Pak se puls ozval znovu. Siln\u011Bj\u0161\xED a z d\xE1lky, ze sm\u011Bru souhv\u011Bzd\xED Panny."],
     awakeNext: "Pokra\u010Dovat",
