@@ -1274,7 +1274,7 @@
     B5({ id: "wide5", tier: 1, kind: "up", cur: "streams", c0: 2e7, g: 3.5, max: 5, maxAt: (s2) => 1 + s2.stage, req: (s2) => tapped(s2) >= 2 && n(s2, "obs5") >= 1 }),
     // 2. úroveň – automatika: relé sklízejí samy, proudy dávají surovinu samy, navaděče srovnávají dráhy
     B5({ id: "relay5", tier: 2, kind: "auto", cur: "streams", c0: 5e8, g: 1.9, maxAt: (s2) => Math.max(1, SATS.filter((d) => live(s2, d)).length), req: R("relays5") }),
-    B5({ id: "tails5", tier: 2, kind: "up", cur: "streams", c0: 2e9, g: 2.4, max: 8, maxAt: (s2) => s2.stage, req: R("tails5r") }),
+    B5({ id: "tails5", tier: 2, kind: "up", cur: "streams", c0: 2e9, g: 2.4, max: 8, maxAt: (s2) => s2.stage + 2, req: R("tails5r") }),
     B5({ id: "pilot5", tier: 2, kind: "auto", cur: "streams", c0: 5e9, g: 2.2, max: 6, req: R("pilots5") }),
     B5({ id: "radio5", tier: 2, kind: "data", cur: "streams", c0: 3e9, g: 1.3, d: 4e14, req: (s2) => s2.stage >= 3 && n(s2, "relay5") >= 2 })
   ];

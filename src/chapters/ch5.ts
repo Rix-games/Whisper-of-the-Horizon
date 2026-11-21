@@ -150,7 +150,7 @@ export const BUILD5: BDef[] = [
   B({ id: "wide5", tier: 1, kind: "up", cur: "streams", c0: 2e7, g: 3.5, max: 5, maxAt: (s) => 1 + s.stage, req: (s) => tapped(s) >= 2 && n(s, "obs5") >= 1 }),
   // 2. úroveň – automatika: relé sklízejí samy, proudy dávají surovinu samy, navaděče srovnávají dráhy
   B({ id: "relay5", tier: 2, kind: "auto", cur: "streams", c0: 5e8, g: 1.9, maxAt: (s) => Math.max(1, SATS.filter((d) => live(s, d)).length), req: R("relays5") }),
-  B({ id: "tails5", tier: 2, kind: "up", cur: "streams", c0: 2e9, g: 2.4, max: 8, maxAt: (s) => s.stage, req: R("tails5r") }),
+  B({ id: "tails5", tier: 2, kind: "up", cur: "streams", c0: 2e9, g: 2.4, max: 8, maxAt: (s) => s.stage + 2, req: R("tails5r") }),
   B({ id: "pilot5", tier: 2, kind: "auto", cur: "streams", c0: 5e9, g: 2.2, max: 6, req: R("pilots5") }),
   B({ id: "radio5", tier: 2, kind: "data", cur: "streams", c0: 3e9, g: 1.3, d: 4e14, req: (s) => s.stage >= 3 && n(s, "relay5") >= 2 }),
 ];
